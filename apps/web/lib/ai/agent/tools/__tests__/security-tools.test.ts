@@ -1,25 +1,21 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
-    if (query.includes('system.processes'))
-      return { data: queryStore['processes'] ?? [], error: null }
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
+    if (query.includes('system.processes')) return queryStore['processes'] ?? []
     if (query.includes('system.session_log'))
-      return { data: queryStore['sessions'] ?? [], error: null }
-    if (query.includes('system.users'))
-      return { data: queryStore['users'] ?? [], error: null }
-    if (query.includes('system.roles'))
-      return { data: queryStore['roles'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
+      return queryStore['sessions'] ?? []
+    if (query.includes('system.users')) return queryStore['users'] ?? []
+    if (query.includes('system.roles')) return queryStore['roles'] ?? []
+    return []
+  }),
 }))
 
 const { createSecurityTools } = await import('../security-tools')

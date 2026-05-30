@@ -1,31 +1,24 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
-    if (query.includes('version()'))
-      return { data: queryStore['version'] ?? [], error: null }
-    if (query.includes('uptime()'))
-      return { data: queryStore['uptime'] ?? [], error: null }
-    if (query.includes('system.metrics'))
-      return { data: queryStore['metrics'] ?? [], error: null }
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
+    if (query.includes('version()')) return queryStore['version'] ?? []
+    if (query.includes('uptime()')) return queryStore['uptime'] ?? []
+    if (query.includes('system.metrics')) return queryStore['metrics'] ?? []
     if (query.includes('system.asynchronous_metrics'))
-      return { data: queryStore['async_metrics'] ?? [], error: null }
-    if (query.includes('system.disks'))
-      return { data: queryStore['disks'] ?? [], error: null }
-    if (query.includes('system.errors'))
-      return { data: queryStore['errors'] ?? [], error: null }
-    if (query.includes('system.crash_log'))
-      return { data: queryStore['crash'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
+      return queryStore['async_metrics'] ?? []
+    if (query.includes('system.disks')) return queryStore['disks'] ?? []
+    if (query.includes('system.errors')) return queryStore['errors'] ?? []
+    if (query.includes('system.crash_log')) return queryStore['crash'] ?? []
+    return []
+  }),
 }))
 
 const { createHealthTools } = await import('../health-tools')

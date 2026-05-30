@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
@@ -7,135 +8,117 @@ const resetQueryIndex = () => {
   queryIndex = 0
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
-    const q = query
-    queryIndex++
+const readOnlyQuery = mock(async ({ query }: { query: string }) => {
+  const q = query
+  queryIndex++
 
-    if (q.includes('system.tables') && q.includes('WHERE database')) {
-      return {
-        data: [
-          {
-            engine: 'MergeTree',
-            sorting_key: '(event_date, tenant_id)',
-            primary_key: 'event_date',
-            partition_key: 'toYYYYMM(event_date)',
-            total_rows: 5000000,
-            total_bytes: 1073741824,
-            readable_size: '1.00 GiB',
-            create_table_query: 'CREATE TABLE analytics.events ...',
-          },
-        ],
-        error: null,
-      }
-    }
+  if (q.includes('system.tables') && q.includes('WHERE database')) {
+    return [
+      {
+        engine: 'MergeTree',
+        sorting_key: '(event_date, tenant_id)',
+        primary_key: 'event_date',
+        partition_key: 'toYYYYMM(event_date)',
+        total_rows: 5000000,
+        total_bytes: 1073741824,
+        readable_size: '1.00 GiB',
+        create_table_query: 'CREATE TABLE analytics.events ...',
+      },
+    ]
+  }
 
-    if (q.includes('system.parts') && q.includes('active')) {
-      return {
-        data: [
-          {
-            active_parts: 150,
-            total_size: '1.50 GiB',
-            oldest_part: '2026-05-01 00:00:00',
-            newest_part: '2026-05-30 12:00:00',
-          },
-        ],
-        error: null,
-      }
-    }
+  if (q.includes('system.parts') && q.includes('active')) {
+    return [
+      {
+        active_parts: 150,
+        total_size: '1.50 GiB',
+        oldest_part: '2026-05-01 00:00:00',
+        newest_part: '2026-05-30 12:00:00',
+      },
+    ]
+  }
 
-    if (q.includes('system.mutations')) {
-      return {
-        data: [
-          {
-            mutation_id: 'mutation_1.txt',
-            command: 'UPDATE status = 1 WHERE status = 0',
-            create_time: '2026-05-29 10:00:00',
-            parts_to_do: 0,
-            is_done: 1,
-          },
-        ],
-        error: null,
-      }
-    }
+  if (q.includes('system.mutations')) {
+    return [
+      {
+        mutation_id: 'mutation_1.txt',
+        command: 'UPDATE status = 1 WHERE status = 0',
+        create_time: '2026-05-29 10:00:00',
+        parts_to_do: 0,
+        is_done: 1,
+      },
+    ]
+  }
 
-    if (q.includes('system.replicas')) {
-      return {
-        data: [
-          {
-            is_leader: 1,
-            is_readonly: 0,
-            absolute_delay: 0,
-            queue_size: 2,
-            inserts_in_queue: 1,
-            merges_in_queue: 1,
-          },
-        ],
-        error: null,
-      }
-    }
+  if (q.includes('system.replicas')) {
+    return [
+      {
+        is_leader: 1,
+        is_readonly: 0,
+        absolute_delay: 0,
+        queue_size: 2,
+        inserts_in_queue: 1,
+        merges_in_queue: 1,
+      },
+    ]
+  }
 
-    if (q.includes('system.columns') && q.includes('ORDER BY position')) {
-      return {
-        data: [
-          {
-            name: 'event_date',
-            type: 'Date',
-            default_kind: '',
-            default_expression: '',
-          },
-          {
-            name: 'tenant_id',
-            type: 'UInt64',
-            default_kind: '',
-            default_expression: '',
-          },
-          {
-            name: 'status',
-            type: 'String',
-            default_kind: '',
-            default_expression: '',
-          },
-        ],
-        error: null,
-      }
-    }
+  if (q.includes('system.columns') && q.includes('ORDER BY position')) {
+    return [
+      {
+        name: 'event_date',
+        type: 'Date',
+        default_kind: '',
+        default_expression: '',
+      },
+      {
+        name: 'tenant_id',
+        type: 'UInt64',
+        default_kind: '',
+        default_expression: '',
+      },
+      {
+        name: 'status',
+        type: 'String',
+        default_kind: '',
+        default_expression: '',
+      },
+    ]
+  }
 
-    // get_column_usage: usage summary query
-    if (
-      q.includes('count() as query_count') &&
-      q.includes('countDistinct(user)')
-    ) {
-      return {
-        data: [
-          {
-            query_count: 42,
-            unique_users: 3,
-            first_seen: '2026-05-23 08:00:00',
-            last_seen: '2026-05-30 11:00:00',
-          },
-        ],
-        error: null,
-      }
-    }
+  // get_column_usage: usage summary query
+  if (
+    q.includes('count() as query_count') &&
+    q.includes('countDistinct(user)')
+  ) {
+    return [
+      {
+        query_count: 42,
+        unique_users: 3,
+        first_seen: '2026-05-23 08:00:00',
+        last_seen: '2026-05-30 11:00:00',
+      },
+    ]
+  }
 
-    // get_column_usage: users affected query
-    if (q.includes('GROUP BY user') && q.includes('any(substring')) {
-      return {
-        data: [
-          {
-            user: 'analyst',
-            query_count: 30,
-            sample_query:
-              'SELECT status FROM analytics.events WHERE tenant_id = 1',
-          },
-        ],
-        error: null,
-      }
-    }
+  // get_column_usage: users affected query
+  if (q.includes('GROUP BY user') && q.includes('any(substring')) {
+    return [
+      {
+        user: 'analyst',
+        query_count: 30,
+        sample_query: 'SELECT status FROM analytics.events WHERE tenant_id = 1',
+      },
+    ]
+  }
 
-    return { data: [], error: null }
-  }),
+  return []
+})
+
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery,
 }))
 
 const { createMigrationTools } = await import('../migration-tools')
@@ -351,30 +334,21 @@ describe('createMigrationTools', () => {
     })
 
     test('warns about pending mutations', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('system.mutations')) {
-            return {
-              data: [
-                {
-                  mutation_id: 'mutation_2.txt',
-                  command: 'UPDATE x = 1',
-                  create_time: '2026-05-30 10:00:00',
-                  parts_to_do: 5,
-                  is_done: 0,
-                },
-              ],
-              error: null,
-            }
-          }
-          return origImpl!({ query })
+      const origImpl = readOnlyQuery.getMockImplementation()
+      readOnlyQuery.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('system.mutations')) {
+          return [
+            {
+              mutation_id: 'mutation_2.txt',
+              command: 'UPDATE x = 1',
+              create_time: '2026-05-30 10:00:00',
+              parts_to_do: 5,
+              is_done: 0,
+            },
+          ]
         }
-      )
+        return origImpl!({ query })
+      })
 
       const tools = createMigrationTools(0)
       const result = await tools.analyze_schema_change.execute({
@@ -383,7 +357,7 @@ describe('createMigrationTools', () => {
         alterStatement: 'ALTER TABLE events ADD COLUMN new_col String',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
+      readOnlyQuery.mockImplementation(origImpl!)
 
       expect(result.warnings).toContain(
         'There are pending mutations on this table. Wait for them to complete before adding more.'

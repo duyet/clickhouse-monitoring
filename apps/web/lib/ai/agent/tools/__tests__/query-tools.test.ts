@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
@@ -70,32 +71,30 @@ const queryResults: Record<string, unknown[]> = {
   ],
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
     const q = query
 
-    if (q.includes('system.processes'))
-      return { data: queryResults.running, error: null }
+    if (q.includes('system.processes')) return queryResults.running
     if (
       q.includes('QueryFinish') &&
       q.includes('query_duration_ms') &&
       !q.includes('read_bytes')
     )
-      return { data: queryResults.slow, error: null }
-    if (q.includes('ExceptionWhileProcessing'))
-      return { data: queryResults.failed, error: null }
+      return queryResults.slow
+    if (q.includes('ExceptionWhileProcessing')) return queryResults.failed
     if (
       q.includes('read_bytes') &&
       q.includes('memory_usage') &&
       !q.includes('normalized_query_hash')
     )
-      return { data: queryResults.expensive, error: null }
-    if (q.includes('normalized_query_hash'))
-      return { data: queryResults.patterns, error: null }
-    if (q.includes('EXPLAIN'))
-      return { data: queryResults.explain, error: null }
+      return queryResults.expensive
+    if (q.includes('normalized_query_hash')) return queryResults.patterns
+    if (q.includes('EXPLAIN')) return queryResults.explain
 
-    return { data: [], error: null }
+    return []
   }),
 }))
 

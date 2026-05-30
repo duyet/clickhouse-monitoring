@@ -1,21 +1,19 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
     if (query.includes('system.detached_parts'))
-      return { data: queryStore['detached'] ?? [], error: null }
-    if (query.includes('system.parts'))
-      return { data: queryStore['parts'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
+      return queryStore['detached'] ?? []
+    if (query.includes('system.parts')) return queryStore['parts'] ?? []
+    return []
+  }),
 }))
 
 const { createStorageTools } = await import('../storage-tools')

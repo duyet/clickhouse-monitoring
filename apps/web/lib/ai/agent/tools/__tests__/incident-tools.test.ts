@@ -1,43 +1,33 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
-    if (query.includes('system.processes'))
-      return { data: queryStore['processes'] ?? [], error: null }
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
+    if (query.includes('system.processes')) return queryStore['processes'] ?? []
     if (query.includes('system.query_log') && query.includes('toStartOfMinute'))
-      return { data: queryStore['query_timeline'] ?? [], error: null }
+      return queryStore['query_timeline'] ?? []
     if (query.includes('system.query_log') && query.includes('exception_code'))
-      return { data: queryStore['top_errors'] ?? [], error: null }
+      return queryStore['top_errors'] ?? []
     if (query.includes('system.query_log') && query.includes('query_kind'))
-      return { data: queryStore['ddl'] ?? [], error: null }
-    if (query.includes('system.merges'))
-      return { data: queryStore['merges'] ?? [], error: null }
-    if (query.includes('system.errors'))
-      return { data: queryStore['errors'] ?? [], error: null }
-    if (query.includes('system.replicas'))
-      return { data: queryStore['replicas'] ?? [], error: null }
+      return queryStore['ddl'] ?? []
+    if (query.includes('system.merges')) return queryStore['merges'] ?? []
+    if (query.includes('system.errors')) return queryStore['errors'] ?? []
+    if (query.includes('system.replicas')) return queryStore['replicas'] ?? []
     if (query.includes('system.replication_queue'))
-      return { data: queryStore['replication_queue'] ?? [], error: null }
-    if (query.includes('system.zookeeper'))
-      return { data: queryStore['zookeeper'] ?? [], error: null }
-    if (query.includes('system.metrics'))
-      return { data: queryStore['metrics'] ?? [], error: null }
-    if (query.includes('system.text_log'))
-      return { data: queryStore['text_log'] ?? [], error: null }
-    if (query.includes('system.parts'))
-      return { data: queryStore['parts'] ?? [], error: null }
-    if (query.includes('system.mutations'))
-      return { data: queryStore['mutations'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
+      return queryStore['replication_queue'] ?? []
+    if (query.includes('system.zookeeper')) return queryStore['zookeeper'] ?? []
+    if (query.includes('system.metrics')) return queryStore['metrics'] ?? []
+    if (query.includes('system.text_log')) return queryStore['text_log'] ?? []
+    if (query.includes('system.parts')) return queryStore['parts'] ?? []
+    if (query.includes('system.mutations')) return queryStore['mutations'] ?? []
+    return []
+  }),
 }))
 
 const { createIncidentTools } = await import('../incident-tools')

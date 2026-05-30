@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
@@ -47,21 +48,24 @@ const tableSizes = [
   },
 ]
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
-    const q = query
+const readOnlyQuery = mock(async ({ query }: { query: string }) => {
+  const q = query
 
-    if (q.includes('modification_time') && q.includes('daily_bytes'))
-      return { data: storageGrowth, error: null }
-    if (q.includes('system.disks') && q.includes('free_space'))
-      return { data: disks, error: null }
-    if (q.includes('query_log') && q.includes('total_read_bytes'))
-      return { data: queryTrend, error: null }
-    if (q.includes('sum(bytes_on_disk)') && q.includes('database, table'))
-      return { data: tableSizes, error: null }
+  if (q.includes('modification_time') && q.includes('daily_bytes'))
+    return storageGrowth
+  if (q.includes('system.disks') && q.includes('free_space')) return disks
+  if (q.includes('query_log') && q.includes('total_read_bytes'))
+    return queryTrend
+  if (q.includes('sum(bytes_on_disk)') && q.includes('database, table'))
+    return tableSizes
 
-    return { data: [], error: null }
-  }),
+  return []
+})
+
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery,
 }))
 
 const { createCapacityTools } = await import('../capacity-tools')
@@ -112,54 +116,40 @@ describe('createCapacityTools', () => {
     })
 
     test('returns null projections when insufficient growth data', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('daily_bytes')) {
-            return { data: storageGrowth.slice(0, 3), error: null }
-          }
-          return origImpl!({ query })
+      const origImpl = readOnlyQuery.getMockImplementation()
+      readOnlyQuery.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('daily_bytes')) {
+          return storageGrowth.slice(0, 3)
         }
-      )
+        return origImpl!({ query })
+      })
 
       const tools = createCapacityTools(0)
       const result = await tools.forecast_capacity.execute({})
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
+      readOnlyQuery.mockImplementation(origImpl!)
 
       expect(result.projections).toBeNull()
     })
 
     test('returns null projections when disks data is not an array', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('system.disks')) {
-            return { data: { error: 'disk query failed' }, error: null }
-          }
-          return origImpl!({ query })
+      const origImpl = readOnlyQuery.getMockImplementation()
+      readOnlyQuery.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('system.disks')) {
+          return { error: 'disk query failed' } as unknown as unknown[]
         }
-      )
+        return origImpl!({ query })
+      })
 
       const tools = createCapacityTools(0)
       const result = await tools.forecast_capacity.execute({})
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
+      readOnlyQuery.mockImplementation(origImpl!)
 
       expect(result.projections).toBeNull()
     })
 
     test('sets days_until projections to null when growth is zero', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
       const zeroGrowth = Array.from({ length: 10 }, () => ({
         day: '2026-05-01',
         daily_bytes: 0,
@@ -167,22 +157,18 @@ describe('createCapacityTools', () => {
         parts_added: 0,
       }))
 
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('daily_bytes')) {
-            return { data: zeroGrowth, error: null }
-          }
-          return origImpl!({ query })
+      const origImpl = readOnlyQuery.getMockImplementation()
+      readOnlyQuery.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('daily_bytes')) {
+          return zeroGrowth
         }
-      )
+        return origImpl!({ query })
+      })
 
       const tools = createCapacityTools(0)
       const result = await tools.forecast_capacity.execute({})
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
+      readOnlyQuery.mockImplementation(origImpl!)
 
       expect(result.projections).not.toBeNull()
       expect(result.projections[0].days_until_full).toBeNull()

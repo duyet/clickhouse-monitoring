@@ -1,21 +1,19 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
-    if (query.includes('system.text_log'))
-      return { data: queryStore['text_log'] ?? [], error: null }
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
+    if (query.includes('system.text_log')) return queryStore['text_log'] ?? []
     if (query.includes('system.stack_trace'))
-      return { data: queryStore['stack_trace'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
+      return queryStore['stack_trace'] ?? []
+    return []
+  }),
 }))
 
 const { createLogTools } = await import('../log-tools')

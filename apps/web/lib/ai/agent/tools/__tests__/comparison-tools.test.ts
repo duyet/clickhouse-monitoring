@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { z } from 'zod/v3'
 
 mock.module('server-only', () => ({}))
 
@@ -39,34 +40,33 @@ const queryResults: Record<string, unknown[]> = {
   queryLoad: [{ query_count: 500, avg_duration_ms: 150 }],
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
+mock.module('../helpers', () => ({
+  hostIdSchema: z.number().int().min(0).optional(),
+  requiredHostIdSchema: z.number().int().min(0),
+  resolveHostId: (a: number | undefined, b: number) => a ?? b,
+  readOnlyQuery: mock(async ({ query }: { query: string }) => {
     const q = query
 
-    if (q.includes('version()'))
-      return { data: queryResults.version, error: null }
+    if (q.includes('version()')) return queryResults.version
     if (q.includes('system.disks') && q.includes('free_space'))
-      return { data: queryResults.disks, error: null }
+      return queryResults.disks
     if (q.includes('total_bytes') && q.includes('DESC LIMIT 5'))
-      return { data: queryResults.topTables, error: null }
+      return queryResults.topTables
     if (q.includes('avg(query_duration_ms)') && q.includes('INTERVAL 1 HOUR'))
-      return { data: queryResults.queryLoad, error: null }
+      return queryResults.queryLoad
     if (
       q.includes('QueryFinish') &&
       q.includes('is_initial_query') &&
       !q.includes('event_time')
     )
-      return { data: queryResults.queries, error: null }
-    if (q.includes('ExceptionWhileProcessing'))
-      return { data: queryResults.errors, error: null }
+      return queryResults.queries
+    if (q.includes('ExceptionWhileProcessing')) return queryResults.errors
     if (q.includes('system.parts') && q.includes('active'))
-      return { data: queryResults.storage, error: null }
-    if (q.includes('system.merges'))
-      return { data: queryResults.merges, error: null }
-    if (q.includes('event_time BETWEEN'))
-      return { data: queryResults.queries, error: null }
+      return queryResults.storage
+    if (q.includes('system.merges')) return queryResults.merges
+    if (q.includes('event_time BETWEEN')) return queryResults.queries
 
-    return { data: [], error: null }
+    return []
   }),
 }))
 
