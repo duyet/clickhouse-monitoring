@@ -55,7 +55,9 @@ import { threadAnalysisConfig } from './queries/thread-analysis'
 import { loginAttemptsConfig } from './security/login-attempts'
 // Security
 import { sessionsConfig } from './security/sessions'
+import { clusterLiveMetricsConfig } from './system/cluster-live-metrics'
 import { clustersConfig } from './system/clusters'
+import { clustersTopologyConfig } from './system/clusters-topology'
 import {
   databaseTableColumnsConfig,
   tablesListConfig,
@@ -159,6 +161,8 @@ export const queries: Array<QueryConfig> = [
 
   // System
   clustersConfig,
+  clustersTopologyConfig,
+  clusterLiveMetricsConfig,
   clustersReplicasStatusConfig,
   replicaTablesConfig,
   diskSpaceConfig,

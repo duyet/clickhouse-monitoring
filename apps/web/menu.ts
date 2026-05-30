@@ -597,10 +597,10 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
       },
       {
-        title: 'Cluster Compare',
+        title: 'Cluster Topology',
         href: '/cluster',
         description:
-          'Side-by-side comparison of CPU, memory, and query load across all configured hosts',
+          'Interactive graph of ClickHouse + Keeper nodes, virtual-cluster hulls, replication and coordination links, with a live inspector',
         icon: GitCompareArrowsIcon,
         isNew: true,
       },
