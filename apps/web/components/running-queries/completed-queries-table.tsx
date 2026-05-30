@@ -57,6 +57,36 @@ function kindBadgeClass(kind: string): string {
   return KIND_BADGE[kind] ?? 'bg-muted text-muted-foreground'
 }
 
+/**
+ * Baseline cap for the completed list: only the newest finished queries are
+ * rendered so the first paint stays a tight "just finished" window rather than
+ * flooding with a long history. Live "just finished" rows are prepended by the
+ * view, so the most recent transitions are always within this window. The full
+ * backlog lives on the linked History page.
+ */
+const COMPLETED_LIMIT = 10
+
+/**
+ * Status pill stamped on every completed row — makes it obvious these are
+ * FINISHED queries (green "Done"), distinct from the live running table. Failed
+ * finishes are flagged in rose so the outcome reads at a glance.
+ */
+function StatusBadge({ failed }: { failed: boolean }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide',
+        failed
+          ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'
+          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+      )}
+    >
+      <CheckCircle2 className="size-3" />
+      {failed ? 'Failed' : 'Done'}
+    </span>
+  )
+}
+
 function KindBadge({ kind }: { kind: string }) {
   return (
     <span
@@ -142,12 +172,11 @@ const CompletedRow = memo(function CompletedRow({
           'animate-in bg-emerald-50/70 fade-in-0 slide-in-from-top-1 duration-500 dark:bg-emerald-950/20'
       )}
     >
-      {/* Type */}
+      {/* Status + type — every row carries a "Done"/"Failed" status pill so
+          these read as finished queries, distinct from the live table. */}
       <td className="px-2 py-2.5 sm:px-3">
-        <div className="flex items-center gap-1.5">
-          {justFinished && (
-            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
-          )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusBadge failed={d.failed} />
           <KindBadge kind={d.kind} />
         </div>
       </td>
@@ -177,11 +206,6 @@ const CompletedRow = memo(function CompletedRow({
             <span className="inline-flex items-center gap-1">
               <UserIcon className="size-3" />
               {d.user}
-            </span>
-          )}
-          {d.failed && (
-            <span className="inline-flex items-center gap-1 font-medium text-rose-600 dark:text-rose-400">
-              Failed
             </span>
           )}
         </div>
@@ -237,7 +261,13 @@ export const CompletedQueriesTable = memo(function CompletedQueriesTable({
   refreshLabel,
 }: CompletedQueriesTableProps) {
   const hostId = useHostId()
-  const derived = useMemo(() => rows.map(derive), [rows])
+  // Cap to the newest finished queries. `rows` arrives newest-first (live
+  // "just finished" rows prepended by the view, then query_log ordered by
+  // event_time DESC), so slicing keeps the most recent transitions.
+  const derived = useMemo(
+    () => rows.slice(0, COMPLETED_LIMIT).map(derive),
+    [rows]
+  )
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -246,8 +276,8 @@ export const CompletedQueriesTable = memo(function CompletedQueriesTable({
         <span className="text-[13px] font-medium">Recently completed</span>
         <span className="text-[12px] text-muted-foreground">
           {refreshLabel
-            ? `Finished queries · last few minutes · refreshes every ${refreshLabel}`
-            : 'Finished queries · last few minutes'}
+            ? `Last ${COMPLETED_LIMIT} finished queries · refreshes every ${refreshLabel}`
+            : `Last ${COMPLETED_LIMIT} finished queries`}
         </span>
         <Link
           href={buildUrl('/history-queries', { host: hostId })}
@@ -259,14 +289,14 @@ export const CompletedQueriesTable = memo(function CompletedQueriesTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] table-fixed border-collapse">
+        <table className="w-full min-w-[600px] table-fixed border-collapse">
           <thead className="border-b border-border bg-muted/40">
             <tr className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
               <th
                 className="px-2 py-2 text-left sm:px-3"
-                style={{ width: '96px' }}
+                style={{ width: '150px' }}
               >
-                Type
+                Status
               </th>
               <th className="px-2 py-2 text-left">Query</th>
               <th
@@ -309,7 +339,7 @@ export const CompletedQueriesTable = memo(function CompletedQueriesTable({
                   colSpan={6}
                   className="px-6 py-10 text-center text-[13px] text-muted-foreground"
                 >
-                  No queries finished in the last few minutes
+                  No finished queries yet. Queries appear here as they complete.
                 </td>
               </tr>
             )}
