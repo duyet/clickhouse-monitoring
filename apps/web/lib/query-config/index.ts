@@ -65,6 +65,7 @@ import {
   databaseDiskSpaceConfig,
   diskSpaceConfig,
 } from './system/disks'
+import { kafkaConsumersConfig } from './system/kafka-consumers'
 import { partLogConfig } from './system/part-log'
 import {
   clustersReplicasStatusConfig,
@@ -164,6 +165,7 @@ export const queries: Array<QueryConfig> = [
   databaseTableColumnsConfig,
   tablesListConfig,
   warningsConfig,
+  kafkaConsumersConfig,
 
   // Security
   sessionsConfig,
