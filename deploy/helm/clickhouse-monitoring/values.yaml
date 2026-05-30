@@ -1,0 +1,104 @@
+# Default values for clickhouse-monitoring.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/duyet/clickhouse-monitoring
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+# Pod-level security context. Runs as the non-root "app" user (uid/gid 1001)
+# baked into the Docker runner stage.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+# Container-level security context.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 3000
+
+# Container port the app listens on (matches PORT=3000 in the Docker image).
+containerPort: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: clickhouse-monitoring.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# ClickHouse connection. Each value is comma-separated to support multiple hosts;
+# position i across host/user/name maps to the same host index.
+clickhouse:
+  # Comma-separated ClickHouse host URLs (required).
+  host: "http://localhost:8123"
+  # Comma-separated usernames.
+  user: "default"
+  # Comma-separated passwords. Stored in a Secret rendered by this chart.
+  password: ""
+  # Query timeout in seconds (CLICKHOUSE_MAX_EXECUTION_TIME).
+  maxExecutionTime: "60"
+  # Use an existing Secret for the ClickHouse password instead of `clickhouse.password`.
+  # The secret must contain a key named `CLICKHOUSE_PASSWORD`.
+  existingSecret: ""
+
+# Extra environment variables injected into the container, e.g.
+# extraEnv:
+#   - name: CLICKHOUSE_NAME
+#     value: "prod"
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
