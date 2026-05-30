@@ -40,6 +40,31 @@ All four vars must have the same number of values.
 
 ---
 
+## Health Alerting (Cron Sweep)
+
+The autonomous health sweep (`GET /api/cron/health-sweep`, triggered by the
+Cloudflare Cron Trigger every 5 minutes) runs the same health checks as the
+Health dashboard over **all** configured hosts and dispatches webhook alerts —
+even when no browser tab is open. Unlike the in-app alert settings (stored
+per-browser in localStorage), the cron sweep reads its configuration from env.
+
+| Variable | Default | Description |
+|---|---|---|
+| `CRON_SECRET` | — | Shared secret guarding `/api/cron/health-sweep`. Sent as `Authorization: Bearer <secret>` or `?secret=`. When unset, the endpoint is open. |
+| `HEALTH_ALERT_ENABLED` | `false` | Set to `true` to POST webhook alerts. When `false`, checks still run but no alert is sent. |
+| `HEALTH_ALERT_WEBHOOK_URL` | — | Slack/Discord-compatible webhook URL. Required for alerts to dispatch. |
+| `HEALTH_ALERT_MIN_SEVERITY` | `warning` | Minimum severity to alert on: `warning` (warning + critical) or `critical` (critical only). |
+
+```bash
+# Example: alert to Slack on warning-or-worse, every 5 minutes
+CRON_SECRET=a-long-random-string
+HEALTH_ALERT_ENABLED=true
+HEALTH_ALERT_WEBHOOK_URL=https://hooks.slack.com/services/T000/B000/XXXX
+HEALTH_ALERT_MIN_SEVERITY=warning
+```
+
+---
+
 ## Feature Permissions
 
 All features are **public and enabled by default**. Override only what needs
