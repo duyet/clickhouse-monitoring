@@ -1,10 +1,10 @@
 import { mockFetchData } from './shared-mocks'
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
-let lastQuery = ''
+let _lastQuery = ''
 
 function setupVisualizationMocks() {
-  lastQuery = ''
+  _lastQuery = ''
   mockFetchData.mockImplementation(
     async ({
       query,
@@ -13,7 +13,7 @@ function setupVisualizationMocks() {
       query: string
       query_params?: Record<string, unknown>
     }) => {
-      lastQuery = query
+      _lastQuery = query
       const q = query
 
       // discover_data_sources: matched tables query
@@ -275,7 +275,7 @@ describe('createVisualizationTools', () => {
     })
 
     test('passes database filter via query_params', async () => {
-      let capturedParams: Record<string, unknown> | undefined
+      let _capturedParams: Record<string, unknown> | undefined
 
       // Set up mock with param capture
       mockFetchData.mockImplementation(
@@ -284,7 +284,7 @@ describe('createVisualizationTools', () => {
           query_params?: Record<string, unknown>
         }) => {
           if (opts.query.includes('matched_tables')) {
-            capturedParams = opts.query_params
+            _capturedParams = opts.query_params
           }
           // Use default visualization mock for the rest
           return setupVisualizationMocks.then

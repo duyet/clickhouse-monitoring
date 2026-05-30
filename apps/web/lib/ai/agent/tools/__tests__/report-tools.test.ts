@@ -8,19 +8,19 @@ function setupReportMocks(throwOn: string | null = null) {
     if (throwOn && query.includes(throwOn))
       throw new Error(`${throwOn} query failed`)
     if (query.includes('version()'))
-      return { data: queryStore['server'] ?? [], error: null }
+      return { data: queryStore.server ?? [], error: null }
     if (query.includes('system.disks'))
-      return { data: queryStore['disks'] ?? [], error: null }
+      return { data: queryStore.disks ?? [], error: null }
     if (query.includes('system.tables'))
-      return { data: queryStore['tables'] ?? [], error: null }
+      return { data: queryStore.tables ?? [], error: null }
     if (query.includes('system.query_log'))
-      return { data: queryStore['slow'] ?? [], error: null }
+      return { data: queryStore.slow ?? [], error: null }
     if (query.includes('system.errors'))
-      return { data: queryStore['errors'] ?? [], error: null }
+      return { data: queryStore.errors ?? [], error: null }
     if (query.includes('system.merges'))
-      return { data: queryStore['merges'] ?? [], error: null }
+      return { data: queryStore.merges ?? [], error: null }
     if (query.includes('system.replicas'))
-      return { data: queryStore['replicas'] ?? [], error: null }
+      return { data: queryStore.replicas ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -35,17 +35,17 @@ describe('createReportTools', () => {
 
   test('collects full health report', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['server'] = [{ version: '24.1.1', uptime_seconds: 86400 }]
-    queryStore['disks'] = [
+    queryStore.server = [{ version: '24.1.1', uptime_seconds: 86400 }]
+    queryStore.disks = [
       { name: 'default', free_space: '100 GiB', total_space: '500 GiB' },
     ]
-    queryStore['tables'] = [
+    queryStore.tables = [
       { database: 'db', name: 'events', total_bytes: '10 GiB' },
     ]
-    queryStore['slow'] = [{ query_id: 'q1', query_duration_ms: 5000 }]
-    queryStore['errors'] = [{ name: 'Err1', code: 100, count: 5 }]
-    queryStore['merges'] = [{ active_merges: 2, total_size: '5 GiB' }]
-    queryStore['replicas'] = []
+    queryStore.slow = [{ query_id: 'q1', query_duration_ms: 5000 }]
+    queryStore.errors = [{ name: 'Err1', code: 100, count: 5 }]
+    queryStore.merges = [{ active_merges: 2, total_size: '5 GiB' }]
+    queryStore.replicas = []
     setupReportMocks()
 
     const tools = createReportTools(0)
@@ -75,7 +75,7 @@ describe('createReportTools', () => {
 
   test('uses custom lastHours', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['server'] = [{ version: '24.1.1', uptime_seconds: 100 }]
+    queryStore.server = [{ version: '24.1.1', uptime_seconds: 100 }]
     setupReportMocks()
 
     const tools = createReportTools(0)

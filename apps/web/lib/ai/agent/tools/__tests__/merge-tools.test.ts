@@ -6,11 +6,11 @@ const queryStore: Record<string, unknown[]> = {}
 function setupMergeMocks() {
   mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.merges') && !query.includes('part_log'))
-      return { data: queryStore['merges'] ?? [], error: null }
+      return { data: queryStore.merges ?? [], error: null }
     if (query.includes('system.mutations'))
-      return { data: queryStore['mutations'] ?? [], error: null }
+      return { data: queryStore.mutations ?? [], error: null }
     if (query.includes('system.part_log'))
-      return { data: queryStore['part_log'] ?? [], error: null }
+      return { data: queryStore.part_log ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -27,7 +27,7 @@ describe('createMergeTools', () => {
 
   test('get_merge_status returns active merges', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['merges'] = [
+    queryStore.merges = [
       {
         database: 'db',
         table: 'tbl',
@@ -64,7 +64,7 @@ describe('createMergeTools', () => {
 
   test('get_mutations returns all mutations by default', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['mutations'] = [
+    queryStore.mutations = [
       {
         database: 'db',
         table: 'tbl',
@@ -90,7 +90,7 @@ describe('createMergeTools', () => {
 
   test('get_mutations filters by database', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['mutations'] = [{ database: 'analytics', mutation_id: 'm1' }]
+    queryStore.mutations = [{ database: 'analytics', mutation_id: 'm1' }]
     setupMergeMocks()
 
     const tools = createMergeTools(0)
@@ -101,7 +101,7 @@ describe('createMergeTools', () => {
 
   test('get_mutations filters by isDone', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['mutations'] = [{ mutation_id: 'm1', is_done: 1 }]
+    queryStore.mutations = [{ mutation_id: 'm1', is_done: 1 }]
     setupMergeMocks()
 
     const tools = createMergeTools(0)
@@ -112,7 +112,7 @@ describe('createMergeTools', () => {
 
   test('get_mutations respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['mutations'] = [{ mutation_id: 'm1' }]
+    queryStore.mutations = [{ mutation_id: 'm1' }]
     setupMergeMocks()
 
     const tools = createMergeTools(0)
@@ -123,7 +123,7 @@ describe('createMergeTools', () => {
 
   test('get_merge_performance returns part_log data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['part_log'] = [
+    queryStore.part_log = [
       {
         hour: '2024-01-01',
         merge_count: 5,
@@ -142,7 +142,7 @@ describe('createMergeTools', () => {
 
   test('get_merge_performance respects custom lastHours', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['part_log'] = []
+    queryStore.part_log = []
     setupMergeMocks()
 
     const tools = createMergeTools(0)

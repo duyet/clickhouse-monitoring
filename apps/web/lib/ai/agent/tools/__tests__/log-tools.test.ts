@@ -6,9 +6,9 @@ const queryStore: Record<string, unknown[]> = {}
 function setupLogMock() {
   mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.text_log'))
-      return { data: queryStore['text_log'] ?? [], error: null }
+      return { data: queryStore.text_log ?? [], error: null }
     if (query.includes('system.stack_trace'))
-      return { data: queryStore['stack_trace'] ?? [], error: null }
+      return { data: queryStore.stack_trace ?? [], error: null }
     return { data: [], error: null }
   })
 }
@@ -24,7 +24,7 @@ describe('createLogTools', () => {
 
   test('get_text_log returns log entries with defaults', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = [
+    queryStore.text_log = [
       {
         event_time: '2024-01-01T00:00:00',
         level: 'Information',
@@ -54,7 +54,7 @@ describe('createLogTools', () => {
 
   test('get_text_log respects custom parameters', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = [{ level: 'Error', message: 'Out of memory' }]
+    queryStore.text_log = [{ level: 'Error', message: 'Out of memory' }]
     setupLogMock()
 
     const tools = createLogTools(0)
@@ -71,7 +71,7 @@ describe('createLogTools', () => {
 
   test('get_text_log uses default values for optional params', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = []
+    queryStore.text_log = []
     setupLogMock()
 
     const tools = createLogTools(0)
@@ -82,7 +82,7 @@ describe('createLogTools', () => {
 
   test('get_stack_traces returns thread traces', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['stack_trace'] = [
+    queryStore.stack_trace = [
       {
         thread_name: 'HTTPHandler',
         thread_id: 42,
@@ -112,7 +112,7 @@ describe('createLogTools', () => {
 
   test('get_stack_traces respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['stack_trace'] = [{ thread_id: 1 }, { thread_id: 2 }]
+    queryStore.stack_trace = [{ thread_id: 1 }, { thread_id: 2 }]
     setupLogMock()
 
     const tools = createLogTools(0)
