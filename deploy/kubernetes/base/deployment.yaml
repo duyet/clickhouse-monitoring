@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickhouse-monitoring
+  labels:
+    app.kubernetes.io/name: clickhouse-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clickhouse-monitoring
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clickhouse-monitoring
+    spec:
+      # Pod-level security context. Runs as the non-root "app" user (uid/gid
+      # 1001) baked into the Docker runner stage.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: clickhouse-monitoring
+          image: ghcr.io/duyet/clickhouse-monitoring:0.2.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: CLICKHOUSE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: clickhouse-monitoring
+                  key: CLICKHOUSE_HOST
+            - name: CLICKHOUSE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: clickhouse-monitoring
+                  key: CLICKHOUSE_USER
+            - name: CLICKHOUSE_MAX_EXECUTION_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: clickhouse-monitoring
+                  key: CLICKHOUSE_MAX_EXECUTION_TIME
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-monitoring
+                  key: CLICKHOUSE_PASSWORD
+          # Static liveness: /healthz always returns 200 while the process is up.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Readiness gates on ClickHouse reachability: /api/healthz returns 503
+          # when no configured host is up.
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

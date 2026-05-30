@@ -1,0 +1,85 @@
+name: K8s Lint
+
+on:
+  pull_request:
+    paths:
+      - 'deploy/helm/**'
+      - 'deploy/kubernetes/**'
+      - '.github/workflows/k8s-lint.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/helm/**'
+      - 'deploy/kubernetes/**'
+      - '.github/workflows/k8s-lint.yml'
+
+# Cancel in-progress runs for same workflow and branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CHART_DIR: deploy/helm/clickhouse-monitoring
+  KUSTOMIZE_DIR: deploy/kubernetes/base
+  # Kubernetes API version validated against (kubeconform schema set).
+  K8S_VERSION: "1.30.0"
+
+jobs:
+  helm:
+    name: helm lint + template
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: v3.16.2
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL -o kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tar.gz kubeconform
+          sudo install -m 0755 kubeconform /usr/local/bin/kubeconform
+          kubeconform -v
+
+      - name: helm lint
+        run: helm lint "$CHART_DIR"
+
+      - name: helm template | kubeconform
+        run: |
+          helm template release "$CHART_DIR" \
+            | kubeconform \
+                -strict \
+                -summary \
+                -kubernetes-version "$K8S_VERSION" \
+                -schema-location default
+
+  kustomize:
+    name: kustomize kubeconform
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL -o kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tar.gz kubeconform
+          sudo install -m 0755 kubeconform /usr/local/bin/kubeconform
+          kubeconform -v
+
+      - name: kubeconform (kustomize build)
+        run: |
+          kubectl kustomize "$KUSTOMIZE_DIR" \
+            | kubeconform \
+                -strict \
+                -summary \
+                -kubernetes-version "$K8S_VERSION" \
+                -schema-location default
