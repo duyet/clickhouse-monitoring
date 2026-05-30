@@ -26,6 +26,63 @@ The agent runs in a bounded tool loop: it keeps calling tools until it has
 enough to answer, then stops. Destructive actions (kill query, optimize) are
 disabled unless explicitly enabled (see [Configuration](#configuration)).
 
+## Workflow Harness
+
+For multi-step tasks — incident investigations, health reports, cross-host
+comparisons, or any "find and fix" request — the agent runs a lightweight
+**planning harness**. It lays out an ordered checklist of steps up front, then
+updates it after each step so you can follow along live in the chat.
+
+### Dynamic workflows
+
+The agent ships a set of **dynamic workflow templates** — data-driven runbooks it
+can launch with `start_workflow` and then adapt at runtime:
+
+| Workflow | Purpose |
+|---|---|
+| `incident-investigation` | Triage a reported problem to a root cause. |
+| `health-check` | Full cluster health sweep. |
+| `query-optimization` | Analyze and speed up a slow query. |
+| `capacity-planning` | Forecast storage and resource needs. |
+| `replication-triage` | Diagnose replication lag or failover. |
+| `migration-safety` | Assess a schema change before applying it. |
+
+When a request matches a template, the agent instantiates it into a plan
+(tailoring or extending the steps for the specific table/host) and proceeds. When
+nothing fits, it authors the plan directly with `update_plan`. Workflows are a
+registry, so cluster-specific runbooks can be registered at runtime. As the agent
+learns from intermediate results, it revises the plan — adding, dropping, or
+reordering steps — keeping the workflow checklist live and accurate.
+
+Each step has a status: `pending`, `in_progress`, or `completed`. Exactly one
+step is in progress at a time, rendered as a checklist with a progress bar:
+
+- ✓ completed steps are struck through,
+- the in-progress step is highlighted with a spinner,
+- pending steps wait below.
+
+This makes the agent's reasoning transparent without slowing it down — simple
+single-step questions skip the plan entirely. The harness is a transparency aid
+layered on top of the tool loop; it does not change which tools run or the
+read-only safety guarantees.
+
+## Context Management
+
+On an unfamiliar host the agent can call `get_context` once to orient itself with
+a single snapshot instead of rediscovering everything query by query. The
+snapshot gathers, in parallel and with graceful degradation:
+
+- **ClickHouse version & uptime** — so queries target the right schema and avoid
+  version-specific column mistakes,
+- **Current user** — the connected ClickHouse user,
+- **Keeper/ZooKeeper availability** — whether replication coordination is configured,
+- **Memory pressure** — tracked vs. OS total/available memory,
+- **Changed settings** — how many settings differ from defaults (with notable names),
+- **Capabilities** — the agent's own tool count, loaded skills, and available workflows.
+
+Any unavailable source (e.g. a host without Keeper) is reported as such rather
+than failing the whole snapshot.
+
 ## Configuration
 
 The agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
@@ -172,6 +229,10 @@ before using them.
 |---|---|
 | `ask_user` | Ask a structured clarifying question. |
 | `load_skill` | Load a specialized expert guide (see Skills below). |
+| `get_context` | Runtime context snapshot: version, user, Keeper, memory, settings, capabilities. |
+| `list_workflows` | List the available dynamic workflow templates. |
+| `start_workflow` | Start a workflow template as a live plan (see Workflow Harness above). |
+| `update_plan` | Create and update a live workflow checklist (see Workflow Harness above). |
 
 ## Skills
 
