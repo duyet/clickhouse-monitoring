@@ -23,6 +23,7 @@ import {
   CpuIcon,
   DownloadIcon,
   EyeIcon,
+  GaugeIcon,
   GitCompareArrowsIcon,
   Grid2x2CheckIcon,
   HardDriveIcon,
@@ -161,6 +162,15 @@ export const menuItemsConfig: MenuItem[] = [
         icon: UsersIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/user_processes',
+      },
+      {
+        title: 'Query Metric Log',
+        href: '/query-metric-log',
+        description:
+          'Per-query resource timeline: memory, CPU, and rows sampled over each query lifetime',
+        icon: GaugeIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_metric_log',
       },
     ],
   },
