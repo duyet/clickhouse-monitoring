@@ -1,4 +1,4 @@
-# ClickHouse Monitoring Dashboard
+# chmonitor Dashboard
 
 [![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
 [![All-time uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fduyet%2Fuptime%2FHEAD%2Fapi%2Fclickhouse-monitoring-vercel-app%2Fuptime.json)](https://duyet.github.io/uptime/history/clickhouse-monitoring-vercel-app)
@@ -125,14 +125,14 @@ docker run -d \
   -e CLICKHOUSE_HOST=https://your-clickhouse-host.com \
   -e CLICKHOUSE_USER=default \
   -e CLICKHOUSE_PASSWORD=yourpassword \
-  ghcr.io/duyet/clickhouse-monitoring:latest
+  ghcr.io/duyet/chmonitor:latest
 ```
 
 ### Releases
 
 Tagged releases are built by GitHub Actions from tags matching `v*`. The release page includes:
 
-- Docker images published to `ghcr.io/duyet/clickhouse-monitoring` with the release version tag
+- Docker images published to `ghcr.io/duyet/chmonitor` with the release version tag
 - a Next.js standalone archive for Node.js deployments
 - a Cloudflare Workers/OpenNext archive for manual inspection or deployment
 - generated release notes with CLI command usage, Docker tags, deployment steps, and checksums

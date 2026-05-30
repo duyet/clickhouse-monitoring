@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 env:
-  CHART_DIR: deploy/helm/clickhouse-monitoring
+  CHART_DIR: deploy/helm/chmonitor
   KUSTOMIZE_DIR: deploy/kubernetes/base
   # Kubernetes API version validated against (kubeconform schema set).
   K8S_VERSION: "1.30.0"

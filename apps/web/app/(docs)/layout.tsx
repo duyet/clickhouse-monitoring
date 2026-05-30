@@ -12,8 +12,8 @@ const GA_ANALYTICS_ENABLED = Boolean(process.env.NEXT_PUBLIC_MEASUREMENT_ID)
 const SELINE_ENABLED = process.env.NEXT_PUBLIC_SELINE_ENABLED === 'true'
 
 export const metadata: Metadata = {
-  title: 'ClickHouse Monitoring Docs',
-  description: 'ClickHouse Monitoring documentation',
+  title: 'chmonitor Docs',
+  description: 'chmonitor documentation',
 }
 
 export const viewport: Viewport = {

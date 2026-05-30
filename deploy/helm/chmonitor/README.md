@@ -1,12 +1,12 @@
-# clickhouse-monitoring Helm chart
+# chmonitor Helm chart
 
-Production Helm chart for the [ClickHouse Monitoring](https://github.com/duyet/clickhouse-monitoring)
+Production Helm chart for the [chmonitor](https://github.com/duyet/clickhouse-monitoring)
 dashboard. Vendored in-repo so the chart tracks the app it ships.
 
 ## Install
 
 ```bash
-helm install my-chm ./deploy/helm/clickhouse-monitoring \
+helm install my-chm ./deploy/helm/chmonitor \
   --set clickhouse.host="https://clickhouse.example.com:8443" \
   --set clickhouse.user="default" \
   --set clickhouse.password="<password>"
@@ -15,7 +15,7 @@ helm install my-chm ./deploy/helm/clickhouse-monitoring \
 Upgrade:
 
 ```bash
-helm upgrade my-chm ./deploy/helm/clickhouse-monitoring -f my-values.yaml
+helm upgrade my-chm ./deploy/helm/chmonitor -f my-values.yaml
 ```
 
 Uninstall:
@@ -29,7 +29,7 @@ helm uninstall my-chm
 | Key | Default | Description |
 |---|---|---|
 | `replicaCount` | `1` | Number of pod replicas (ignored when autoscaling is on). |
-| `image.repository` | `ghcr.io/duyet/clickhouse-monitoring` | Container image. |
+| `image.repository` | `ghcr.io/duyet/chmonitor` | Container image. |
 | `image.tag` | `""` | Image tag; falls back to the chart `appVersion`. |
 | `image.pullPolicy` | `IfNotPresent` | Image pull policy. |
 | `service.type` | `ClusterIP` | Kubernetes Service type. |

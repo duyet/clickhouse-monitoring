@@ -1,5 +1,5 @@
 /**
- * Migration system for ClickHouse Monitor.
+ * Migration system for chmonitor.
  *
  * Simplified migration runner supporting D1 (via wrangler) and PostgreSQL.
  * For CF Workers, D1 migrations are handled natively by `wrangler d1 migrations apply`.

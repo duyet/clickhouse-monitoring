@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "clickhouse-monitoring.fullname" . }}
+  name: {{ include "chmonitor.fullname" . }}
   labels:
-    {{- include "clickhouse-monitoring.labels" . | nindent 4 }}
+    {{- include "chmonitor.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "clickhouse-monitoring.selectorLabels" . | nindent 6 }}
+      {{- include "chmonitor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "clickhouse-monitoring.selectorLabels" . | nindent 8 }}
+        {{- include "chmonitor.selectorLabels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -28,14 +28,14 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "clickhouse-monitoring.serviceAccountName" . }}
+      serviceAccountName: {{ include "chmonitor.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ include "clickhouse-monitoring.image" . | quote }}
+          image: {{ include "chmonitor.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -45,22 +45,22 @@ spec:
             - name: CLICKHOUSE_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "clickhouse-monitoring.fullname" . }}
+                  name: {{ include "chmonitor.fullname" . }}
                   key: CLICKHOUSE_HOST
             - name: CLICKHOUSE_USER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "clickhouse-monitoring.fullname" . }}
+                  name: {{ include "chmonitor.fullname" . }}
                   key: CLICKHOUSE_USER
             - name: CLICKHOUSE_MAX_EXECUTION_TIME
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "clickhouse-monitoring.fullname" . }}
+                  name: {{ include "chmonitor.fullname" . }}
                   key: CLICKHOUSE_MAX_EXECUTION_TIME
             - name: CLICKHOUSE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "clickhouse-monitoring.secretName" . }}
+                  name: {{ include "chmonitor.secretName" . }}
                   key: CLICKHOUSE_PASSWORD
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}

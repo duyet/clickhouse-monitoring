@@ -130,7 +130,7 @@ export function HealthSettingsDialog() {
         title: 'Test Alert',
         severity: 'warning',
         value: 0,
-        label: 'This is a test alert from ClickHouse Monitor',
+        label: 'This is a test alert from chmonitor',
         hostId: 0,
       },
       alerts.webhookUrl
@@ -153,7 +153,7 @@ export function HealthSettingsDialog() {
       title: 'Test Alert',
       severity: 'warning',
       value: 0,
-      label: 'This is a test alert from ClickHouse Monitor',
+      label: 'This is a test alert from chmonitor',
       hostId: 0,
     })
   }

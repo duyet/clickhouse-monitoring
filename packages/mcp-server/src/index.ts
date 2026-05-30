@@ -1,7 +1,7 @@
 /**
  * @chm/mcp-server
  *
- * MCP (Model Context Protocol) server for ClickHouse Monitor. Provides the
+ * MCP (Model Context Protocol) server for chmonitor. Provides the
  * server factory, auth helpers, and tool metadata shared between the Next.js
  * app routes and the standalone Cloudflare MCP worker.
  */

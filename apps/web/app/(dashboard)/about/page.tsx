@@ -50,9 +50,7 @@ export default function AboutPage() {
             <Server className="text-primary size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              ClickHouse Monitor
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">chmonitor</h1>
             <p className="text-muted-foreground text-sm">
               Monitoring Dashboard • v{packageInfo.version}
             </p>

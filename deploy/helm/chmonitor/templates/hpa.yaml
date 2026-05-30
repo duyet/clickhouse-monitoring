@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "clickhouse-monitoring.fullname" . }}
+  name: {{ include "chmonitor.fullname" . }}
   labels:
-    {{- include "clickhouse-monitoring.labels" . | nindent 4 }}
+    {{- include "chmonitor.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "clickhouse-monitoring.fullname" . }}
+    name: {{ include "chmonitor.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

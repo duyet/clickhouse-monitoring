@@ -2,7 +2,7 @@
 
 ## Overview
 
-ClickHouse Monitor includes intelligent AI agents powered by LangGraph for natural language interactions and automated analysis. These agents help you:
+chmonitor includes intelligent AI agents powered by LangGraph for natural language interactions and automated analysis. These agents help you:
 
 - **Query in natural language** - Ask questions in plain English and get SQL queries
 - **Analyze query performance** - Get intelligent insights about slow queries

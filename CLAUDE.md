@@ -17,7 +17,7 @@ This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides re
 
 ## Claude Skills
 
-### ClickHouse Monitor Agent Skill
+### chmonitor Agent Skill
 
 For comprehensive dashboard knowledge, use the standalone agent skill:
 

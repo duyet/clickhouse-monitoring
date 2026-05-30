@@ -72,7 +72,7 @@ docker run -d -p 3000:3000 \
   -e CLICKHOUSE_HOST=https://your-host.com \
   -e CLICKHOUSE_USER=default \
   -e CLICKHOUSE_PASSWORD=yourpassword \
-  ghcr.io/duyet/clickhouse-monitoring:latest
+  ghcr.io/duyet/chmonitor:latest
 ```
 
 ### Multi-stage Build

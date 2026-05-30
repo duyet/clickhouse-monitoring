@@ -1,9 +1,9 @@
 # Kubernetes manifests (kustomize base)
 
-Raw Kubernetes manifests for the [ClickHouse Monitoring](https://github.com/duyet/clickhouse-monitoring)
+Raw Kubernetes manifests for the [chmonitor](https://github.com/duyet/clickhouse-monitoring)
 dashboard. This is the no-Helm `kubectl apply -k` path — it ships the same
 image, ports, probes, security context, and environment as the
-[Helm chart](../helm/clickhouse-monitoring) but with plain YAML you can read,
+[Helm chart](../helm/chmonitor) but with plain YAML you can read,
 diff, and patch with [kustomize](https://kustomize.io/).
 
 Prefer the Helm chart if you want templating, an HPA, and an Ingress out of the
@@ -38,7 +38,7 @@ kubectl kustomize deploy/kubernetes/base
 Port-forward to reach the dashboard locally:
 
 ```bash
-kubectl port-forward svc/clickhouse-monitoring 3000:3000
+kubectl port-forward svc/chmonitor 3000:3000
 # open http://localhost:3000
 ```
 
@@ -58,7 +58,7 @@ password. Instead, layer one of these on top in an environment overlay:
 
 ```bash
 # One-off: create the Secret out of band, then drop secret.yaml from resources.
-kubectl create secret generic clickhouse-monitoring \
+kubectl create secret generic chmonitor \
   --from-literal=CLICKHOUSE_PASSWORD='change-me'
 ```
 
@@ -80,10 +80,10 @@ namespace: monitoring
 resources:
   - ../../base
 images:
-  - name: ghcr.io/duyet/clickhouse-monitoring
+  - name: ghcr.io/duyet/chmonitor
     newTag: v1.2.3
 replicas:
-  - name: clickhouse-monitoring
+  - name: chmonitor
     count: 2
 ```
 

@@ -14,7 +14,7 @@ related:
   - mcp-server
 ---
 
-# Standalone ClickHouse Monitoring CLI (Rust)
+# Standalone chmonitor CLI (Rust)
 
 `tools/ch-monitor-cli` provides a standalone CLI that talks to the existing API.
 

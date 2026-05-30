@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const CONTENT = `# ClickHouse Monitor
+const CONTENT = `# chmonitor
 
 A modern Next.js 15 dashboard for real-time ClickHouse cluster monitoring through system tables.
 

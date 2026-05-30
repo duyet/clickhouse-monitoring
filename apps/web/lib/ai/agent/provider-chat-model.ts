@@ -18,7 +18,7 @@ export const DEFAULT_MODEL =
   process.env.LLM_MODEL?.trim() || resolveDefaultAgentModel()
 
 export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
-export const DEFAULT_APP_NAME = 'ClickHouse Monitoring'
+export const DEFAULT_APP_NAME = 'chmonitor'
 export const DEFAULT_APP_CATEGORY = 'programming-app'
 export const DEFAULT_APP_VERSION = '0.2.0'
 

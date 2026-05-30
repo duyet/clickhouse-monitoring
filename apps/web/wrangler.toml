@@ -145,7 +145,7 @@ LLM_MODEL = "anyrouter:@preset/chmonitor"
 # OpenRouter identification headers for rankings/analytics
 # See: https://openrouter.ai/docs#hosts
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
-OPENROUTER_APP_NAME = "ClickHouse Monitoring"
+OPENROUTER_APP_NAME = "chmonitor"
 
 # Auth provider for hosted deployment
 CHM_AUTH_PROVIDER = "clerk"
@@ -188,7 +188,7 @@ CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
-OPENROUTER_APP_NAME = "ClickHouse Monitoring"
+OPENROUTER_APP_NAME = "chmonitor"
 
 # Auth provider for hosted preview deployment
 CHM_AUTH_PROVIDER = "clerk"
