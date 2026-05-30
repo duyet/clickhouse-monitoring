@@ -434,182 +434,183 @@ export function ToolCallPart({
   })()
 
   return (
-    <div className="my-1.5">
+    <div className="my-1">
+      {/* Tool row — no outer box; left accent bar when expanded */}
       <div
         className={cn(
-          'overflow-hidden rounded-md transition-colors',
+          'flex w-full items-center transition-colors',
           isExpanded
-            ? 'border border-border/60 bg-muted/20'
-            : 'border border-transparent hover:bg-muted/30'
+            ? 'border-l-2 border-border/50 pl-2'
+            : 'border-l-2 border-transparent pl-2 hover:border-border/30'
         )}
       >
-        <div className="flex w-full items-center transition-colors">
-          <button
-            type="button"
-            onClick={() => setIsExpanded((previous) => !previous)}
-            className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left"
-            aria-expanded={isExpanded}
-          >
-            <span className="text-muted-foreground shrink-0">
-              {isExpanded ? (
-                <ChevronDownIcon className="size-3" />
-              ) : (
-                <ChevronRightIcon className="size-3" />
-              )}
+        <button
+          type="button"
+          onClick={() => setIsExpanded((previous) => !previous)}
+          className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
+          aria-expanded={isExpanded}
+        >
+          <span className="text-muted-foreground shrink-0">
+            {isExpanded ? (
+              <ChevronDownIcon className="size-3" />
+            ) : (
+              <ChevronRightIcon className="size-3" />
+            )}
+          </span>
+
+          <div
+            className={cn(
+              'size-1.5 shrink-0 rounded-full',
+              isStarting && 'animate-pulse bg-yellow-500',
+              isStreaming && 'animate-ping bg-yellow-400',
+              hasOutput && 'bg-emerald-500',
+              hasError && 'bg-red-500'
+            )}
+          />
+
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="text-muted-foreground text-xs">
+              {hasError ? 'Failed' : hasOutput ? 'Ran' : 'Running'}
             </span>
-
-            <div
-              className={cn(
-                'size-1.5 shrink-0 rounded-full',
-                isStarting && 'animate-pulse bg-yellow-500',
-                isStreaming && 'animate-ping bg-yellow-400',
-                hasOutput && 'bg-emerald-500',
-                hasError && 'bg-red-500'
-              )}
-            />
-
-            <div className="flex min-w-0 items-center gap-1.5">
-              <span className="text-muted-foreground text-xs">
-                {hasError ? 'Failed' : hasOutput ? 'Ran' : 'Running'}
+            <span className="font-mono text-xs font-medium">{toolName}</span>
+            {inputParams && (
+              <span className="text-muted-foreground/70 truncate font-mono text-xs">
+                {inputParams}
               </span>
-              <span className="font-mono text-xs font-medium">{toolName}</span>
-              {inputParams && (
-                <span className="text-muted-foreground/70 truncate font-mono text-xs">
-                  {inputParams}
-                </span>
-              )}
-            </div>
-
-            <div className="ml-auto flex items-center gap-1.5">
-              {isStreaming && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 text-[10px] text-yellow-600"
-                >
-                  Executing…
-                </Badge>
-              )}
-              {hasOutput && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 text-[10px] text-green-600"
-                >
-                  ✓ Done
-                </Badge>
-              )}
-              {hasError && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 text-[10px] text-red-600"
-                >
-                  ✗ Failed
-                </Badge>
-              )}
-            </div>
-          </button>
-
-          {hasOutput && outputRows.length > 0 && outputQueryConfig && (
-            <div className="shrink-0 flex items-center gap-1 pr-2">
-              <button
-                type="button"
-                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-                aria-label="Download CSV"
-                title="Download CSV"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  downloadCsv(outputRows, `${toolName}-results.csv`)
-                }}
-              >
-                <DownloadIcon className="size-3" />
-              </button>
-              <ExpandTableButton
-                rows={outputRows}
-                queryConfig={outputQueryConfig}
-              />
-            </div>
-          )}
-        </div>
-
-        {isExpanded ? (
-          <div className="bg-background/50">
-            {isStreaming ? (
-              <div className="p-2.5">
-                <div className="flex items-center gap-2">
-                  <Loader2Icon className="size-4 animate-spin text-yellow-500" />
-                  <span className="text-xs text-muted-foreground">
-                    Executing {toolName}…
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            {hasOutput && part.output != null && !promotedOutput ? (
-              <div className="p-1">
-                {isAskUserOutput(part.output) && onToolResult ? (
-                  <AskUserWidget
-                    output={part.output}
-                    toolCallId={part.toolCallId}
-                    onSubmit={onToolResult}
-                  />
-                ) : (
-                  renderToolOutput(part.output)
-                )}
-              </div>
-            ) : null}
-
-            {hasError && Boolean(part.errorText) ? (
-              <div className="px-3 py-2 text-sm text-destructive">
-                {String(part.errorText)}
-              </div>
-            ) : null}
-
-            {part.input && typeof part.input === 'object' ? (
-              <div className="border-t border-border/60 bg-muted/10 px-2.5 py-2">
-                <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Parameters
-                </div>
-                <div className="space-y-1">
-                  {Object.entries(part.input as Record<string, unknown>).map(
-                    ([key, value]) => {
-                      const paramDef = toolParams.find((p) => p.name === key)
-                      const isOptional = paramDef?.required === false
-                      return (
-                        <div
-                          key={key}
-                          className="flex items-center gap-2 text-xs"
-                        >
-                          <span
-                            className={cn(
-                              'font-mono',
-                              isOptional
-                                ? 'text-muted-foreground'
-                                : 'font-medium text-foreground'
-                            )}
-                          >
-                            {key}
-                          </span>
-                          <span className="text-muted-foreground">:</span>
-                          <span className="font-mono text-muted-foreground">
-                            {JSON.stringify(value)}
-                          </span>
-                          {isOptional ? (
-                            <span className="text-[10px] text-muted-foreground/60">
-                              (optional)
-                            </span>
-                          ) : null}
-                        </div>
-                      )
-                    }
-                  )}
-                </div>
-              </div>
-            ) : null}
+            )}
           </div>
-        ) : null}
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {isStreaming && (
+              <Badge
+                variant="outline"
+                className="shrink-0 text-[10px] text-yellow-600"
+              >
+                Executing…
+              </Badge>
+            )}
+            {hasOutput && (
+              <Badge
+                variant="outline"
+                className="shrink-0 text-[10px] text-green-600"
+              >
+                ✓ Done
+              </Badge>
+            )}
+            {hasError && (
+              <Badge
+                variant="outline"
+                className="shrink-0 text-[10px] text-red-600"
+              >
+                ✗ Failed
+              </Badge>
+            )}
+          </div>
+        </button>
+
+        {hasOutput && outputRows.length > 0 && outputQueryConfig && (
+          <div className="shrink-0 flex items-center gap-1 pr-1">
+            <button
+              type="button"
+              className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              aria-label="Download CSV"
+              title="Download CSV"
+              onClick={(event) => {
+                event.stopPropagation()
+                downloadCsv(outputRows, `${toolName}-results.csv`)
+              }}
+            >
+              <DownloadIcon className="size-3" />
+            </button>
+            <ExpandTableButton
+              rows={outputRows}
+              queryConfig={outputQueryConfig}
+            />
+          </div>
+        )}
       </div>
 
+      {/* Expanded body — indented under the accent bar, no extra background */}
+      {isExpanded ? (
+        <div className="pl-4 pt-1">
+          {isStreaming ? (
+            <div className="py-1.5">
+              <div className="flex items-center gap-2">
+                <Loader2Icon className="size-4 animate-spin text-yellow-500" />
+                <span className="text-xs text-muted-foreground">
+                  Executing {toolName}…
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          {hasOutput && part.output != null && !promotedOutput ? (
+            <div className="pb-1">
+              {isAskUserOutput(part.output) && onToolResult ? (
+                <AskUserWidget
+                  output={part.output}
+                  toolCallId={part.toolCallId}
+                  onSubmit={onToolResult}
+                />
+              ) : (
+                renderToolOutput(part.output)
+              )}
+            </div>
+          ) : null}
+
+          {hasError && Boolean(part.errorText) ? (
+            <div className="py-1.5 text-sm text-destructive">
+              {String(part.errorText)}
+            </div>
+          ) : null}
+
+          {part.input && typeof part.input === 'object' ? (
+            <div className="border-t border-border/40 pt-2 pb-1.5">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Parameters
+              </div>
+              <div className="space-y-1">
+                {Object.entries(part.input as Record<string, unknown>).map(
+                  ([key, value]) => {
+                    const paramDef = toolParams.find((p) => p.name === key)
+                    const isOptional = paramDef?.required === false
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        <span
+                          className={cn(
+                            'font-mono',
+                            isOptional
+                              ? 'text-muted-foreground'
+                              : 'font-medium text-foreground'
+                          )}
+                        >
+                          {key}
+                        </span>
+                        <span className="text-muted-foreground">:</span>
+                        <span className="font-mono text-muted-foreground">
+                          {JSON.stringify(value)}
+                        </span>
+                        {isOptional ? (
+                          <span className="text-[10px] text-muted-foreground/60">
+                            (optional)
+                          </span>
+                        ) : null}
+                      </div>
+                    )
+                  }
+                )}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* Promoted outputs rendered flat — card keeps its own border, no wrapper */}
       {hasOutput && promotedOutput && part.output != null ? (
-        <div className="mt-2">{renderToolOutput(part.output)}</div>
+        <div className="mt-1.5">{renderToolOutput(part.output)}</div>
       ) : null}
     </div>
   )

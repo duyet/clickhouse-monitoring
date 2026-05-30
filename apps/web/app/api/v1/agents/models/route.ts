@@ -9,8 +9,11 @@
  */
 
 import { NextResponse } from 'next/server'
-import { isFreeAgentModel, MODEL_REGISTRY } from '@/lib/ai/agent-model-registry'
-import { isProviderConfigured } from '@/lib/ai/providers'
+import {
+  getModelRegistry,
+  isFreeAgentModel,
+} from '@/lib/ai/agent-model-registry'
+import { isProviderConfigured, PROVIDERS } from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { formatCompactNumber } from '@/lib/format-number'
 
@@ -135,15 +138,28 @@ function extractCapabilities(
   return { supportsTools, supportsStreaming, supportsVision }
 }
 
-function buildStaticModels(): ModelCapability[] {
-  const result: ModelCapability[] = []
+/**
+ * Filter models to those whose provider has a key configured.
+ * If no provider is configured at all, return the full list so the dev UI
+ * is not empty.
+ */
+function filterByConfiguredProviders(
+  models: ModelCapability[]
+): ModelCapability[] {
+  const filtered = models.filter((m) => isProviderConfigured(m.provider))
+  return filtered.length > 0 ? filtered : models
+}
 
-  for (const entry of MODEL_REGISTRY) {
+function buildStaticModels(): ModelCapability[] {
+  const registry = getModelRegistry()
+  const full: ModelCapability[] = []
+
+  for (const entry of registry) {
     for (const provider of entry.providers) {
       const id = `${provider}:${entry.id}`
       const isFree = isFreeAgentModel(entry.id)
 
-      result.push({
+      full.push({
         id,
         modelId: entry.id,
         provider,
@@ -158,7 +174,7 @@ function buildStaticModels(): ModelCapability[] {
     }
   }
 
-  return result
+  return filterByConfiguredProviders(full)
 }
 
 async function buildModels(): Promise<ModelCapability[]> {
@@ -170,9 +186,10 @@ async function buildModels(): Promise<ModelCapability[]> {
     // OpenRouter API unavailable — return static metadata only
   }
 
-  const result: ModelCapability[] = []
+  const registry = getModelRegistry()
+  const full: ModelCapability[] = []
 
-  for (const entry of MODEL_REGISTRY) {
+  for (const entry of registry) {
     for (const provider of entry.providers) {
       const id = `${provider}:${entry.id}`
       const isFree = isFreeAgentModel(entry.id)
@@ -184,7 +201,7 @@ async function buildModels(): Promise<ModelCapability[]> {
 
       const capabilities = extractCapabilities(orData)
 
-      result.push({
+      full.push({
         id,
         modelId: entry.id,
         provider,
@@ -200,22 +217,29 @@ async function buildModels(): Promise<ModelCapability[]> {
     }
   }
 
-  return result
+  return filterByConfiguredProviders(full)
+}
+
+function getConfiguredProviders(): string[] {
+  return Object.keys(PROVIDERS).filter((id) => isProviderConfigured(id))
 }
 
 export async function GET(request: Request) {
   const authResponse = await authorizeAgentApiRequest(request)
   if (authResponse) return authResponse
 
+  const configuredProviders = getConfiguredProviders()
+
   try {
     const models = await buildModels()
-    return NextResponse.json({ models })
+    return NextResponse.json({ models, configuredProviders })
   } catch (error) {
     console.error('Failed to build models:', error)
     return NextResponse.json(
       {
         error: 'Failed to fetch model capabilities',
         models: buildStaticModels(),
+        configuredProviders,
       },
       { status: 500 }
     )

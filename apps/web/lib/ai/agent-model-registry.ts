@@ -131,6 +131,94 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
   },
 ]
 
+/**
+ * Parse extra models from the `LLM_EXTRA_MODELS` environment variable.
+ *
+ * Format: comma-separated entries, each in the form:
+ *   `provider:modelId[|contextLength][|description]`
+ *
+ * Examples:
+ *   `nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B`
+ *   `openrouter:x-ai/grok-2`
+ *
+ * - `provider` is the substring before the FIRST colon.
+ * - `modelId` is everything after that first colon (may itself contain colons,
+ *   e.g. `qwen/qwen3-coder:free`).
+ * - `contextLength` (optional, second pipe segment) — integer token count;
+ *   defaults to 128 000.
+ * - `description` (optional, third pipe segment) — display label;
+ *   defaults to the model ID.
+ *
+ * Malformed or empty entries are silently skipped.
+ */
+export function parseExtraModels(): ModelEntry[] {
+  const raw = process.env.LLM_EXTRA_MODELS?.trim()
+  if (!raw) return []
+
+  const entries: ModelEntry[] = []
+
+  for (const segment of raw.split(',')) {
+    const trimmed = segment.trim()
+    if (!trimmed) continue
+
+    const parts = trimmed.split('|')
+    const providerAndModel = parts[0]?.trim()
+    if (!providerAndModel) continue
+
+    // provider = substring before FIRST colon; modelId = rest
+    const colonIdx = providerAndModel.indexOf(':')
+    if (colonIdx <= 0) continue // no colon, or colon is first char
+
+    const provider = providerAndModel.slice(0, colonIdx).trim()
+    const modelId = providerAndModel.slice(colonIdx + 1).trim()
+    if (!provider || !modelId) continue
+
+    const rawContextLength = parts[1]?.trim()
+    const contextLength = rawContextLength
+      ? Number.parseInt(rawContextLength, 10)
+      : 128_000
+    if (Number.isNaN(contextLength) || contextLength <= 0) continue
+
+    const description = parts[2]?.trim() || modelId
+
+    entries.push({
+      id: modelId,
+      description,
+      contextLength,
+      providers: [provider],
+    })
+  }
+
+  return entries
+}
+
+/**
+ * Combined model registry: built-in `MODEL_REGISTRY` entries merged with any
+ * extras from `LLM_EXTRA_MODELS`. Deduped by `provider:id`; registry entries
+ * win over extras when both share the same key.
+ */
+export function getModelRegistry(): ModelEntry[] {
+  const seen = new Set<string>()
+  const result: ModelEntry[] = []
+
+  for (const entry of MODEL_REGISTRY) {
+    for (const provider of entry.providers) {
+      seen.add(`${provider}:${entry.id}`)
+    }
+    result.push(entry)
+  }
+
+  for (const extra of parseExtraModels()) {
+    const key = `${extra.providers[0]}:${extra.id}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(extra)
+    }
+  }
+
+  return result
+}
+
 export function getAllModelOptions(): string[] {
   return MODEL_REGISTRY.flatMap((m) => m.providers.map((p) => `${p}:${m.id}`))
 }

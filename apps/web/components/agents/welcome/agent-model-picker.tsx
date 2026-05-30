@@ -23,11 +23,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { getAllModelOptions } from '@/lib/ai/agent-model-registry'
 import {
   type ModelDisplayInfo,
   useAgentModel,
 } from '@/lib/hooks/use-agent-model'
 import { cn } from '@/lib/utils'
+
+/** Set of model IDs that are part of the curated static registry. */
+const CURATED_MODEL_IDS = new Set(getAllModelOptions())
 
 interface AgentModelPickerProps {
   /** Compact toolbar variant (welcome screen toolbar). */
@@ -196,6 +200,7 @@ export function AgentModelPicker({
                 {list.map((m) => {
                   const tone = badgeTone(m)
                   const active = m.id === model
+                  const isCustom = !CURATED_MODEL_IDS.has(m.id)
                   return (
                     <button
                       key={m.id}
@@ -233,6 +238,14 @@ export function AgentModelPicker({
                           )}
                         >
                           {tone.label}
+                        </Badge>
+                      ) : null}
+                      {isCustom ? (
+                        <Badge
+                          variant="secondary"
+                          className="h-4 shrink-0 px-1.5 text-[10px] font-normal opacity-60"
+                        >
+                          custom
                         </Badge>
                       ) : null}
                       {active ? (

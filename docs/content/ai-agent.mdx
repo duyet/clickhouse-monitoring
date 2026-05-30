@@ -98,8 +98,35 @@ LLM_MODEL=openrouter:openrouter/free        # default
 | `LLM_API_KEY` | — | Provider API key (required). |
 | `LLM_API_BASE` | `https://openrouter.ai/api/v1` | OpenAI-compatible base URL. |
 | `LLM_MODEL` | `openrouter:openrouter/free` | Model identifier. |
+| `LLM_EXTRA_MODELS` | — | Extra models to surface in the model picker (see below). |
 | `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API. |
 | `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enables destructive tools (kill query, optimize). |
+
+### Adding extra models
+
+`LLM_EXTRA_MODELS` lets you inject additional models into the picker without
+modifying code. It is a comma-separated list of entries:
+
+```
+provider:modelId[|contextLength][|description]
+```
+
+- **`provider`** — a known provider ID (`openrouter`, `nvidia`, `anyrouter`).
+- **`modelId`** — the model ID passed to the provider (may contain colons, e.g.
+  `qwen/qwen3-coder:free`).
+- **`contextLength`** — optional integer token count; defaults to `128000`.
+- **`description`** — optional display label; defaults to the model ID.
+
+Example:
+
+```bash
+LLM_EXTRA_MODELS="nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B,openrouter:x-ai/grok-2"
+```
+
+Extra models are appended after the built-in registry. If an extra entry uses
+the same `provider:modelId` key as a built-in entry, the built-in entry wins.
+The model picker only shows models whose provider has an API key configured; if
+no provider is configured, all models are shown so the UI is never empty.
 
 For public deployments, require authentication for the agent:
 

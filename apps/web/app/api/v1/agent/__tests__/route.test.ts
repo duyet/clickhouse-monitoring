@@ -13,6 +13,7 @@ mock.module('server-only', () => ({}))
 type AgentStreamResult = {
   toUIMessageStream: () => unknown
   consumeStream: () => Promise<void>
+  response?: Promise<{ modelId?: string }>
 }
 
 type CapturedAIArgs = {
@@ -36,6 +37,7 @@ mock.module('@/lib/ai/agent', () => ({
       stream: async (options: {
         onStepFinish: (step: {
           usage: { inputTokens: number; outputTokens: number }
+          response?: { modelId?: string }
         }) => void
       }) => {
         if (mockAgentStreamError) {
@@ -47,6 +49,7 @@ mock.module('@/lib/ai/agent', () => ({
             inputTokens: 3,
             outputTokens: 4,
           },
+          response: { modelId: 'resolved-model-xyz' },
         })
 
         return {
@@ -54,6 +57,7 @@ mock.module('@/lib/ai/agent', () => ({
             pipeThrough: (_: unknown) => 'mocked-piped-stream',
           }),
           consumeStream: async () => {},
+          response: Promise.resolve({ modelId: 'resolved-model-xyz' }),
         } as AgentStreamResult
       },
     }
@@ -883,5 +887,64 @@ describe('POST /api/v1/agent', () => {
     const values = await readJsonRenderStreamValues(guarded)
 
     expect(values).toHaveLength(0)
+  })
+
+  test('includes resolvedModel in data-usage chunk from step response modelId', async () => {
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Show me the top queries',
+        hostId: 0,
+      }),
+    })
+
+    const response = await POST(request)
+
+    expect(response.status).toBe(200)
+    // The mock agent calls onStepFinish with response: { modelId: 'resolved-model-xyz' }
+    // and result.response resolves to { modelId: 'resolved-model-xyz' }.
+    // The route should write a data-usage chunk that contains resolvedModel.
+    const usageChunk = capturedAIArgs[0]?.writtenChunks.find(
+      (chunk) =>
+        typeof chunk === 'object' &&
+        chunk !== null &&
+        (chunk as { type?: string }).type === 'data-usage'
+    ) as { type: string; data: Array<{ resolvedModel?: string }> } | undefined
+
+    expect(usageChunk).toBeDefined()
+    expect(usageChunk?.data[0]?.resolvedModel).toBe('resolved-model-xyz')
+  })
+
+  test('resolvedModel in data-usage chunk differs from originally requested model when router resolves to concrete model', async () => {
+    // The mock always resolves step.response.modelId = 'resolved-model-xyz'.
+    // When the user requests 'openrouter/auto' (an auto-router), the resolvedModel
+    // in the usage chunk should be 'resolved-model-xyz' (the concrete model),
+    // while the 'model' field should reflect the originally-requested model ID.
+    const request = createAgentRequest({
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Verify resolved model',
+        hostId: 0,
+        model: 'openrouter/auto',
+      }),
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(200)
+
+    const usageChunk = capturedAIArgs[0]?.writtenChunks.find(
+      (chunk) =>
+        typeof chunk === 'object' &&
+        chunk !== null &&
+        (chunk as { type?: string }).type === 'data-usage'
+    ) as { type: string; data: Array<{ resolvedModel?: string; model?: string }> } | undefined
+
+    expect(usageChunk).toBeDefined()
+    // resolvedModel should be the concrete model from the mock step response
+    expect(usageChunk?.data[0]?.resolvedModel).toBe('resolved-model-xyz')
+    // The 'model' field should still be present (the requested model)
+    expect(usageChunk?.data[0]?.model).toBeDefined()
+    // They should differ — this is the whole point of resolvedModel
+    expect(usageChunk?.data[0]?.resolvedModel).not.toBe(usageChunk?.data[0]?.model)
   })
 })
