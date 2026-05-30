@@ -85,7 +85,9 @@ function ChGlyph({
       ? `cpu ${Math.round(cpu)}%${live?.memPct !== null && live?.memPct !== undefined ? ` · mem ${Math.round(live.memPct)}%` : ''}`
       : node.errors > 0
         ? `${node.errors} errors`
-        : 'remote node'
+        : node.isLocal
+          ? 'local node'
+          : 'remote node'
 
   return (
     <g
