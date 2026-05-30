@@ -2,9 +2,7 @@
 
 import type { ChNode, KeeperNode, TopologyModel } from './model'
 
-import { hullPath } from './geometry'
 import { STATUS_COLOR, VB_H, VB_W } from './model'
-import { useMemo } from 'react'
 
 const CH_R = 33
 const KP_R = 27
@@ -313,36 +311,14 @@ export function TopoCanvas({
   const {
     keepers,
     chNodes,
-    clusters,
     nodeById,
     clusterById,
     raftEdges,
     replEdges,
     coordEdges,
+    clusterHulls,
     keeperHull,
   } = model
-
-  // Hull paths are pure geometry over structural positions → memoize once.
-  const logicalHulls = useMemo(
-    () =>
-      clusters.map((cl) => {
-        const centers = Object.keys(cl.members)
-          .map((id) => nodeById[id])
-          .filter(Boolean)
-        const minY = centers.length ? Math.min(...centers.map((c) => c.y)) : 0
-        const cx = centers.length
-          ? centers.reduce((s, c) => s + c.x, 0) / centers.length
-          : 0
-        const pad = 50
-        return {
-          cl,
-          d: hullPath(centers, pad),
-          tagX: cx,
-          tagY: minY - pad - 6,
-        }
-      }),
-    [clusters, nodeById]
-  )
 
   const edge = (a: string, b: string) => {
     const na = nodeById[a]
@@ -411,22 +387,25 @@ export function TopoCanvas({
         </g>
       )}
 
-      {/* logical / physical cluster hulls */}
-      {logicalHulls.map(({ cl, d, tagX, tagY }) => {
-        const active = activeCluster === cl.id
+      {/* cluster overlays — offset convex hulls, z-ordered area DESC (largest
+          behind). Translucent fills blend via mix-blend-mode so a host shared by
+          two clusters shows a distinct lens, not last-one-wins opaque. Dotted
+          outline = physical/default cluster; dashed border = logical/virtual. */}
+      {clusterHulls.map((h) => {
+        const active = activeCluster === h.id
         const faded = activeCluster && !active
-        if (!d) return null
-        if (cl.outline) {
+        if (h.outline) {
+          // physical / default cluster: dotted outline, no fill
           return (
             <g
-              key={cl.id}
+              key={h.id}
               opacity={faded ? 0.25 : 1}
               style={{ transition: 'opacity .25s' }}
             >
               <path
-                d={d}
+                d={h.d}
                 fill="none"
-                stroke={cl.color}
+                stroke={h.color}
                 strokeOpacity={active ? 0.9 : 0.5}
                 strokeWidth={active ? 2 : 1.4}
                 strokeDasharray="2 5"
@@ -437,30 +416,37 @@ export function TopoCanvas({
         }
         return (
           <g
-            key={cl.id}
+            key={h.id}
             opacity={faded ? 0.22 : 1}
             style={{ transition: 'opacity .25s' }}
           >
             <path
-              d={d}
-              fill={cl.color}
-              fillOpacity={active ? 0.2 : 0.12}
-              stroke={cl.color}
-              strokeOpacity={active ? 0.9 : 0.45}
-              strokeWidth={active ? 2 : 1.3}
+              d={h.d}
+              fill={h.color}
+              fillOpacity={active ? 0.16 : 0.1}
+              className="[mix-blend-mode:multiply] dark:[mix-blend-mode:screen]"
+            />
+            <path
+              d={h.d}
+              fill="none"
+              stroke={h.color}
+              strokeOpacity={active ? 0.9 : 0.5}
+              strokeWidth={active ? 2 : 1.4}
+              strokeDasharray="7 5"
+              strokeLinecap="round"
             />
             <text
-              x={tagX}
-              y={tagY}
+              x={h.labelX}
+              y={h.labelY}
               textAnchor="middle"
               fontSize="11.5"
               fontWeight="700"
-              fill={cl.color}
+              fill={h.color}
               opacity={active ? 1 : 0.85}
               className="font-mono"
               style={{ letterSpacing: '0.02em' }}
             >
-              {cl.name}
+              {h.name}
             </text>
           </g>
         )
