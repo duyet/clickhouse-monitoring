@@ -1,17 +1,18 @@
 'use client'
 
-import { ArrowRight, ChevronDown, History, RefreshCw } from 'lucide-react'
+import { ChevronDown, RefreshCw } from 'lucide-react'
 
+import type { CompletedQueryRow } from '@/components/running-queries/completed-queries-table'
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/layout'
+import { CompletedQueriesTable } from '@/components/running-queries/completed-queries-table'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
 import { Skeleton } from '@/components/skeletons'
-import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -28,7 +29,6 @@ import {
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/swr/use-table-data'
-import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 
 /**
@@ -45,6 +45,42 @@ const REFRESH_INTERVAL = (() => {
 })()
 
 const REFRESH_SECONDS = Math.round(REFRESH_INTERVAL / 1000)
+
+/**
+ * Filter params for the recently-completed table: finished queries from the
+ * last hour, newest first (the underlying `history-queries` config already
+ * orders by `event_time DESC`). The window resets naturally on every reload,
+ * keeping the list to a recent slice rather than the full history.
+ */
+const COMPLETED_FILTER_PARAMS = {
+  type: 'eq:QueryFinish',
+  event_time: 'withinHours:1',
+} as const
+
+/**
+ * Build a synthetic completed-query row from the last running snapshot of a
+ * query that just left the live list. Used to show the query in the completed
+ * table immediately, before its authoritative `system.query_log` row arrives.
+ */
+function runningToCompleted(row: RunningQueryRow): CompletedQueryRow {
+  const now = new Date()
+  return {
+    query_id: String(row.query_id ?? ''),
+    query: String(row.query ?? ''),
+    query_kind: row.query_kind,
+    type: 'QueryFinish',
+    user: row.user,
+    // Local clock — only the HH:MM:SS portion is rendered in the table.
+    event_time: now.toTimeString().slice(0, 8),
+    query_duration: Number(row.elapsed ?? 0),
+    read_rows: Number(row.read_rows ?? 0),
+    readable_read_rows: row.readable_read_rows,
+    written_rows: Number(row.written_rows ?? 0),
+    memory_usage: Number(row.memory_usage ?? 0),
+    readable_memory_usage: row.readable_memory_usage,
+    client_name: row.client_name,
+  }
+}
 
 /** Skeleton placeholder shown during the initial load. */
 function LoadingState() {
@@ -66,34 +102,6 @@ function LoadingState() {
         </div>
       ))}
     </div>
-  )
-}
-
-/**
- * Link card to the full query history — completed queries leave the live
- * list, so this points to where they can still be inspected.
- */
-function HistoryLink() {
-  const hostId = useHostId()
-  return (
-    <AppLink
-      href={buildUrl('/history-queries', { host: hostId })}
-      className="group flex items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40"
-    >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        <History className="size-4" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[13px] font-medium">Completed queries</span>
-        <span className="block text-[12px] text-muted-foreground">
-          Queries that finish leave this list. Browse them in query history.
-        </span>
-      </span>
-      <span className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-        View history
-        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-      </span>
-    </AppLink>
   )
 }
 
@@ -160,6 +168,75 @@ export const RunningQueriesView = function RunningQueriesView() {
     )
 
   const rows = data ?? []
+
+  // Recently-completed queries (system.query_log, QueryFinish, last hour).
+  // Polled on the same cadence as the running list while Live is on so a
+  // finished query lands in this table shortly after it leaves the one above.
+  const { data: completedData } = useTableData<CompletedQueryRow>(
+    'history-queries',
+    hostId,
+    COMPLETED_FILTER_PARAMS,
+    live ? REFRESH_INTERVAL : 0
+  )
+  const completedRows = completedData ?? []
+
+  // Diff successive running polls: a query_id present last time but absent now
+  // has "just finished". Those ids are highlighted in the completed table, and
+  // the last-seen running row is kept so the query can be shown there even
+  // before its `system.query_log` row materializes (the live handoff). Each
+  // pending row clears once the real query_log row arrives.
+  const prevRunningRef = useRef<Map<string, RunningQueryRow>>(new Map())
+  const [justFinishedIds, setJustFinishedIds] = useState<Set<string>>(
+    () => new Set()
+  )
+  const [pendingFinished, setPendingFinished] = useState<CompletedQueryRow[]>(
+    []
+  )
+  useEffect(() => {
+    // Only diff once the running list has loaded; an undefined `data` means the
+    // first fetch is still in flight, which must not count every id as gone.
+    if (!data) return
+    const current = new Map<string, RunningQueryRow>()
+    for (const r of data) {
+      const id = String(r.query_id ?? '')
+      if (id) current.set(id, r)
+    }
+    const finishedRows: RunningQueryRow[] = []
+    for (const [id, row] of prevRunningRef.current) {
+      if (!current.has(id)) finishedRows.push(row)
+    }
+    prevRunningRef.current = current
+    if (finishedRows.length > 0) {
+      const finishedIds = finishedRows.map((r) => String(r.query_id))
+      setJustFinishedIds((prev) => {
+        const next = new Set(prev)
+        for (const id of finishedIds) next.add(id)
+        return next
+      })
+      // Synthesize completed rows from the last running snapshot so the query
+      // appears immediately; deduped/replaced once query_log catches up.
+      setPendingFinished((prev) => {
+        const seen = new Set(prev.map((r) => r.query_id))
+        const additions = finishedRows
+          .filter((r) => !seen.has(String(r.query_id)))
+          .map(runningToCompleted)
+        return additions.length > 0 ? [...additions, ...prev] : prev
+      })
+    }
+    // Runs once per running-list poll (each new `data` reference).
+  }, [data])
+
+  // Merge synthetic pending rows with the real query_log rows. A pending row is
+  // dropped as soon as the same query_id surfaces in `completedRows`, so the
+  // authoritative query_log row (with final duration/memory) takes over.
+  const completedQueryIds = new Set(
+    completedRows.map((r) => String(r.query_id ?? '')).filter(Boolean)
+  )
+  const livePending = pendingFinished.filter(
+    (r) => !completedQueryIds.has(String(r.query_id))
+  )
+  const mergedCompleted =
+    livePending.length > 0 ? [...livePending, ...completedRows] : completedRows
 
   return (
     <TooltipProvider>
@@ -255,7 +332,11 @@ export const RunningQueriesView = function RunningQueriesView() {
             ) : (
               <RunningQueriesTable rows={rows} />
             )}
-            <HistoryLink />
+            <CompletedQueriesTable
+              rows={mergedCompleted}
+              justFinishedIds={justFinishedIds}
+              refreshLabel={live ? `${REFRESH_SECONDS}s` : undefined}
+            />
           </>
         )}
       </div>
