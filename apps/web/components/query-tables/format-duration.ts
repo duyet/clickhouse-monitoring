@@ -1,7 +1,4 @@
-/**
- * Compact a duration in seconds as a `{value, unit}` pair, e.g. `28.1 s`,
- * `4.2 m`, `1.3 h`.
- */
+/** Compact a seconds value as a `{value, unit}` pair, e.g. `28.1 s`, `4.2 m`. */
 export function formatDuration(seconds: number): {
   value: string
   unit: string

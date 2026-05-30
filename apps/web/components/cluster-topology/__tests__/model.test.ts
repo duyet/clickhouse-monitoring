@@ -86,7 +86,7 @@ describe('shared nodes land between their clusters (overlap lens)', () => {
     const model = buildTopologyModel(overlapClusters(), [])
     const a1 = model.nodeById['a-1']
     const b1 = model.nodeById['b-1']
-    const shared = model.nodeById['shared']
+    const shared = model.nodeById.shared
     expect(a1 && b1 && shared).toBeTruthy()
     // shared host x lies between the two exclusive members' x positions
     const lo = Math.min(a1.x, b1.x)

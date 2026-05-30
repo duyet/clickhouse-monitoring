@@ -2,31 +2,17 @@
 
 import { FolderOpen, HardDrive } from 'lucide-react'
 
+import type { Row as DiskRow } from '@/lib/query-config/system/disks'
+
 import { DiskUsageBar, usageLevel } from './disk-usage-bar'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 /**
- * Row shape returned by the `disks` query config (see
- * lib/query-config/system/disks.ts). All readable_* fields are pre-formatted
- * by ClickHouse `formatReadableSize`.
+ * Re-export the canonical row type from the disks query config so consumers
+ * (e.g. disks-bento) can import it from either location.
  */
-export interface DiskRow {
-  name: string
-  path: string
-  used_space: number
-  readable_used_space: string
-  unreserved_space: number
-  readable_unreserved_space: string
-  free_space: number
-  readable_free_space: string
-  total_space: number
-  readable_total_space: string
-  percent_free: string
-  keep_free_space: number
-  /** Disk engine type, only present on some ClickHouse versions */
-  type?: string
-}
+export type { DiskRow }
 
 const LEVEL_ACCENT: Record<ReturnType<typeof usageLevel>, string> = {
   ok: 'text-emerald-600 dark:text-emerald-400',

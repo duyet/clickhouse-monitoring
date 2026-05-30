@@ -32,10 +32,13 @@ const EPS = 1e-9
  *  - For < 3 unique points returns the unique points (a point or a segment).
  */
 export function convexHull(points: Point[]): Point[] {
+  // Use a precision high enough that sub-pixel differences (~0.00005 in a
+  // 770×560 viewBox) are not collapsed, while still merging true duplicates
+  // from floating-point arithmetic noise.
   const seen = new Set<string>()
   const pts: Point[] = []
   for (const p of points) {
-    const k = `${p[0].toFixed(4)},${p[1].toFixed(4)}`
+    const k = `${p[0]},${p[1]}`
     if (!seen.has(k)) {
       seen.add(k)
       pts.push(p)

@@ -24,7 +24,6 @@ mock.module('react', () => ({
 }))
 
 import { useFetchData } from '../use-fetch-data'
-import { mockApiFetch } from './shared-mocks'
 
 describe('useFetchData', () => {
   beforeEach(() => {

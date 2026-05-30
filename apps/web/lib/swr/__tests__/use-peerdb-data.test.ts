@@ -23,8 +23,6 @@ mock.module('react', () => ({
   useCallback: (fn: () => unknown) => fn,
 }))
 
-import { mockApiFetch } from './shared-mocks'
-
 mock.module('../config', () => ({
   visibilityAwareInterval: (ms: number) => () => ms,
 }))

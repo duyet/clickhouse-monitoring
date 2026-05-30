@@ -9,7 +9,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/layout'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
-import { Skeleton } from '@/components/skeletons'
+import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
 import { SlowQueriesTable } from '@/components/slow-queries/slow-queries-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -37,28 +37,7 @@ const PRESET_GROUPS: { key: string; icon: typeof Timer; label: string }[] = [
   { key: 'min_duration_s', icon: Gauge, label: 'Min duration' },
 ]
 
-/** Skeleton placeholder shown during the initial load. */
-function LoadingState() {
-  return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="ml-auto h-4 w-16" />
-      </div>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="flex items-center gap-3 border-b border-border p-3"
-        >
-          <Skeleton className="h-6 w-6 rounded-full" />
-          <Skeleton className="h-4 flex-1" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      ))}
-    </div>
-  )
-}
+// LoadingState is replaced by QueryPageSkeleton from @/components/query-tables/query-page-skeleton
 
 /** A single-select chip group bound to one filter param key. */
 function FilterGroup({
@@ -226,7 +205,7 @@ export function SlowQueriesView() {
 
         {/* Body */}
         {isLoading && !data ? (
-          <LoadingState />
+          <QueryPageSkeleton />
         ) : error && !data ? (
           <Card className="rounded-xl">
             <CardContent className="p-4">

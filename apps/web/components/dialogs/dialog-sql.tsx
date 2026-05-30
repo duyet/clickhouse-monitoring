@@ -18,6 +18,7 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import { useMemo, useState } from 'react'
 import { format } from 'sql-formatter'
 import { highlightCode } from '@/components/ai-elements/code-block'
+import { HLJS_TOKEN_CLASSES } from '@/components/ai-elements/hljs-token-classes'
 import {
   DialogContent,
   type DialogContentProps,
@@ -121,10 +122,6 @@ function CopyableValue({
     </button>
   )
 }
-
-/** Shared hljs color tokens (matches CodeBlock / CodeDialogFormat). */
-const HLJS_TOKEN_CLASSES =
-  '[&_code]:break-words [&_pre]:m-0 [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400'
 
 /**
  * Shared Request Info body: query metadata grid + syntax-highlighted SQL.

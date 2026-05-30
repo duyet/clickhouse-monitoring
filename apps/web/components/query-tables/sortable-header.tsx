@@ -4,19 +4,19 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-export interface SortableHeaderProps<T extends string = string> {
+export interface SortableHeaderProps {
   children: React.ReactNode
   align?: 'left' | 'right'
   width?: string
   className?: string
-  sortKey?: T
-  activeKey?: T
+  sortKey?: string
+  activeKey?: string
   dir?: 'asc' | 'desc'
-  onSort?: (key: T) => void
+  onSort?: (key: string) => void
 }
 
 /** Table header cell with an optional click-to-sort affordance. */
-export function SortableHeader<T extends string = string>({
+export function SortableHeader({
   children,
   align = 'left',
   width,
@@ -25,7 +25,7 @@ export function SortableHeader<T extends string = string>({
   activeKey,
   dir,
   onSort,
-}: SortableHeaderProps<T>) {
+}: SortableHeaderProps) {
   const active = sortKey != null && sortKey === activeKey
   return (
     <th

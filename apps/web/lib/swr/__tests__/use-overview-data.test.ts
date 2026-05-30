@@ -21,7 +21,6 @@ mock.module('../use-host', () => ({
 }))
 
 import { type OverviewData, useOverviewData } from '../use-overview-data'
-import { mockApiFetch } from './shared-mocks'
 
 describe('useOverviewData', () => {
   beforeEach(() => {

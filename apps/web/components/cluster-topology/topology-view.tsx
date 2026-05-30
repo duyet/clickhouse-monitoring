@@ -178,7 +178,7 @@ export function TopologyView({ hostId }: { hostId: number }) {
 
   useEffect(() => {
     setSecsAgo(0)
-  }, [liveRow])
+  }, [])
   useEffect(() => {
     const t = setInterval(() => setSecsAgo((s) => s + 1), 1000)
     return () => clearInterval(t)
