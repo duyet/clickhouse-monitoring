@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
 import { AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
@@ -21,7 +22,6 @@ type CapturedAIArgs = {
 
 const capturedAgentArgs: Array<Record<string, unknown>> = []
 const capturedAIArgs: CapturedAIArgs[] = []
-let mockClerkUserId: string | null = null
 let mockAgentStreamError: unknown = null
 
 mock.module('@/lib/ai/agent', () => ({
@@ -128,12 +128,6 @@ mock.module('ai', () => {
   }
 })
 
-mock.module('@clerk/nextjs/server', () => ({
-  auth: async () => ({
-    userId: mockClerkUserId,
-  }),
-}))
-
 describe('POST /api/v1/agent', () => {
   const AGENT_API_TOKEN = 'test-agent-token'
 
@@ -158,7 +152,7 @@ describe('POST /api/v1/agent', () => {
   beforeEach(() => {
     capturedAgentArgs.length = 0
     capturedAIArgs.length = 0
-    mockClerkUserId = null
+    setMockClerkUserId(null)
     mockAgentStreamError = null
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
@@ -269,7 +263,7 @@ describe('POST /api/v1/agent', () => {
 
   test('accepts Clerk session without Bearer token', async () => {
     process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
-    mockClerkUserId = 'user_123'
+    setMockClerkUserId('user_123')
 
     const request = new Request('http://localhost:3000/api/v1/agent', {
       method: 'POST',

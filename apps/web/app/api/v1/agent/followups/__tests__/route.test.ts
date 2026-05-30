@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
 
 const generateTextMock = mock(async () => ({
   output: {
@@ -12,7 +13,6 @@ const generateTextMock = mock(async () => ({
 const outputObjectMock = mock((config: unknown) => config)
 const capturedModelOptions: Array<Record<string, unknown>> = []
 const AGENT_API_TOKEN = 'test-agent-token'
-let mockClerkUserId: string | null = null
 
 mock.module('server-only', () => ({}))
 mock.module('ai', () => ({
@@ -32,12 +32,6 @@ mock.module('@/lib/ai/agent/provider-chat-model', () => ({
     }
   },
 }))
-mock.module('@clerk/nextjs/server', () => ({
-  auth: async () => ({
-    userId: mockClerkUserId,
-  }),
-}))
-
 let POST: (request: Request) => Promise<Response>
 
 beforeAll(async () => {
@@ -50,7 +44,7 @@ beforeEach(() => {
   generateTextMock.mockClear()
   outputObjectMock.mockClear()
   capturedModelOptions.length = 0
-  mockClerkUserId = null
+  setMockClerkUserId(null)
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
   delete process.env.CHM_FEATURE_AGENT_ACCESS
   delete process.env.LLM_API_KEY

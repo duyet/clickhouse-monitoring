@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
 
 const AGENT_API_TOKEN = 'test-agent-token'
-let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
 mock.module('@/lib/ai/agent/skills/dynamic-loader', () => ({
@@ -14,12 +14,6 @@ mock.module('@/lib/ai/agent/skills/dynamic-loader', () => ({
   ],
 }))
 
-mock.module('@clerk/nextjs/server', () => ({
-  auth: async () => ({
-    userId: mockClerkUserId,
-  }),
-}))
-
 beforeAll(async () => {
   process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
   const route = await import('../route')
@@ -30,7 +24,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
   delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
-  mockClerkUserId = null
+  setMockClerkUserId(null)
 })
 
 describe('GET /api/v1/agent/skills', () => {
@@ -71,7 +65,7 @@ describe('GET /api/v1/agent/skills', () => {
   test('accepts Clerk session when Clerk auth is enabled', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
-    mockClerkUserId = 'user_123'
+    setMockClerkUserId('user_123')
 
     const response = await GET(skillsRequest())
 

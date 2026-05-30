@@ -7,18 +7,13 @@ import {
   mock,
   test,
 } from 'bun:test'
+import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
 
 const originalFetch = globalThis.fetch
 const AGENT_API_TOKEN = 'test-agent-token'
-let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
 mock.module('server-only', () => ({}))
-mock.module('@clerk/nextjs/server', () => ({
-  auth: async () => ({
-    userId: mockClerkUserId,
-  }),
-}))
 
 beforeAll(async () => {
   process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
@@ -30,7 +25,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'none'
   delete process.env.CHM_AUTH_PROVIDER
   delete process.env.CHM_FEATURE_AGENT_ACCESS
-  mockClerkUserId = null
+  setMockClerkUserId(null)
 })
 
 afterEach(() => {
@@ -69,7 +64,7 @@ describe('GET /api/v1/agents/models', () => {
   test('accepts Clerk session when Clerk auth is enabled', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
-    mockClerkUserId = 'user_123'
+    setMockClerkUserId('user_123')
     globalThis.fetch = async () =>
       new Response(JSON.stringify({ data: [] }), { status: 200 })
 
