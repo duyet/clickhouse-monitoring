@@ -26,6 +26,7 @@ import {
   HardDriveIcon,
   HeartPulseIcon,
   KeyIcon,
+  MoveIcon,
   RollerCoasterIcon,
   ScrollTextIcon,
   ShieldAlertIcon,
@@ -264,6 +265,14 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Table mutation status with progress and failures',
         icon: UpdateIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/mutations',
+      },
+      {
+        title: 'Moves',
+        href: '/moves',
+        description:
+          'In-progress part moves between disks and volumes (TTL / storage policy)',
+        icon: MoveIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/moves',
       },
     ],
   },
