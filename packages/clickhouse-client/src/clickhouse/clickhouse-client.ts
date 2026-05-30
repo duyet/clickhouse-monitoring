@@ -72,3 +72,9 @@ export const getClient = async ({
 
 // Re-export connection pool stats
 export { getConnectionPoolStats, isCloudflareWorkers }
+
+/**
+ * Re-export env cache reset so tests can reset the SAME env-schema instance
+ * that this module's getClient() uses internally via clickhouse-config + env-schema.
+ */
+export { _resetEnvCache } from './env-schema'
