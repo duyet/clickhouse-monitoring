@@ -319,8 +319,8 @@ function detectKeeperSource(
   keeperRows: KeeperInfoRow[],
   presenceRows: KeeperPresenceRow[]
 ): KeeperSource {
-  const hasInfo = keeperRows.some((r) => r && r.host)
-  const hasPresence = presenceRows.some((r) => r && r.host)
+  const hasInfo = keeperRows.some((r) => r?.host)
+  const hasPresence = presenceRows.some((r) => r?.host)
   if (!hasInfo && !hasPresence) return 'none'
   // embedded Keeper exposes feature flags (25.1+) and defaults to port 9181.
   const embedded = presenceRows.some(
@@ -513,8 +513,8 @@ export function assembleTopology(
   }
 
   // ── 3. keepers ──
-  const presenceClean = presenceRows.filter((r) => r && r.host)
-  const keeperRowsClean = keeperRows.filter((r) => r && r.host)
+  const presenceClean = presenceRows.filter((r) => r?.host)
+  const keeperRowsClean = keeperRows.filter((r) => r?.host)
   const source = detectKeeperSource(keeperRowsClean, presenceClean)
 
   // Prefer the rich keeper-info rows. When absent but presence rows exist (e.g.

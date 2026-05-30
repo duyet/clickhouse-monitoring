@@ -12,14 +12,12 @@ import {
   ExternalLink,
   Globe,
   HardDrive,
-  LayoutGrid,
   ListFilter,
   Loader2,
   MemoryStick,
   ScanSearch,
   Search,
   SlidersHorizontal,
-  Table2,
   User as UserIcon,
   X,
 } from 'lucide-react'
@@ -27,8 +25,12 @@ import { toast } from 'sonner'
 
 import { memo, useCallback, useMemo, useState } from 'react'
 import { DetailField } from '@/components/query-tables/detail-field'
+import { exportCsv } from '@/components/query-tables/export-csv'
 import { formatDuration } from '@/components/query-tables/format-duration'
+import { KindBadge } from '@/components/query-tables/kind-badge'
 import { SortableHeader } from '@/components/query-tables/sortable-header'
+import { ToolbarButton } from '@/components/query-tables/toolbar-button'
+import { ViewToggle } from '@/components/query-tables/view-toggle'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -113,24 +115,7 @@ function getSeverity(elapsed: number): Severity {
   return 'normal'
 }
 
-/** Toned chip class per query kind, so SELECT/INSERT/DDL scan at a glance. */
-const KIND_BADGE: Record<string, string> = {
-  Select: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  Insert:
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  Create:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  Optimize:
-    'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  Alter:
-    'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  Drop: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-  Delete: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-}
-
-function kindBadgeClass(kind: string): string {
-  return KIND_BADGE[kind] ?? 'bg-muted text-muted-foreground'
-}
+// KIND_BADGE, kindBadgeClass, and KindBadge are imported from @/components/query-tables/kind-badge
 
 /**
  * `system.processes.interface` is a UInt8 enum (ClientInfo::Interface).
@@ -161,6 +146,8 @@ function profileEvent(events: unknown, key: string): number {
   }
   return 0
 }
+
+// formatDuration is imported from @/components/query-tables/format-duration
 
 // ───────────────────────── derived row ─────────────────────────
 
@@ -318,19 +305,7 @@ const BASE_COLUMN_COUNT = 4
 
 // ───────────────────────── cells ─────────────────────────
 
-/** A toned, monospace query-kind chip. */
-function KindBadge({ kind }: { kind: string }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-wide',
-        kindBadgeClass(kind)
-      )}
-    >
-      {kind}
-    </span>
-  )
-}
+// KindBadge is imported from @/components/query-tables/kind-badge
 
 /**
  * Progress cell — a determinate bar with `read / total` rows when the query
@@ -394,6 +369,9 @@ function CpuMeter({ pct }: { pct: number }) {
     </div>
   )
 }
+
+// SortableHeader is imported from @/components/query-tables/sortable-header
+// DetailField is imported from @/components/query-tables/detail-field
 
 // ───────────────────────── expanded row ─────────────────────────
 
@@ -810,27 +788,7 @@ const QueryRow = memo(function QueryRow({
 
 // ───────────────────────── toolbar ─────────────────────────
 
-/** Outlined toolbar button with the redesign's compact sizing. */
-function ToolbarButton({
-  children,
-  active,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={cn(
-        'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 text-[12px] font-medium transition-colors',
-        active
-          ? 'border-border bg-muted text-foreground'
-          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-      )}
-    >
-      {children}
-    </button>
-  )
-}
+// ToolbarButton is imported from @/components/query-tables/toolbar-button
 
 /** Segmented query-kind filter ("All / SELECT / INSERT / …"). */
 function KindFilter({
@@ -881,40 +839,26 @@ const CSV_HEADERS = [
 ] as const
 
 /** Download the currently-filtered rows as a CSV file. */
-function exportCsv(rows: DerivedQuery[]) {
-  if (typeof document === 'undefined') return
-  const escape = (value: unknown) =>
-    `"${String(value ?? '').replace(/"/g, '""')}"`
-  const lines = [CSV_HEADERS.join(',')]
-  for (const d of rows) {
-    lines.push(
-      [
-        d.id,
-        d.kind,
-        d.user,
-        d.db,
-        d.iface ?? '',
-        d.pct ?? '',
-        d.readableMemory,
-        formatReadableSize(d.readBytes),
-        Math.round(d.cpuPct),
-        d.threads,
-        d.elapsed.toFixed(1),
-        d.query,
-      ]
-        .map(escape)
-        .join(',')
-    )
-  }
-  const blob = new Blob([lines.join('\n')], {
-    type: 'text/csv;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `running-queries-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
+function downloadRunningCsv(rows: DerivedQuery[]) {
+  exportCsv(
+    CSV_HEADERS,
+    rows,
+    (d) => [
+      d.id,
+      d.kind,
+      d.user,
+      d.db,
+      d.iface ?? '',
+      d.pct ?? '',
+      d.readableMemory,
+      formatReadableSize(d.readBytes),
+      Math.round(d.cpuPct),
+      d.threads,
+      d.elapsed.toFixed(1),
+      d.query,
+    ],
+    'running-queries'
+  )
 }
 
 // ───────────────────────── table ─────────────────────────
@@ -1005,45 +949,7 @@ const QueryCard = memo(function QueryCard({
   )
 })
 
-/** Segmented table/cards toggle for the running-queries toolbar. */
-function ViewToggle({
-  active,
-  onChange,
-}: {
-  active: 'table' | 'cards'
-  onChange: (view: 'table' | 'cards') => void
-}) {
-  return (
-    <div
-      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
-      role="group"
-      aria-label="Result view"
-    >
-      <Button
-        type="button"
-        variant={active === 'table' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'table'}
-        onClick={() => onChange('table')}
-      >
-        <Table2 className="size-3.5" />
-        Table
-      </Button>
-      <Button
-        type="button"
-        variant={active === 'cards' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'cards'}
-        onClick={() => onChange('cards')}
-      >
-        <LayoutGrid className="size-3.5" />
-        Cards
-      </Button>
-    </div>
-  )
-}
+// ViewToggle is imported from @/components/query-tables/view-toggle
 
 interface RunningQueriesTableProps {
   rows: RunningQueryRow[]
@@ -1150,14 +1056,15 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
     })
   }, [])
 
-  const handleSort = useCallback((key: SortKey) => {
+  const handleSort = useCallback((key: string) => {
+    const k = key as SortKey
     setSortKey((prevKey) => {
-      if (prevKey === key) {
+      if (prevKey === k) {
         setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
         return prevKey
       }
       setSortDir('desc')
-      return key
+      return k
     })
   }, [])
 
@@ -1328,7 +1235,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
 
           {/* Export */}
           <ToolbarButton
-            onClick={() => exportCsv(visible)}
+            onClick={() => downloadRunningCsv(visible)}
             disabled={visible.length === 0}
           >
             <Download className="size-3.5" />

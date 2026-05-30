@@ -15,8 +15,6 @@ mock.module('swr', () => ({
   default: mockUseSWR,
 }))
 
-import { mockApiFetch } from './shared-mocks'
-
 mock.module('../config', () => ({
   swrConfig: {
     once: {

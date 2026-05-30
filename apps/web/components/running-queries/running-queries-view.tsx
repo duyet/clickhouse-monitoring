@@ -9,11 +9,11 @@ import type { CardError } from '@/lib/card-error-utils'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/layout'
+import { HeaderButton } from '@/components/query-tables/header-button'
+import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
 import { CompletedQueriesTable } from '@/components/running-queries/completed-queries-table'
 import { RunningQueriesCharts } from '@/components/running-queries/running-queries-charts'
 import { RunningQueriesTable } from '@/components/running-queries/running-queries-table'
-import { Skeleton } from '@/components/skeletons'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -82,51 +82,8 @@ function runningToCompleted(row: RunningQueryRow): CompletedQueryRow {
   }
 }
 
-/** Skeleton placeholder shown during the initial load. */
-function LoadingState() {
-  return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="ml-auto h-4 w-16" />
-      </div>
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="flex items-center gap-3 border-b border-border p-3"
-        >
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-4 flex-1" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-16" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** Header action button — outlined, compact, matches the redesign. */
-function HeaderButton({
-  onClick,
-  children,
-  disabled,
-}: {
-  onClick: () => void
-  children: React.ReactNode
-  disabled?: boolean
-}) {
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="h-8 gap-1.5 text-[12px]"
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {children}
-    </Button>
-  )
-}
+// LoadingState is replaced by QueryPageSkeleton from @/components/query-tables/query-page-skeleton
+// HeaderButton is imported from @/components/query-tables/header-button
 
 /**
  * RunningQueriesView — the Running Queries page.
@@ -293,7 +250,7 @@ export const RunningQueriesView = function RunningQueriesView() {
 
         {/* Body */}
         {isLoading && !data ? (
-          <LoadingState />
+          <QueryPageSkeleton />
         ) : error && !data ? (
           <Card className="rounded-xl">
             <CardContent className="p-4">

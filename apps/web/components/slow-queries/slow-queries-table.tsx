@@ -60,6 +60,8 @@ function getSeverity(durationS: number): Severity {
   return 'normal'
 }
 
+// formatDuration is imported from @/components/query-tables/format-duration
+
 /** Toned chip for the query-cache usage enum. */
 const CACHE_BADGE: Record<string, string> = {
   Hit: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
@@ -210,6 +212,9 @@ function MetricBar({ label, pct }: { label: string; pct: number }) {
     </div>
   )
 }
+
+// SortableHeader is imported from @/components/query-tables/sortable-header
+// DetailField is imported from @/components/query-tables/detail-field
 
 // ───────────────────────── expanded row ─────────────────────────
 
@@ -476,11 +481,12 @@ export function SlowQueriesTable({ rows }: SlowQueriesTableProps) {
     return [...derived].sort((a, b) => factor * (accessor(a) - accessor(b)))
   }, [derived, sortKey, sortDir])
 
-  const handleSort = (key: SortKey) => {
-    if (key === sortKey) {
+  const handleSort = (key: string) => {
+    const k = key as SortKey
+    if (k === sortKey) {
       setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))
     } else {
-      setSortKey(key)
+      setSortKey(k)
       setSortDir('desc')
     }
   }

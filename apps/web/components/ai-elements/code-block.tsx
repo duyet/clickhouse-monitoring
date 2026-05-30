@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { HLJS_TOKEN_CLASSES } from '@/components/ai-elements/hljs-token-classes'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -122,7 +123,7 @@ export const CodeBlock = ({
       >
         <div className="relative">
           <div
-            className="overflow-auto [&_.hljs-keyword]:text-purple-600 [&_.hljs-string]:text-green-700 [&_.hljs-number]:text-blue-600 [&_.hljs-comment]:text-gray-500 [&_.hljs-built_in]:text-cyan-700 [&_.hljs-title]:text-blue-700 [&_.hljs-attr]:text-orange-600 [&_.hljs-literal]:text-blue-600 dark:[&_.hljs-keyword]:text-purple-400 dark:[&_.hljs-string]:text-green-400 dark:[&_.hljs-number]:text-blue-400 dark:[&_.hljs-comment]:text-gray-400 dark:[&_.hljs-built_in]:text-cyan-400 dark:[&_.hljs-title]:text-blue-400 dark:[&_.hljs-attr]:text-orange-400 dark:[&_.hljs-literal]:text-blue-400"
+            className={cn('overflow-auto', HLJS_TOKEN_CLASSES)}
             dangerouslySetInnerHTML={{ __html: html }}
           />
           {children && (

@@ -11,21 +11,22 @@ import {
   ExternalLink,
   Flame,
   HardDrive,
-  LayoutGrid,
   ListFilter,
   MemoryStick,
   Repeat,
   Search,
   SlidersHorizontal,
-  Table2,
   X,
 } from 'lucide-react'
 
 import { memo, useCallback, useMemo, useState } from 'react'
 import { DialogSQL } from '@/components/dialogs/dialog-sql'
 import { DetailField } from '@/components/query-tables/detail-field'
+import { exportCsv } from '@/components/query-tables/export-csv'
 import { formatDuration } from '@/components/query-tables/format-duration'
 import { SortableHeader } from '@/components/query-tables/sortable-header'
+import { ToolbarButton } from '@/components/query-tables/toolbar-button'
+import { ViewToggle } from '@/components/query-tables/view-toggle'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import {
@@ -117,9 +118,6 @@ function num(value: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
-/** Alias for the shared duration formatter used throughout this module. */
-const formatSecs = formatDuration
-
 // ───────────────────────── derived row ─────────────────────────
 
 /**
@@ -193,8 +191,7 @@ type SortDir = 'asc' | 'desc'
 
 const SORT_ACCESSOR: Record<SortKey, (d: DerivedQuery) => number> = {
   // Rank ascending == most expensive first (the server's native order).
-  // Default sort is desc, so rank=1 (smallest accessor) sorts to the top.
-  rank: (d) => d.rank,
+  rank: (d) => -d.rank,
   cnt: (d) => d.cnt,
   duration: (d) => d.queriesDuration,
   cpu: (d) => d.userTime,
@@ -254,7 +251,7 @@ const SEVERITY_DURATION: Record<Severity, string> = {
 
 /** Total-time cell — the headline metric, with a heat-toned bar. */
 function TotalTimeCell({ d, max }: { d: DerivedQuery; max: number }) {
-  const t = formatSecs(d.queriesDuration)
+  const t = formatDuration(d.queriesDuration)
   const pct = max > 0 ? Math.min(100, (d.queriesDuration / max) * 100) : 0
   const color =
     d.severity === 'critical'
@@ -425,7 +422,7 @@ const QueryRow = memo(function QueryRow({
   const showReadRows = !hiddenColumns.has('readRows')
   const colSpan =
     BASE_COLUMN_COUNT + (OPTIONAL_COLUMNS.length - hiddenColumns.size)
-  const cpu = formatSecs(d.userTime)
+  const cpu = formatDuration(d.userTime)
 
   return (
     <>
@@ -583,28 +580,6 @@ const QueryRow = memo(function QueryRow({
 
 // ───────────────────────── toolbar ─────────────────────────
 
-/** Outlined toolbar button with compact sizing (matches running-queries). */
-function ToolbarButton({
-  children,
-  active,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={cn(
-        'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-        active
-          ? 'border-border bg-muted text-foreground'
-          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-      )}
-    >
-      {children}
-    </button>
-  )
-}
-
 const SEVERITY_FILTERS = ['all', 'critical', 'warning'] as const
 type SeverityFilter = (typeof SEVERITY_FILTERS)[number]
 
@@ -659,38 +634,24 @@ const CSV_HEADERS = [
 ] as const
 
 /** Download the currently-filtered rows as a CSV file. */
-function exportCsv(rows: DerivedQuery[]) {
-  if (typeof document === 'undefined') return
-  const escape = (value: unknown) =>
-    `"${String(value ?? '').replace(/"/g, '""')}"`
-  const lines = [CSV_HEADERS.join(',')]
-  for (const d of rows) {
-    lines.push(
-      [
-        d.rank,
-        d.cnt,
-        d.queriesDuration.toFixed(1),
-        d.userTime.toFixed(1),
-        d.systemTime.toFixed(1),
-        d.readableMemory,
-        d.readRows,
-        d.writtenRows,
-        d.resultRows,
-        d.query,
-      ]
-        .map(escape)
-        .join(',')
-    )
-  }
-  const blob = new Blob([lines.join('\n')], {
-    type: 'text/csv;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `expensive-queries-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
+function downloadExpensiveCsv(rows: DerivedQuery[]) {
+  exportCsv(
+    CSV_HEADERS,
+    rows,
+    (d) => [
+      d.rank,
+      d.cnt,
+      d.queriesDuration.toFixed(1),
+      d.userTime.toFixed(1),
+      d.systemTime.toFixed(1),
+      d.readableMemory,
+      d.readRows,
+      d.writtenRows,
+      d.resultRows,
+      d.query,
+    ],
+    'expensive-queries'
+  )
 }
 
 // ───────────────────────── card view ─────────────────────────
@@ -714,7 +675,7 @@ const QueryCard = memo(function QueryCard({
   onToggle,
 }: QueryCardProps) {
   const ExpandIcon = expanded ? ChevronDown : ChevronRight
-  const cpu = formatSecs(d.userTime)
+  const cpu = formatDuration(d.userTime)
 
   return (
     <div
@@ -759,8 +720,8 @@ const QueryCard = memo(function QueryCard({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Clock className="size-3" />
-            {formatSecs(d.queriesDuration).value}{' '}
-            {formatSecs(d.queriesDuration).unit}
+            {formatDuration(d.queriesDuration).value}{' '}
+            {formatDuration(d.queriesDuration).unit}
           </span>
           <span className="inline-flex items-center gap-1">
             <Cpu className="size-3" />
@@ -784,45 +745,7 @@ const QueryCard = memo(function QueryCard({
   )
 })
 
-/** Segmented table/cards toggle. */
-function ViewToggle({
-  active,
-  onChange,
-}: {
-  active: 'table' | 'cards'
-  onChange: (view: 'table' | 'cards') => void
-}) {
-  return (
-    <div
-      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
-      role="group"
-      aria-label="Result view"
-    >
-      <Button
-        type="button"
-        variant={active === 'table' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'table'}
-        onClick={() => onChange('table')}
-      >
-        <Table2 className="size-3.5" />
-        Table
-      </Button>
-      <Button
-        type="button"
-        variant={active === 'cards' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'cards'}
-        onClick={() => onChange('cards')}
-      >
-        <LayoutGrid className="size-3.5" />
-        Cards
-      </Button>
-    </div>
-  )
-}
+// ViewToggle is imported from @/components/query-tables/view-toggle
 
 interface ExpensiveQueriesTableProps {
   rows: ExpensiveQueryRow[]
@@ -850,7 +773,7 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
     () => new Set()
   )
   const [sortKey, setSortKey] = useState<SortKey>('rank')
-  const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
   const isMobile = useIsMobile()
   const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
   const view = userView ?? (isMobile ? 'cards' : 'table')
@@ -874,7 +797,7 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
       if (minRuns > 0 && d.cnt < minRuns) return false
       if (minDurationSecs > 0 && d.queriesDuration < minDurationSecs)
         return false
-      if (q && !d.query.toLowerCase().includes(q)) return false
+      if (q) return d.query.toLowerCase().includes(q)
       return true
     })
     const accessor = SORT_ACCESSOR[sortKey]
@@ -897,14 +820,15 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
     })
   }, [])
 
-  const handleSort = useCallback((key: SortKey) => {
+  const handleSort = useCallback((key: string) => {
+    const k = key as SortKey
     setSortKey((prevKey) => {
-      if (prevKey === key) {
+      if (prevKey === k) {
         setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
         return prevKey
       }
-      setSortDir('desc')
-      return key
+      setSortDir(k === 'rank' ? 'asc' : 'desc')
+      return k
     })
   }, [])
 
@@ -1057,7 +981,7 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
 
           {/* Export */}
           <ToolbarButton
-            onClick={() => exportCsv(visible)}
+            onClick={() => downloadExpensiveCsv(visible)}
             disabled={visible.length === 0}
           >
             <Download className="size-3.5" />

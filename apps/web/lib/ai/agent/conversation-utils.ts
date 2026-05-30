@@ -134,8 +134,10 @@ export function extractMessageText(
         (part): part is { type: 'text'; text: string } =>
           !!part &&
           typeof part === 'object' &&
-          (part as { type?: unknown }).type === 'text' &&
-          typeof (part as { text?: unknown }).text === 'string'
+          'type' in part &&
+          part.type === 'text' &&
+          'text' in part &&
+          typeof part.text === 'string'
       )
       .map((part) => part.text)
       .join(' ')

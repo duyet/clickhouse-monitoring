@@ -15,6 +15,8 @@ export type Row = {
   readable_total_space: string
   percent_free: string
   keep_free_space: number
+  /** Disk engine type, only present on some ClickHouse versions */
+  type?: string
 }
 
 export const diskSpaceConfig: QueryConfig = {
