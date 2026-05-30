@@ -1,25 +1,13 @@
 'use client'
 
-import {
-  Check,
-  Clock,
-  Copy,
-  Database,
-  ExternalLink,
-  Hash,
-  Info,
-  MoreHorizontal,
-  Server,
-  Sparkles,
-  Zap,
-} from 'lucide-react'
+import { Check, Copy, Database, Info, MoreHorizontal } from 'lucide-react'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { ChartDataPoint } from '@/types/chart-data'
 
 import { useState } from 'react'
-import { format } from 'sql-formatter'
 import { ChartCsvExportButton } from '@/components/cards/chart-csv-export-button'
+import { RequestInfoContent } from '@/components/dialogs/dialog-sql'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -33,47 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Switch } from '@/components/ui/switch'
-import { cn, dedent } from '@/lib/utils'
-
-const SQL_BEAUTIFY_KEY = 'card-toolbar-sql-beautify'
-
-/** Get initial beautify state from localStorage */
-function getInitialBeautifyState(): boolean {
-  if (typeof window === 'undefined') return true
-  try {
-    const stored = localStorage.getItem(SQL_BEAUTIFY_KEY)
-    return stored === null ? true : stored === 'true'
-  } catch {
-    return true
-  }
-}
-
-/** Save beautify state to localStorage */
-function saveBeautifyState(value: boolean) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(SQL_BEAUTIFY_KEY, String(value))
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-/** Format SQL with ClickHouse dialect */
-function formatSQL(sql: string): string {
-  try {
-    return format(sql, {
-      language: 'sql',
-      keywordCase: 'upper',
-      identifierCase: 'preserve',
-      tabWidth: 2,
-      linesBetweenQueries: 2,
-    })
-  } catch {
-    // If formatting fails, return dedented original
-    return dedent(sql)
-  }
-}
+import { cn } from '@/lib/utils'
 
 /**
  * Metadata type for CardToolbar - uses shared ApiResponseMetadata
@@ -93,47 +41,6 @@ export interface CardToolbarProps {
 }
 
 /**
- * Copyable value component - displays a value that can be clicked to copy
- */
-function CopyableValue({
-  value,
-  className = '',
-}: {
-  value: string | number
-  className?: string
-}) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(String(value))
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className={cn(
-        'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy',
-        className
-      )}
-      title={`Click to copy: ${value}`}
-    >
-      <span className="truncate">{value}</span>
-      {copied ? (
-        <Check className="size-3 text-green-500 shrink-0" strokeWidth={2} />
-      ) : (
-        <Copy
-          className="size-3 opacity-0 group-hover/copy:opacity-50 shrink-0 transition-opacity"
-          strokeWidth={1.5}
-        />
-      )}
-    </button>
-  )
-}
-
-/**
  * CardToolbar - Dropdown menu for viewing request info and raw data
  *
  * Extracted as a standalone component for reuse in both ChartCard and ChartEmpty.
@@ -147,32 +54,10 @@ export const CardToolbar = function CardToolbar({
 }: CardToolbarProps) {
   const [showRequestInfo, setShowRequestInfo] = useState(false)
   const [showData, setShowData] = useState(false)
-  const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
-
-  const handleBeautifyToggle = (checked: boolean) => {
-    setIsBeautified(checked)
-    saveBeautifyState(checked)
-  }
+  const [copied, setCopied] = useState(false)
 
   const dataJson = (() => {
     return data ? JSON.stringify(data, null, 2) : null
-  })()
-
-  const displaySql = (() => {
-    if (!sql) return null
-    return isBeautified ? formatSQL(sql) : dedent(sql)
-  })()
-
-  const [copied, setCopied] = useState(false)
-
-  // Build full API URL for debugging - must be before any early returns
-  const fullApiUrl = (() => {
-    if (!metadata?.api) return null
-    // api field already contains full URL with params
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    return metadata.api.startsWith('http')
-      ? metadata.api
-      : `${baseUrl}${metadata.api}`
   })()
 
   const handleCopy = async (text: string) => {
@@ -199,12 +84,6 @@ export const CardToolbar = function CardToolbar({
 
   // Don't render if nothing to show
   if (!sql && !hasData && !hasMetadata) return null
-
-  // Format duration for display
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`
-    return `${(ms / 1000).toFixed(2)}s`
-  }
 
   return (
     <>
@@ -260,158 +139,22 @@ export const CardToolbar = function CardToolbar({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Request Info Dialog (Metadata + SQL combined) */}
+      {/* Request Info Dialog (Metadata + SQL combined) — shares the same body
+          as DialogSQL so both Request Info dialogs stay identical. */}
       <Dialog open={showRequestInfo} onOpenChange={setShowRequestInfo}>
-        <DialogContent className="w-full max-w-[95vw] sm:min-w-[550px] sm:max-w-[800px] max-h-[90vh] flex flex-col p-6">
+        <DialogContent className="w-full max-w-[95vw] sm:min-w-[550px] sm:max-w-[850px] max-h-[90vh] flex flex-col p-6">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-lg font-medium">
               Request Info
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-col gap-6 overflow-auto">
-            {/* Metadata Section */}
-            {hasMetadata && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                  Metadata
-                </h3>
-                <dl className="space-y-3 text-sm [&_dt]:min-w-[100px]">
-                  {fullApiUrl && (
-                    <div className="flex items-center justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <ExternalLink className="size-3.5" strokeWidth={1.5} />
-                        API URL
-                      </dt>
-                      <dd className="min-w-0 flex-1 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(fullApiUrl)}
-                          className="font-mono text-xs text-right truncate max-w-full hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1.5 group/copy"
-                          title={`Click to copy: ${fullApiUrl}`}
-                        >
-                          <span className="truncate">
-                            {metadata?.api || fullApiUrl}
-                          </span>
-                          <Copy
-                            className="size-3 opacity-40 group-hover/copy:opacity-100 shrink-0 transition-opacity"
-                            strokeWidth={1.5}
-                          />
-                        </button>
-                      </dd>
-                    </div>
-                  )}
-                  {metadata?.duration !== undefined && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Clock className="size-3.5" strokeWidth={1.5} />
-                        Duration
-                      </dt>
-                      <CopyableValue
-                        value={formatDuration(metadata.duration)}
-                      />
-                    </div>
-                  )}
-                  {metadata?.rows !== undefined && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Database className="size-3.5" strokeWidth={1.5} />
-                        Rows
-                      </dt>
-                      <CopyableValue value={metadata.rows.toLocaleString()} />
-                    </div>
-                  )}
-                  {metadata?.clickhouseVersion && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Zap className="size-3.5" strokeWidth={1.5} />
-                        Version
-                      </dt>
-                      <CopyableValue value={metadata.clickhouseVersion} />
-                    </div>
-                  )}
-                  {metadata?.host && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Server className="size-3.5" strokeWidth={1.5} />
-                        Host
-                      </dt>
-                      <CopyableValue value={metadata.host} />
-                    </div>
-                  )}
-                  {metadata?.queryId && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Hash className="size-3.5" strokeWidth={1.5} />
-                        Query ID
-                      </dt>
-                      <CopyableValue value={metadata.queryId} />
-                    </div>
-                  )}
-                  {metadata?.status && metadata.status !== 'ok' && (
-                    <div className="flex justify-between gap-6">
-                      <dt className="text-muted-foreground flex items-center gap-2 shrink-0">
-                        <Info className="size-3.5" strokeWidth={1.5} />
-                        Status
-                      </dt>
-                      <dd className="font-medium">
-                        {metadata.status.replace(/_/g, ' ')}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-                {metadata?.statusMessage && (
-                  <p className="text-sm text-muted-foreground pt-2 border-t">
-                    {metadata.statusMessage}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* SQL Section */}
-            {displaySql && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                    SQL Query
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles
-                        className="size-3 text-muted-foreground"
-                        strokeWidth={1.5}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        Beautify
-                      </span>
-                      <Switch
-                        checked={isBeautified}
-                        onCheckedChange={handleBeautifyToggle}
-                        className="scale-75"
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 gap-1.5 text-xs text-muted-foreground"
-                      onClick={() => displaySql && handleCopy(displaySql)}
-                    >
-                      {copied ? (
-                        <Check className="size-3" strokeWidth={1.5} />
-                      ) : (
-                        <Copy className="size-3" strokeWidth={1.5} />
-                      )}
-                      {copied ? 'Copied' : 'Copy'}
-                    </Button>
-                  </div>
-                </div>
-                <pre className="text-[13px] leading-relaxed font-mono bg-muted/50 p-4 rounded-lg overflow-auto max-h-[50vh]">
-                  <code className="whitespace-pre-wrap break-words">
-                    {displaySql}
-                  </code>
-                </pre>
-              </div>
-            )}
+          <div className="overflow-auto">
+            <RequestInfoContent
+              sql={sql}
+              metadata={metadata}
+              fullScreen={false}
+            />
           </div>
         </DialogContent>
       </Dialog>
