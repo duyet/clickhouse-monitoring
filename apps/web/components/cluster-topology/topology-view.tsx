@@ -11,9 +11,8 @@ import {
 } from 'lucide-react'
 
 import type { ClusterLiveMetricsRow } from '@/lib/query-config/system/cluster-live-metrics'
-import type { ClusterTopologyRow } from '@/lib/query-config/system/clusters-topology'
 import type { LiveSnapshot } from './inspector'
-import type { KeeperInfoRow } from './model'
+import type { ChNode, NodeLiveMetrics, TopologyData } from './model'
 
 import {
   ChInspector,
@@ -21,8 +20,9 @@ import {
   EMPTY_LIVE,
   KeeperInspector,
 } from './inspector'
-import { buildTopologyModel, isKeeperNode, STATUS_COLOR } from './model'
+import { isKeeperNode, layoutTopology, STATUS_COLOR } from './model'
 import { TopoCanvas } from './topo-canvas'
+import { useTopology } from './use-topology'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -31,11 +31,58 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useTableData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
-// Refresh cadences: structure is slow-moving (cache hard), live is fast.
-const STRUCTURE_INTERVAL = 60_000 // 60s
-const STRUCTURE_DEDUPE = 55_000
+// Refresh cadence for the connected node's fast live tick.
 const LIVE_INTERVAL = 8_000 // 8s
 const HIST_LEN = 28
+
+// Empty model used while the topology document loads (keeps useMemo non-null).
+const EMPTY_TOPOLOGY: TopologyData = {
+  keepers: [],
+  chNodes: [],
+  clusters: [],
+  raftEdges: [],
+  replEdges: [],
+  coordEdges: [],
+  keeper: {
+    present: false,
+    source: 'none',
+    leaderId: null,
+    quorumHealthy: false,
+  },
+  meta: {
+    counts: {
+      nodes: 0,
+      keepers: 0,
+      chNodes: 0,
+      clusters: 0,
+      physical: 0,
+      logical: 0,
+    },
+    truncated: false,
+    hiddenChNodes: 0,
+    liveSource: 'none',
+  },
+}
+
+/** Build a LiveSnapshot for the inspector from a node's server-side live metrics. */
+function snapshotFromNode(
+  live: NodeLiveMetrics | null,
+  latHist: number[]
+): LiveSnapshot {
+  if (!live) return { ...EMPTY_LIVE, latHist }
+  return {
+    cpuPct: live.cpuPct,
+    memUsed: live.memUsed,
+    memTotal: live.memTotal,
+    diskUsed: live.diskUsed,
+    diskTotal: live.diskTotal,
+    activeQueries: live.activeQueries,
+    uptimeSeconds: live.uptimeSeconds,
+    version: live.version,
+    cpuHist: [],
+    latHist,
+  }
+}
 
 // ── summary pill ──
 function Pill({
@@ -66,40 +113,19 @@ function Pill({
 }
 
 export function TopologyView({ hostId }: { hostId: number }) {
-  // ── structural data (cached hard) ──
+  // ── structural model assembled server-side (cached hard) ──
+  // Real per-node live metrics for EVERY node are included in this document
+  // (server-side clusterAllReplicas fan-out), refreshed every 60s.
   const {
-    data: clusterRows,
+    topology,
     error: clusterError,
     isLoading: clusterLoading,
-    refresh: refreshClusters,
-  } = useTableData<ClusterTopologyRow>(
-    'clusters-topology',
-    hostId,
-    undefined,
-    STRUCTURE_INTERVAL,
-    {
-      dedupingInterval: STRUCTURE_DEDUPE,
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-    }
-  )
-
-  // ── keeper data (optional; degrade gracefully) ──
-  const { data: keeperRows, refresh: refreshKeeper } =
-    useTableData<KeeperInfoRow>(
-      'keeper-info',
-      hostId,
-      undefined,
-      STRUCTURE_INTERVAL,
-      {
-        dedupingInterval: STRUCTURE_DEDUPE,
-        keepPreviousData: true,
-        revalidateOnFocus: false,
-        shouldRetryOnError: false,
-      }
-    )
+    refresh: refreshTopology,
+  } = useTopology(hostId)
 
   // ── live metrics for the connected node (fast interval, separate key) ──
+  // Overlays sub-8s freshness onto the LOCAL node only; remote nodes use the
+  // 60s server-side snapshot above.
   const { data: liveRows, refresh: refreshLive } =
     useTableData<ClusterLiveMetricsRow>(
       'cluster-live-metrics',
@@ -114,19 +140,13 @@ export function TopologyView({ hostId }: { hostId: number }) {
       }
     )
 
-  // ── model: rebuilt ONLY when structural data changes ──
+  // ── model: layout applied client-side; rebuilt ONLY when structure changes ──
   const model = useMemo(
-    () => buildTopologyModel(clusterRows ?? [], keeperRows ?? []),
-    [clusterRows, keeperRows]
+    () => layoutTopology(topology ?? EMPTY_TOPOLOGY),
+    [topology]
   )
 
   const liveRow = liveRows?.[0]
-
-  // Identify the local CH node id (the connected node).
-  const localNodeId = useMemo(
-    () => model.chNodes.find((n) => n.isLocal)?.id ?? null,
-    [model.chNodes]
-  )
 
   // ── live history ring buffer (only the live bit re-renders) ──
   const [cpuHist, setCpuHist] = useState<number[]>([])
@@ -164,62 +184,80 @@ export function TopologyView({ hostId }: { hostId: number }) {
     return () => clearInterval(t)
   }, [])
 
-  // live numbers mapped to canvas glyph rings (local node only)
+  // ── fast-tick live snapshot for the LOCAL node (overrides the 60s server one) ──
+  const fastLocalLive: NodeLiveMetrics | null = useMemo(() => {
+    if (!liveRow) return null
+    const n = (v: unknown) => {
+      const x = Number(v)
+      return Number.isFinite(x) ? x : null
+    }
+    return {
+      cpuPct: n(liveRow.cpu_pct),
+      memUsed: n(liveRow.mem_used_bytes),
+      memTotal: n(liveRow.mem_total_bytes),
+      memAvailable: n(liveRow.mem_available_bytes),
+      diskUsed: n(liveRow.disk_used_bytes),
+      diskTotal: n(liveRow.disk_total_bytes),
+      activeQueries: n(liveRow.active_queries),
+      uptimeSeconds: n(liveRow.uptime_seconds),
+      version: liveRow.version ?? null,
+    }
+  }, [liveRow])
+
+  // Effective live metrics for a node: fast tick for local, else server snapshot.
+  const liveForNode = (node: ChNode): NodeLiveMetrics | null =>
+    node.isLocal && fastLocalLive ? fastLocalLive : node.live
+
+  // Live rings for the canvas — REAL per-node CPU/mem for every reachable node.
   const liveById = useMemo(() => {
     const map: Record<
       string,
       { cpuPct: number | null; memPct: number | null }
     > = {}
-    if (localNodeId && liveRow) {
-      const cpu = Number(liveRow.cpu_pct)
-      const memUsed = Number(liveRow.mem_used_bytes)
-      const memTotal = Number(liveRow.mem_total_bytes)
-      map[localNodeId] = {
-        cpuPct: Number.isFinite(cpu) ? cpu : null,
-        memPct:
-          Number.isFinite(memUsed) && memTotal > 0
-            ? (memUsed / memTotal) * 100
-            : null,
-      }
+    for (const node of model.chNodes) {
+      const live = node.isLocal && fastLocalLive ? fastLocalLive : node.live
+      if (!live) continue
+      const memPct =
+        live.memUsed !== null && live.memTotal && live.memTotal > 0
+          ? (live.memUsed / live.memTotal) * 100
+          : null
+      map[node.id] = { cpuPct: live.cpuPct, memPct }
     }
     return map
-  }, [localNodeId, liveRow])
+  }, [model.chNodes, fastLocalLive])
 
-  // full live snapshot for the inspector (local node only)
+  // full live snapshot for the inspector (local node, fast tick + cpu history)
   const localSnapshot: LiveSnapshot = useMemo(() => {
-    if (!liveRow) return { ...EMPTY_LIVE, latHist }
-    const numOrNull = (v: unknown) => {
-      const n = Number(v)
-      return Number.isFinite(n) ? n : null
-    }
+    if (!fastLocalLive) return { ...EMPTY_LIVE, latHist }
     return {
-      cpuPct: numOrNull(liveRow.cpu_pct),
-      memUsed: numOrNull(liveRow.mem_used_bytes),
-      memTotal: numOrNull(liveRow.mem_total_bytes),
-      diskUsed: numOrNull(liveRow.disk_used_bytes),
-      diskTotal: numOrNull(liveRow.disk_total_bytes),
-      activeQueries: numOrNull(liveRow.active_queries),
-      uptimeSeconds: numOrNull(liveRow.uptime_seconds),
-      version: liveRow.version ?? null,
+      cpuPct: fastLocalLive.cpuPct,
+      memUsed: fastLocalLive.memUsed,
+      memTotal: fastLocalLive.memTotal,
+      diskUsed: fastLocalLive.diskUsed,
+      diskTotal: fastLocalLive.diskTotal,
+      activeQueries: fastLocalLive.activeQueries,
+      uptimeSeconds: fastLocalLive.uptimeSeconds,
+      version: fastLocalLive.version,
       cpuHist,
       latHist,
     }
-  }, [liveRow, cpuHist, latHist])
+  }, [fastLocalLive, cpuHist, latHist])
 
   const selectedNode = selected ? (model.nodeById[selected] ?? null) : null
 
   const handleRefresh = () => {
-    refreshClusters()
-    refreshKeeper()
+    refreshTopology()
     refreshLive()
   }
 
+  const hasTopology = !!topology && model.chNodes.length > 0
+
   // ── loading / empty states ──
-  if (clusterLoading && (!clusterRows || clusterRows.length === 0)) {
+  if (clusterLoading && !hasTopology) {
     return <TopologySkeleton />
   }
 
-  if (clusterError && (!clusterRows || clusterRows.length === 0)) {
+  if (clusterError && !hasTopology) {
     return (
       <Card className="p-6">
         <p className="text-sm text-destructive">
@@ -229,7 +267,7 @@ export function TopologyView({ hostId }: { hostId: number }) {
     )
   }
 
-  if (!clusterRows || clusterRows.length === 0) {
+  if (!hasTopology) {
     return (
       <Card className="p-6">
         <p className="text-sm text-muted-foreground">
@@ -472,7 +510,7 @@ export function TopologyView({ hostId }: { hostId: number }) {
                 live={
                   selectedNode.isLocal
                     ? localSnapshot
-                    : { ...EMPTY_LIVE, latHist }
+                    : snapshotFromNode(liveForNode(selectedNode), latHist)
                 }
               />
             )}
