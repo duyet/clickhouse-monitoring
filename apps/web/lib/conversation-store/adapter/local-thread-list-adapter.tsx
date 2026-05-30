@@ -20,7 +20,11 @@ import type { FC, PropsWithChildren } from 'react'
 
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
-import { generateTitleFromMessage } from '@/lib/ai/agent/conversation-utils'
+import {
+  deriveTitleFromUserMessage,
+  isUntitledThread,
+  type TitleSourceMessage,
+} from '@/lib/ai/agent/conversation-utils'
 import {
   replaceHistoryItem,
   upsertHistoryItem,
@@ -104,51 +108,16 @@ function createLocalHistoryAdapter(
           writeJson(messagesKey(remoteId), repo)
 
           // Auto-title: derive from the first user message when the thread has
-          // no title yet (or still has the default placeholder).
-          const currentTitle = aui.threadListItem().getState().title
-          const isUntitled =
-            !currentTitle ||
-            currentTitle === 'New Conversation' ||
-            currentTitle === 'New Chat'
-          if (isUntitled) {
-            const msg = item.message as {
-              role?: string
-              parts?: Array<{ type?: unknown; text?: string }>
-              content?: string | Array<{ text?: string }>
-            }
-            if (msg.role === 'user') {
-              // Extract text from parts (AI SDK format) or content (plain string)
-              let text = ''
-              if (Array.isArray(msg.parts)) {
-                text = msg.parts
-                  .filter(
-                    (p) =>
-                      p &&
-                      typeof p === 'object' &&
-                      p.type === 'text' &&
-                      typeof p.text === 'string'
-                  )
-                  .map((p) => p.text ?? '')
-                  .join(' ')
-                  .trim()
-              }
-              if (!text && typeof msg.content === 'string') {
-                text = msg.content.trim()
-              } else if (!text && Array.isArray(msg.content)) {
-                text = (msg.content as Array<{ text?: string }>)
-                  .map((p) => p.text ?? '')
-                  .join(' ')
-                  .trim()
-              }
-              if (text) {
-                const title = generateTitleFromMessage(text)
-                const threads = loadThreads()
-                const thread = threads.find((t) => t.remoteId === remoteId)
-                if (thread) {
-                  thread.title = title
-                  saveThreads(threads)
-                }
-              }
+          // no title yet (or still has the default placeholder). Route through
+          // the runtime's `rename()` so the thread-list UI updates immediately
+          // (optimistic in-memory state) and the title is persisted via the
+          // adapter's `rename()` below — no page reload required.
+          if (isUntitledThread(aui.threadListItem().getState().title)) {
+            const title = deriveTitleFromUserMessage(
+              item.message as TitleSourceMessage
+            )
+            if (title) {
+              await aui.threadListItem().rename(title)
             }
           }
         },
@@ -255,19 +224,22 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
 
     async generateTitle(remoteId) {
       // Derive a title from the first user message in the stored conversation.
-      type Msg = { role: string; content?: string | Array<{ text?: string }> }
-      const repo = readJson<{ messages: Msg[] }>(messagesKey(remoteId), {
+      // Stored entries may be either bare messages or `{ message }` wrappers
+      // (the format-adapter repository shape), so normalize before reading.
+      const repo = readJson<{ messages: unknown[] }>(messagesKey(remoteId), {
         messages: [],
       })
-      const firstUserMsg = repo.messages.find((m) => m.role === 'user')
-      const text =
-        typeof firstUserMsg?.content === 'string'
-          ? firstUserMsg.content
-          : Array.isArray(firstUserMsg?.content)
-            ? firstUserMsg.content.map((p) => p.text ?? '').join(' ')
-            : ''
-
-      const title = text ? generateTitleFromMessage(text) : 'New Chat'
+      const messages = repo.messages.map((entry) => {
+        const candidate =
+          entry &&
+          typeof entry === 'object' &&
+          'message' in (entry as Record<string, unknown>)
+            ? (entry as { message: unknown }).message
+            : entry
+        return candidate as TitleSourceMessage
+      })
+      const firstUserMsg = messages.find((m) => m?.role === 'user')
+      const title = deriveTitleFromUserMessage(firstUserMsg) ?? 'New Chat'
 
       // Persist the generated title
       const threads = loadThreads()
