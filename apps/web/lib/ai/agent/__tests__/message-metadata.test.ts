@@ -304,9 +304,7 @@ describe('extractMessageUsage — resolvedModel field', () => {
     const message = {
       id: 'msg-meta-resolved',
       role: 'assistant' as const,
-      parts: [
-        makeUsagePart({ resolvedModel: 'google/gemma-4-26b-it' }),
-      ],
+      parts: [makeUsagePart({ resolvedModel: 'google/gemma-4-26b-it' })],
     }
     const metadata = getAgentMessageMetadata({ message })
     expect(metadata.usage?.resolvedModel).toBe('google/gemma-4-26b-it')

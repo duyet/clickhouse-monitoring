@@ -583,7 +583,7 @@ export const menuItemsConfig: MenuItem[] = [
       {
         title: 'Clusters',
         href: '/clusters',
-        description: 'Cluster configuration and member information',
+        description: 'Interactive topology map and cluster member information',
         countKey: 'clusters',
         countLabel: 'clusters',
         icon: UngroupIcon,
@@ -595,14 +595,6 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Client and inter-server connection metrics',
         icon: UnplugIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
-      },
-      {
-        title: 'Cluster Topology',
-        href: '/cluster',
-        description:
-          'Interactive graph of ClickHouse + Keeper nodes, virtual-cluster hulls, replication and coordination links, with a live inspector',
-        icon: GitCompareArrowsIcon,
-        isNew: true,
       },
     ],
   },

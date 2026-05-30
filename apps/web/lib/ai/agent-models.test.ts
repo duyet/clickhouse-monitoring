@@ -89,7 +89,8 @@ describe('parseExtraModels', () => {
   })
 
   test('parses a single entry with all fields', () => {
-    process.env.LLM_EXTRA_MODELS = 'nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B'
+    process.env.LLM_EXTRA_MODELS =
+      'nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B'
     const result = parseExtraModels()
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
@@ -145,13 +146,15 @@ describe('parseExtraModels', () => {
   })
 
   test('skips entries with non-numeric contextLength', () => {
-    process.env.LLM_EXTRA_MODELS = 'openrouter:some/model|notanumber|Description'
+    process.env.LLM_EXTRA_MODELS =
+      'openrouter:some/model|notanumber|Description'
     const result = parseExtraModels()
     expect(result).toHaveLength(0)
   })
 
   test('skips entries with zero or negative contextLength', () => {
-    process.env.LLM_EXTRA_MODELS = 'openrouter:some/model|0,openrouter:other/model|-1024'
+    process.env.LLM_EXTRA_MODELS =
+      'openrouter:some/model|0,openrouter:other/model|-1024'
     const result = parseExtraModels()
     expect(result).toHaveLength(0)
   })
@@ -202,7 +205,8 @@ describe('getModelRegistry', () => {
 
   test('built-in entry wins when extra has the same provider:id key', () => {
     // openrouter:openrouter/free already exists in MODEL_REGISTRY
-    process.env.LLM_EXTRA_MODELS = 'openrouter:openrouter/free|999|My Custom Free'
+    process.env.LLM_EXTRA_MODELS =
+      'openrouter:openrouter/free|999|My Custom Free'
     const registry = getModelRegistry()
     const freeEntries = registry.filter((r) => r.id === 'openrouter/free')
     // Should only have one entry with that id (from registry)
