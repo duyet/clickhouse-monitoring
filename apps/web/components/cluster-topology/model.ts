@@ -689,6 +689,10 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   enforceMinDistance(keepers, KP_R * 2 + 20)
   enforceMinDistance(renderCh, CH_R * 2 + 20)
 
+  // Re-clamp after collision avoidance (repulsion can push nodes outside bounds).
+  clampToBand(renderCh)
+  clampKeepers(keepers)
+
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
     nodeById[k.id] = k
@@ -920,6 +924,15 @@ function clampToBand(nodes: ChNode[]) {
   for (const nd of nodes) {
     nd.x = Math.max(CH_MARGIN, Math.min(VB_W - CH_MARGIN, nd.x))
     nd.y = Math.max(CH_BAND_Y - 10, Math.min(CH_BAND_Y + CH_BAND_H, nd.y))
+  }
+}
+
+/** Keep keeper nodes inside the upper portion of the viewBox. */
+function clampKeepers(nodes: KeeperNode[]) {
+  const kpMargin = KP_R + 20
+  for (const nd of nodes) {
+    nd.x = Math.max(kpMargin, Math.min(VB_W - kpMargin, nd.x))
+    nd.y = Math.max(kpMargin, Math.min(CH_BAND_Y - 40, nd.y))
   }
 }
 
