@@ -16,6 +16,7 @@ import { createContextTools } from './context-tools'
 import { createControlTools } from './control-tools'
 import { createDashboardTools } from './dashboard-tools'
 import { createDiagnosticsTools } from './diagnostics-tools'
+import { createFindingTools } from './finding-tools'
 import { createHealthTools } from './health-tools'
 import { createIncidentTools } from './incident-tools'
 import { createInsightsTools } from './insights-tools'
@@ -102,6 +103,9 @@ export function createAllTools(hostId: number, includeControlTools = false) {
 
     // Anomaly detection
     ...createAnomalyTools(hostId),
+
+    // Findings persistence
+    ...createFindingTools(hostId),
 
     // Reports
     ...createReportTools(hostId),
