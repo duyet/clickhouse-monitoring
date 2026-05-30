@@ -37,7 +37,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: '1.3.3'
+          # `bun test --isolate` (used by the test scripts to give each file a
+          # fresh global so cross-file mock.module leakage can't make CI flaky)
+          # needs a recent Bun.
+          bun-version: '1.3.13'
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.94.0
@@ -58,7 +61,7 @@ jobs:
         run: bun run test:coverage
 
       - name: Run workspace package tests with coverage
-        run: bun test packages --coverage --coverage-reporter=lcov --coverage-reporter=text
+        run: bun run test:packages
 
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v6

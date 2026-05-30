@@ -1,4 +1,6 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
+
+mock.module('server-only', () => ({}))
 
 const {
   resolveHostId,
