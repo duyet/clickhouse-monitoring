@@ -1,8 +1,9 @@
 'use client'
 
 import {
+  ChevronDownIcon,
+  ChevronUpIcon,
   ExternalLinkIcon,
-  Maximize2Icon,
   NetworkIcon,
   RefreshCwIcon,
   SearchIcon,
@@ -376,10 +377,10 @@ export default function PeerDBMirrorsPage() {
         />
       </div>
 
-      {/* topology card */}
-      <div className="mb-4 overflow-hidden rounded-xl border border-border bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
+      {/* topology card — expand button centered on bottom border */}
+      <div className="mb-6 relative">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
             <NetworkIcon className="size-3.5 text-muted-foreground" />
             <h2 className="text-[13px] font-semibold">Peer topology</h2>
             <span className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10.5px] font-medium text-muted-foreground">
@@ -389,20 +390,30 @@ export default function PeerDBMirrorsPage() {
               live flow visualization
             </span>
           </div>
+          {graphOpen && (
+            <div className="p-4">
+              <PeerGraph
+                peers={peers}
+                mirrors={mirrors}
+                className="h-[420px]"
+              />
+            </div>
+          )}
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center translate-y-1/2">
           <button
             type="button"
             onClick={() => setGraphOpen((v) => !v)}
-            className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground transition-colors"
           >
-            <Maximize2Icon className="size-3" />
+            {graphOpen ? (
+              <ChevronUpIcon className="size-3" />
+            ) : (
+              <ChevronDownIcon className="size-3" />
+            )}
             {graphOpen ? 'Collapse' : 'Expand'}
           </button>
         </div>
-        {graphOpen && (
-          <div className="p-4">
-            <PeerGraph peers={peers} mirrors={mirrors} className="h-[420px]" />
-          </div>
-        )}
       </div>
 
       {/* mirror table card */}
