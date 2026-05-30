@@ -41,6 +41,14 @@ bucket_name = "clickhouse-monitoring-inc-cache"
 [observability]
 enabled = true
 
+# Scheduled Cron Triggers
+# Runs the autonomous health sweep every 5 minutes. OpenNext routes Cron
+# Triggers to the worker fetch handler, which dispatches to the
+# GET /api/cron/health-sweep route. Guard it with the CRON_SECRET secret.
+# Docs: https://developers.cloudflare.com/workers/configuration/cron-triggers/
+[triggers]
+crons = ["*/5 * * * *"]
+
 # Resource limits — Paid plan only.
 # When this account upgrades to Workers Paid, uncomment to extend the CPU
 # budget so multi-step agent loops don't hit Cloudflare 1027
