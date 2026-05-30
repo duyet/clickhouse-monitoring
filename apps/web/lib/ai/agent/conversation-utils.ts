@@ -105,6 +105,92 @@ export function generateTitleFromMessage(message: string): string {
 }
 
 /**
+ * A loosely-typed user/assistant message, matching the shapes produced by the
+ * AI SDK runtime (`parts: [{ type: 'text', text }]`) and the legacy plain-text
+ * format (`content: string` or `content: [{ text }]`).
+ */
+export interface TitleSourceMessage {
+  role?: string
+  parts?: unknown[]
+  content?: string | Array<{ text?: string }>
+}
+
+/**
+ * Extract the plain text of a message, regardless of whether it uses the AI SDK
+ * `parts` array or the legacy `content` string / array form.
+ *
+ * @param message - The message to read text from
+ * @returns The concatenated, trimmed text content (empty string if none)
+ */
+export function extractMessageText(
+  message: TitleSourceMessage | undefined | null
+): string {
+  if (!message) return ''
+
+  // AI SDK format: parts: [{ type: 'text', text: '...' }]
+  if (Array.isArray(message.parts)) {
+    const text = message.parts
+      .filter(
+        (part): part is { type: 'text'; text: string } =>
+          !!part &&
+          typeof part === 'object' &&
+          (part as { type?: unknown }).type === 'text' &&
+          typeof (part as { text?: unknown }).text === 'string'
+      )
+      .map((part) => part.text)
+      .join(' ')
+      .trim()
+    if (text) return text
+  }
+
+  // Legacy plain-string content.
+  if (typeof message.content === 'string') {
+    return message.content.trim()
+  }
+
+  // Legacy array content: [{ text: '...' }].
+  if (Array.isArray(message.content)) {
+    return message.content
+      .map((part) => part?.text ?? '')
+      .join(' ')
+      .trim()
+  }
+
+  return ''
+}
+
+/**
+ * Derive a conversation title from a message, but only when it is a user
+ * message that contains text. Returns `undefined` otherwise so callers can skip
+ * persisting a placeholder title.
+ *
+ * Reuses {@link generateTitleFromMessage} for the actual derivation, so the
+ * D1 / Postgres and localStorage stores produce identical titles client-side
+ * without an extra LLM call.
+ *
+ * @param message - The first user message in a conversation
+ * @returns A derived title, or `undefined` when no title can be derived
+ */
+export function deriveTitleFromUserMessage(
+  message: TitleSourceMessage | undefined | null
+): string | undefined {
+  if (!message || message.role !== 'user') return undefined
+  const text = extractMessageText(message)
+  return text ? generateTitleFromMessage(text) : undefined
+}
+
+/**
+ * Whether a thread title is still the default placeholder (or absent) and
+ * therefore eligible to be replaced by an auto-derived title.
+ *
+ * @param title - The current thread title (may be undefined)
+ * @returns `true` when the title is missing or a known placeholder
+ */
+export function isUntitledThread(title: string | undefined | null): boolean {
+  return !title || title === 'New Conversation' || title === 'New Chat'
+}
+
+/**
  * Format a timestamp as relative time or date string.
  *
  * Returns human-readable relative time for recent timestamps:

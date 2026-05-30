@@ -22,7 +22,11 @@ import type { FC, PropsWithChildren } from 'react'
 
 import { RuntimeAdapterProvider, useAui } from '@assistant-ui/react'
 import { createAssistantStream } from 'assistant-stream'
-import { generateTitleFromMessage } from '@/lib/ai/agent/conversation-utils'
+import {
+  deriveTitleFromUserMessage,
+  isUntitledThread,
+  type TitleSourceMessage,
+} from '@/lib/ai/agent/conversation-utils'
 import {
   replaceHistoryItem,
   upsertHistoryItem,
@@ -101,43 +105,6 @@ async function apiDelete(id: string): Promise<void> {
   }
 }
 
-function deriveTitle(
-  message:
-    | {
-        role?: string
-        parts?: unknown[]
-        content?: string | Array<{ text?: string }>
-      }
-    | undefined
-): string | undefined {
-  if (!message || message.role !== 'user') {
-    return undefined
-  }
-  let text = ''
-  if (Array.isArray(message.parts)) {
-    for (const part of message.parts) {
-      if (
-        part &&
-        typeof part === 'object' &&
-        (part as { type?: unknown }).type === 'text' &&
-        typeof (part as { text?: unknown }).text === 'string'
-      ) {
-        text = ((part as { text: string }).text ?? '').trim()
-        if (text) break
-      }
-    }
-  }
-  if (!text && typeof message.content === 'string') {
-    text = message.content.trim()
-  } else if (!text && Array.isArray(message.content)) {
-    text = message.content
-      .map((p) => p.text ?? '')
-      .join(' ')
-      .trim()
-  }
-  return text ? generateTitleFromMessage(text) : undefined
-}
-
 /**
  * Per-thread message history backed by the conversations API. `useChatRuntime`
  * calls `withFormat()` for a format-bound `GenericThreadHistoryAdapter`; the
@@ -186,27 +153,21 @@ function createD1HistoryAdapter(
           upsertHistoryItem(repo, item, getId)
           repoCache.set(remoteId, repo)
 
-          const payload: { messages: unknown[]; title?: string } = {
-            messages: repo.messages,
-          }
-          // Auto-title: seed from the first user message when the thread has
-          // no title yet (or still has the default placeholder).
-          const currentTitle = aui.threadListItem().getState().title
-          const isUntitled =
-            !currentTitle ||
-            currentTitle === 'New Conversation' ||
-            currentTitle === 'New Chat'
-          if (isUntitled) {
-            const title = deriveTitle(
-              item.message as {
-                role?: string
-                parts?: unknown[]
-                content?: string | Array<{ text?: string }>
-              }
+          await apiPut(remoteId, { messages: repo.messages })
+
+          // Auto-title: derive from the first user message when the thread has
+          // no title yet (or still has the default placeholder). Route through
+          // the runtime's `rename()` so the thread-list UI updates immediately
+          // (optimistic in-memory state) and the title is persisted via the
+          // adapter's `rename()` (server-side `apiPut({ title })`).
+          if (isUntitledThread(aui.threadListItem().getState().title)) {
+            const title = deriveTitleFromUserMessage(
+              item.message as TitleSourceMessage
             )
-            if (title) payload.title = title
+            if (title) {
+              await aui.threadListItem().rename(title)
+            }
           }
-          await apiPut(remoteId, payload)
         },
         async update(item, localMessageId) {
           const remoteId = aui.threadListItem().getState().remoteId
@@ -298,20 +259,22 @@ export function createD1ThreadListAdapter(): RemoteThreadListAdapter {
 
     async generateTitle(remoteId) {
       const conversation = await apiGet(remoteId)
-      const messages = Array.isArray(conversation?.messages)
-        ? (conversation.messages as Array<Record<string, unknown>>)
+      const stored = Array.isArray(conversation?.messages)
+        ? (conversation.messages as unknown[])
         : []
-      const firstUserMsg = messages.find((m) => m.role === 'user')
-      const text =
-        typeof firstUserMsg?.content === 'string'
-          ? firstUserMsg.content
-          : Array.isArray(firstUserMsg?.content)
-            ? (firstUserMsg.content as Array<{ text?: string }>)
-                .map((p) => p.text ?? '')
-                .join(' ')
-            : ''
-
-      const title = text ? generateTitleFromMessage(text) : 'New Chat'
+      // Stored entries may be bare messages or `{ message }` wrappers
+      // (the format-adapter repository shape), so normalize before reading.
+      const messages = stored.map((entry) => {
+        const candidate =
+          entry &&
+          typeof entry === 'object' &&
+          'message' in (entry as Record<string, unknown>)
+            ? (entry as { message: unknown }).message
+            : entry
+        return candidate as TitleSourceMessage
+      })
+      const firstUserMsg = messages.find((m) => m?.role === 'user')
+      const title = deriveTitleFromUserMessage(firstUserMsg) ?? 'New Chat'
 
       // Persist the title server-side
       await apiPut(remoteId, { title })
