@@ -1,9 +1,20 @@
 'use client'
 
-import { createPage } from '@/lib/create-page'
-import { expensiveQueriesConfig } from '@/lib/query-config/queries/expensive-queries'
+import { Suspense } from 'react'
+import { ExpensiveQueriesView } from '@/components/expensive-queries'
+import { ChartSkeleton } from '@/components/skeletons'
 
-export default createPage({
-  queryConfig: expensiveQueriesConfig,
-  title: 'Most Expensive Queries',
-})
+/**
+ * Most Expensive Queries page.
+ *
+ * {@link ExpensiveQueriesView} is self-contained — it renders its own header,
+ * the collapsible related-charts strip and the bespoke expensive-queries
+ * table — so the page just wraps it in a Suspense boundary.
+ */
+export default function ExpensiveQueriesPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <ExpensiveQueriesView />
+    </Suspense>
+  )
+}
