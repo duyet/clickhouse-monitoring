@@ -173,4 +173,37 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
       },
     ],
   }),
+
+  /**
+   * Part lifecycle — event counts bucketed over time, split into the four
+   * lifecycle classes used by the Part Log page (New / Merge / Mutate / Remove).
+   *
+   * event_type numeric mapping (PartLogElement::Type):
+   *   NewPart=1, MergeParts=2, DownloadPart=3, RemovePart=4,
+   *   MutatePart=5, MovePart=6, MergePartsStart=7, MutatePartStart=8
+   *
+   * Uses toInt8() for cross-version / cross-shard compatibility (the column is
+   * an Enum8 whose textual values are stable but whose merge() coercion is
+   * safest as the underlying integer).
+   */
+  'part-log-lifecycle': ({ interval = 'toStartOfHour', lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT
+        ${applyInterval(interval, 'event_time')},
+        countIf(toInt8(event_type) = 1) AS new_parts,
+        countIf(toInt8(event_type) IN (2, 7)) AS merges,
+        countIf(toInt8(event_type) IN (5, 8)) AS mutations,
+        countIf(toInt8(event_type) = 4) AS removals
+    FROM system.part_log
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1 ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+      optional: true,
+      tableCheck: 'system.part_log',
+    }
+  },
 }

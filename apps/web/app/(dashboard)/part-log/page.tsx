@@ -1,18 +1,13 @@
 'use client'
 
 import { Suspense } from 'react'
-import { PageLayout } from '@/components/layout/query-page'
+import { PartLogView } from '@/components/part-log'
 import { ChartSkeleton } from '@/components/skeletons'
-import { partLogConfig } from '@/lib/query-config/system/part-log'
-
-function PartLogPageContent() {
-  return <PageLayout queryConfig={partLogConfig} title="Part Log" />
-}
 
 export default function PartLogPage() {
   return (
     <Suspense fallback={<ChartSkeleton />}>
-      <PartLogPageContent />
+      <PartLogView />
     </Suspense>
   )
 }
