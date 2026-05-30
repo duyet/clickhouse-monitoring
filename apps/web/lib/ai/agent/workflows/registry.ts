@@ -131,11 +131,27 @@ export const BUILTIN_WORKFLOWS: readonly WorkflowTemplate[] = [
 const runtimeWorkflows: Map<string, WorkflowTemplate> = new Map()
 
 /**
+ * Deep-clone a workflow so callers can't mutate registry/builtin state through
+ * shared array references (steps, triggers, skills).
+ */
+function cloneWorkflow(workflow: WorkflowTemplate): WorkflowTemplate {
+  return {
+    ...workflow,
+    triggers: [...workflow.triggers],
+    steps: [...workflow.steps],
+    ...(workflow.skills ? { skills: [...workflow.skills] } : {}),
+  }
+}
+
+/**
  * Register (or override) a workflow template at runtime. Runtime templates take
  * precedence over builtins with the same name.
  */
 export function registerWorkflow(workflow: WorkflowTemplate): void {
-  runtimeWorkflows.set(workflow.name, { ...workflow, source: 'runtime' })
+  runtimeWorkflows.set(workflow.name, {
+    ...cloneWorkflow(workflow),
+    source: 'runtime',
+  })
 }
 
 /** Remove a runtime-registered workflow. Builtins cannot be removed. */
@@ -147,10 +163,10 @@ export function unregisterWorkflow(name: string): boolean {
 export function getAllWorkflows(): WorkflowTemplate[] {
   const byName = new Map<string, WorkflowTemplate>()
   for (const workflow of BUILTIN_WORKFLOWS) {
-    byName.set(workflow.name, { ...workflow, source: 'builtin' })
+    byName.set(workflow.name, { ...cloneWorkflow(workflow), source: 'builtin' })
   }
   for (const [name, workflow] of runtimeWorkflows) {
-    byName.set(name, workflow)
+    byName.set(name, cloneWorkflow(workflow))
   }
   return [...byName.values()]
 }

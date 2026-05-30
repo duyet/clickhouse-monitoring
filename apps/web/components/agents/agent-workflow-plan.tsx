@@ -1,5 +1,3 @@
-'use client'
-
 import {
   CheckCircle2Icon,
   CircleDashedIcon,
