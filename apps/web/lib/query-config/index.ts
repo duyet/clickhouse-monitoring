@@ -65,6 +65,7 @@ import {
   databaseDiskSpaceConfig,
   diskSpaceConfig,
 } from './system/disks'
+import { partLogConfig } from './system/part-log'
 import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
@@ -124,6 +125,7 @@ export const queries: Array<QueryConfig> = [
   mergesConfig,
   mergePerformanceConfig,
   mutationsConfig,
+  partLogConfig,
 
   // Settings
   settingsConfig,
