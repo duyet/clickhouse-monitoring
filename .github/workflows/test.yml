@@ -57,13 +57,13 @@ jobs:
         working-directory: apps/web
         run: bun run test:coverage
 
-      - name: Run workspace package tests
-        run: bun test packages
+      - name: Run workspace package tests with coverage
+        run: bun test packages --coverage --coverage-reporter=lcov --coverage-reporter=text
 
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v6
         with:
-          files: ./apps/web/coverage/lcov.info
+          files: ./apps/web/coverage/lcov.info,./coverage/lcov.info
           flags: bun
           fail_ci_if_error: true
           use_oidc: true
