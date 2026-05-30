@@ -523,10 +523,15 @@ export function DataTable<
 
   // Card vs. table view. Only offered (with a toolbar toggle) when the config
   // opts in via `defaultView`; otherwise tables behave exactly as before.
+  //
+  // The effective view is `'auto'` (CSS-responsive: cards on mobile, table on
+  // desktop — the historical default) until the user explicitly picks one with
+  // the toggle. Once picked, that choice applies at every breakpoint, so phone
+  // users can switch a card list back to the full table and vice versa.
   const offerViewToggle = queryConfig.defaultView !== undefined
-  const [view, setView] = useState<'table' | 'cards'>(
-    queryConfig.defaultView ?? 'table'
-  )
+  const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
+  const baseView: 'table' | 'cards' | 'auto' = queryConfig.defaultView ?? 'auto'
+  const view = userView ?? baseView
 
   // Auto-fit columns functionality
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
@@ -621,7 +626,7 @@ export function DataTable<
           expandable={expandable}
           view={view}
           offerViewToggle={offerViewToggle}
-          onViewChange={setView}
+          onViewChange={setUserView}
           bodyRenderKey={bodyRenderKey}
         />
 

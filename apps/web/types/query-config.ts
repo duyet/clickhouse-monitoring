@@ -416,12 +416,15 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   /**
    * Default rendering for the result set. `'cards'` renders each row as a card
    * (reusing the responsive card layout) instead of a wide table — better UX
-   * for low-cardinality, wide tables like clusters or disks. When set, a
-   * table/cards toggle is offered in the toolbar so users can switch.
+   * for low-cardinality, wide tables like clusters or disks. `'auto'` keeps the
+   * responsive default (cards on mobile, table on desktop) while still offering
+   * the toggle, so phone users can opt back into the table. When set (including
+   * `'auto'`), a table/cards toggle is offered in the toolbar so users can
+   * switch, and the chosen view then applies at every breakpoint.
    *
    * @default 'table'
    */
-  defaultView?: 'table' | 'cards'
+  defaultView?: 'table' | 'cards' | 'auto'
   /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.

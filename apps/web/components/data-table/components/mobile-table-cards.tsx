@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Code2,
   RotateCcw,
   SearchX,
   SortAsc,
@@ -57,6 +58,9 @@ const PRIMARY_COLUMN_PRIORITY = [
   'table',
   'name',
 ]
+// Primary columns that carry SQL — rendered as a highlighted monospace block
+// (the "hero") at the top of the card so it reads first.
+const SQL_PRIMARY_COLUMNS = new Set(['query', 'query_detail'])
 
 function formatColumnLabel(columnId: string) {
   return columnId.replaceAll('_', ' ')
@@ -168,15 +172,23 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
   const cells = row.getVisibleCells()
   const selectCell = cells.find((cell) => cell.column.id === 'select')
   const actionCell = cells.find((cell) => cell.column.id === 'action')
+  const kindCell = cells.find((cell) => cell.column.id === 'query_kind')
   const primaryCell = pickPrimaryCell(cells)
+  // Every non-utility cell stays as a label/value row, except the primary (it
+  // becomes the hero) and the query kind (surfaced as a header badge instead).
   const detailCells = cells.filter(
     (cell) =>
-      cell.id !== primaryCell?.id && !UTILITY_COLUMNS.has(cell.column.id)
+      cell.id !== primaryCell?.id &&
+      cell.id !== kindCell?.id &&
+      !UTILITY_COLUMNS.has(cell.column.id)
   )
+  const isSqlPrimary =
+    !!primaryCell && SQL_PRIMARY_COLUMNS.has(primaryCell.column.id)
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
   const isExpandable = !!expandable && row.getCanExpand()
   const isExpanded = isExpandable && row.getIsExpanded()
   const ExpandIcon = isExpanded ? ChevronDown : ChevronRight
+  const hasHeader = isExpandable || !!selectCell || !!kindCell || !!actionCell
 
   return (
     <article
@@ -187,52 +199,77 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
         customClass
       )}
     >
-      <div className="flex min-w-0 items-start gap-2">
-        {isExpandable && (
-          <button
-            type="button"
-            onClick={() => row.toggleExpanded()}
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-            className="-ml-1 mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-            data-testid="mobile-table-card-expand"
-          >
-            <ExpandIcon className="size-4" />
-          </button>
-        )}
+      {hasHeader && (
+        <div className="mb-2.5 flex min-w-0 items-center gap-2">
+          {isExpandable && (
+            <button
+              type="button"
+              onClick={() => row.toggleExpanded()}
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+              className="-ml-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              data-testid="mobile-table-card-expand"
+            >
+              <ExpandIcon className="size-4" />
+            </button>
+          )}
 
-        {selectCell && (
-          <div className="-ml-1 shrink-0 pt-1">
-            {flexRender(
-              selectCell.column.columnDef.cell,
-              selectCell.getContext()
-            )}
-          </div>
-        )}
-
-        {primaryCell && (
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 text-[0.68rem] font-medium uppercase text-muted-foreground">
-              {formatColumnLabel(primaryCell.column.id)}
-            </div>
-            <div className="min-w-0 text-sm font-medium text-foreground [&_*]:max-w-full [&_button]:justify-start [&_code]:whitespace-normal">
+          {selectCell && (
+            <div className="-ml-1 shrink-0">
               {flexRender(
-                primaryCell.column.columnDef.cell,
-                primaryCell.getContext()
+                selectCell.column.columnDef.cell,
+                selectCell.getContext()
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {actionCell && (
-          <div className="-mr-1 shrink-0">
+          {kindCell && (
+            <div className="min-w-0 [&_*]:max-w-full">
+              {flexRender(
+                kindCell.column.columnDef.cell,
+                kindCell.getContext()
+              )}
+            </div>
+          )}
+
+          {actionCell && (
+            <div className="-mr-1 ml-auto shrink-0">
+              {flexRender(
+                actionCell.column.columnDef.cell,
+                actionCell.getContext()
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {primaryCell && (
+        <div
+          data-testid="mobile-table-card-primary"
+          className={cn(
+            'min-w-0 rounded-md border border-border/50 p-2.5',
+            isSqlPrimary ? 'bg-muted/60' : 'bg-muted/30'
+          )}
+        >
+          <div className="mb-1.5 flex items-center gap-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-muted-foreground">
+            {isSqlPrimary && <Code2 className="size-3 shrink-0" />}
+            {formatColumnLabel(primaryCell.column.id)}
+          </div>
+          <div
+            className={cn(
+              'min-w-0 text-foreground',
+              isSqlPrimary
+                ? 'font-mono text-[0.8rem] leading-relaxed [&_button]:!h-auto [&_button]:!max-w-full [&_button]:items-start [&_code]:line-clamp-4 [&_code]:!whitespace-pre-wrap [&_code]:!break-words [&_code]:!text-foreground'
+                : 'text-sm font-medium [&_*]:max-w-full [&_button]:justify-start [&_code]:whitespace-normal'
+            )}
+          >
             {flexRender(
-              actionCell.column.columnDef.cell,
-              actionCell.getContext()
+              primaryCell.column.columnDef.cell,
+              primaryCell.getContext()
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {detailCells.length > 0 && (
         <dl className="mt-3 divide-y divide-border/50">

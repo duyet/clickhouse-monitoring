@@ -254,6 +254,9 @@ export const historyQueryFilterSchema: FilterSchema = {
 
 export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
+  // Cards on phones (the wide query_log table is unreadable in a scroll box),
+  // table on desktop — with a toggle so either view is reachable anywhere.
+  defaultView: 'auto',
   description:
     'Contains information about executed queries: start time, duration of processing, error messages',
   docs: QUERY_LOG,
