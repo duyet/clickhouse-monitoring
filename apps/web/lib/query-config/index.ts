@@ -67,6 +67,7 @@ import {
 } from './system/disks'
 import { kafkaConsumersConfig } from './system/kafka-consumers'
 import { partLogConfig } from './system/part-log'
+import { queryMetricLogConfig } from './system/query-metric-log'
 import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
@@ -121,6 +122,7 @@ export const queries: Array<QueryConfig> = [
   expensiveQueriesByMemoryConfig,
   slowQueriesConfig,
   userProcessesConfig,
+  queryMetricLogConfig,
 
   // Merges
   mergesConfig,
