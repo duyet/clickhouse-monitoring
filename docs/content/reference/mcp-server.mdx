@@ -1,0 +1,125 @@
+# MCP Server
+
+ClickHouse Monitor exposes a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
+server at `/api/mcp`. It lets external AI tools — Claude, Cursor, and any
+MCP-compatible client — query your ClickHouse clusters through the same
+read-only access the dashboard uses.
+
+The endpoint speaks **Streamable HTTP** and runs **stateless** (no session id),
+so a single URL works for every request.
+
+---
+
+## Endpoint
+
+| Property | Value |
+|---|---|
+| URL | `https://your-deployment.example.com/api/mcp` |
+| Transport | Streamable HTTP (`POST` / `GET` / `DELETE`) |
+| Session | Stateless — `sessionIdGenerator` is disabled |
+| Access | Read-only ClickHouse queries |
+
+The server identifies itself as `clickhouse-monitor` and reuses the dashboard's
+configured hosts. Pass `hostId` (default `0`) to target a specific host from
+`CLICKHOUSE_HOST`.
+
+---
+
+## Tools
+
+| Tool | Description | Parameters |
+|---|---|---|
+| `query` | Execute a read-only SQL query (SELECT only). | `sql` (string, required), `hostId` (number, optional) |
+| `list_databases` | List databases with engines and comments. | `hostId` (number, optional) |
+| `list_tables` | List tables in a database with row counts and sizes. | `database` (string, required), `hostId` (number, optional) |
+| `get_table_schema` | Column definitions: types, defaults, comments. | `database`, `table` (required), `hostId` (optional) |
+| `get_metrics` | Server version, uptime, connections, memory. | `hostId` (number, optional) |
+| `get_running_queries` | Currently running queries by elapsed time. | `hostId` (number, optional) |
+| `get_slow_queries` | Slowest completed queries from the query log. | `limit` (number, optional), `hostId` (optional) |
+| `get_merge_status` | Running merge operations with progress. | `hostId` (number, optional) |
+| `explore_table_schema` | Schema exploration with relationship discovery (databases, tables, or full schema). | `database`, `table`, `hostId` (all optional) |
+| `analyze_performance` | Combined health report: slow queries, part counts, merge backlog, memory, and disk. | `hostId` (number, optional) |
+
+All tools execute read-only operations against the configured ClickHouse
+credentials.
+
+---
+
+## Resources
+
+The server also exposes static and templated resources for context loading.
+
+| Resource | URI | Description |
+|---|---|---|
+| `system-tables` | `clickhouse://system-tables` | Reference of key system tables used for monitoring. |
+| `query-examples` | `clickhouse://query-examples` | Example SQL for common monitoring tasks. |
+| `databases` | `clickhouse://databases` | List of all databases. |
+| `database-tables` | `clickhouse://databases/{database}/tables` | Tables in a database. |
+| `table-schema` | `clickhouse://databases/{database}/tables/{table}/schema` | Column schema for a table. |
+| `table-parts` | `clickhouse://databases/{database}/tables/{table}/parts` | Active parts info for a table. |
+
+---
+
+## Prompts
+
+Pre-built prompts guide assistants through common workflows:
+`health-check`, `slow-query-analysis`, `storage-audit`, `replication-check`,
+and `capacity-report`.
+
+---
+
+## Setup
+
+### Claude Desktop
+
+Add the endpoint to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "clickhouse-monitor": {
+      "url": "https://your-deployment.example.com/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+Omit `headers` only for an unauthenticated local instance (see
+[Security](#security)).
+
+### Cursor
+
+Settings → **MCP** → **Add Server** → paste the endpoint URL, and add an
+`Authorization: Bearer <key>` header if authentication is enabled.
+
+### Testing
+
+```bash
+curl -X POST https://your-deployment.example.com/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+```
+
+---
+
+## Security
+
+- **Read-only**: All tools run read-only queries; the server never mutates data.
+- **API key auth**: Authentication is **required in production** (`NODE_ENV=production`)
+  or whenever `CHM_API_KEY_SECRET` is set. Send the key as
+  `Authorization: Bearer <key>` or an `x-api-key: <key>` header.
+- **Fail closed**: When auth is required but `CHM_API_KEY_SECRET` is unset, the
+  endpoint returns `503` instead of serving unauthenticated requests.
+- **Open by default in development**: With `NODE_ENV` not set to `production` and
+  no `CHM_API_KEY_SECRET`, the endpoint is open — keep it on a trusted network.
+- **Shared credentials**: Queries use the dashboard's configured ClickHouse
+  credentials. Visibility is bounded by the grants on that user.
+- **Query limits**: The same `CLICKHOUSE_MAX_EXECUTION_TIME` timeout as the
+  dashboard applies.
+
+See [Environment Variables](/docs/reference/environment-variables) for
+`CHM_API_KEY_SECRET` and related auth settings.

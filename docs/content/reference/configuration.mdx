@@ -1,0 +1,70 @@
+# Configuration
+
+Start here to configure ClickHouse Monitor. This page explains where
+configuration comes from and how it is resolved, then points to the detailed
+references.
+
+---
+
+## Where configuration comes from
+
+ClickHouse Monitor is configured through **environment variables** and an
+optional **feature permission config file**. There is no separate runtime
+settings store on the server — everything is read from the environment at
+startup (and, for `NEXT_PUBLIC_*` values, inlined at build time).
+
+| Source | Scope | Notes |
+|---|---|---|
+| Environment variables | All settings | The primary configuration surface. See [Environment Variables](/docs/reference/environment-variables). |
+| `CHM_CONFIG_FILE` (TOML/YAML) | Feature permissions | Optional file for feature access/enabled overrides. See [Feature Permissions](/docs/advanced/feature-permissions). |
+| Browser localStorage | Per-user UI state | Time range, in-app alert settings, browser connections. Not server config. |
+
+`NEXT_PUBLIC_*` variables are inlined into the client bundle **at build time**,
+so changing them requires a rebuild. Server-only variables (everything else)
+are read at runtime and take effect on restart/redeploy.
+
+---
+
+## Precedence
+
+When the same setting can come from multiple places, the more specific source
+wins:
+
+1. **Per-feature variables** (`CHM_FEATURE_{ID}_ACCESS`, `CHM_FEATURE_{ID}_ENABLED`)
+   override the broad lists below.
+2. **List variables** (`CHM_DISABLED_FEATURES`, `CHM_AUTH_REQUIRED_FEATURES`)
+   override defaults for the named features.
+3. **Config file** (`CHM_CONFIG_FILE`) supplies overrides for features not set
+   by the variables above.
+4. **Defaults** — every feature is **public and enabled** unless overridden.
+
+For the AI agent's LLM provider, **provider-specific keys**
+(`OPENROUTER_API_KEY`, `NVIDIA_API_KEY`, `ANYROUTER_API_KEY`, …) take priority
+over the generic `LLM_API_KEY` / `LLM_API_BASE` fallback.
+
+---
+
+## Minimum configuration
+
+The only required setting is the ClickHouse connection:
+
+```bash
+CLICKHOUSE_HOST=http://localhost:8123
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=
+```
+
+Everything else is optional and defaults to a sensible value. Use
+[`apps/web/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/web/.env.example)
+as a starting template.
+
+---
+
+## Next steps
+
+- [Environment Variables](/docs/reference/environment-variables) — the full
+  reference of every supported variable, grouped by category.
+- [Feature Permissions](/docs/advanced/feature-permissions) — control which
+  features are public, guest, or authentication-only.
+- [MCP Server](/docs/reference/mcp-server) — configure the remote MCP endpoint
+  and its API key.
