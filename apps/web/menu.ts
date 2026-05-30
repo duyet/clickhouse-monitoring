@@ -31,6 +31,7 @@ import {
   LayersIcon,
   MoveIcon,
   RollerCoasterIcon,
+  RssIcon,
   ScrollTextIcon,
   ShieldAlertIcon,
   ShieldIcon,
@@ -251,6 +252,15 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BookOpenIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/dictionaries',
+      },
+      {
+        title: 'Kafka Consumers',
+        href: '/kafka-consumers',
+        description:
+          'Kafka table engine consumer lag, poll/commit activity, and ingestion errors',
+        icon: RssIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/kafka',
       },
     ],
   },
