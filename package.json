@@ -27,7 +27,7 @@
     "test": "turbo run test",
     "test:unit": "bun --filter web test:unit",
     "test:query-config": "bun --filter web test:query-config",
-    "test:coverage": "bun --filter web test:coverage",
+    "test:coverage": "bun --filter web test:coverage && bun test packages --coverage --coverage-reporter=text",
     "test:watch": "bun --filter web test:watch",
     "test:component": "bun --filter web test:component",
     "test:component:headless": "bun --filter web test:component:headless",
