@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Common labels applied to every resource's metadata (not selectors, which are
+# pinned in the manifests so they stay immutable across upgrades).
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/part-of: clickhouse-monitoring
+
+resources:
+  - configmap.yaml
+  - secret.yaml
+  - service.yaml
+  - deployment.yaml
+
+# Pin the image in one place. Override the tag per-environment with an overlay:
+#   images:
+#     - name: ghcr.io/duyet/clickhouse-monitoring
+#       newTag: v1.2.3
+images:
+  - name: ghcr.io/duyet/clickhouse-monitoring
+    newTag: "0.2.0"

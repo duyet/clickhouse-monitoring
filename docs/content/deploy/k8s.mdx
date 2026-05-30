@@ -1,27 +1,149 @@
-# Kubernetes Helm Chart
+# Kubernetes
 
-Using the latest helm chart here: https://github.com/duyet/charts/tree/master/clickhouse-monitoring
+Run the ClickHouse Monitoring dashboard on Kubernetes with either the in-repo
+Helm chart or the raw kustomize manifests. Both ship the same container image
+(`ghcr.io/duyet/clickhouse-monitoring`), expose port `3000`, run as the non-root
+`app` user (uid/gid `1001`), and wire the same health probes and `CLICKHOUSE_*`
+environment.
+
+- **Helm** — templating, an optional HorizontalPodAutoscaler, and an Ingress.
+- **kustomize** — plain YAML you can read, diff, and patch with overlays.
+
+## Install with Helm
+
+The chart is vendored in the repo at
+[`deploy/helm/clickhouse-monitoring`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/helm/clickhouse-monitoring)
+so it tracks the app it ships.
 
 ```bash
-helm repo add duyet https://duyet.github.io/charts
+helm install my-chm ./deploy/helm/clickhouse-monitoring \
+  --set clickhouse.host="https://clickhouse.example.com:8443" \
+  --set clickhouse.user="default" \
+  --set clickhouse.password="<password>"
+```
 
-cat <<EOF >> values.yaml
-env:
-  - name: CLICKHOUSE_HOST
-    value: http://localhost:8123
-  - name: CLICKHOUSE_USER
-    value: default
-  - name: CLICKHOUSE_PASSWORD
-    value: ''
+Or with a values file:
+
+```bash
+cat <<EOF > values.yaml
+clickhouse:
+  host: "https://clickhouse.example.com:8443"
+  user: "default"
+  password: "<password>"
+  maxExecutionTime: "60"
+extraEnv:
   - name: CLICKHOUSE_TZ
-    value: 'Asia/Ho_Chi_Minh'
-  - name: CLICKHOUSE_MAX_EXECUTION_TIME
-    value: '15'
-  - name: NEXT_QUERY_CACHE_TTL
-    value: '86400'
+    value: "UTC"
 EOF
 
-helm install -f values.yaml clickhouse-monitoring-release duyet/clickhouse-monitoring
+helm install my-chm ./deploy/helm/clickhouse-monitoring -f values.yaml
+```
+
+Upgrade and uninstall:
+
+```bash
+helm upgrade my-chm ./deploy/helm/clickhouse-monitoring -f values.yaml
+helm uninstall my-chm
+```
+
+## Install with kustomize (no Helm)
+
+The raw manifests live at
+[`deploy/kubernetes/base`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/kubernetes/base).
+Edit `base/configmap.yaml` (host/user) and set the password, then:
+
+```bash
+# Review the rendered output first
+kubectl kustomize deploy/kubernetes/base
+
+# Apply
+kubectl apply -k deploy/kubernetes/base
+```
+
+Reach the dashboard locally:
+
+```bash
+kubectl port-forward svc/clickhouse-monitoring 3000:3000
+# open http://localhost:3000
+```
+
+### Overlays
+
+Keep environment differences (namespace, replicas, image tag) in an overlay that
+references the base:
+
+```yaml
+# deploy/kubernetes/overlays/prod/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - ../../base
+images:
+  - name: ghcr.io/duyet/clickhouse-monitoring
+    newTag: v1.2.3
+replicas:
+  - name: clickhouse-monitoring
+    count: 2
+```
+
+```bash
+kubectl apply -k deploy/kubernetes/overlays/prod
+```
+
+## Health probes
+
+Both install paths configure the same probes:
+
+- **Liveness** — `GET /healthz` (static, always `200` while the process runs).
+- **Readiness** — `GET /api/healthz` (returns `503` when no configured
+  ClickHouse host is reachable, so traffic is only routed once a host is up).
+
+## Secrets
+
+The ClickHouse password is stored in a Kubernetes `Secret`, never in a
+`ConfigMap`. The chart renders one for you (or reuses an existing one via
+`clickhouse.existingSecret`); the kustomize `secret.yaml` ships an **empty
+placeholder** you must override. Never commit a real password to Git — create
+the Secret out of band or use a secrets operator:
+
+```bash
+kubectl create secret generic clickhouse-monitoring \
+  --from-literal=CLICKHOUSE_PASSWORD='change-me'
+```
+
+For GitOps, prefer [External Secrets](https://external-secrets.io/),
+[SOPS](https://github.com/getsops/sops), or
+[Sealed Secrets](https://sealed-secrets.netlify.app/).
+
+## Autoscaling (HPA)
+
+The Helm chart can manage a HorizontalPodAutoscaler. Enable it and the chart
+drops the static `replicaCount` in favor of the HPA:
+
+```yaml
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+```
+
+With kustomize, add the HPA as an extra resource in your overlay. The dashboard
+is stateless, so scaling out is safe; the readiness probe keeps traffic off pods
+until ClickHouse is reachable.
+
+## Validation
+
+Manifests and the chart are linted in CI by
+[`.github/workflows/k8s-lint.yml`](https://github.com/duyet/clickhouse-monitoring/blob/main/.github/workflows/k8s-lint.yml)
+using `helm lint` and [kubeconform](https://github.com/yannh/kubeconform).
+Validate locally:
+
+```bash
+helm lint ./deploy/helm/clickhouse-monitoring
+helm template release ./deploy/helm/clickhouse-monitoring | kubeconform -strict -summary
+kubectl kustomize deploy/kubernetes/base | kubeconform -strict -summary
 ```
 
 import { Cards } from 'nextra/components'
