@@ -44,6 +44,8 @@ async function main() {
   const skillsDir = join(process.cwd(), '.agents', 'skills')
   const outputFile = join(
     process.cwd(),
+    'apps',
+    'web',
     'lib',
     'ai',
     'agent',

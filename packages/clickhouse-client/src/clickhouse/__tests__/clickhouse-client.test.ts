@@ -23,10 +23,9 @@ mock.module('../../runtime/cloudflare-workers', () => ({
   isCloudflareWorkers: mockIsCloudflareWorkers,
 }))
 
-const { _resetEnvCache } = await import(
-  new URL('../env-schema.ts?test=client', import.meta.url).href
-)
-const { getClient, isCloudflareWorkers } = await import(
+// _resetEnvCache is re-exported from clickhouse-client so it resets the SAME
+// env-schema instance that getClient() uses internally.
+const { getClient, isCloudflareWorkers, _resetEnvCache } = await import(
   new URL('../clickhouse-client.ts?test=client', import.meta.url).href
 )
 // Import connection-pool to clear between tests

@@ -25,6 +25,10 @@ import {
 } from '@/components/agents/agent-diagnostics'
 import { AgentVisualization } from '@/components/agents/agent-visualization'
 import {
+  AgentWorkflowPlan,
+  type WorkflowPlanStep,
+} from '@/components/agents/agent-workflow-plan'
+import {
   AskUserWidget,
   isAskUserOutput,
 } from '@/components/agents/ask-user-widget'
@@ -98,6 +102,9 @@ function getPromotedOutputType(output: unknown) {
   }
   if (outputObj.type === 'data_sources' && Array.isArray(outputObj.sources)) {
     return 'data_sources' as const
+  }
+  if (outputObj.type === 'workflow_plan' && Array.isArray(outputObj.steps)) {
+    return 'workflow_plan' as const
   }
   if (outputObj.type === 'agent_issues' && Array.isArray(outputObj.issues)) {
     return 'agent_issues' as const
@@ -285,6 +292,18 @@ export function renderToolOutput(output: unknown) {
       <AgentDataSources
         searchTerm={outputObj.searchTerm as string}
         sources={outputObj.sources as AgentDataSourcesProps['sources']}
+      />
+    )
+  }
+
+  if (outputObj.type === 'workflow_plan' && Array.isArray(outputObj.steps)) {
+    return (
+      <AgentWorkflowPlan
+        steps={outputObj.steps as WorkflowPlanStep[]}
+        note={outputObj.note as string | undefined}
+        workflow={outputObj.workflow as string | undefined}
+        total={outputObj.total as number | undefined}
+        completed={outputObj.completed as number | undefined}
       />
     )
   }
