@@ -6,18 +6,21 @@ import {
   ChevronUp,
   CircleX,
   Clock,
+  Code2,
   Cpu,
   Database,
   Download,
   ExternalLink,
   Globe,
   HardDrive,
+  LayoutGrid,
   ListFilter,
   Loader2,
   MemoryStick,
   ScanSearch,
   Search,
   SlidersHorizontal,
+  Table2,
   User as UserIcon,
   X,
 } from 'lucide-react'
@@ -47,6 +50,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatCompactNumber, formatReadableSize } from '@/lib/format-readable'
 import { useActions } from '@/lib/swr'
@@ -620,6 +624,31 @@ const SEVERITY_DURATION: Record<Severity, string> = {
   normal: '',
 }
 
+/**
+ * Kill-query action + in-flight state, shared by the table row and the card.
+ * `useActions` binds the active hostId internally — killQuery(queryId).
+ */
+function useKillQuery(id: string) {
+  const { killQuery } = useActions()
+  const [isKilling, setIsKilling] = useState(false)
+
+  const handleKill = useCallback(async () => {
+    if (!id) return
+    setIsKilling(true)
+    try {
+      const result = await killQuery(id)
+      if (result.success) toast.success(result.message)
+      else toast.error(result.message)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to kill query')
+    } finally {
+      setIsKilling(false)
+    }
+  }, [killQuery, id])
+
+  return { isKilling, handleKill }
+}
+
 interface QueryRowProps {
   d: DerivedQuery
   expanded: boolean
@@ -635,26 +664,10 @@ const QueryRow = memo(function QueryRow({
   hiddenColumns,
 }: QueryRowProps) {
   const hostId = useHostId()
-  const { killQuery } = useActions()
-  const [isKilling, setIsKilling] = useState(false)
+  const { isKilling, handleKill } = useKillQuery(d.id)
   const queryDetailUrl = d.id
     ? `/query?query_id=${encodeURIComponent(d.id)}&host=${hostId}`
     : ''
-
-  const handleKill = useCallback(async () => {
-    if (!d.id) return
-    setIsKilling(true)
-    try {
-      // `useActions` binds the active hostId internally — killQuery(queryId).
-      const result = await killQuery(d.id)
-      if (result.success) toast.success(result.message)
-      else toast.error(result.message)
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to kill query')
-    } finally {
-      setIsKilling(false)
-    }
-  }, [killQuery, d.id])
 
   const dur = formatDuration(d.elapsed)
   const showMemory = !hiddenColumns.has('memory')
@@ -1000,6 +1013,132 @@ function exportCsv(rows: DerivedQuery[]) {
 
 // ───────────────────────── table ─────────────────────────
 
+// ───────────────────────── card view ─────────────────────────
+
+interface QueryCardProps {
+  d: DerivedQuery
+  expanded: boolean
+  onToggle: () => void
+}
+
+/**
+ * One running query as a card — the mobile-first counterpart to QueryRow.
+ * Leads with the SQL (a highlighted, tappable-to-expand hero block), then the
+ * key live metrics; expanding reuses the same ExpandedRow detail panel.
+ */
+const QueryCard = memo(function QueryCard({
+  d,
+  expanded,
+  onToggle,
+}: QueryCardProps) {
+  const { isKilling, handleKill } = useKillQuery(d.id)
+  const ExpandIcon = expanded ? ChevronDown : ChevronRight
+  const dur = formatDuration(d.elapsed)
+
+  return (
+    <div
+      data-testid="running-query-card"
+      data-expanded={expanded || undefined}
+      className="overflow-hidden rounded-lg border border-border/60 bg-card/40"
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        className="flex w-full flex-col gap-2.5 p-3 text-left"
+      >
+        {/* Header: kind badge + short id + expand affordance */}
+        <div className="flex min-w-0 items-center gap-2">
+          <KindBadge kind={d.kind} />
+          <span className="min-w-0 truncate font-mono text-[11px] text-muted-foreground">
+            #{d.id ? d.id.slice(0, 8) : 'n/a'}
+          </span>
+          <ExpandIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
+        </div>
+
+        {/* SQL hero — the focus of the card */}
+        <div className="min-w-0 rounded-md border border-border/50 bg-muted/60 p-2.5">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-muted-foreground">
+            <Code2 className="size-3 shrink-0" />
+            Query
+          </div>
+          <pre className="m-0 line-clamp-4 whitespace-pre-wrap break-words font-mono text-[0.8rem] leading-relaxed text-foreground">
+            {d.query}
+          </pre>
+        </div>
+
+        {/* Key live metrics */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          {d.user && (
+            <span className="inline-flex items-center gap-1">
+              <UserIcon className="size-3" />
+              {d.user}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1">
+            <Clock className="size-3" />
+            {dur.value} {dur.unit}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <MemoryStick className="size-3" />
+            {d.readableMemory}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <HardDrive className="size-3" />
+            {formatReadableSize(d.readBytes)}
+          </span>
+        </div>
+
+        <ProgressCell d={d} />
+      </button>
+
+      {expanded && (
+        <ExpandedRow d={d} onKill={handleKill} isKilling={isKilling} />
+      )}
+    </div>
+  )
+})
+
+/** Segmented table/cards toggle for the running-queries toolbar. */
+function ViewToggle({
+  active,
+  onChange,
+}: {
+  active: 'table' | 'cards'
+  onChange: (view: 'table' | 'cards') => void
+}) {
+  return (
+    <div
+      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
+      role="group"
+      aria-label="Result view"
+    >
+      <Button
+        type="button"
+        variant={active === 'table' ? 'secondary' : 'ghost'}
+        size="sm"
+        className="h-7 gap-1.5 px-2 text-xs"
+        aria-pressed={active === 'table'}
+        onClick={() => onChange('table')}
+      >
+        <Table2 className="size-3.5" />
+        Table
+      </Button>
+      <Button
+        type="button"
+        variant={active === 'cards' ? 'secondary' : 'ghost'}
+        size="sm"
+        className="h-7 gap-1.5 px-2 text-xs"
+        aria-pressed={active === 'cards'}
+        onClick={() => onChange('cards')}
+      >
+        <LayoutGrid className="size-3.5" />
+        Cards
+      </Button>
+    </div>
+  )
+}
+
 interface RunningQueriesTableProps {
   rows: RunningQueryRow[]
 }
@@ -1027,6 +1166,12 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   )
   const [sortKey, setSortKey] = useState<SortKey>('duration')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  // Card view leads on phones (the wide metric table is unreadable in a scroll
+  // box), table on desktop — with a toggle so either is reachable anywhere.
+  // `null` follows the breakpoint until the user explicitly picks a view.
+  const isMobile = useIsMobile()
+  const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
+  const view = userView ?? (isMobile ? 'cards' : 'table')
   // Expansion is keyed by a stable row key; `query_id` still drives actions.
   // A row stays open across refreshes and re-sorts as long as that underlying
   // identifier remains stable.
@@ -1245,6 +1390,9 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           </span>
           <div className="h-5 w-px bg-border" />
 
+          {/* Table / cards view */}
+          <ViewToggle active={view} onChange={setUserView} />
+
           {/* Column visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1283,120 +1431,142 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
         </div>
       </div>
 
-      {/* Table — table-fixed so the Query column truncates instead of pushing
+      {view === 'cards' ? (
+        /* Card list — SQL-first, the default on phones. */
+        <div
+          className="flex flex-col gap-3 p-3"
+          data-testid="running-queries-cards"
+        >
+          {visible.map((d) => (
+            <QueryCard
+              key={d.key}
+              d={d}
+              expanded={expanded.has(d.key)}
+              onToggle={() => toggleRow(d.key)}
+            />
+          ))}
+          {visible.length === 0 && (
+            <div className="px-6 py-12 text-center text-[13px] text-muted-foreground">
+              No queries match your filters
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Table — table-fixed so the Query column truncates instead of pushing
           the metric columns off-screen. `min-w` keeps the columns legible on
           phones: below it the wrapper scrolls horizontally rather than letting
-          table-fixed crush the Query column to a few pixels. */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] table-fixed border-collapse">
-          <thead className="border-b border-border bg-muted/40">
-            <tr>
-              <SortableHeader width="108px">Type</SortableHeader>
-              <SortableHeader>Query</SortableHeader>
-              <SortableHeader
-                width="140px"
-                sortKey="progress"
-                activeKey={sortKey}
-                dir={sortDir}
-                onSort={handleSort}
-              >
-                Progress
-              </SortableHeader>
-              {headerFor('memory') && (
-                <SortableHeader
-                  align="right"
-                  width="92px"
-                  className="hidden md:table-cell"
-                  sortKey="memory"
-                  activeKey={sortKey}
-                  dir={sortDir}
-                  onSort={handleSort}
-                >
-                  Memory
-                </SortableHeader>
-              )}
-              {headerFor('dataRead') && (
-                <SortableHeader
-                  align="right"
-                  width="96px"
-                  className="hidden xl:table-cell"
-                  sortKey="dataRead"
-                  activeKey={sortKey}
-                  dir={sortDir}
-                  onSort={handleSort}
-                >
-                  Data
-                </SortableHeader>
-              )}
-              {headerFor('cpu') && (
-                <SortableHeader
-                  align="right"
-                  width="104px"
-                  className="hidden lg:table-cell"
-                  sortKey="cpu"
-                  activeKey={sortKey}
-                  dir={sortDir}
-                  onSort={handleSort}
-                >
-                  CPU
-                </SortableHeader>
-              )}
-              {headerFor('threads') && (
-                <SortableHeader
-                  align="right"
-                  width="72px"
-                  className="hidden 2xl:table-cell"
-                  sortKey="threads"
-                  activeKey={sortKey}
-                  dir={sortDir}
-                  onSort={handleSort}
-                >
-                  Threads
-                </SortableHeader>
-              )}
-              {headerFor('duration') && (
-                <SortableHeader
-                  align="right"
-                  width="86px"
-                  className="hidden sm:table-cell"
-                  sortKey="duration"
-                  activeKey={sortKey}
-                  dir={sortDir}
-                  onSort={handleSort}
-                >
-                  Duration
-                </SortableHeader>
-              )}
-              <SortableHeader width="84px" align="right">
-                <span className="sr-only">Actions</span>
-              </SortableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((d) => (
-              // Keyed by stable row key so each row keeps identity and
-              // component state through refreshes, sorts and filters.
-              <QueryRow
-                key={d.key}
-                d={d}
-                expanded={expanded.has(d.key)}
-                onToggle={() => toggleRow(d.key)}
-                hiddenColumns={hiddenColumns}
-              />
-            ))}
-            {visible.length === 0 && (
+          table-fixed crush the Query column to a few pixels. */
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] table-fixed border-collapse">
+            <thead className="border-b border-border bg-muted/40">
               <tr>
-                <td
-                  colSpan={totalColumns}
-                  className="px-6 py-12 text-center text-[13px] text-muted-foreground"
+                <SortableHeader width="108px">Type</SortableHeader>
+                <SortableHeader>Query</SortableHeader>
+                <SortableHeader
+                  width="140px"
+                  sortKey="progress"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
                 >
-                  No queries match your filters
-                </td>
+                  Progress
+                </SortableHeader>
+                {headerFor('memory') && (
+                  <SortableHeader
+                    align="right"
+                    width="92px"
+                    className="hidden md:table-cell"
+                    sortKey="memory"
+                    activeKey={sortKey}
+                    dir={sortDir}
+                    onSort={handleSort}
+                  >
+                    Memory
+                  </SortableHeader>
+                )}
+                {headerFor('dataRead') && (
+                  <SortableHeader
+                    align="right"
+                    width="96px"
+                    className="hidden xl:table-cell"
+                    sortKey="dataRead"
+                    activeKey={sortKey}
+                    dir={sortDir}
+                    onSort={handleSort}
+                  >
+                    Data
+                  </SortableHeader>
+                )}
+                {headerFor('cpu') && (
+                  <SortableHeader
+                    align="right"
+                    width="104px"
+                    className="hidden lg:table-cell"
+                    sortKey="cpu"
+                    activeKey={sortKey}
+                    dir={sortDir}
+                    onSort={handleSort}
+                  >
+                    CPU
+                  </SortableHeader>
+                )}
+                {headerFor('threads') && (
+                  <SortableHeader
+                    align="right"
+                    width="72px"
+                    className="hidden 2xl:table-cell"
+                    sortKey="threads"
+                    activeKey={sortKey}
+                    dir={sortDir}
+                    onSort={handleSort}
+                  >
+                    Threads
+                  </SortableHeader>
+                )}
+                {headerFor('duration') && (
+                  <SortableHeader
+                    align="right"
+                    width="86px"
+                    className="hidden sm:table-cell"
+                    sortKey="duration"
+                    activeKey={sortKey}
+                    dir={sortDir}
+                    onSort={handleSort}
+                  >
+                    Duration
+                  </SortableHeader>
+                )}
+                <SortableHeader width="84px" align="right">
+                  <span className="sr-only">Actions</span>
+                </SortableHeader>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {visible.map((d) => (
+                // Keyed by stable row key so each row keeps identity and
+                // component state through refreshes, sorts and filters.
+                <QueryRow
+                  key={d.key}
+                  d={d}
+                  expanded={expanded.has(d.key)}
+                  onToggle={() => toggleRow(d.key)}
+                  hiddenColumns={hiddenColumns}
+                />
+              ))}
+              {visible.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={totalColumns}
+                    className="px-6 py-12 text-center text-[13px] text-muted-foreground"
+                  >
+                    No queries match your filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="border-t border-border px-3 py-2 text-[11.5px] text-muted-foreground">
