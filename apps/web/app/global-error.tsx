@@ -47,7 +47,10 @@ export default function GlobalError({
       <body className="font-sans">
         <div className="bg-background flex min-h-dvh flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <div className="text-primary mx-auto size-12" />
+            <BugIcon
+              className="text-primary mx-auto size-12"
+              strokeWidth={1.5}
+            />
             <h1 className="text-foreground mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
               {formattedError.title}
             </h1>

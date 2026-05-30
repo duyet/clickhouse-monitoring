@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { PageSkeleton } from '@/components/skeletons'
 
 /**
  * Root page - client-side redirect to /overview?host=0
@@ -16,5 +17,5 @@ export default function Home() {
     router.replace('/overview?host=0')
   }, [router])
 
-  return null
+  return <PageSkeleton />
 }

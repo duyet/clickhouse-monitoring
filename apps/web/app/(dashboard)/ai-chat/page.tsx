@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { PageSkeleton } from '@/components/skeletons'
 
 /**
  * Redirect page for legacy /ai-chat route
@@ -14,5 +15,5 @@ export default function AiChatRedirectPage() {
     router.replace('/agents')
   }, [router])
 
-  return null
+  return <PageSkeleton />
 }

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { PageSkeleton } from '@/components/skeletons'
 
 export default function TablesPage() {
   const router = useRouter()
@@ -10,5 +11,5 @@ export default function TablesPage() {
     router.push('/table?database=default')
   }, [router])
 
-  return null
+  return <PageSkeleton />
 }
