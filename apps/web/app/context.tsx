@@ -21,6 +21,40 @@ export interface ContextValue {
 
 export const Context = createContext<ContextValue | undefined>(undefined)
 
+/** localStorage key for the persisted auto-refresh interval (ms, or 'off'). */
+const RELOAD_INTERVAL_STORAGE_KEY = 'chm-refresh-interval'
+
+/**
+ * Read the initial reload interval from localStorage, falling back to the
+ * provider default. Wrapped in try/catch for SSR and private-browsing safety.
+ * A stored value of `'off'` means auto-refresh is disabled (`null`).
+ */
+function readInitialReloadInterval(defaultMs: number): number | null {
+  if (typeof window === 'undefined') return defaultMs
+  try {
+    const stored = localStorage.getItem(RELOAD_INTERVAL_STORAGE_KEY)
+    if (stored === null) return defaultMs
+    if (stored === 'off') return null
+    const parsed = Number(stored)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultMs
+  } catch {
+    return defaultMs
+  }
+}
+
+/** Persist the selected reload interval to localStorage. */
+function persistReloadInterval(value: number | null): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(
+      RELOAD_INTERVAL_STORAGE_KEY,
+      value === null ? 'off' : String(value)
+    )
+  } catch {
+    // localStorage may be full or unavailable (e.g. private browsing)
+  }
+}
+
 export const AppProvider = ({
   children,
   reloadIntervalSecond = 30,
@@ -32,11 +66,25 @@ export const AppProvider = ({
     'toStartOfFiveMinutes'
   )
 
-  // Set reload interval to 30s by default
-  // setReloadInterval(null) to stop it
-  const [reloadInterval, setReloadInterval] = useState<number | null>(
-    reloadIntervalSecond * 1000
+  // Reload interval defaults to the provider prop but is restored from and
+  // persisted to localStorage so the user's choice survives reloads.
+  // setReloadInterval(null) to stop it.
+  const [reloadInterval, setReloadIntervalState] = useState<number | null>(() =>
+    readInitialReloadInterval(reloadIntervalSecond * 1000)
   )
+
+  const setReloadInterval: Dispatch<SetStateAction<number | null>> = (
+    action
+  ) => {
+    setReloadIntervalState((prev) => {
+      const next =
+        typeof action === 'function'
+          ? (action as (p: number | null) => number | null)(prev)
+          : action
+      persistReloadInterval(next)
+      return next
+    })
+  }
 
   const pathname = usePathname()
 
