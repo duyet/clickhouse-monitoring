@@ -80,8 +80,16 @@ export const docsNav: DocsNavSection[] = [
     title: 'Reference',
     items: [
       {
+        title: 'Configuration',
+        slug: 'reference/configuration',
+      },
+      {
         title: 'Environment Variables',
         slug: 'reference/environment-variables',
+      },
+      {
+        title: 'MCP Server',
+        slug: 'reference/mcp-server',
       },
     ],
   },
