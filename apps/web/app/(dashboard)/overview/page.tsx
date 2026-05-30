@@ -9,7 +9,7 @@ import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
-import { Skeleton, TabsSkeleton } from '@/components/skeletons'
+import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -181,6 +181,10 @@ function OverviewPageContent() {
   )
 }
 
+// First (default) tab whose grid is shown on initial load. Reserving its real
+// height in the fallback is what keeps the page scrollable while data loads.
+const FIRST_TAB = OVERVIEW_TABS[0]
+
 /**
  * Full-page loading fallback for the searchParams Suspense boundary.
  *
@@ -188,7 +192,9 @@ function OverviewPageContent() {
  * requires to sit under Suspense. A tiny single-card fallback collapses the
  * document to ~140px during that flash, so the scroll container has nothing to
  * scroll and the viewport snaps back to the top. Reserving the real layout's
- * height (status strip + KPI grid + tabs) keeps the scroll position stable.
+ * height — status strip + KPI grid + tabs + the first tab's chart grid — keeps
+ * the scroll position stable and lets the user scroll to the bottom while the
+ * charts are still loading.
  */
 function OverviewPageFallback() {
   return (
@@ -200,6 +206,18 @@ function OverviewPageFallback() {
         ))}
       </div>
       <TabsSkeleton tabCount={OVERVIEW_TABS.length} />
+      {/* Reserve the first tab's chart grid so the loading document is roughly
+          as tall as the loaded page. Reuses the real grid class + chart count
+          so it stays in sync if charts are added/removed. */}
+      <div className={cn('mt-2', FIRST_TAB.gridClassName)} aria-hidden="true">
+        {FIRST_TAB.charts.map((chart) => (
+          <ChartSkeleton
+            key={chart.id}
+            className={cn(OVERVIEW_CHART_CLASS_NAME, chart.className)}
+            type={chart.type === 'metric' ? 'metric' : undefined}
+          />
+        ))}
+      </div>
     </div>
   )
 }
