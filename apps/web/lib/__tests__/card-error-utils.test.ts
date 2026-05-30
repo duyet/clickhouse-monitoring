@@ -179,6 +179,45 @@ describe('card-error-utils', () => {
       })
     })
 
+    describe('server / resource-limit errors', () => {
+      // Helper: standard Error with an HTTP status attached (as throwIfNotOk does)
+      const createStatusError = (
+        status: number,
+        message: string
+      ): CardError => {
+        const err = new Error(message) as Error & { status: number }
+        err.status = status
+        return err
+      }
+
+      it('should classify a Worker resource-limit message as retryable timeout', () => {
+        const error = createStatusError(
+          503,
+          'Cloudflare Worker exceeded resource limits (CPU/memory)'
+        )
+        expect(detectCardErrorVariant(error)).toBe('timeout')
+        expect(shouldShowRetryButton(error)).toBe(true)
+      })
+
+      it('should classify a generic 5xx (non-503) status as retryable timeout', () => {
+        const error = createStatusError(
+          500,
+          'Request failed: Internal Server Error'
+        )
+        expect(detectCardErrorVariant(error)).toBe('timeout')
+        expect(shouldShowRetryButton(error)).toBe(true)
+      })
+
+      it('should classify a generic 503 as retryable offline', () => {
+        const error = createStatusError(
+          503,
+          'Request failed: Service Unavailable'
+        )
+        expect(detectCardErrorVariant(error)).toBe('offline')
+        expect(shouldShowRetryButton(error)).toBe(true)
+      })
+    })
+
     describe('default behavior', () => {
       it('should default to "error" for unknown errors', () => {
         expect(detectCardErrorVariant(createError('Unknown error'))).toBe(
