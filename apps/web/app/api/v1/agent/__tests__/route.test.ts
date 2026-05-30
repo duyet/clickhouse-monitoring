@@ -108,8 +108,12 @@ mock.module('ai', () => {
       }
 
       capturedAIArgs.push(record)
-      await execute({ writer })
-      record.executeCalled = true
+      try {
+        await execute({ writer })
+        record.executeCalled = true
+      } catch (err) {
+        record.executeCalled = false
+      }
 
       return { mergedChunk: record.mergedChunk }
     },
@@ -901,6 +905,15 @@ describe('POST /api/v1/agent', () => {
     const response = await POST(request)
 
     expect(response.status).toBe(200)
+
+    // The route calls createUIMessageStream() without awaiting it, so the
+    // execute() callback runs asynchronously. Wait for it to complete before
+    // asserting on writtenChunks.
+    for (let i = 0; i < 50; i++) {
+      if (capturedAIArgs[0]?.executeCalled) break
+      await Bun.sleep(10)
+    }
+
     // The mock agent calls onStepFinish with response: { modelId: 'resolved-model-xyz' }
     // and result.response resolves to { modelId: 'resolved-model-xyz' }.
     // The route should write a data-usage chunk that contains resolvedModel.
@@ -932,12 +945,23 @@ describe('POST /api/v1/agent', () => {
     const response = await POST(request)
     expect(response.status).toBe(200)
 
+    // Wait for the async execute callback to complete
+    for (let i = 0; i < 50; i++) {
+      if (capturedAIArgs[0]?.executeCalled) break
+      await Bun.sleep(10)
+    }
+
     const usageChunk = capturedAIArgs[0]?.writtenChunks.find(
       (chunk) =>
         typeof chunk === 'object' &&
         chunk !== null &&
         (chunk as { type?: string }).type === 'data-usage'
-    ) as { type: string; data: Array<{ resolvedModel?: string; model?: string }> } | undefined
+    ) as
+      | {
+          type: string
+          data: Array<{ resolvedModel?: string; model?: string }>
+        }
+      | undefined
 
     expect(usageChunk).toBeDefined()
     // resolvedModel should be the concrete model from the mock step response
@@ -945,6 +969,8 @@ describe('POST /api/v1/agent', () => {
     // The 'model' field should still be present (the requested model)
     expect(usageChunk?.data[0]?.model).toBeDefined()
     // They should differ — this is the whole point of resolvedModel
-    expect(usageChunk?.data[0]?.resolvedModel).not.toBe(usageChunk?.data[0]?.model)
+    expect(usageChunk?.data[0]?.resolvedModel).not.toBe(
+      usageChunk?.data[0]?.model
+    )
   })
 })
