@@ -49,6 +49,15 @@ const nextConfig: NextConfig = {
   experimental: {
     workerThreads: false,
     cpus: 1,
+    // Production build uses webpack (not Turbopack), so barrel imports are not
+    // auto-optimized. Tree-shake heavy barrels (lucide-react is imported by 176
+    // files, recharts by chart primitives) to shrink bundles and speed builds.
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      '@radix-ui/react-icons',
+      'date-fns',
+    ],
   },
 
   // Transpile workspace packages that ship raw TypeScript with node: scheme
