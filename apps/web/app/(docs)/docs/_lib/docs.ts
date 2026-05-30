@@ -31,6 +31,7 @@ export const docsNav: DocsNavSection[] = [
     items: [
       { title: 'Introduction', slug: '' },
       { title: 'Features', slug: 'features' },
+      { title: 'AI Agent', slug: 'ai-agent' },
       { title: 'Settings', slug: 'settings' },
       { title: 'FAQ', slug: 'faq' },
     ],
@@ -72,6 +73,16 @@ export const docsNav: DocsNavSection[] = [
       { title: 'Queries History', slug: 'advanced/queries-history' },
       { title: 'Self-Tracking', slug: 'advanced/self-tracking' },
       { title: 'Feature Permissions', slug: 'advanced/feature-permissions' },
+      { title: 'PeerDB Monitoring', slug: 'advanced/peerdb-monitoring' },
+    ],
+  },
+  {
+    title: 'Reference',
+    items: [
+      {
+        title: 'Environment Variables',
+        slug: 'reference/environment-variables',
+      },
     ],
   },
 ]
