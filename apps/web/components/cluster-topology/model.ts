@@ -25,7 +25,7 @@
 
 import type { ClusterTopologyRow } from '@/lib/query-config/system/clusters-topology'
 
-import { hullPath } from './geometry'
+import { offsetHullArea, offsetHullPath } from './geometry'
 
 export interface NodeLiveMetrics {
   cpuPct: number | null
@@ -100,6 +100,28 @@ export interface ClusterInfo {
   /** rendered as a dotted outline (physical default cluster) instead of a filled hull */
   outline: boolean
   nodeCount: number
+  /** true when any shard has >1 replica → draw replication edges between replicas. */
+  replicated: boolean
+}
+
+/**
+ * Precomputed cluster overlay: an offset-convex-hull path plus the metadata the
+ * canvas needs to draw it (color, border style, area for z-ordering, label
+ * anchor). Pure function of structure + layout → stable across live ticks.
+ */
+export interface ClusterHull {
+  id: string
+  name: string
+  color: string
+  /** physical cluster → dotted outline (no fill); logical/virtual → dashed border + fill. */
+  outline: boolean
+  /** the single closed SVG path (circle / stadium / rounded polygon). */
+  d: string
+  /** Minkowski-sum area, used to z-order: largest drawn first (behind). */
+  area: number
+  /** label anchor near the blob's top edge. */
+  labelX: number
+  labelY: number
 }
 
 export type KeeperSource = 'keeper' | 'zookeeper' | 'none'
@@ -143,6 +165,8 @@ export interface TopologyData {
 export interface TopologyModel extends TopologyData {
   nodeById: Record<string, KeeperNode | ChNode>
   clusterById: Record<string, ClusterInfo>
+  /** cluster overlays, sorted by area DESCENDING (largest first / behind). */
+  clusterHulls: ClusterHull[]
   keeperHull: string
   /** mirror of keeper.leaderId for existing consumers */
   leaderId: string | null
@@ -160,10 +184,15 @@ export function isKeeperNode(n: KeeperNode | ChNode): n is KeeperNode {
 export const VB_W = 770
 export const VB_H = 560
 const CH_R = 33
+const KP_R = 27
 
 // Cap CH nodes drawn on the canvas so large clusters stay readable. The full
 // structural truth is preserved in meta.counts / meta.hiddenChNodes.
 export const CH_RENDER_CAP = 24
+
+/** Hull padding: comfortably clears a node glyph ring + its label allowance. */
+const CH_HULL_PAD = CH_R + 18
+const KP_HULL_PAD = KP_R + 16
 
 export const STATUS_COLOR: Record<string, string> = {
   healthy: '#10b981',
@@ -468,6 +497,7 @@ export function assembleTopology(
       members,
       outline: physical,
       nodeCount: Object.keys(members).length,
+      replicated: maxR > 1,
     }
   })
 
@@ -572,10 +602,12 @@ export function assembleTopology(
     leaderId && keepers.length > 0
       ? chNodes.map((n) => [n.id, leaderId] as [string, string])
       : []
-  // Replication: within each shard of each cluster, link consecutive replicas.
+  // Replication: only for REPLICATED clusters. Within each shard, link
+  // consecutive replicas. Sharded/distributed clusters get no inter-shard edges.
   const replSet = new Set<string>()
   const replEdges: [string, string][] = []
   for (const c of clusters) {
+    if (!c.replicated) continue
     const byShard = new Map<number, string[]>()
     for (const [id, role] of Object.entries(c.members)) {
       if (!byShard.has(role.s)) byShard.set(role.s, [])
@@ -651,7 +683,7 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   const renderCh = chNodes.map((n) => ({ ...n }))
 
   layoutKeepers(keepers)
-  layoutChNodes(renderCh)
+  layoutChNodes(renderCh, data.clusters)
 
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
@@ -665,7 +697,16 @@ export function layoutTopology(data: TopologyData): TopologyModel {
     clusterById[c.id] = c
   })
 
-  const keeperHull = keepers.length >= 2 ? hullPath(keepers, 46) : ''
+  const renderedIds = new Set(renderCh.map((n) => n.id))
+
+  // Cluster overlays: offset convex hulls, z-ordered by area DESC, label-nudged.
+  const clusterHulls = buildClusterHulls(data.clusters, nodeById, renderedIds)
+
+  // Keeper quorum hull over VOTING keepers (observers excluded). Generalized to
+  // any N: N=1 ring, N=2 capsule, N≥3 rounded polygon. Absent keeper → ''.
+  const voters = keepers.filter((k) => k.role !== 'observer')
+  const keeperHull =
+    voters.length >= 1 ? offsetHullPath(voters, KP_HULL_PAD) : ''
 
   return {
     ...data,
@@ -676,6 +717,7 @@ export function layoutTopology(data: TopologyData): TopologyModel {
     raftEdges: data.raftEdges,
     replEdges: data.replEdges,
     coordEdges: data.coordEdges,
+    clusterHulls,
     keeperHull,
     leaderId: data.keeper.leaderId,
     quorumHealthy: data.keeper.quorumHealthy,
@@ -732,46 +774,203 @@ function layoutKeepers(keepers: KeeperNode[]) {
   })
 }
 
+// CH region: a band below the keepers. Layout is deterministic + seeded only by
+// structure so positions are stable across live ticks.
+const CH_BAND_Y = 380
+const CH_BAND_H = 150
+const CH_MARGIN = CH_R + 50
+
 /**
- * ClickHouse nodes: a centered grid below the keepers. A single row reads best
- * for small N; for larger N we wrap into rows so a wide cluster does not collide
- * within the fixed viewBox.
+ * ClickHouse node layout that makes overlapping clusters legible:
+ *  - group nodes by which DRAWABLE (logical/virtual) clusters they belong to;
+ *  - give each logical cluster a centroid slot along a horizontal band;
+ *  - place a node at the AVERAGE of its clusters' centroids, so a host shared by
+ *    two clusters lands on the boundary between them → their hulls intersect in
+ *    a small intentional lens (the ch-03 story);
+ *  - spread nodes inside the same group on a compact grid so glyphs don't stack.
+ *
+ * Falls back to the simple centered arc / multi-row grid when there are no
+ * logical clusters (e.g. only the implicit `default` cluster).
  */
-function layoutChNodes(nodes: ChNode[]) {
+function layoutChNodes(nodes: ChNode[], clusters: ClusterInfo[]) {
   const n = nodes.length
   if (n === 0) return
   const cx = VB_W / 2
-  const baseY = 400
   if (n === 1) {
     nodes[0].x = cx
-    nodes[0].y = baseY
+    nodes[0].y = CH_BAND_Y + CH_BAND_H / 2
     return
   }
-  const usable = VB_W - 2 * (CH_R + 60)
-  // How many fit on a row before they crowd (min ~120px center spacing).
-  const perRow = Math.max(2, Math.min(n, Math.floor(usable / 120) + 1))
-  if (n <= perRow) {
-    const step = Math.min(170, usable / (n - 1))
+
+  // Drawable clusters = logical/virtual (filled hulls). Physical/outline clusters
+  // span everything, so they don't drive grouping.
+  const ids = new Set(nodes.map((nd) => nd.id))
+  const logical = clusters
+    .filter((c) => !c.outline)
+    .filter((c) => Object.keys(c.members).some((id) => ids.has(id)))
+
+  if (logical.length === 0) {
+    layoutArc(nodes, cx)
+    return
+  }
+
+  // Centroid slot per logical cluster, evenly spread along the band.
+  const slotY = CH_BAND_Y + CH_BAND_H / 2
+  const usable = VB_W - 2 * CH_MARGIN
+  const centroid = new Map<string, { x: number; y: number }>()
+  logical.forEach((c, i) => {
+    const t = logical.length === 1 ? 0.5 : i / (logical.length - 1)
+    centroid.set(c.id, { x: CH_MARGIN + t * usable, y: slotY })
+  })
+
+  // Membership of each node among logical clusters (deterministic order).
+  const memberClusters = (id: string) =>
+    logical.filter((c) => c.members[id]).map((c) => c.id)
+
+  // Group nodes by membership signature; place the whole group near the average
+  // of its clusters' centroids (boundary for shared nodes), then fan out.
+  const groups = new Map<string, ChNode[]>()
+  for (const nd of nodes) {
+    const mc = memberClusters(nd.id)
+    const sig = mc.length ? mc.join('|') : '__none__'
+    if (!groups.has(sig)) groups.set(sig, [])
+    groups.get(sig)!.push(nd)
+  }
+
+  // Stable group order: by signature string.
+  const sigOrder = [...groups.keys()].sort()
+  for (const sig of sigOrder) {
+    const members = groups.get(sig)!
+    const mc = sig === '__none__' ? [] : sig.split('|')
+    let gx = cx
+    let gy = slotY
+    if (mc.length > 0) {
+      gx = mc.reduce((s, id) => s + (centroid.get(id)?.x ?? cx), 0) / mc.length
+      gy =
+        mc.reduce((s, id) => s + (centroid.get(id)?.y ?? slotY), 0) / mc.length
+      // Shared nodes (≥2 clusters) sit slightly higher so the lens reads cleanly.
+      if (mc.length >= 2) gy -= 30
+    }
+    fanOut(members, gx, gy)
+  }
+
+  clampToBand(nodes)
+}
+
+/** Spread `members` on a compact centered grid around (gx, gy). Deterministic.
+ * Row/col steps shrink for large groups so the grid stays inside the band. */
+function fanOut(members: ChNode[], gx: number, gy: number) {
+  const k = members.length
+  if (k === 1) {
+    members[0].x = gx
+    members[0].y = gy
+    return
+  }
+  const cols = Math.ceil(Math.sqrt(k))
+  const rows = Math.ceil(k / cols)
+  const stepY = Math.min(96, rows > 1 ? CH_BAND_H / (rows - 1) : 96)
+  const stepX = Math.min(88, Math.max(60, stepY))
+  members.forEach((nd, i) => {
+    const row = Math.floor(i / cols)
+    const col = i % cols
+    const rowCount = Math.min(cols, k - row * cols)
+    const rowOffset = ((rowCount - 1) * stepX) / 2
+    nd.x = gx - rowOffset + col * stepX
+    nd.y = gy + row * stepY - ((rows - 1) * stepY) / 2
+  })
+}
+
+/** Simple centered arc / multi-row grid (no logical clusters). Rows are packed
+ * into the readable band so even a capped-large N stays inside the viewBox. */
+function layoutArc(nodes: ChNode[], cx: number) {
+  const n = nodes.length
+  const usable = VB_W - 2 * CH_MARGIN
+  const perRow = Math.min(n, Math.max(1, Math.floor(usable / 150) + 1))
+  const rows = Math.ceil(n / perRow)
+  if (rows <= 1) {
+    const baseY = CH_BAND_Y + CH_BAND_H / 2
+    const step = n > 1 ? Math.min(170, usable / (n - 1)) : 0
     const total = (n - 1) * step
     nodes.forEach((node, i) => {
       node.x = cx - total / 2 + i * step
-      // Gentle arc: middle nodes dip slightly so replication links stay readable.
-      const t = (i / (n - 1)) * 2 - 1
+      const t = n > 1 ? (i / (n - 1)) * 2 - 1 : 0
       node.y = baseY + Math.round((1 - t * t) * 24)
     })
     return
   }
-  // Multi-row grid.
-  const rows = Math.ceil(n / perRow)
-  const rowGap = 96
-  const startY = baseY - ((rows - 1) * rowGap) / 2
+  const rowStep = Math.min(110, CH_BAND_H / Math.max(1, rows - 1))
+  const top = CH_BAND_Y
   nodes.forEach((node, i) => {
     const row = Math.floor(i / perRow)
-    const inRow = Math.min(perRow, n - row * perRow)
     const col = i % perRow
+    const inRow = Math.min(perRow, n - row * perRow)
     const step = inRow > 1 ? Math.min(150, usable / (inRow - 1)) : 0
     const total = (inRow - 1) * step
     node.x = cx - total / 2 + col * step
-    node.y = startY + row * rowGap
+    node.y = top + row * rowStep
   })
+}
+
+/** Keep nodes inside the readable band + horizontal margins. */
+function clampToBand(nodes: ChNode[]) {
+  for (const nd of nodes) {
+    nd.x = Math.max(CH_MARGIN, Math.min(VB_W - CH_MARGIN, nd.x))
+    nd.y = Math.max(CH_BAND_Y - 10, Math.min(CH_BAND_Y + CH_BAND_H, nd.y))
+  }
+}
+
+/**
+ * Build the cluster overlay paths from rendered member positions. Pure: depends
+ * only on structure + layout, not live metrics. Sorted by area DESCENDING so the
+ * canvas draws the largest blob first (behind) and smaller ones on top.
+ */
+function buildClusterHulls(
+  clusters: ClusterInfo[],
+  nodeById: Record<string, KeeperNode | ChNode>,
+  renderedIds: Set<string>
+): ClusterHull[] {
+  const hulls: ClusterHull[] = []
+  for (const cl of clusters) {
+    const centers = Object.keys(cl.members)
+      .filter((id) => renderedIds.has(id))
+      .map((id) => nodeById[id])
+      .filter(Boolean)
+    if (centers.length === 0) continue
+    const d = offsetHullPath(centers, CH_HULL_PAD)
+    if (!d) continue
+    const area = offsetHullArea(centers, CH_HULL_PAD)
+    const minY = Math.min(...centers.map((c) => c.y))
+    const labelX = centers.reduce((s, c) => s + c.x, 0) / centers.length
+    hulls.push({
+      id: cl.id,
+      name: cl.name,
+      color: cl.color,
+      outline: cl.outline,
+      d,
+      area,
+      labelX,
+      labelY: minY - CH_HULL_PAD - 6,
+    })
+  }
+  // Largest first (drawn behind). Tie-break by id for determinism.
+  hulls.sort((a, b) => b.area - a.area || a.id.localeCompare(b.id))
+  nudgeLabels(hulls)
+  return hulls
+}
+
+/** Push overlapping cluster labels apart so they stay readable. Deterministic. */
+function nudgeLabels(hulls: ClusterHull[]) {
+  const sorted = [...hulls].sort(
+    (a, b) => a.labelX - b.labelX || a.id.localeCompare(b.id)
+  )
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1]
+    const cur = sorted[i]
+    if (
+      Math.abs(cur.labelX - prev.labelX) < 70 &&
+      Math.abs(cur.labelY - prev.labelY) < 16
+    ) {
+      cur.labelY = prev.labelY - 16
+    }
+  }
 }
