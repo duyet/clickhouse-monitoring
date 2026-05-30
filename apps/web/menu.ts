@@ -28,6 +28,7 @@ import {
   HardDriveIcon,
   HeartPulseIcon,
   KeyIcon,
+  LayersIcon,
   MoveIcon,
   RollerCoasterIcon,
   ScrollTextIcon,
@@ -292,6 +293,14 @@ export const menuItemsConfig: MenuItem[] = [
           'In-progress part moves between disks and volumes (TTL / storage policy)',
         icon: MoveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/moves',
+      },
+      {
+        title: 'Part Log',
+        href: '/part-log',
+        description:
+          'Part lifecycle timeline: creations, merges, mutations, downloads, and removals',
+        icon: LayersIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
       },
     ],
   },
