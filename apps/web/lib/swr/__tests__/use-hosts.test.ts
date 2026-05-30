@@ -6,13 +6,7 @@
  * is called with the correct parameters.
  */
 
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // Mock SWR before any imports that use it
 const mockUseSWR = mock(() => ({
@@ -46,8 +40,13 @@ mock.module('../api-fetch', () => ({
   apiFetch: mockApiFetch,
 }))
 
-// Mock React hooks
+// Mock React hooks. `mock.module('react')` is global AND persists across files
+// in the aggregated `bun test` run, so spread the real module — otherwise every
+// later test file loses `forwardRef`/`createContext`/etc. and breaks.
+const actualReact = await import('react')
+
 mock.module('react', () => ({
+  ...actualReact,
   useCallback: (fn: () => unknown) => fn,
 }))
 

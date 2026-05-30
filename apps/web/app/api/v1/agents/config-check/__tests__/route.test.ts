@@ -1,15 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
 
 const AGENT_API_TOKEN = 'test-agent-token'
-let mockClerkUserId: string | null = null
 let GET: (request: Request) => Promise<Response>
 
 mock.module('server-only', () => ({}))
-mock.module('@clerk/nextjs/server', () => ({
-  auth: async () => ({
-    userId: mockClerkUserId,
-  }),
-}))
 
 beforeAll(async () => {
   process.env.AGENT_API_TOKEN = AGENT_API_TOKEN
@@ -30,7 +25,7 @@ beforeEach(() => {
   delete process.env.OPENROUTER_API_BASE
   delete process.env.NVIDIA_API_KEY
   delete process.env.NVIDIA_API_BASE
-  mockClerkUserId = null
+  setMockClerkUserId(null)
 })
 
 describe('GET /api/v1/agents/config-check', () => {
@@ -71,7 +66,7 @@ describe('GET /api/v1/agents/config-check', () => {
   test('accepts Clerk session when Clerk auth is enabled', async () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     process.env.CHM_FEATURE_AGENT_ACCESS = 'authenticated'
-    mockClerkUserId = 'user_123'
+    setMockClerkUserId('user_123')
 
     const response = await GET(configRequest())
 

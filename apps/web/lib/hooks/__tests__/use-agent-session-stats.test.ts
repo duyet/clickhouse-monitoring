@@ -6,8 +6,14 @@ import {
 } from '../use-agent-session-stats'
 import { describe, expect, mock, test } from 'bun:test'
 
-// Mock React's useMemo to just call the factory directly (no React needed)
+// Mock React's useMemo to just call the factory directly (no React needed).
+// `mock.module('react')` is global AND persists across files in the aggregated
+// `bun test` run, so we MUST spread the real module — otherwise every later
+// test file loses `forwardRef`/`createContext`/etc. and breaks.
+const actualReact = await import('react')
+
 mock.module('react', () => ({
+  ...actualReact,
   useMemo: (factory: () => unknown) => factory(),
 }))
 
