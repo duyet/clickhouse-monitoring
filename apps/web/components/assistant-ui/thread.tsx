@@ -25,9 +25,14 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ClockIcon,
   CopyIcon,
+  CpuIcon,
+  GaugeIcon,
+  InfoIcon,
   PencilIcon,
   RefreshCwIcon,
+  WrenchIcon,
 } from 'lucide-react'
 
 import {
@@ -71,16 +76,25 @@ import {
   ToolGroupTrigger,
 } from '@/components/assistant-ui/tool-group'
 import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
+import { Badge } from '@/components/ui/badge'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { extractMessageUsage } from '@/lib/ai/agent/message-metadata'
 import { resolveConversationBackend } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
 import { cn } from '@/lib/utils'
@@ -378,6 +392,44 @@ type GroupedRenderInfo = {
 }
 
 // ---------------------------------------------------------------------------
+// Shared date/time helpers (used by accordion summary + stats footer)
+// ---------------------------------------------------------------------------
+
+/** Format milliseconds into a human-readable duration string. */
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
+  const mins = Math.floor(ms / 60_000)
+  const secs = Math.round((ms % 60_000) / 1000)
+  return `${mins}m ${secs}s`
+}
+
+/** Format a Date as absolute readable string. */
+function formatAbsolute(date: Date): string {
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
+/** Format a Date as relative (e.g. "2m ago"). */
+function formatRelative(date: Date): string {
+  const diffMs = Date.now() - date.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  if (diffSecs < 5) return 'just now'
+  if (diffSecs < 60) return `${diffSecs}s ago`
+  const diffMins = Math.floor(diffSecs / 60)
+  if (diffMins < 60) return `${diffMins}m ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays}d ago`
+}
+
+// ---------------------------------------------------------------------------
 // ChainOfThoughtAccordion — outer collapsible for reasoning + tool groups
 // ---------------------------------------------------------------------------
 
@@ -386,34 +438,77 @@ interface ChainOfThoughtAccordionProps {
   children: ReactNode
 }
 
+/**
+ * Builds a compact summary string for the collapsed accordion trigger.
+ * Shows tool-call count, step count, and wall-clock duration.
+ */
+function useCotSummary(isActive: boolean): string | null {
+  const timing = useMessageTiming()
+  const metadata = useMessage((msg) => msg.metadata)
+  const toolCount = useMessage((msg) => {
+    if (msg.role !== 'assistant') return 0
+    return msg.content.filter(
+      (p) =>
+        (p as { type?: string })?.type === 'tool-call' ||
+        (p as { type?: string })?.type?.startsWith('tool-')
+    ).length
+  })
+
+  if (isActive) return null
+
+  const parts: string[] = []
+  if (toolCount > 0) {
+    parts.push(`${toolCount} tool${toolCount !== 1 ? 's' : ''}`)
+  }
+  const stepCount = (metadata?.steps as unknown[] | undefined)?.length ?? 0
+  if (stepCount > 0) {
+    parts.push(`${stepCount} turn${stepCount !== 1 ? 's' : ''}`)
+  }
+  if (timing?.totalStreamTime != null && timing.totalStreamTime > 0) {
+    parts.push(formatDuration(timing.totalStreamTime))
+  }
+
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
 function ChainOfThoughtAccordion({
   isActive,
   children,
 }: ChainOfThoughtAccordionProps) {
   const ref = useRef<HTMLDivElement>(null)
   const lockScroll = useScrollLock(ref, 220)
+  const summary = useCotSummary(isActive)
 
   return (
     <Collapsible
       ref={ref}
       defaultOpen
       onOpenChange={lockScroll}
-      className="group/cot my-1.5 rounded-lg border border-border/40 bg-muted/10"
+      className="group/cot my-1.5"
     >
       <CollapsibleTrigger
         className={cn(
-          'flex w-full items-center gap-1.5 px-3 py-2',
+          'flex w-full items-center gap-1.5 py-1',
           'text-xs font-medium text-muted-foreground',
           'hover:text-foreground transition-colors'
         )}
       >
-        <span className="flex-1 text-left">
-          {isActive ? 'Thinking…' : 'Thought process'}
-        </span>
-        {isActive && (
-          <span className="mr-1 inline-block size-2 animate-pulse rounded-full bg-primary/60" />
+        {isActive ? (
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary/60" />
+            <span>Thinking…</span>
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <span>Thought process</span>
+            {summary && (
+              <span className="text-muted-foreground/50 font-normal">
+                · {summary}
+              </span>
+            )}
+          </span>
         )}
-        <ChevronRightIcon className="size-3 shrink-0 transition-transform duration-200 group-data-[state=open]/cot:rotate-90" />
+        <ChevronRightIcon className="ml-auto size-3 shrink-0 transition-transform duration-200 group-data-[state=open]/cot:rotate-90" />
       </CollapsibleTrigger>
       <CollapsibleContent
         className={cn(
@@ -422,7 +517,8 @@ function ChainOfThoughtAccordion({
           'data-[state=open]:animate-collapsible-down'
         )}
       >
-        <div className="border-t border-border/30 flex flex-col gap-0">
+        {/* Left rail: single 1px border instead of a full rounded card */}
+        <div className="border-l-2 border-border/30 ml-1 pl-3 flex flex-col gap-0">
           {children}
         </div>
       </CollapsibleContent>
@@ -542,102 +638,350 @@ function LoadingIndicator() {
 }
 
 // ---------------------------------------------------------------------------
-// Task #3 + #12: Per-message stats footer with timing + relative timestamp
+// Task #3 + #12: Per-message stats footer — inline icons row + details dialog
 // ---------------------------------------------------------------------------
 
-/** Format seconds into human-readable duration. */
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
-  const mins = Math.floor(ms / 60_000)
-  const secs = Math.round((ms % 60_000) / 1000)
-  return `${mins}m ${secs}s`
-}
+/**
+ * Detailed stats dialog content: full token breakdown, timing, model info,
+ * resolved model badge, per-step data (when available), and timestamp.
+ */
+function MessageStatsDialog({
+  timing,
+  usage,
+  steps,
+  createdAt,
+  toolCount,
+}: {
+  timing: ReturnType<typeof useMessageTiming>
+  usage: ReturnType<typeof extractMessageUsage>
+  steps: { usage?: { inputTokens?: number; outputTokens?: number } }[] | null
+  createdAt: Date | undefined
+  toolCount: number
+}) {
+  const displayModel = usage?.resolvedModel ?? usage?.model
+  const requestedModel = usage?.model
+  const isResolved =
+    usage?.resolvedModel != null && usage.resolvedModel !== usage?.model
 
-/** Format a Date as absolute readable string. */
-function formatAbsolute(date: Date): string {
-  return date.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-}
+  return (
+    <div className="space-y-4 text-sm">
+      {/* Token breakdown */}
+      {usage && (
+        <section>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+            Tokens
+          </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+            <span className="text-muted-foreground">Input</span>
+            <span className="font-mono tabular-nums text-right">
+              {usage.totalInputTokens.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground">Output</span>
+            <span className="font-mono tabular-nums text-right">
+              {usage.totalOutputTokens.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground">Total</span>
+            <span className="font-mono tabular-nums text-right font-medium">
+              {usage.totalTokens.toLocaleString()}
+            </span>
+            {usage.cacheReadTokens > 0 && (
+              <>
+                <span className="text-muted-foreground">Cache read</span>
+                <span className="font-mono tabular-nums text-right text-muted-foreground">
+                  {usage.cacheReadTokens.toLocaleString()}
+                </span>
+              </>
+            )}
+            {usage.cacheWriteTokens > 0 && (
+              <>
+                <span className="text-muted-foreground">Cache write</span>
+                <span className="font-mono tabular-nums text-right text-muted-foreground">
+                  {usage.cacheWriteTokens.toLocaleString()}
+                </span>
+              </>
+            )}
+            {usage.reasoningTokens > 0 && (
+              <>
+                <span className="text-muted-foreground">Reasoning</span>
+                <span className="font-mono tabular-nums text-right text-muted-foreground">
+                  {usage.reasoningTokens.toLocaleString()}
+                </span>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
-/** Format a Date as relative (e.g. "2m ago"). */
-function formatRelative(date: Date): string {
-  const diffMs = Date.now() - date.getTime()
-  const diffSecs = Math.floor(diffMs / 1000)
-  if (diffSecs < 5) return 'just now'
-  if (diffSecs < 60) return `${diffSecs}s ago`
-  const diffMins = Math.floor(diffSecs / 60)
-  if (diffMins < 60) return `${diffMins}m ago`
-  const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-  const diffDays = Math.floor(diffHours / 24)
-  return `${diffDays}d ago`
+      {/* Per-step breakdown */}
+      {steps && steps.length > 1 && (
+        <section>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+            Per step ({steps.length} turns)
+          </p>
+          <div className="space-y-1">
+            {steps.map((step, i) => {
+              const inTok = step.usage?.inputTokens ?? 0
+              const outTok = step.usage?.outputTokens ?? 0
+              if (inTok === 0 && outTok === 0) return null
+              return (
+                <div
+                  key={i}
+                  className="grid grid-cols-[auto_1fr_1fr] gap-x-3 text-xs"
+                >
+                  <span className="text-muted-foreground/60">#{i + 1}</span>
+                  <span className="font-mono tabular-nums text-muted-foreground">
+                    {inTok.toLocaleString()} in
+                  </span>
+                  <span className="font-mono tabular-nums text-muted-foreground">
+                    {outTok.toLocaleString()} out
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Timing + throughput */}
+      {(timing?.totalStreamTime != null || timing?.tokensPerSecond != null) && (
+        <section>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+            Timing
+          </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+            {timing?.totalStreamTime != null && (
+              <>
+                <span className="text-muted-foreground">Duration</span>
+                <span className="font-mono tabular-nums text-right">
+                  {formatDuration(timing.totalStreamTime)}
+                </span>
+              </>
+            )}
+            {timing?.tokensPerSecond != null && (
+              <>
+                <span className="text-muted-foreground">Throughput</span>
+                <span className="font-mono tabular-nums text-right">
+                  {timing.tokensPerSecond.toFixed(1)} tok/s
+                </span>
+              </>
+            )}
+            {toolCount > 0 && (
+              <>
+                <span className="text-muted-foreground">Tool calls</span>
+                <span className="font-mono tabular-nums text-right">
+                  {toolCount}
+                </span>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Model info */}
+      {(displayModel ?? usage?.provider) && (
+        <section>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+            Model
+          </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+            {usage?.provider && (
+              <>
+                <span className="text-muted-foreground">Provider</span>
+                <span className="font-mono text-right text-xs">
+                  {usage.provider}
+                </span>
+              </>
+            )}
+            {requestedModel && (
+              <>
+                <span className="text-muted-foreground">
+                  {isResolved ? 'Requested' : 'Model'}
+                </span>
+                <span className="font-mono text-right text-xs break-all">
+                  {requestedModel}
+                </span>
+              </>
+            )}
+            {isResolved && displayModel && (
+              <>
+                <span className="text-muted-foreground">Resolved</span>
+                <span className="font-mono text-right text-xs break-all">
+                  {displayModel}
+                </span>
+              </>
+            )}
+            {usage?.estimatedCostUsd != null && (
+              <>
+                <span className="text-muted-foreground">Est. cost</span>
+                <span className="font-mono tabular-nums text-right">
+                  {usage.estimatedCostUsd === 0
+                    ? 'free'
+                    : `$${usage.estimatedCostUsd.toFixed(4)}`}
+                </span>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Timestamp */}
+      {createdAt instanceof Date && (
+        <section>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+            Time
+          </p>
+          <span className="text-sm">{formatAbsolute(createdAt)}</span>
+        </section>
+      )}
+    </div>
+  )
 }
 
 /**
- * Per-message stats footer: input tokens · output tokens · duration · model · timestamp.
- * Only renders fields that are actually available — no "—" placeholders.
+ * Per-message stats footer — compact inline icon row with a "details" button
+ * that opens a Dialog showing the full breakdown.
+ * Only renders when there is something meaningful to show.
  */
 function MessageStatsFooter() {
   const timing = useMessageTiming()
   const metadata = useMessage((msg) => msg.metadata)
   const createdAt = useMessage((msg) => msg.createdAt)
+  // assistant-ui exposes the AI SDK parts array as `message.content`
+  const content = useMessage((msg) => msg.content) as readonly unknown[]
 
-  // Extract token usage from steps
-  const steps = metadata?.steps
-  let inputTokens = 0
-  let outputTokens = 0
-  if (steps && steps.length > 0) {
+  // Extract data-usage part from content (same shape as UIMessage.parts)
+  // extractMessageUsage expects { parts: ... } but assistant-ui uses { content: ... }
+  const usage = extractMessageUsage({ parts: content } as Parameters<
+    typeof extractMessageUsage
+  >[0])
+
+  // Fall back to summing step-level usage when data-usage is absent
+  const steps = metadata?.steps as
+    | { usage?: { inputTokens?: number; outputTokens?: number } }[]
+    | undefined
+  let inputTokens = usage?.totalInputTokens ?? 0
+  let outputTokens = usage?.totalOutputTokens ?? 0
+  if (!usage && steps && steps.length > 0) {
     for (const step of steps) {
       inputTokens += step.usage?.inputTokens ?? 0
       outputTokens += step.usage?.outputTokens ?? 0
     }
   }
+  const totalTokens = inputTokens + outputTokens
 
-  const hasTokens = inputTokens > 0 || outputTokens > 0
+  const toolCount =
+    (content as { type?: string }[])?.filter(
+      (p) => p?.type === 'tool-call' || (p?.type?.startsWith('tool-') ?? false)
+    ).length ?? 0
+
+  const hasTokens = totalTokens > 0
   const hasDuration = timing?.totalStreamTime != null
   const hasTimestamp = createdAt instanceof Date
+  const hasModel = (usage?.resolvedModel ?? usage?.model) != null
 
-  // If nothing to show, render nothing
   if (!hasTokens && !hasDuration && !hasTimestamp) return null
 
-  const items: { label: string; value: string }[] = []
-
-  if (hasTokens) {
-    items.push({ label: 'in', value: `${inputTokens.toLocaleString()}` })
-    items.push({ label: 'out', value: `${outputTokens.toLocaleString()}` })
-  }
-  if (hasDuration && timing?.totalStreamTime != null) {
-    items.push({ label: 'time', value: formatDuration(timing.totalStreamTime) })
-  }
-  if (timing?.tokensPerSecond != null) {
-    items.push({ label: 'tok/s', value: timing.tokensPerSecond.toFixed(1) })
-  }
+  // The model to show inline — prefer resolvedModel when it differs
+  const displayModel = usage?.resolvedModel ?? usage?.model
+  const isResolved =
+    usage?.resolvedModel != null && usage.resolvedModel !== usage?.model
 
   return (
-    <div className="mt-1 flex items-center gap-2.5 text-[10px] text-muted-foreground/60">
-      {items.map((item) => (
-        <span key={item.label} className="flex items-center gap-0.5">
-          <span className="opacity-70">{item.label}</span>
-          <span className="font-mono">{item.value}</span>
+    <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground/55">
+      {/* Duration */}
+      {hasDuration && timing?.totalStreamTime != null && (
+        <span className="flex items-center gap-0.5">
+          <ClockIcon className="size-2.5 shrink-0" />
+          <span className="font-mono tabular-nums">
+            {formatDuration(timing.totalStreamTime)}
+          </span>
         </span>
-      ))}
+      )}
+
+      {/* Throughput */}
+      {timing?.tokensPerSecond != null && (
+        <span className="flex items-center gap-0.5">
+          <GaugeIcon className="size-2.5 shrink-0" />
+          <span className="font-mono tabular-nums">
+            {timing.tokensPerSecond.toFixed(1)}
+          </span>
+        </span>
+      )}
+
+      {/* Token total */}
+      {hasTokens && (
+        <span className="flex items-center gap-0.5">
+          <CpuIcon className="size-2.5 shrink-0" />
+          <span className="font-mono tabular-nums">
+            {totalTokens.toLocaleString()}
+          </span>
+        </span>
+      )}
+
+      {/* Tool call count */}
+      {toolCount > 0 && (
+        <span className="flex items-center gap-0.5">
+          <WrenchIcon className="size-2.5 shrink-0" />
+          <span className="font-mono tabular-nums">{toolCount}</span>
+        </span>
+      )}
+
+      {/* Model — show resolvedModel with badge when it differs from requested */}
+      {hasModel && displayModel && (
+        <span className="flex items-center gap-1 min-w-0">
+          <span className="truncate max-w-[14rem]" title={displayModel}>
+            {displayModel}
+          </span>
+          {isResolved && (
+            <Badge
+              variant="outline"
+              className="px-1 py-0 text-[9px] h-3.5 leading-none border-border/40"
+            >
+              resolved
+            </Badge>
+          )}
+        </span>
+      )}
+
+      {/* Timestamp with tooltip */}
       {hasTimestamp && (
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="cursor-default tabular-nums">
-              {formatRelative(createdAt)}
+              {formatRelative(createdAt as Date)}
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
-            {formatAbsolute(createdAt)}
+            {formatAbsolute(createdAt as Date)}
           </TooltipContent>
         </Tooltip>
+      )}
+
+      {/* Details dialog trigger */}
+      {(hasTokens || hasDuration) && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-0.5 hover:text-foreground transition-colors"
+              aria-label="View response details"
+            >
+              <InfoIcon className="size-2.5 shrink-0" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-sm">Response details</DialogTitle>
+            </DialogHeader>
+            <MessageStatsDialog
+              timing={timing}
+              usage={usage}
+              steps={steps ?? null}
+              createdAt={createdAt instanceof Date ? createdAt : undefined}
+              toolCount={toolCount}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )

@@ -524,6 +524,9 @@ export async function POST(request: Request) {
   }
 
   const usageSteps: LanguageModelUsage[] = []
+  // Tracks the provider-reported model ID from the last completed step.
+  // Populated synchronously in onStepFinish so it is available after consumeStream().
+  let lastStepModelId: string | undefined
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
@@ -555,6 +558,11 @@ export async function POST(request: Request) {
           messages: modelMessages,
           onStepFinish: (step) => {
             usageSteps.push(step.usage)
+            // Capture the provider-reported model ID (e.g., the resolved model
+            // behind an auto-router preset). Falls back gracefully if absent.
+            if (step.response.modelId) {
+              lastStepModelId = step.response.modelId
+            }
 
             const { inputTokenDetails } = step.usage
             if (
@@ -584,12 +592,28 @@ export async function POST(request: Request) {
         )
         await result.consumeStream()
 
+        // After stream consumption, attempt to get the final response modelId.
+        // result.response is a PromiseLike that resolves once the stream is done.
+        let resolvedModel: string | undefined = lastStepModelId
+        if (!resolvedModel) {
+          try {
+            const responseMetadata = await result.response
+            if (responseMetadata.modelId) {
+              resolvedModel = responseMetadata.modelId
+            }
+          } catch {
+            // response metadata unavailable — fall back to requested model
+          }
+        }
+        resolvedModel = resolvedModel || model
+
         // Send aggregated usage/cost as a data part so the client can display it
         if (usageSteps.length > 0) {
           const stats = {
             ...aggregateUsageWithCost(usageSteps, model),
             model,
             provider: requestedProvider,
+            resolvedModel,
           }
           writer.write({
             type: 'data-usage',
@@ -614,6 +638,7 @@ export async function POST(request: Request) {
                 ...aggregateUsageWithCost(usageSteps, model),
                 model,
                 provider: requestedProvider,
+                resolvedModel: lastStepModelId || model,
               },
             ],
           })
@@ -634,6 +659,7 @@ export async function POST(request: Request) {
           ...aggregateUsageWithCost(usageSteps, model),
           model,
           provider: requestedProvider,
+          resolvedModel: lastStepModelId || model,
         }
         console.log('[Agent API] Session usage:', stats)
       }

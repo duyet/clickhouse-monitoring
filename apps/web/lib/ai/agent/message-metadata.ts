@@ -7,6 +7,13 @@ import { isAgentError } from './errors'
 export interface AgentMessageUsage extends AgentUsageStats {
   readonly model?: string
   readonly provider?: string
+  /**
+   * The actual model that handled the request.
+   * Differs from `model` when the requested model is a preset/router
+   * (e.g. "openrouter/free") that resolves to a concrete model at runtime.
+   * Populated by the server when it knows the resolved model ID.
+   */
+  readonly resolvedModel?: string
 }
 
 export interface AgentToolMetadata {
@@ -93,6 +100,10 @@ export function extractMessageUsage(
         model: typeof data[0].model === 'string' ? data[0].model : undefined,
         provider:
           typeof data[0].provider === 'string' ? data[0].provider : undefined,
+        resolvedModel:
+          typeof data[0].resolvedModel === 'string'
+            ? data[0].resolvedModel
+            : undefined,
       }
     }
   }

@@ -44,11 +44,7 @@ export function ReasoningRoot({
       ref={collapsibleRef}
       defaultOpen={defaultOpen}
       onOpenChange={lockScroll}
-      className={cn(
-        'group/reasoning my-1.5 rounded-lg',
-        'border border-border/40 bg-muted/20',
-        className
-      )}
+      className={cn('group/reasoning', className)}
     >
       {children}
     </Collapsible>
@@ -118,9 +114,7 @@ export function ReasoningContent({
         'data-[state=open]:animate-collapsible-down'
       )}
     >
-      <div className={cn('border-t border-border/30 px-3 py-2', className)}>
-        {children}
-      </div>
+      <div className={cn('px-3 py-2', className)}>{children}</div>
     </CollapsibleContent>
   )
 }

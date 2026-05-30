@@ -148,7 +148,11 @@ async function fetchModelsWithCapabilities(): Promise<ModelDisplayInfo[]> {
     if (!response.ok) {
       throw new Error('Failed to fetch models')
     }
-    const data = (await response.json()) as { models: ModelDisplayInfo[] }
+    // configuredProviders is a new top-level field; tolerate its absence.
+    const data = (await response.json()) as {
+      models: ModelDisplayInfo[]
+      configuredProviders?: string[]
+    }
     return data.models
   } catch {
     return getStaticModels()
@@ -183,9 +187,22 @@ export function useAgentModel(): UseAgentModelResult {
 
     async function loadModels() {
       const nextModels = await fetchModelsWithCapabilities()
-      if (!cancelled && nextModels.length > 0) {
-        setModels(nextModels)
-      }
+      if (cancelled || nextModels.length === 0) return
+
+      setModels(nextModels)
+
+      // If the persisted model is no longer in the list (e.g. its provider's
+      // API key was removed), fall back to the first available model so the
+      // user is never stuck with an unselectable id.
+      setModelState((current) => {
+        const stillAvailable = nextModels.some((m) => m.id === current)
+        if (stillAvailable) return current
+
+        const fallback = nextModels[0].id
+        saveModel(fallback)
+        emitModelChange(fallback)
+        return fallback
+      })
     }
 
     loadModels()

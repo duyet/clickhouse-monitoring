@@ -42,11 +42,7 @@ export function ToolGroupRoot({
   return (
     <Collapsible
       defaultOpen={defaultOpen}
-      className={cn(
-        'group/toolgroup my-1.5 rounded-lg',
-        'border border-border/40 bg-background/40',
-        className
-      )}
+      className={cn('group/toolgroup', className)}
     >
       {children}
     </Collapsible>
@@ -129,14 +125,7 @@ export function ToolGroupContent({
         'data-[state=open]:animate-collapsible-down'
       )}
     >
-      <div
-        className={cn(
-          'border-t border-border/30 flex flex-col gap-0',
-          className
-        )}
-      >
-        {children}
-      </div>
+      <div className={cn('flex flex-col gap-0', className)}>{children}</div>
     </CollapsibleContent>
   )
 }
