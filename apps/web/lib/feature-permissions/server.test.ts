@@ -121,6 +121,37 @@ access = "public"
     ).toBe(true)
   })
 
+  test('hides interaction-gated feature from anonymous when auth is enabled', () => {
+    // The agent renders for everyone but requires sign-in to use. With an auth
+    // provider active and an anonymous visitor, the menu entry must be hidden.
+    expect(
+      isFeatureAllowed(
+        { feature: 'agent', interactionGated: true },
+        { authProvider: 'clerk', principal: 'anonymous', features: {} }
+      )
+    ).toBe(false)
+  })
+
+  test('shows interaction-gated feature to authenticated users', () => {
+    expect(
+      isFeatureAllowed(
+        { feature: 'agent', interactionGated: true },
+        { authProvider: 'clerk', principal: 'authenticated', features: {} }
+      )
+    ).toBe(true)
+  })
+
+  test('shows interaction-gated feature when no auth provider is configured', () => {
+    // Without auth, every visitor is anonymous but no sign-in is possible, so
+    // the feature is fully usable and must stay visible.
+    expect(
+      isFeatureAllowed(
+        { feature: 'agent', interactionGated: true },
+        { authProvider: 'none', principal: 'anonymous', features: {} }
+      )
+    ).toBe(true)
+  })
+
   test('loads YAML overrides', async () => {
     await writeTempConfig(
       `

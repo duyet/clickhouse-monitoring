@@ -9,7 +9,7 @@ import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
-import { ChartSkeleton, TabsSkeleton } from '@/components/skeletons'
+import { Skeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -181,9 +181,32 @@ function OverviewPageContent() {
   )
 }
 
+/**
+ * Full-page loading fallback for the searchParams Suspense boundary.
+ *
+ * `OverviewPageContent` reads `useSearchParams()`/`useHostId()`, which Next.js
+ * requires to sit under Suspense. A tiny single-card fallback collapses the
+ * document to ~140px during that flash, so the scroll container has nothing to
+ * scroll and the viewport snaps back to the top. Reserving the real layout's
+ * height (status strip + KPI grid + tabs) keeps the scroll position stable.
+ */
+function OverviewPageFallback() {
+  return (
+    <div>
+      <Skeleton className="mb-3 h-10 w-full rounded-lg" />
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-lg" />
+        ))}
+      </div>
+      <TabsSkeleton tabCount={OVERVIEW_TABS.length} />
+    </div>
+  )
+}
+
 export default function OverviewPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<OverviewPageFallback />}>
       <OverviewPageContent />
     </Suspense>
   )

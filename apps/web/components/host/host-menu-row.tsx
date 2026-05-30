@@ -49,10 +49,12 @@ export const HostMenuRow = function HostMenuRow({
             title={`Version ${data.version} · Uptime ${data.uptime}`}
           >
             <TagIcon className="size-3 shrink-0 opacity-70" />
-            <span className="truncate tabular-nums">{data.version}</span>
-            <span className="opacity-40">·</span>
+            {/* Version is short and the priority — never shrink it. */}
+            <span className="shrink-0 tabular-nums">{data.version}</span>
+            <span className="shrink-0 opacity-40">·</span>
             <ClockIcon className="size-3 shrink-0 opacity-70" />
-            <span className="truncate tabular-nums">
+            {/* Uptime yields first: it needs min-w-0 to ellipsize inside a flex row. */}
+            <span className="min-w-0 truncate tabular-nums">
               {formatCompactUptime(data.uptime)}
             </span>
           </span>
