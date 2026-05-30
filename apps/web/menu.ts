@@ -16,6 +16,7 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import {
+  AlertTriangleIcon,
   BookOpenIcon,
   CircleDollarSignIcon,
   CombineIcon,
@@ -506,6 +507,14 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'disks',
         icon: HardDriveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/disks',
+      },
+      {
+        title: 'Warnings',
+        href: '/warnings',
+        description:
+          'Server-side warnings about potential configuration or operational issues',
+        icon: AlertTriangleIcon,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/warnings',
       },
     ],
   },

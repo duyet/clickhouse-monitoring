@@ -69,6 +69,7 @@ import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
 } from './system/replicas-status'
+import { warningsConfig } from './system/warnings'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
 import { droppedTablesConfig } from './tables/dropped-tables'
@@ -154,6 +155,7 @@ export const queries: Array<QueryConfig> = [
   databaseDiskSpaceByDatabaseConfig,
   databaseTableColumnsConfig,
   tablesListConfig,
+  warningsConfig,
 
   // Security
   sessionsConfig,
