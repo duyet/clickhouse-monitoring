@@ -48,4 +48,12 @@ export const mockFetchData = mock(
 
 mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
+  // findings-store (pulled in via the tools index) imports getClient at
+  // module-eval time. Provide it so the import resolves; no agent-tool test
+  // exercises the real write client here.
+  getClient: async () => ({
+    command: async () => ({}),
+    insert: async () => ({}),
+    query: async () => ({ json: async () => [] }),
+  }),
 }))

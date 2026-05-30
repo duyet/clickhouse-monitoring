@@ -10,6 +10,12 @@ import { describe, expect, mock, test } from 'bun:test'
 mock.module('server-only', () => ({}))
 
 mock.module('@chm/clickhouse-client', () => ({
+  // findings-store (via the tools index) imports getClient at module-eval time.
+  getClient: async () => ({
+    command: async () => ({}),
+    insert: async () => ({}),
+    query: async () => ({ json: async () => [] }),
+  }),
   fetchData: async ({
     query,
   }: {
