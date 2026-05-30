@@ -13,6 +13,7 @@ mock.module('server-only', () => ({}))
 type AgentStreamResult = {
   toUIMessageStream: () => unknown
   consumeStream: () => Promise<void>
+  response?: Promise<{ modelId?: string }>
 }
 
 type CapturedAIArgs = {
@@ -36,6 +37,7 @@ mock.module('@/lib/ai/agent', () => ({
       stream: async (options: {
         onStepFinish: (step: {
           usage: { inputTokens: number; outputTokens: number }
+          response?: { modelId?: string }
         }) => void
       }) => {
         if (mockAgentStreamError) {
@@ -47,6 +49,7 @@ mock.module('@/lib/ai/agent', () => ({
             inputTokens: 3,
             outputTokens: 4,
           },
+          response: { modelId: 'resolved-model-xyz' },
         })
 
         return {
@@ -54,6 +57,7 @@ mock.module('@/lib/ai/agent', () => ({
             pipeThrough: (_: unknown) => 'mocked-piped-stream',
           }),
           consumeStream: async () => {},
+          response: Promise.resolve({ modelId: 'resolved-model-xyz' }),
         } as AgentStreamResult
       },
     }

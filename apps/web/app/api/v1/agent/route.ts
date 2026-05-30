@@ -560,7 +560,7 @@ export async function POST(request: Request) {
             usageSteps.push(step.usage)
             // Capture the provider-reported model ID (e.g., the resolved model
             // behind an auto-router preset). Falls back gracefully if absent.
-            if (step.response.modelId) {
+            if (step.response?.modelId) {
               lastStepModelId = step.response.modelId
             }
 
