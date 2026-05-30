@@ -1,6 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryResults: Record<string, unknown[]> = {
   queries: [
@@ -39,8 +38,8 @@ const queryResults: Record<string, unknown[]> = {
   queryLoad: [{ query_count: 500, avg_duration_ms: 150 }],
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
+function setupComparisonMocks() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     const q = query
 
     if (q.includes('version()'))
@@ -67,8 +66,8 @@ mock.module('@chm/clickhouse-client', () => ({
       return { data: queryResults.queries, error: null }
 
     return { data: [], error: null }
-  }),
-}))
+  })
+}
 
 const { createComparisonTools } = await import('../comparison-tools')
 
@@ -81,6 +80,8 @@ describe('createComparisonTools', () => {
 
   describe('compare_time_periods', () => {
     test('compares queries between two periods', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_time_periods.execute({
@@ -100,6 +101,8 @@ describe('createComparisonTools', () => {
     })
 
     test('returns snapshot note for storage metric', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_time_periods.execute({
@@ -116,6 +119,8 @@ describe('createComparisonTools', () => {
     })
 
     test('returns snapshot note for merges metric', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_time_periods.execute({
@@ -132,6 +137,8 @@ describe('createComparisonTools', () => {
     })
 
     test('compares errors between two periods', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_time_periods.execute({
@@ -148,6 +155,8 @@ describe('createComparisonTools', () => {
     })
 
     test('period labels show correct hours-ago and duration', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_time_periods.execute({
@@ -165,6 +174,8 @@ describe('createComparisonTools', () => {
 
   describe('compare_hosts', () => {
     test('returns side-by-side host comparison', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_hosts.execute({
@@ -183,6 +194,8 @@ describe('createComparisonTools', () => {
     })
 
     test('includes disk and table size data', async () => {
+      setupComparisonMocks()
+
       const tools = createComparisonTools(0)
 
       const result = await tools.compare_hosts.execute({

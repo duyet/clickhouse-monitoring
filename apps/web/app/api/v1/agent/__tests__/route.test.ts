@@ -1,5 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
-import { setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
+import { getClerkUserId, setMockClerkUserId } from '@/__mocks__/clerk-auth-mock'
+import {
+  agentAuthFromEnv,
+  mockAuthorizeFeatureRequest,
+} from '@/app/api/v1/__tests__/feature-permissions-mock'
 import { AGENT_JSON_RENDER_MAX_SPEC_PART_BYTES } from '@/lib/ai/agent/json-render-catalog'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
@@ -160,6 +164,11 @@ describe('POST /api/v1/agent', () => {
     process.env.LLM_API_KEY = 'test-llm-key'
     process.env.LLM_MODEL = 'openrouter:openrouter/auto'
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+
+    // Use agent auth mock that reads env vars and Clerk auth state
+    mockAuthorizeFeatureRequest.mockImplementation(
+      agentAuthFromEnv(getClerkUserId, AGENT_API_TOKEN)
+    )
   })
 
   async function readJsonRenderStreamValues(

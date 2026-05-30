@@ -1,15 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
-
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query, hostId }: { query: string; hostId: number }) => {
-    if (hostId === 999) {
-      return { data: null, error: { message: 'Host not found' } }
-    }
-    return { data: [{ result: query }], error: null }
-  },
-}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const {
   resolveHostId,

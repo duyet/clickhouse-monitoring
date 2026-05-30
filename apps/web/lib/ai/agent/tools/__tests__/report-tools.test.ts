@@ -1,12 +1,10 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
-let throwOn: string | null = null
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+function setupReportMocks(throwOn: string | null = null) {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (throwOn && query.includes(throwOn))
       throw new Error(`${throwOn} query failed`)
     if (query.includes('version()'))
@@ -24,12 +22,8 @@ mock.module('@chm/clickhouse-client', () => ({
     if (query.includes('system.replicas'))
       return { data: queryStore['replicas'] ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
+  })
+}
 
 const { createReportTools } = await import('../report-tools')
 
@@ -40,7 +34,6 @@ describe('createReportTools', () => {
   })
 
   test('collects full health report', async () => {
-    throwOn = null
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore['server'] = [{ version: '24.1.1', uptime_seconds: 86400 }]
     queryStore['disks'] = [
@@ -53,6 +46,7 @@ describe('createReportTools', () => {
     queryStore['errors'] = [{ name: 'Err1', code: 100, count: 5 }]
     queryStore['merges'] = [{ active_merges: 2, total_size: '5 GiB' }]
     queryStore['replicas'] = []
+    setupReportMocks()
 
     const tools = createReportTools(0)
     const result = await tools.generate_health_report.execute({})
@@ -80,9 +74,9 @@ describe('createReportTools', () => {
   })
 
   test('uses custom lastHours', async () => {
-    throwOn = null
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore['server'] = [{ version: '24.1.1', uptime_seconds: 100 }]
+    setupReportMocks()
 
     const tools = createReportTools(0)
     const result = await tools.generate_health_report.execute({ lastHours: 48 })
@@ -91,21 +85,19 @@ describe('createReportTools', () => {
   })
 
   test('handles individual query failures gracefully', async () => {
-    throwOn = 'system.disks'
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupReportMocks('system.disks')
 
     const tools = createReportTools(0)
     const result = await tools.generate_health_report.execute({})
 
     expect(result.disks).toEqual({ error: 'system.disks query failed' })
     expect(result.server).toEqual([])
-
-    throwOn = null
   })
 
   test('resolves hostId override', async () => {
-    throwOn = null
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupReportMocks()
 
     const tools = createReportTools(0)
     const result = await tools.generate_health_report.execute({ hostId: 3 })

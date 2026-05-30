@@ -1,12 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: mock((_sql: string) => {
-    // passes by default
-  }),
-}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const databases = [
   { name: 'system', engine: 'Atomic', comment: 'System database' },
@@ -68,8 +61,12 @@ const fkCandidates = [
   { column_name: 'user_key', column_type: 'String' },
 ]
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(
+/** Default mock router for schema tools queries. */
+function setupSchemaMocks(overrides?: {
+  tablesSize?: unknown[]
+  tablesName?: unknown[]
+}) {
+  mockFetchData.mockImplementation(
     async ({
       query,
       query_params,
@@ -77,45 +74,51 @@ mock.module('@chm/clickhouse-client', () => ({
       query: string
       query_params?: Record<string, unknown>
     }) => {
-      const q = query
       const params = query_params ?? {}
 
-      if (q.includes('system.databases') && !q.includes('system.tables'))
+      if (
+        query.includes('system.databases') &&
+        !query.includes('system.tables')
+      )
         return { data: databases, error: null }
 
       if (
-        q.includes('system.tables') &&
-        q.includes('total_bytes') &&
-        q.includes('ORDER BY total_bytes')
+        query.includes('system.tables') &&
+        query.includes('total_bytes') &&
+        query.includes('ORDER BY total_bytes')
       ) {
         if (params.database === 'empty_db') return { data: [], error: null }
-        return { data: tables, error: null }
+        return { data: overrides?.tablesSize ?? tables, error: null }
       }
 
-      if (q.includes('system.tables') && q.includes('ORDER BY name'))
-        return { data: tables, error: null }
+      if (query.includes('system.tables') && query.includes('ORDER BY name')) {
+        return { data: overrides?.tablesName ?? tables, error: null }
+      }
 
-      if (q.includes('system.columns') && q.includes('ORDER BY position')) {
+      if (
+        query.includes('system.columns') &&
+        query.includes('ORDER BY position')
+      ) {
         if (params.table === 'empty_table') return { data: [], error: null }
         return { data: columns, error: null }
       }
 
-      if (q.includes('system.data_skipping_indexes'))
+      if (query.includes('system.data_skipping_indexes'))
         return { data: indexes, error: null }
 
-      if (q.includes('system.parts') && q.includes('active = 1'))
+      if (query.includes('system.parts') && query.includes('active = 1'))
         return { data: partitions, error: null }
 
-      if (q.includes('partition_key') && q.includes('primary_key'))
+      if (query.includes('partition_key') && query.includes('primary_key'))
         return { data: constraints, error: null }
 
-      if (q.includes('%_id') || q.includes('%_key'))
+      if (query.includes('%_id') || query.includes('%_key'))
         return { data: fkCandidates, error: null }
 
       return { data: [{ result: 'query data' }], error: null }
     }
-  ),
-}))
+  )
+}
 
 const { createSchemaTools } = await import('../schema-tools')
 
@@ -131,6 +134,8 @@ describe('createSchemaTools', () => {
 
   describe('query', () => {
     test('executes validated read-only query', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
 
       const result = await tools.query.execute({
@@ -142,6 +147,8 @@ describe('createSchemaTools', () => {
     })
 
     test('uses provided hostId', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
 
       const result = await tools.query.execute({
@@ -155,6 +162,8 @@ describe('createSchemaTools', () => {
 
   describe('list_databases', () => {
     test('returns list of databases', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.list_databases.execute({})
 
@@ -167,6 +176,8 @@ describe('createSchemaTools', () => {
 
   describe('list_tables', () => {
     test('returns tables for a database', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.list_tables.execute({
         database: 'analytics',
@@ -178,6 +189,8 @@ describe('createSchemaTools', () => {
     })
 
     test('returns empty tables for empty database', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.list_tables.execute({
         database: 'empty_db',
@@ -188,34 +201,25 @@ describe('createSchemaTools', () => {
     })
 
     test('marks truncated when result hits limit', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('total_bytes') && query.includes('DESC')) {
-            return {
-              data: Array.from({ length: 500 }, (_, i) => ({
-                name: `t${i}`,
-                engine: 'MergeTree',
-                total_rows: 0,
-                size: '0 B',
-              })),
-              error: null,
-            }
+      mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('total_bytes') && query.includes('DESC')) {
+          return {
+            data: Array.from({ length: 500 }, (_, i) => ({
+              name: `t${i}`,
+              engine: 'MergeTree',
+              total_rows: 0,
+              size: '0 B',
+            })),
+            error: null,
           }
-          return origImpl!({ query })
         }
-      )
+        return { data: [], error: null }
+      })
 
       const tools = createSchemaTools(0)
       const result = await tools.list_tables.execute({
         database: 'big_db',
       })
-
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
 
       expect(result.truncated).toBe(true)
       expect(result.note).toContain('Showing the largest 500')
@@ -224,6 +228,8 @@ describe('createSchemaTools', () => {
 
   describe('get_table_schema', () => {
     test('returns column schema for a table', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
 
       const result = await tools.get_table_schema.execute({
@@ -238,6 +244,8 @@ describe('createSchemaTools', () => {
     })
 
     test('returns empty for nonexistent table', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
 
       const result = await tools.get_table_schema.execute({
@@ -252,6 +260,8 @@ describe('createSchemaTools', () => {
 
   describe('explore_table_schema', () => {
     test('mode databases: lists all databases when no params', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.explore_table_schema.execute({})
 
@@ -260,6 +270,8 @@ describe('createSchemaTools', () => {
     })
 
     test('mode tables: lists tables when only database provided', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.explore_table_schema.execute({
         database: 'analytics',
@@ -272,12 +284,7 @@ describe('createSchemaTools', () => {
     })
 
     test('mode tables: marks truncated at 500 limit', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(async () => ({
+      mockFetchData.mockImplementation(async () => ({
         data: Array.from({ length: 500 }, (_, i) => ({
           name: `t${i}`,
           engine: 'MergeTree',
@@ -292,13 +299,13 @@ describe('createSchemaTools', () => {
         database: 'big_db',
       })
 
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
-
       expect(result.truncated).toBe(true)
       expect(result.note).toContain('first 500')
     })
 
     test('mode schema: returns full schema when database and table provided', async () => {
+      setupSchemaMocks()
+
       const tools = createSchemaTools(0)
       const result = await tools.explore_table_schema.execute({
         database: 'analytics',
@@ -316,22 +323,32 @@ describe('createSchemaTools', () => {
     })
 
     test('mode schema: handles FK query failure gracefully', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      let callCount = 0
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          callCount++
+      mockFetchData.mockImplementation(
+        async ({
+          query,
+          query_params,
+        }: {
+          query: string
+          query_params?: Record<string, unknown>
+        }) => {
           if (
-            callCount === 5 &&
-            (query.includes('%_id') || query.includes('%_key'))
-          ) {
+            query.includes('system.columns') &&
+            query.includes('ORDER BY position')
+          )
+            return { data: columns, error: null }
+          if (query.includes('system.data_skipping_indexes'))
+            return { data: indexes, error: null }
+          if (query.includes('system.parts') && query.includes('active = 1'))
+            return { data: partitions, error: null }
+          if (query.includes('partition_key') && query.includes('primary_key'))
+            return { data: constraints, error: null }
+
+          // FK query — fail
+          if (query.includes('%_id') || query.includes('%_key')) {
             throw new Error('FK query failed')
           }
-          return origImpl!({ query })
+
+          return { data: [], error: null }
         }
       )
 
@@ -340,8 +357,6 @@ describe('createSchemaTools', () => {
         database: 'analytics',
         table: 'events',
       })
-
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
 
       expect(result.mode).toBe('schema')
       expect(result.foreignKeys).toEqual([])

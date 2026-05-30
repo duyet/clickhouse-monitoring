@@ -1,6 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { describe, expect, test } from 'bun:test'
+import './shared-mocks'
 
 const {
   extractReferencedTables,

@@ -31,10 +31,10 @@ const originalEnv = new Map<string, string | undefined>(
 )
 
 function resetEnv() {
+  // Always clear — restoring to .env.local values (e.g. CHM_AUTH_PROVIDER=clerk)
+  // breaks tests that expect a clean slate. Tests set their own values explicitly.
   for (const key of ENV_KEYS) {
-    const value = originalEnv.get(key)
-    if (value === undefined) delete process.env[key]
-    else process.env[key] = value
+    delete process.env[key]
   }
 }
 

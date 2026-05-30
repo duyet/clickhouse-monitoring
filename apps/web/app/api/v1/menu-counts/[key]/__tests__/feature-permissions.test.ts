@@ -1,19 +1,17 @@
-import { GET } from '../route'
-import { afterEach, describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
+import {
+  featureDisabledByEnv,
+  mockAuthorizeFeatureRequest,
+} from '@/app/api/v1/__tests__/feature-permissions-mock'
 
 const originalMetricsEnabled = process.env.CHM_FEATURE_METRICS_ENABLED
-
-afterEach(() => {
-  if (originalMetricsEnabled === undefined) {
-    delete process.env.CHM_FEATURE_METRICS_ENABLED
-  } else {
-    process.env.CHM_FEATURE_METRICS_ENABLED = originalMetricsEnabled
-  }
-})
 
 describe('GET /api/v1/menu-counts/[key] feature permissions', () => {
   test('blocks disabled menu count feature before execution', async () => {
     process.env.CHM_FEATURE_METRICS_ENABLED = 'false'
+    mockAuthorizeFeatureRequest.mockImplementation(featureDisabledByEnv)
+
+    const { GET } = await import('../route')
 
     const response = await GET(
       new Request('http://localhost:3000/api/v1/menu-counts/metrics?hostId=0'),
@@ -23,5 +21,13 @@ describe('GET /api/v1/menu-counts/[key] feature permissions', () => {
 
     expect(response.status).toBe(404)
     expect(body.error.code).toBe('FEATURE_DISABLED')
+
+    // Restore
+    if (originalMetricsEnabled === undefined) {
+      delete process.env.CHM_FEATURE_METRICS_ENABLED
+    } else {
+      process.env.CHM_FEATURE_METRICS_ENABLED = originalMetricsEnabled
+    }
+    mockAuthorizeFeatureRequest.mockResolvedValue(null)
   })
 })
