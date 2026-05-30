@@ -21,6 +21,8 @@ export interface WorkflowPlanStep {
 export interface AgentWorkflowPlanProps {
   steps: WorkflowPlanStep[]
   note?: string
+  /** Workflow title shown when the plan was started from a template. */
+  workflow?: string
   total?: number
   completed?: number
 }
@@ -47,6 +49,7 @@ function StepIcon({ status }: { status: WorkflowPlanStepStatus }) {
 export function AgentWorkflowPlan({
   steps,
   note,
+  workflow,
   total,
   completed,
 }: AgentWorkflowPlanProps) {
@@ -62,7 +65,7 @@ export function AgentWorkflowPlan({
       <div className="mb-2 flex items-center gap-2">
         <ListChecksIcon className="size-4 shrink-0 text-muted-foreground" />
         <span className="text-xs font-medium text-foreground">
-          Workflow plan
+          {workflow ? `Workflow: ${workflow}` : 'Workflow plan'}
         </span>
         <span className="ml-auto font-mono text-[11px] text-muted-foreground">
           {completedCount}/{totalCount}

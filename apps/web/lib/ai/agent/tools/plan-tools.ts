@@ -17,9 +17,41 @@ export interface WorkflowPlanOutput {
   type: 'workflow_plan'
   steps: WorkflowPlanStep[]
   note?: string
+  /** Human-readable workflow title when the plan came from a template. */
+  workflow?: string
   total: number
   completed: number
   updatedAt: string
+}
+
+/**
+ * Normalize a raw step list into a `workflow_plan` payload. Shared by the
+ * `update_plan` tool and the `start_workflow` tool so both emit an identical
+ * shape for the UI to render.
+ */
+export function buildWorkflowPlan(
+  steps: Array<{ title: string; status?: PlanStepStatus }>,
+  options: { note?: string; workflow?: string } = {}
+): WorkflowPlanOutput {
+  const normalized: WorkflowPlanStep[] = steps.map((step, index) => ({
+    id: index + 1,
+    title: step.title,
+    status: step.status ?? 'pending',
+  }))
+
+  const completed = normalized.filter(
+    (step) => step.status === 'completed'
+  ).length
+
+  return {
+    type: 'workflow_plan',
+    steps: normalized,
+    ...(options.note !== undefined ? { note: options.note } : {}),
+    ...(options.workflow !== undefined ? { workflow: options.workflow } : {}),
+    total: normalized.length,
+    completed,
+    updatedAt: new Date().toISOString(),
+  }
 }
 
 /**
@@ -69,31 +101,22 @@ Do NOT use this for single-step answers — only when the work genuinely spans m
           .max(MAX_NOTE_LEN)
           .optional()
           .describe('Optional one-line summary of the current focus or status'),
+        workflow: z
+          .string()
+          .max(MAX_TITLE_LEN)
+          .optional()
+          .describe(
+            'Optional workflow title to keep displayed when adapting a plan started via start_workflow'
+          ),
       }),
       execute: async (input: unknown): Promise<WorkflowPlanOutput> => {
-        const { steps, note } = input as {
+        const { steps, note, workflow } = input as {
           steps: Array<{ title: string; status?: PlanStepStatus }>
           note?: string
+          workflow?: string
         }
 
-        const normalized: WorkflowPlanStep[] = steps.map((step, index) => ({
-          id: index + 1,
-          title: step.title,
-          status: step.status ?? 'pending',
-        }))
-
-        const completed = normalized.filter(
-          (step) => step.status === 'completed'
-        ).length
-
-        return {
-          type: 'workflow_plan',
-          steps: normalized,
-          ...(note !== undefined ? { note } : {}),
-          total: normalized.length,
-          completed,
-          updatedAt: new Date().toISOString(),
-        }
+        return buildWorkflowPlan(steps, { note, workflow })
       },
     }),
   }

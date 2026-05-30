@@ -301,6 +301,7 @@ export function renderToolOutput(output: unknown) {
       <AgentWorkflowPlan
         steps={outputObj.steps as WorkflowPlanStep[]}
         note={outputObj.note as string | undefined}
+        workflow={outputObj.workflow as string | undefined}
         total={outputObj.total as number | undefined}
         completed={outputObj.completed as number | undefined}
       />

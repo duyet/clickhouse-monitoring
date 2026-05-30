@@ -30,9 +30,29 @@ disabled unless explicitly enabled (see [Configuration](#configuration)).
 
 For multi-step tasks — incident investigations, health reports, cross-host
 comparisons, or any "find and fix" request — the agent runs a lightweight
-**planning harness**. It calls the `update_plan` tool to lay out an ordered
-checklist of steps up front, then updates it after each step so you can follow
-along live in the chat.
+**planning harness**. It lays out an ordered checklist of steps up front, then
+updates it after each step so you can follow along live in the chat.
+
+### Dynamic workflows
+
+The agent ships a set of **dynamic workflow templates** — data-driven runbooks it
+can launch with `start_workflow` and then adapt at runtime:
+
+| Workflow | Purpose |
+|---|---|
+| `incident-investigation` | Triage a reported problem to a root cause. |
+| `health-check` | Full cluster health sweep. |
+| `query-optimization` | Analyze and speed up a slow query. |
+| `capacity-planning` | Forecast storage and resource needs. |
+| `replication-triage` | Diagnose replication lag or failover. |
+| `migration-safety` | Assess a schema change before applying it. |
+
+When a request matches a template, the agent instantiates it into a plan
+(tailoring or extending the steps for the specific table/host) and proceeds. When
+nothing fits, it authors the plan directly with `update_plan`. Workflows are a
+registry, so cluster-specific runbooks can be registered at runtime. As the agent
+learns from intermediate results, it revises the plan — adding, dropping, or
+reordering steps — keeping the workflow checklist live and accurate.
 
 Each step has a status: `pending`, `in_progress`, or `completed`. Exactly one
 step is in progress at a time, rendered as a checklist with a progress bar:
@@ -192,6 +212,8 @@ before using them.
 |---|---|
 | `ask_user` | Ask a structured clarifying question. |
 | `load_skill` | Load a specialized expert guide (see Skills below). |
+| `list_workflows` | List the available dynamic workflow templates. |
+| `start_workflow` | Start a workflow template as a live plan (see Workflow Harness below). |
 | `update_plan` | Create and update a live workflow checklist (see Workflow Harness below). |
 
 ## Skills

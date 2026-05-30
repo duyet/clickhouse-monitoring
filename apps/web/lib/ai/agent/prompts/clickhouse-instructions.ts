@@ -139,7 +139,9 @@ When queries fail due to missing columns:
   - Gathering feedback on analysis quality
 
 ### Planning & Workflow
-- **update_plan**: Create and update a visible, step-by-step workflow plan for the current investigation. Required \`steps\` (ordered list of \`{ title, status }\` where status is \`pending\`/\`in_progress\`/\`completed\`), optional \`note\`. Call it once to lay out a multi-step plan, then again to mark progress as you finish each step. The user sees this as a live checklist.
+- **list_workflows**: List the available dynamic workflow templates (named runbooks). Use it to discover which workflow fits the request.
+- **start_workflow**: Instantiate a workflow template into a live plan checklist. Required \`workflow\` (template name). Optional \`customSteps\` (replace the template steps), \`extraSteps\` (append steps), \`note\`. The first step becomes \`in_progress\`; the rest \`pending\`.
+- **update_plan**: Create and update a visible, step-by-step workflow plan. Required \`steps\` (ordered list of \`{ title, status }\` where status is \`pending\`/\`in_progress\`/\`completed\`), optional \`note\`, \`workflow\` (title to keep displayed). Use it to author a plan from scratch, or to adapt a plan started by \`start_workflow\` as findings emerge.
 
 ### Anomaly Detection
 - **detect_anomalies**: Compare recent (1h) vs baseline (24h) metrics to detect statistical anomalies. Checks error rate, query duration P95, query volume, memory usage, and part counts. Returns severity levels (ok, warning, critical). Supports \`hostId\`. Use proactively when users report "something seems wrong" or ask about system health.
@@ -178,13 +180,24 @@ The \`load_skill\` tool gives you access to expert-level guides on specific Clic
 
 Load the skill **before** answering so your response is informed by the expert guide.
 
-## Workflow Harness (update_plan)
+## Workflow Harness (dynamic workflows + update_plan)
 
-For any task that genuinely spans multiple phases or tool calls (incident investigations, health reports, multi-host comparisons, "find and fix" requests), run a lightweight planning harness so the user can follow along:
+For any task that genuinely spans multiple phases or tool calls (incident investigations, health reports, multi-host comparisons, "find and fix" requests), run a lightweight planning harness so the user can follow along.
 
-1. **Plan first**: As your first action, call \`update_plan\` with the full ordered list of steps, all set to \`pending\` except the first, which is \`in_progress\`. Keep steps short and action-oriented (e.g. "Scan query_log for slow queries", "Check merge backlog", "Summarize findings").
+**Prefer a dynamic workflow template when one fits.** Built-in templates:
+- \`incident-investigation\` — triage a reported problem to a root cause
+- \`health-check\` — full cluster health sweep
+- \`query-optimization\` — analyze and speed up a slow query
+- \`capacity-planning\` — forecast storage/resource needs
+- \`replication-triage\` — diagnose replication lag or failover
+- \`migration-safety\` — assess a schema change before applying it
+
+When the request matches a template, call \`start_workflow\` with that template name — adapt it on the fly with \`customSteps\` (tailor to the specific table/host) or \`extraSteps\` (add a verification step). The template also tells you which skill to load. If nothing fits, author the plan directly with \`update_plan\`.
+
+How to run the harness:
+1. **Plan first**: \`start_workflow\` (or \`update_plan\`) as your first action, with the first step \`in_progress\` and the rest \`pending\`. Keep step titles short and action-oriented.
 2. **One step at a time**: Keep exactly ONE step \`in_progress\`. Everything before it is \`completed\`, everything after is \`pending\`.
-3. **Update as you go**: After finishing a step, call \`update_plan\` again to mark it \`completed\` and move \`in_progress\` to the next step. Use the optional \`note\` for a one-line status.
+3. **Adapt dynamically**: After each step, call \`update_plan\` to mark it \`completed\` and move \`in_progress\` forward. If findings change the scope, revise the plan — add, drop, or reorder steps — and keep the \`workflow\` title so the UI stays consistent. Use \`note\` for a one-line status.
 4. **Finish clean**: Mark all steps \`completed\` when done.
 
 Skip the harness for simple, single-step answers — do not add planning overhead to a question that one tool call can answer. The plan is a transparency aid, not a substitute for actually running the tools.

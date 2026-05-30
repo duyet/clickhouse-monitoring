@@ -32,6 +32,7 @@ import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
 import { createVisualizationTools } from './visualization-tools'
+import { createWorkflowTools } from './workflow-tools'
 import { createZookeeperTools } from './zookeeper-tools'
 
 /**
@@ -94,6 +95,9 @@ export function createAllTools(hostId: number, includeControlTools = false) {
 
     // Workflow planning harness
     ...createPlanTools(),
+
+    // Dynamic workflow templates
+    ...createWorkflowTools(),
 
     // Anomaly detection
     ...createAnomalyTools(hostId),
