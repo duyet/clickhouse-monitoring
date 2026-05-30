@@ -23,16 +23,8 @@ mock.module('react', () => ({
   useMemo: (fn: () => unknown) => fn(),
 }))
 
-mock.module('../api-fetch', () => ({
-  apiFetch: (...args: unknown[]) =>
-    global.fetch(...(args as [RequestInfo | URL, RequestInit?])),
-}))
-
-mock.module('../fetch-error', () => ({
-  throwIfNotOk: async () => {},
-}))
-
 import { useFetchData } from '../use-fetch-data'
+import { mockApiFetch } from './shared-mocks'
 
 describe('useFetchData', () => {
   beforeEach(() => {

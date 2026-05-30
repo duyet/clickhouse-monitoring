@@ -44,14 +44,7 @@ mock.module('@/lib/hooks/use-user-settings', () => ({
   useUserSettings: () => ({ settings: { timezone: null } }),
 }))
 
-mock.module('../api-fetch', () => ({
-  apiFetch: (...args: unknown[]) =>
-    global.fetch(...(args as [RequestInfo | URL, RequestInit?])),
-}))
-
-mock.module('../fetch-error', () => ({
-  throwIfNotOk: async () => {},
-}))
+import { mockApiFetch } from './shared-mocks'
 
 mock.module('../browser-proxy-fetcher', () => ({
   fetchViaBrowserProxy: async () => ({ data: [], metadata: {} }),

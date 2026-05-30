@@ -1,56 +1,15 @@
 /**
  * Tests for browser-proxy-fetcher.ts — Browser connections proxy fetcher.
  *
- * Inlines throwIfNotOk in mock.module('../fetch-error') to avoid
- * contamination from other test files that stub it with a no-op.
- * bun:test mock.module is last-wins per module specifier, but file
- * load order is non-deterministic, so we provide the real implementation.
+ * Uses shared-mocks.ts for ../api-fetch and ../fetch-error to avoid
+ * cross-file mock.module() contamination. Per-test mockImplementation
+ * instead of beforeEach to prevent global hook accumulation.
  */
 
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
-
-// Mock apiFetch to return real Response objects
-const mockApiFetch = mock(
-  async () =>
-    new Response(
-      JSON.stringify({
-        success: true,
-        data: [{ col1: 'val1' }],
-        metadata: { duration: 50 },
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
-)
-
-mock.module('../api-fetch', () => ({
-  apiFetch: mockApiFetch,
-}))
-
-// Inline throwIfNotOk so error-path tests work regardless of other files' mocks.
-// This must be a proper function, not a no-op, because fetchViaBrowserProxy
-// calls throwIfNotOk before reading response.json().
-mock.module('../fetch-error', () => ({
-  throwIfNotOk: async (
-    response: Response,
-    fallbackMessage = 'Request failed'
-  ): Promise<void> => {
-    if (response.ok) return
-    const errorData = (await response.json().catch(() => ({}))) as {
-      error?: { message?: string; type?: string; details?: unknown }
-    }
-    const error = new Error(
-      errorData.error?.message || `${fallbackMessage}: ${response.statusText}`
-    ) as Error & { status?: number; type?: string; details?: unknown }
-    error.status = response.status
-    if (errorData.error) {
-      error.type = errorData.error.type
-      error.details = errorData.error.details
-    }
-    throw error
-  },
-}))
-
+import { mockApiFetch } from './shared-mocks'
 // Mock BrowserConnection type
+import { describe, expect, it, mock } from 'bun:test'
+
 mock.module('@/lib/types/browser-connection', () => ({
   BROWSER_CONNECTIONS_STORAGE_KEY: 'clickhouse-monitor-browser-connections',
 }))
@@ -63,23 +22,26 @@ describe('fetchViaBrowserProxy', () => {
     password: 'secret',
   } as any
 
-  beforeEach(() => {
+  function setupMock(impl?: () => Promise<Response>) {
+    // Shared mock persists across tests in this file, so wipe recorded calls
+    // first — otherwise mock.calls[0] returns an earlier test's call.
     mockApiFetch.mockClear()
-
     mockApiFetch.mockImplementation(
-      async () =>
-        new Response(
-          JSON.stringify({
-            success: true,
-            data: [{ col1: 'val1' }],
-            metadata: { duration: 50 },
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
-        )
+      impl ??
+        (async () =>
+          new Response(
+            JSON.stringify({
+              success: true,
+              data: [{ col1: 'val1' }],
+              metadata: { duration: 50 },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          ))
     )
-  })
+  }
 
   it('sends POST to /api/v1/browser-connections/proxy', async () => {
+    setupMock()
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
@@ -97,6 +59,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('sends connection credentials and query in body', async () => {
+    setupMock()
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
@@ -116,6 +79,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('uses custom format when provided', async () => {
+    setupMock()
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,
@@ -129,6 +93,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('returns data and metadata from response', async () => {
+    setupMock()
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     const result = await fetchViaBrowserProxy({
       connection: mockConnection,
@@ -140,7 +105,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('throws on non-OK response status', async () => {
-    mockApiFetch.mockImplementation(
+    setupMock(
       async () =>
         new Response(
           JSON.stringify({ error: { message: 'Proxy request failed' } }),
@@ -158,7 +123,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('uses fallback message when error body has no message', async () => {
-    mockApiFetch.mockImplementation(
+    setupMock(
       async () =>
         new Response(JSON.stringify({}), {
           status: 500,
@@ -176,6 +141,7 @@ describe('fetchViaBrowserProxy', () => {
   })
 
   it('handles queryParams undefined', async () => {
+    setupMock()
     const { fetchViaBrowserProxy } = await import('../browser-proxy-fetcher')
     await fetchViaBrowserProxy({
       connection: mockConnection,

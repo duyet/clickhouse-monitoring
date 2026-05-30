@@ -16,25 +16,16 @@ mock.module('../use-host', () => ({
   useHostId: () => 0,
 }))
 
-let mockApiResponse: {
-  ok: boolean
-  status: number
-  json: () => Promise<unknown>
-}
-
-mock.module('../api-fetch', () => ({
-  apiFetch: mock(async () => mockApiResponse),
-}))
-
 import { useActions } from '../use-actions'
+import { mockApiFetch } from './shared-mocks'
 
 describe('useActions', () => {
   beforeEach(() => {
-    mockApiResponse = {
+    mockApiFetch.mockImplementation(async () => ({
       ok: true,
       status: 200,
       json: async () => ({ success: true, message: 'OK' }),
-    }
+    }))
   })
 
   describe('killQuery', () => {
@@ -46,11 +37,11 @@ describe('useActions', () => {
     })
 
     it('returns success false on non-ok response', async () => {
-      mockApiResponse = {
+      mockApiFetch.mockImplementation(async () => ({
         ok: false,
         status: 500,
         json: async () => ({ error: { message: 'Kill failed' } }),
-      }
+      }))
 
       const { killQuery } = useActions()
       const result = await killQuery('query-123')
@@ -60,11 +51,11 @@ describe('useActions', () => {
     })
 
     it('returns fallback message when error response has no message', async () => {
-      mockApiResponse = {
+      mockApiFetch.mockImplementation(async () => ({
         ok: false,
         status: 503,
         json: async () => ({}),
-      }
+      }))
 
       const { killQuery } = useActions()
       const result = await killQuery('query-123')
@@ -74,13 +65,13 @@ describe('useActions', () => {
     })
 
     it('handles JSON parse errors on error response', async () => {
-      mockApiResponse = {
+      mockApiFetch.mockImplementation(async () => ({
         ok: false,
         status: 500,
         json: async () => {
           throw new Error('Invalid JSON')
         },
-      }
+      }))
 
       const { killQuery } = useActions()
       const result = await killQuery('query-123')
@@ -90,20 +81,15 @@ describe('useActions', () => {
     })
 
     it('catches network errors', async () => {
-      mockApiResponse = undefined as unknown as typeof mockApiResponse
+      mockApiFetch.mockImplementation(() => {
+        throw new Error('Network error')
+      })
 
-      const { apiFetch } = await import('../api-fetch')
-      // Override the mock for this test to throw
-      const _originalApiFetch = apiFetch
-      const _throwingFetch = mock(() =>
-        Promise.reject(new Error('Network error'))
-      )
-      // We need to re-import or use the mock differently
-      // Since we already have the hook, let's test through the function
       const { killQuery } = useActions()
+      const result = await killQuery('query-123')
 
-      // The mock is set up above, but we need the apiFetch mock to throw
-      // For this case we test via executeAction which catches errors
+      expect(result.success).toBe(false)
+      expect(result.message).toBe('Network error')
     })
   })
 
@@ -116,11 +102,11 @@ describe('useActions', () => {
     })
 
     it('returns failure on server error', async () => {
-      mockApiResponse = {
+      mockApiFetch.mockImplementation(async () => ({
         ok: false,
         status: 400,
         json: async () => ({ error: { message: 'Table not found' } }),
-      }
+      }))
 
       const { optimizeTable } = useActions()
       const result = await optimizeTable('missing_table')
@@ -151,10 +137,7 @@ describe('useActions', () => {
     })
 
     it('catches exceptions and returns error message', async () => {
-      // Temporarily make apiFetch throw
-      const { apiFetch } = await import('../api-fetch')
-      const origImpl = apiFetch.getMockImplementation()
-      apiFetch.mockImplementation(() => {
+      mockApiFetch.mockImplementation(() => {
         throw new Error('Unexpected throw')
       })
 
@@ -166,18 +149,10 @@ describe('useActions', () => {
 
       expect(result.success).toBe(false)
       expect(result.message).toBe('Unexpected throw')
-
-      // Restore
-      if (origImpl) {
-        apiFetch.mockImplementation(origImpl)
-      } else {
-        apiFetch.mockImplementation(async () => mockApiResponse)
-      }
     })
 
     it('handles non-Error thrown values', async () => {
-      const { apiFetch } = await import('../api-fetch')
-      apiFetch.mockImplementation(() => {
+      mockApiFetch.mockImplementation(() => {
         throw 'string error' // eslint-disable-line no-throw-literal
       })
 
@@ -189,8 +164,6 @@ describe('useActions', () => {
 
       expect(result.success).toBe(false)
       expect(result.message).toBe('Unknown error occurred')
-
-      apiFetch.mockImplementation(async () => mockApiResponse)
     })
   })
 })
