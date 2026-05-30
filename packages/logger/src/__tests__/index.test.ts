@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Mock isolation
@@ -20,7 +13,11 @@ import {
 const isDev = process.env.NODE_ENV === 'development'
 const debugOn = process.env.DEBUG === 'true'
 
-function createLogEntry(level: string, msg: string, extra?: Record<string, unknown>): string {
+function createLogEntry(
+  level: string,
+  msg: string,
+  extra?: Record<string, unknown>
+): string {
   return JSON.stringify({ level, time: Date.now(), msg, ...extra })
 }
 
@@ -104,7 +101,10 @@ mock.module('../index', () => ({
           `See the browser console for detailed debug logs.`
       } else if (error.message.includes('Invalid hostId')) {
         detailedMessage = `Configuration Error: ${error.message}`
-      } else if (error.message.includes('table') && error.message.includes('not')) {
+      } else if (
+        error.message.includes('table') &&
+        error.message.includes('not')
+      ) {
         detailedMessage = `Database Error: ${error.message}`
       } else if (error.message.includes('Cannot read properties')) {
         detailedMessage = `Runtime Error: ${error.message}\n\nThis usually indicates a configuration issue or missing data.`
@@ -156,12 +156,12 @@ mock.module('../index', () => ({
 // Import AFTER mock.module override
 import {
   debug,
+  ErrorLogger,
+  error,
+  formatErrorForDisplay,
+  generateRequestId,
   log,
   warn,
-  error,
-  ErrorLogger,
-  generateRequestId,
-  formatErrorForDisplay,
 } from '../index'
 
 // ---------------------------------------------------------------------------
@@ -379,9 +379,7 @@ describe('logger', () => {
     })
 
     it('generates unique IDs on successive calls', () => {
-      const ids = new Set(
-        Array.from({ length: 20 }, () => generateRequestId())
-      )
+      const ids = new Set(Array.from({ length: 20 }, () => generateRequestId()))
       expect(ids.size).toBe(20)
     })
   })

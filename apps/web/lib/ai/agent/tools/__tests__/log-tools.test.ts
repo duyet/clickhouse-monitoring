@@ -1,22 +1,17 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+function setupLogMock() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.text_log'))
-      return { data: queryStore['text_log'] ?? [], error: null }
+      return { data: queryStore.text_log ?? [], error: null }
     if (query.includes('system.stack_trace'))
-      return { data: queryStore['stack_trace'] ?? [], error: null }
+      return { data: queryStore.stack_trace ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
+  })
+}
 
 const { createLogTools } = await import('../log-tools')
 
@@ -29,7 +24,7 @@ describe('createLogTools', () => {
 
   test('get_text_log returns log entries with defaults', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = [
+    queryStore.text_log = [
       {
         event_time: '2024-01-01T00:00:00',
         level: 'Information',
@@ -37,6 +32,7 @@ describe('createLogTools', () => {
         message: 'Server started',
       },
     ]
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_text_log.execute({})
@@ -48,6 +44,7 @@ describe('createLogTools', () => {
 
   test('get_text_log returns empty when no logs', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_text_log.execute({})
@@ -57,7 +54,8 @@ describe('createLogTools', () => {
 
   test('get_text_log respects custom parameters', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = [{ level: 'Error', message: 'Out of memory' }]
+    queryStore.text_log = [{ level: 'Error', message: 'Out of memory' }]
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_text_log.execute({
@@ -73,7 +71,8 @@ describe('createLogTools', () => {
 
   test('get_text_log uses default values for optional params', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['text_log'] = []
+    queryStore.text_log = []
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_text_log.execute({})
@@ -83,7 +82,7 @@ describe('createLogTools', () => {
 
   test('get_stack_traces returns thread traces', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['stack_trace'] = [
+    queryStore.stack_trace = [
       {
         thread_name: 'HTTPHandler',
         thread_id: 42,
@@ -91,6 +90,7 @@ describe('createLogTools', () => {
         trace: 'frame1\nframe2',
       },
     ]
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_stack_traces.execute({})
@@ -102,6 +102,7 @@ describe('createLogTools', () => {
 
   test('get_stack_traces returns empty when no traces', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_stack_traces.execute({})
@@ -111,7 +112,8 @@ describe('createLogTools', () => {
 
   test('get_stack_traces respects custom limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['stack_trace'] = [{ thread_id: 1 }, { thread_id: 2 }]
+    queryStore.stack_trace = [{ thread_id: 1 }, { thread_id: 2 }]
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_stack_traces.execute({ limit: 1 })
@@ -121,6 +123,7 @@ describe('createLogTools', () => {
 
   test('tools resolve hostId override', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupLogMock()
 
     const tools = createLogTools(0)
     const result = await tools.get_text_log.execute({ hostId: 2 })

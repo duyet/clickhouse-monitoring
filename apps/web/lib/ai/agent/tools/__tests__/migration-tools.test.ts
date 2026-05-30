@@ -1,142 +1,144 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
-mock.module('server-only', () => ({}))
-
-let queryIndex = 0
+let _queryIndex = 0
 const resetQueryIndex = () => {
-  queryIndex = 0
+  _queryIndex = 0
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
-    const q = query
-    queryIndex++
+const defaultMigrationMock = async ({ query }: { query: string }) => {
+  const q = query
+  _queryIndex++
 
-    if (q.includes('system.tables') && q.includes('WHERE database')) {
-      return {
-        data: [
-          {
-            engine: 'MergeTree',
-            sorting_key: '(event_date, tenant_id)',
-            primary_key: 'event_date',
-            partition_key: 'toYYYYMM(event_date)',
-            total_rows: 5000000,
-            total_bytes: 1073741824,
-            readable_size: '1.00 GiB',
-            create_table_query: 'CREATE TABLE analytics.events ...',
-          },
-        ],
-        error: null,
-      }
+  if (q.includes('system.tables') && q.includes('WHERE database')) {
+    return {
+      data: [
+        {
+          engine: 'MergeTree',
+          sorting_key: '(event_date, tenant_id)',
+          primary_key: 'event_date',
+          partition_key: 'toYYYYMM(event_date)',
+          total_rows: 5000000,
+          total_bytes: 1073741824,
+          readable_size: '1.00 GiB',
+          create_table_query: 'CREATE TABLE analytics.events ...',
+        },
+      ],
+      error: null,
     }
+  }
 
-    if (q.includes('system.parts') && q.includes('active')) {
-      return {
-        data: [
-          {
-            active_parts: 150,
-            total_size: '1.50 GiB',
-            oldest_part: '2026-05-01 00:00:00',
-            newest_part: '2026-05-30 12:00:00',
-          },
-        ],
-        error: null,
-      }
+  if (q.includes('system.parts') && q.includes('active')) {
+    return {
+      data: [
+        {
+          active_parts: 150,
+          total_size: '1.50 GiB',
+          oldest_part: '2026-05-01 00:00:00',
+          newest_part: '2026-05-30 12:00:00',
+        },
+      ],
+      error: null,
     }
+  }
 
-    if (q.includes('system.mutations')) {
-      return {
-        data: [
-          {
-            mutation_id: 'mutation_1.txt',
-            command: 'UPDATE status = 1 WHERE status = 0',
-            create_time: '2026-05-29 10:00:00',
-            parts_to_do: 0,
-            is_done: 1,
-          },
-        ],
-        error: null,
-      }
+  if (q.includes('system.mutations')) {
+    return {
+      data: [
+        {
+          mutation_id: 'mutation_1.txt',
+          command: 'UPDATE status = 1 WHERE status = 0',
+          create_time: '2026-05-29 10:00:00',
+          parts_to_do: 0,
+          is_done: 1,
+        },
+      ],
+      error: null,
     }
+  }
 
-    if (q.includes('system.replicas')) {
-      return {
-        data: [
-          {
-            is_leader: 1,
-            is_readonly: 0,
-            absolute_delay: 0,
-            queue_size: 2,
-            inserts_in_queue: 1,
-            merges_in_queue: 1,
-          },
-        ],
-        error: null,
-      }
+  if (q.includes('system.replicas')) {
+    return {
+      data: [
+        {
+          is_leader: 1,
+          is_readonly: 0,
+          absolute_delay: 0,
+          queue_size: 2,
+          inserts_in_queue: 1,
+          merges_in_queue: 1,
+        },
+      ],
+      error: null,
     }
+  }
 
-    if (q.includes('system.columns') && q.includes('ORDER BY position')) {
-      return {
-        data: [
-          {
-            name: 'event_date',
-            type: 'Date',
-            default_kind: '',
-            default_expression: '',
-          },
-          {
-            name: 'tenant_id',
-            type: 'UInt64',
-            default_kind: '',
-            default_expression: '',
-          },
-          {
-            name: 'status',
-            type: 'String',
-            default_kind: '',
-            default_expression: '',
-          },
-        ],
-        error: null,
-      }
+  if (q.includes('system.columns') && q.includes('ORDER BY position')) {
+    return {
+      data: [
+        {
+          name: 'event_date',
+          type: 'Date',
+          default_kind: '',
+          default_expression: '',
+        },
+        {
+          name: 'tenant_id',
+          type: 'UInt64',
+          default_kind: '',
+          default_expression: '',
+        },
+        {
+          name: 'status',
+          type: 'String',
+          default_kind: '',
+          default_expression: '',
+        },
+      ],
+      error: null,
     }
+  }
 
-    // get_column_usage: usage summary query
-    if (
-      q.includes('count() as query_count') &&
-      q.includes('countDistinct(user)')
-    ) {
-      return {
-        data: [
-          {
-            query_count: 42,
-            unique_users: 3,
-            first_seen: '2026-05-23 08:00:00',
-            last_seen: '2026-05-30 11:00:00',
-          },
-        ],
-        error: null,
-      }
+  // get_column_usage: usage summary query
+  if (
+    q.includes('count() as query_count') &&
+    q.includes('countDistinct(user)')
+  ) {
+    return {
+      data: [
+        {
+          query_count: 42,
+          unique_users: 3,
+          first_seen: '2026-05-23 08:00:00',
+          last_seen: '2026-05-30 11:00:00',
+        },
+      ],
+      error: null,
     }
+  }
 
-    // get_column_usage: users affected query
-    if (q.includes('GROUP BY user') && q.includes('any(substring')) {
-      return {
-        data: [
-          {
-            user: 'analyst',
-            query_count: 30,
-            sample_query:
-              'SELECT status FROM analytics.events WHERE tenant_id = 1',
-          },
-        ],
-        error: null,
-      }
+  // get_column_usage: users affected query
+  if (q.includes('GROUP BY user') && q.includes('any(substring')) {
+    return {
+      data: [
+        {
+          user: 'analyst',
+          query_count: 30,
+          sample_query:
+            'SELECT status FROM analytics.events WHERE tenant_id = 1',
+        },
+      ],
+      error: null,
     }
+  }
 
-    return { data: [], error: null }
-  }),
-}))
+  return { data: [], error: null }
+}
+
+function setupMigrationMocks() {
+  resetQueryIndex()
+  mockFetchData.mockImplementation(defaultMigrationMock)
+}
 
 const { createMigrationTools } = await import('../migration-tools')
 
@@ -149,7 +151,8 @@ describe('createMigrationTools', () => {
 
   describe('analyze_schema_change', () => {
     test('classifies ADD COLUMN as low risk with no rewrite', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -174,7 +177,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY COLUMN as high risk requiring rewrite', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -192,7 +196,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP COLUMN as low risk', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -207,7 +212,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies RENAME COLUMN as low risk', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -221,7 +227,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ALTER COLUMN as modify requiring rewrite', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -235,7 +242,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ADD INDEX as requiring rewrite', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -250,7 +258,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP INDEX as low risk', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -264,7 +273,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY ORDER BY as sorting key change', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -279,7 +289,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY SORTING KEY as sorting key change', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -293,7 +304,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies DROP PROJECTION as low risk', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -307,7 +319,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies ADD PROJECTION as requiring rewrite', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -322,7 +335,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies MODIFY TTL as low risk', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -337,7 +351,8 @@ describe('createMigrationTools', () => {
     })
 
     test('classifies unknown statements as unknown type', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.analyze_schema_change.execute({
@@ -351,30 +366,23 @@ describe('createMigrationTools', () => {
     })
 
     test('warns about pending mutations', async () => {
-      const { fetchData } = await import('@chm/clickhouse-client')
-
-      const origImpl = (
-        fetchData as ReturnType<typeof mock>
-      ).getMockImplementation()
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(
-        async ({ query }: { query: string }) => {
-          if (query.includes('system.mutations')) {
-            return {
-              data: [
-                {
-                  mutation_id: 'mutation_2.txt',
-                  command: 'UPDATE x = 1',
-                  create_time: '2026-05-30 10:00:00',
-                  parts_to_do: 5,
-                  is_done: 0,
-                },
-              ],
-              error: null,
-            }
+      mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+        if (query.includes('system.mutations')) {
+          return {
+            data: [
+              {
+                mutation_id: 'mutation_2.txt',
+                command: 'UPDATE x = 1',
+                create_time: '2026-05-30 10:00:00',
+                parts_to_do: 5,
+                is_done: 0,
+              },
+            ],
+            error: null,
           }
-          return origImpl!({ query })
         }
-      )
+        return defaultMigrationMock({ query })
+      })
 
       const tools = createMigrationTools(0)
       const result = await tools.analyze_schema_change.execute({
@@ -382,8 +390,6 @@ describe('createMigrationTools', () => {
         table: 'events',
         alterStatement: 'ALTER TABLE events ADD COLUMN new_col String',
       })
-
-      ;(fetchData as ReturnType<typeof mock>).mockImplementation(origImpl!)
 
       expect(result.warnings).toContain(
         'There are pending mutations on this table. Wait for them to complete before adding more.'
@@ -393,7 +399,8 @@ describe('createMigrationTools', () => {
 
   describe('get_column_usage', () => {
     test('returns usage summary and affected users', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -411,7 +418,8 @@ describe('createMigrationTools', () => {
     })
 
     test('clamps lastDays to max 30', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -425,7 +433,8 @@ describe('createMigrationTools', () => {
     })
 
     test('clamps lastDays to min 1', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({
@@ -439,7 +448,8 @@ describe('createMigrationTools', () => {
     })
 
     test('uses default lastDays of 7 when not provided', async () => {
-      resetQueryIndex()
+      setupMigrationMocks()
+
       const tools = createMigrationTools(0)
 
       const result = await tools.get_column_usage.execute({

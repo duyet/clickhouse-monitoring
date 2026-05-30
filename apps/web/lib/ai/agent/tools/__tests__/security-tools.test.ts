@@ -1,26 +1,21 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
+function setupSecurityMocks() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (query.includes('system.processes'))
-      return { data: queryStore['processes'] ?? [], error: null }
+      return { data: queryStore.processes ?? [], error: null }
     if (query.includes('system.session_log'))
-      return { data: queryStore['sessions'] ?? [], error: null }
+      return { data: queryStore.sessions ?? [], error: null }
     if (query.includes('system.users'))
-      return { data: queryStore['users'] ?? [], error: null }
+      return { data: queryStore.users ?? [], error: null }
     if (query.includes('system.roles'))
-      return { data: queryStore['roles'] ?? [], error: null }
+      return { data: queryStore.roles ?? [], error: null }
     return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
+  })
+}
 
 const { createSecurityTools } = await import('../security-tools')
 
@@ -34,9 +29,10 @@ describe('createSecurityTools', () => {
 
   test('get_active_sessions returns process data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['processes'] = [
+    queryStore.processes = [
       { query_id: 'q1', user: 'admin', elapsed: 5.2, read_rows: 1000 },
     ]
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_active_sessions.execute({})
@@ -48,6 +44,7 @@ describe('createSecurityTools', () => {
 
   test('get_active_sessions returns empty array', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_active_sessions.execute({})
@@ -57,9 +54,14 @@ describe('createSecurityTools', () => {
 
   test('get_login_attempts queries session_log with defaults', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['sessions'] = [
-      { user: 'default', client_hostname: 'localhost', auth_type: 'password' },
+    queryStore.sessions = [
+      {
+        user: 'default',
+        client_hostname: 'localhost',
+        auth_type: 'password',
+      },
     ]
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_login_attempts.execute({})
@@ -70,7 +72,8 @@ describe('createSecurityTools', () => {
 
   test('get_login_attempts respects custom limit and lastHours', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['sessions'] = [{ user: 'bob' }]
+    queryStore.sessions = [{ user: 'bob' }]
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_login_attempts.execute({
@@ -83,8 +86,9 @@ describe('createSecurityTools', () => {
 
   test('get_users_and_roles returns both users and roles', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['users'] = [{ name: 'default', storage: 'users.xml' }]
-    queryStore['roles'] = [{ name: 'admin', storage: 'local directory' }]
+    queryStore.users = [{ name: 'default', storage: 'users.xml' }]
+    queryStore.roles = [{ name: 'admin', storage: 'local directory' }]
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_users_and_roles.execute({})
@@ -97,6 +101,7 @@ describe('createSecurityTools', () => {
 
   test('get_users_and_roles returns empty when no data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+    setupSecurityMocks()
 
     const tools = createSecurityTools(0)
     const result = await tools.get_users_and_roles.execute({})
@@ -107,8 +112,9 @@ describe('createSecurityTools', () => {
 
   test('tools resolve hostId override', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    const tools = createSecurityTools(0)
+    setupSecurityMocks()
 
+    const tools = createSecurityTools(0)
     const result = await tools.get_active_sessions.execute({ hostId: 2 })
     expect(Array.isArray(result)).toBe(true)
   })

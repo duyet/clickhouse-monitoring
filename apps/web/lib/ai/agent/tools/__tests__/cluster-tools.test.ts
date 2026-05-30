@@ -1,22 +1,7 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 const queryStore: Record<string, unknown[]> = {}
-
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async ({ query }: { query: string }) => {
-    if (query.includes('system.clusters'))
-      return { data: queryStore['clusters'] ?? [], error: null }
-    if (query.includes('system.distributed_ddl_queue'))
-      return { data: queryStore['ddl_queue'] ?? [], error: null }
-    return { data: [], error: null }
-  },
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
 
 const { createClusterTools } = await import('../cluster-tools')
 
@@ -29,7 +14,7 @@ describe('createClusterTools', () => {
 
   test('get_clusters returns cluster topology', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['clusters'] = [
+    queryStore.clusters = [
       {
         cluster: 'prod_cluster',
         shard_num: 1,
@@ -50,6 +35,14 @@ describe('createClusterTools', () => {
       },
     ]
 
+    mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+      if (query.includes('system.clusters'))
+        return { data: queryStore.clusters ?? [], error: null }
+      if (query.includes('system.distributed_ddl_queue'))
+        return { data: queryStore.ddl_queue ?? [], error: null }
+      return { data: [], error: null }
+    })
+
     const tools = createClusterTools(0)
     const result = await tools.get_clusters.execute({})
 
@@ -61,6 +54,14 @@ describe('createClusterTools', () => {
   test('get_clusters returns empty when no clusters', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
 
+    mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+      if (query.includes('system.clusters'))
+        return { data: queryStore.clusters ?? [], error: null }
+      if (query.includes('system.distributed_ddl_queue'))
+        return { data: queryStore.ddl_queue ?? [], error: null }
+      return { data: [], error: null }
+    })
+
     const tools = createClusterTools(0)
     const result = await tools.get_clusters.execute({})
 
@@ -69,7 +70,7 @@ describe('createClusterTools', () => {
 
   test('get_distributed_ddl_queue returns pending DDL ops', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['ddl_queue'] = [
+    queryStore.ddl_queue = [
       {
         entry: 1,
         host_name: 'node1',
@@ -78,6 +79,14 @@ describe('createClusterTools', () => {
         query: 'CREATE TABLE test (id UInt64) ENGINE = MergeTree ORDER BY id',
       },
     ]
+
+    mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+      if (query.includes('system.clusters'))
+        return { data: queryStore.clusters ?? [], error: null }
+      if (query.includes('system.distributed_ddl_queue'))
+        return { data: queryStore.ddl_queue ?? [], error: null }
+      return { data: [], error: null }
+    })
 
     const tools = createClusterTools(0)
     const result = await tools.get_distributed_ddl_queue.execute({})
@@ -88,7 +97,15 @@ describe('createClusterTools', () => {
 
   test('get_distributed_ddl_queue uses default limit', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore['ddl_queue'] = [{ entry: 1 }]
+    queryStore.ddl_queue = [{ entry: 1 }]
+
+    mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+      if (query.includes('system.clusters'))
+        return { data: queryStore.clusters ?? [], error: null }
+      if (query.includes('system.distributed_ddl_queue'))
+        return { data: queryStore.ddl_queue ?? [], error: null }
+      return { data: [], error: null }
+    })
 
     const tools = createClusterTools(0)
     const result = await tools.get_distributed_ddl_queue.execute({})
@@ -98,6 +115,14 @@ describe('createClusterTools', () => {
 
   test('tools resolve hostId override', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
+
+    mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+      if (query.includes('system.clusters'))
+        return { data: queryStore.clusters ?? [], error: null }
+      if (query.includes('system.distributed_ddl_queue'))
+        return { data: queryStore.ddl_queue ?? [], error: null }
+      return { data: [], error: null }
+    })
 
     const tools = createClusterTools(0)
     const result = await tools.get_clusters.execute({ hostId: 3 })

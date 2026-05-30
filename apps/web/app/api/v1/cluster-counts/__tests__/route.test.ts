@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockAuthorizeFeatureRequest } from '@/app/api/v1/__tests__/feature-permissions-mock'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
@@ -33,10 +34,6 @@ mock.module('@/lib/api/cluster-count-registry', () => ({
   getClusterCountQuery: mockGetClusterCountQuery,
 }))
 
-mock.module('@/lib/feature-permissions/server', () => ({
-  authorizeFeatureRequest: () => Promise.resolve(null),
-}))
-
 // ── Import route after mocks ───────────────────────────────────────────────────
 
 let GET: (
@@ -53,6 +50,10 @@ beforeEach(() => {
   mockFetchData.mockClear()
   mockHasClusterCountKey.mockClear()
   mockGetClusterCountQuery.mockClear()
+  mockAuthorizeFeatureRequest.mockClear()
+
+  // Bypass feature permission checks in route tests
+  mockAuthorizeFeatureRequest.mockResolvedValue(null)
 
   mockFetchData.mockResolvedValue({
     data: [{ count: 42 }],

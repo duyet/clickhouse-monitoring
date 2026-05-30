@@ -1,12 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: mock((_sql: string) => {
-    // passes by default
-  }),
-}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, type mock, test } from 'bun:test'
 
 const queryResults: Record<string, unknown[]> = {
   running: [
@@ -70,8 +63,8 @@ const queryResults: Record<string, unknown[]> = {
   ],
 }
 
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: mock(async ({ query }: { query: string }) => {
+function setupQueryMock() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     const q = query
 
     if (q.includes('system.processes'))
@@ -96,8 +89,8 @@ mock.module('@chm/clickhouse-client', () => ({
       return { data: queryResults.explain, error: null }
 
     return { data: [], error: null }
-  }),
-}))
+  })
+}
 
 const { createQueryTools } = await import('../query-tools')
 
@@ -114,6 +107,8 @@ describe('createQueryTools', () => {
 
   describe('get_running_queries', () => {
     test('returns currently running queries', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_running_queries.execute({})
 
@@ -126,6 +121,8 @@ describe('createQueryTools', () => {
 
   describe('get_slow_queries', () => {
     test('returns slow queries with default limit', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_slow_queries.execute({})
 
@@ -134,6 +131,8 @@ describe('createQueryTools', () => {
     })
 
     test('passes custom limit', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_slow_queries.execute({ limit: 5 })
 
@@ -143,6 +142,8 @@ describe('createQueryTools', () => {
 
   describe('get_failed_queries', () => {
     test('returns failed queries with default params', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_failed_queries.execute({})
 
@@ -152,6 +153,8 @@ describe('createQueryTools', () => {
     })
 
     test('accepts custom limit and lastHours', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_failed_queries.execute({
         limit: 5,
@@ -164,6 +167,8 @@ describe('createQueryTools', () => {
 
   describe('get_expensive_queries', () => {
     test('returns queries sorted by memory', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_expensive_queries.execute({
         sortBy: 'memory',
@@ -174,6 +179,8 @@ describe('createQueryTools', () => {
     })
 
     test('returns queries sorted by read_bytes', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_expensive_queries.execute({
         sortBy: 'read_bytes',
@@ -183,6 +190,8 @@ describe('createQueryTools', () => {
     })
 
     test('returns queries sorted by duration', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_expensive_queries.execute({
         sortBy: 'duration',
@@ -192,6 +201,8 @@ describe('createQueryTools', () => {
     })
 
     test('accepts custom limit and lastHours', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_expensive_queries.execute({
         sortBy: 'memory',
@@ -205,6 +216,8 @@ describe('createQueryTools', () => {
 
   describe('get_query_patterns', () => {
     test('returns aggregated query fingerprints', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_query_patterns.execute({})
 
@@ -215,6 +228,8 @@ describe('createQueryTools', () => {
     })
 
     test('accepts custom params', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.get_query_patterns.execute({
         limit: 10,
@@ -228,6 +243,8 @@ describe('createQueryTools', () => {
 
   describe('explain_query', () => {
     test('returns execution plan with default type', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.explain_query.execute({
         sql: 'SELECT count() FROM system.tables',
@@ -238,6 +255,8 @@ describe('createQueryTools', () => {
     })
 
     test('supports pipeline explain type', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.explain_query.execute({
         sql: 'SELECT count() FROM system.tables',
@@ -248,6 +267,8 @@ describe('createQueryTools', () => {
     })
 
     test('supports indexes explain type', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const result = await tools.explain_query.execute({
         sql: 'SELECT count() FROM system.tables',
@@ -258,6 +279,8 @@ describe('createQueryTools', () => {
     })
 
     test('propagates validation errors', async () => {
+      setupQueryMock()
+
       const tools = createQueryTools(0)
       const { validateSqlQuery } = await import('@chm/sql-builder')
 

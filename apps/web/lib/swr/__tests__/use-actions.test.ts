@@ -94,8 +94,8 @@ describe('useActions', () => {
 
       const { apiFetch } = await import('../api-fetch')
       // Override the mock for this test to throw
-      const originalApiFetch = apiFetch
-      const throwingFetch = mock(() =>
+      const _originalApiFetch = apiFetch
+      const _throwingFetch = mock(() =>
         Promise.reject(new Error('Network error'))
       )
       // We need to re-import or use the mock differently

@@ -1,14 +1,13 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
+import { mockFetchData } from './shared-mocks'
+import { describe, expect, test } from 'bun:test'
 
 let throwError = false
 
 // Track how many times each pattern is queried
 const queryValues: Record<string, number[]> = {}
 
-mock.module('../helpers', () => ({
-  readOnlyQuery: async ({ query }: { query: string }) => {
+function setupAnomalyMocks() {
+  mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
     if (throwError) throw new Error('Connection refused')
 
     // Match by distinctive substrings in order of specificity
@@ -18,42 +17,42 @@ mock.module('../helpers', () => ({
       query.includes('asynchronous_metric_log')
     ) {
       // memory baseline
-      const vals = queryValues['memoryBaseline']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.memoryBaseline
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
       query.includes('BETWEEN now() - INTERVAL 25 HOUR') &&
       query.includes('ExceptionWhileProcessing')
     ) {
       // error_rate baseline
-      const vals = queryValues['errorRateBaseline']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.errorRateBaseline
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
       query.includes('BETWEEN now() - INTERVAL 25 HOUR') &&
       query.includes('quantile')
     ) {
       // p95 baseline
-      const vals = queryValues['p95Baseline']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.p95Baseline
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
       query.includes('BETWEEN now() - INTERVAL 25 HOUR') &&
       query.includes('count() / 24.0')
     ) {
       // volume baseline
-      const vals = queryValues['volumeBaseline']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.volumeBaseline
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('ExceptionWhileProcessing')) {
       // error_rate recent
-      const vals = queryValues['errorRateRecent']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.errorRateRecent
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('quantile(0.95)')) {
       // p95 recent
-      const vals = queryValues['p95Recent']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.p95Recent
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (
       query.includes('event_time > now()') &&
@@ -61,25 +60,23 @@ mock.module('../helpers', () => ({
       query.includes('count() as value')
     ) {
       // volume recent
-      const vals = queryValues['volumeRecent']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.volumeRecent
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('system.metrics') && query.includes('MemoryTracking')) {
       // memory recent
-      const vals = queryValues['memoryRecent']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.memoryRecent
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
     if (query.includes('system.parts WHERE active')) {
       // parts (both recent and baseline use same query)
-      const vals = queryValues['partsCount']
-      return vals?.length ? [{ value: vals[0] }] : []
+      const vals = queryValues.partsCount
+      return { data: vals?.length ? [{ value: vals[0] }] : [], error: null }
     }
 
-    return []
-  },
-  resolveHostId: (tool: number | undefined, def: number) => tool ?? def,
-  hostIdSchema: {},
-}))
+    return { data: [], error: null }
+  })
+}
 
 const { createAnomalyTools } = await import('../anomaly-tools')
 
@@ -120,6 +117,7 @@ describe('createAnomalyTools', () => {
       memoryBaseline: 100,
       partsCount: 50,
     })
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -131,7 +129,6 @@ describe('createAnomalyTools', () => {
 
   test('detects critical error_rate anomaly', async () => {
     throwError = false
-    // recent=20%, baseline=5% => 300% => critical (>100%)
     setupMetrics({
       errorRateRecent: 20,
       errorRateBaseline: 5,
@@ -143,6 +140,7 @@ describe('createAnomalyTools', () => {
       memoryBaseline: 100,
       partsCount: 50,
     })
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -157,7 +155,6 @@ describe('createAnomalyTools', () => {
 
   test('detects critical memory_usage anomaly', async () => {
     throwError = false
-    // recent=200, baseline=100 => 100% => critical (>80%)
     setupMetrics({
       errorRateRecent: 5,
       errorRateBaseline: 5,
@@ -169,6 +166,7 @@ describe('createAnomalyTools', () => {
       memoryBaseline: 100,
       partsCount: 50,
     })
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -181,7 +179,6 @@ describe('createAnomalyTools', () => {
 
   test('detects warning memory_usage anomaly', async () => {
     throwError = false
-    // recent=150, baseline=100 => 50% => warning (>40%, not >80%)
     setupMetrics({
       errorRateRecent: 5,
       errorRateBaseline: 5,
@@ -193,6 +190,7 @@ describe('createAnomalyTools', () => {
       memoryBaseline: 100,
       partsCount: 50,
     })
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -205,7 +203,6 @@ describe('createAnomalyTools', () => {
 
   test('detects critical generic anomaly for query_volume', async () => {
     throwError = false
-    // recent=300, baseline=100 => 200% => critical (generic threshold >100%)
     setupMetrics({
       errorRateRecent: 5,
       errorRateBaseline: 5,
@@ -217,6 +214,7 @@ describe('createAnomalyTools', () => {
       memoryBaseline: 100,
       partsCount: 50,
     })
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -230,6 +228,7 @@ describe('createAnomalyTools', () => {
   test('handles empty results gracefully', async () => {
     throwError = false
     for (const k of Object.keys(queryValues)) delete queryValues[k]
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -243,6 +242,7 @@ describe('createAnomalyTools', () => {
 
   test('handles query errors gracefully', async () => {
     throwError = true
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({})
@@ -259,6 +259,7 @@ describe('createAnomalyTools', () => {
   test('resolves hostId from input', async () => {
     throwError = false
     for (const k of Object.keys(queryValues)) delete queryValues[k]
+    setupAnomalyMocks()
 
     const tools = createAnomalyTools(0)
     const result = await tools.detect_anomalies.execute({ hostId: 2 })

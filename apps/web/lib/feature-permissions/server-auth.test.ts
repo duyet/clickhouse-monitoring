@@ -8,7 +8,6 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  type AppFeaturePermissionConfig,
   type AppFeaturePermissionConfigError,
   authorizeFeatureRequest,
   getAppFeaturePermissionConfig,
@@ -26,15 +25,15 @@ const ENV_KEYS = [
   'AGENT_API_TOKEN',
 ] as const
 
-const originalEnv = new Map<string, string | undefined>(
+const _originalEnv = new Map<string, string | undefined>(
   ENV_KEYS.map((key) => [key, process.env[key]])
 )
 
 function resetEnv() {
+  // Always clear — restoring to .env.local values (e.g. CHM_AUTH_PROVIDER=clerk)
+  // breaks tests that expect a clean slate. Tests set their own values explicitly.
   for (const key of ENV_KEYS) {
-    const value = originalEnv.get(key)
-    if (value === undefined) delete process.env[key]
-    else process.env[key] = value
+    delete process.env[key]
   }
 }
 

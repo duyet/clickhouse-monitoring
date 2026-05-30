@@ -5,8 +5,14 @@
 
 import type { ClickHouseConfig } from './types'
 
-import { validateClickHouseEnv } from './env-schema'
+import { _resetEnvCache, validateClickHouseEnv } from './env-schema'
 import { debug, error } from '@chm/logger'
+
+/**
+ * Re-export env cache reset so tests can reset the SAME env-schema instance
+ * that this module's getClickHouseConfigs() uses internally.
+ */
+export { _resetEnvCache }
 
 /**
  * Retrieve a single ClickHouseConfig by hostId, throwing if the id is out of

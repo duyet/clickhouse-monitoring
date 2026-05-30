@@ -1,14 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('server-only', () => ({}))
-
-mock.module('@chm/clickhouse-client', () => ({
-  fetchData: async () => ({ data: [], error: null }),
-}))
-
-mock.module('@chm/sql-builder', () => ({
-  validateSqlQuery: () => {},
-}))
+import { describe, expect, test } from 'bun:test'
 
 const { createDashboardTools } = await import('../dashboard-tools')
 

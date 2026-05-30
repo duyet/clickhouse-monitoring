@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { mockAuthorizeFeatureRequest } from '@/app/api/v1/__tests__/feature-permissions-mock'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
@@ -55,10 +56,6 @@ mock.module('@/lib/api/chart-registry', () => ({
   getAvailableCharts: mockGetAvailableCharts,
 }))
 
-mock.module('@/lib/feature-permissions/server', () => ({
-  authorizeFeatureRequest: () => Promise.resolve(null),
-}))
-
 // ── Import route after mocks ───────────────────────────────────────────────────
 
 let GET: (
@@ -80,6 +77,10 @@ beforeEach(() => {
   mockHasChart.mockClear()
   mockGetChartQuery.mockClear()
   mockGetAvailableCharts.mockClear()
+  mockAuthorizeFeatureRequest.mockClear()
+
+  // Bypass feature permission checks in route tests
+  mockAuthorizeFeatureRequest.mockResolvedValue(null)
 
   // Reset default resolved values
   mockFetchJson.mockResolvedValue({
@@ -90,6 +91,7 @@ beforeEach(() => {
   mockGetChartQuery.mockReturnValue({
     query: 'SELECT event_time, count FROM system.query_log',
     queryParams: undefined,
+    permission: { feature: 'metrics' },
   })
   mockGetClickHouseVersion.mockResolvedValue({
     raw: '24.1.1.1',
