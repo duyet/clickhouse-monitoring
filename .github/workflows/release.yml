@@ -364,7 +364,7 @@ jobs:
       - name: Generate AI summary
         id: ai_summary
         continue-on-error: true
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           prompt-file: ai-prompt.txt
           system-prompt: 'You are a release-notes assistant. Output only markdown bullet points grouped by category. Be concise and accurate, and never invent changes that are not in the commit list.'
