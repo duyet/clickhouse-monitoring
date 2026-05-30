@@ -11,22 +11,38 @@ export const queryMetricLogConfig: QueryConfig = {
   // system.query_metric_log is opt-in and may not exist on every server / version
   optional: true,
   tableCheck: 'system.query_metric_log',
+  // Pre-aggregate one row per query over the last hour instead of returning
+  // every raw per-interval sample. system.query_metric_log is high-cardinality
+  // (one row per query per sampling interval), so a raw SELECT can scan enough
+  // data to exceed Cloudflare Worker CPU/memory limits (HTTP 503). Aggregating
+  // server-side and bounding the time window keeps the result small and useful.
   sql: `
+      WITH per_query AS (
+        SELECT
+          query_id,
+          max(event_time) AS event_time,
+          max(memory_usage) AS memory_usage,
+          max(peak_memory_usage) AS peak_memory_usage,
+          max(ProfileEvent_SelectedRows) AS selected_rows,
+          max(ProfileEvent_RealTimeMicroseconds) AS real_time_us,
+          max(ProfileEvent_OSCPUVirtualTimeMicroseconds) AS cpu_time_us
+        FROM system.query_metric_log
+        WHERE event_time >= now() - INTERVAL 1 HOUR
+        GROUP BY query_id
+      )
       SELECT
         query_id,
         event_time,
-        memory_usage,
         formatReadableSize(memory_usage) AS readable_memory,
         round(memory_usage * 100.0 / nullIf(max(memory_usage) OVER (), 0), 2) AS pct_readable_memory,
-        peak_memory_usage,
         formatReadableSize(peak_memory_usage) AS readable_peak_memory,
         round(peak_memory_usage * 100.0 / nullIf(max(peak_memory_usage) OVER (), 0), 2) AS pct_readable_peak_memory,
-        ProfileEvent_SelectedRows AS selected_rows,
-        ProfileEvent_RealTimeMicroseconds AS real_time_us,
-        ProfileEvent_OSCPUVirtualTimeMicroseconds AS cpu_time_us
-      FROM system.query_metric_log
+        selected_rows,
+        real_time_us,
+        cpu_time_us
+      FROM per_query
       ORDER BY event_time DESC
-      LIMIT 1000
+      LIMIT 100
     `,
   columns: [
     'query_id',

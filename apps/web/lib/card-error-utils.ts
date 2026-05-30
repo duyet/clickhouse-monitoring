@@ -67,7 +67,15 @@ const ERROR_KEYWORDS = {
     'enotfound',
     'etimedout',
   ],
-  timeout: ['timeout', 'timed out', 'query timeout'],
+  timeout: [
+    'timeout',
+    'timed out',
+    'query timeout',
+    'resource limits',
+    'exceeded resource',
+    'cpu/memory',
+    'memory limit',
+  ],
   permission: ['permission', 'access denied', 'unauthorized', '401', '403'],
   tableMissing: [
     'table',
@@ -84,6 +92,7 @@ const ERROR_KEYWORDS = {
 export function detectCardErrorVariant(error: CardError): CardErrorVariant {
   const apiError = error as ApiError
   const fetchError = error as FetchDataError
+  const statusError = error as { status?: number }
   const message = error.message?.toLowerCase() ?? ''
   const type = (apiError.type ?? fetchError.type)?.toLowerCase() ?? ''
 
@@ -99,9 +108,25 @@ export function detectCardErrorVariant(error: CardError): CardErrorVariant {
     return 'offline'
   }
 
-  // 2. Check for timeout in message
+  // 2. Check for timeout / resource-limit keywords in message
   if (ERROR_KEYWORDS.timeout.some((keyword) => message.includes(keyword))) {
     return 'timeout'
+  }
+
+  // 2b. Server / resource errors (HTTP 5xx, e.g. a Cloudflare Worker that
+  // exceeded CPU/memory limits) are retryable and best surfaced as a "too
+  // heavy" timeout-style error rather than a generic failure.
+  if (
+    typeof statusError.status === 'number' &&
+    statusError.status >= 500 &&
+    statusError.status !== 503
+  ) {
+    return 'timeout'
+  }
+  // 503 is reused for both upstream network errors and Worker resource limits;
+  // treat it as offline only when nothing indicated a resource/timeout issue.
+  if (statusError.status === 503) {
+    return 'offline'
   }
 
   // 3. Check for offline/connection keywords
