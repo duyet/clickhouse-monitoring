@@ -21,6 +21,7 @@ export const DASHBOARD_CHARTS_TABLE_SHORT =
   'clickhouse_monitoring_custom_dashboard'
 export const DASHBOARD_SETTINGS_TABLE_SHORT =
   'clickhouse_monitoring_custom_dashboard_settings'
+export const FINDINGS_TABLE_SHORT = 'monitoring_findings'
 
 // Fully-qualified "database.table" names used in SQL.
 export const EVENTS_TABLE =
@@ -29,3 +30,5 @@ export const EVENTS_TABLE =
 export const DASHBOARD_CHARTS_TABLE = `${APP_DATABASE}.${DASHBOARD_CHARTS_TABLE_SHORT}`
 
 export const DASHBOARD_SETTINGS_TABLE = `${APP_DATABASE}.${DASHBOARD_SETTINGS_TABLE_SHORT}`
+
+export const FINDINGS_TABLE = `${APP_DATABASE}.${FINDINGS_TABLE_SHORT}`

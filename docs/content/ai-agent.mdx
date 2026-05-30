@@ -181,6 +181,18 @@ current host. The agent picks tools automatically; you never call them directly.
 | `generate_health_report` | Collect all key metrics into one report. |
 | `investigate_incident` | Automated root-cause analysis for an incident. |
 
+### Findings (persistence)
+
+Findings are short, structured records of noteworthy conditions, persisted to
+an app-owned `monitoring_findings` table (MergeTree, 30-day TTL). Writes are
+best-effort and silently no-op on read-only clusters. Also exposed at
+`GET /api/v1/findings`.
+
+| Tool | Description |
+|---|---|
+| `record_finding` | Persist a finding (severity, category, source, title, metric, value). |
+| `list_recent_findings` | List recent findings, newest first; filter by severity and time window. |
+
 ### Storage, Merges & Mutations
 
 | Tool | Description |
@@ -249,6 +261,7 @@ before using them.
 |---|---|
 | `optimize_table` | Trigger `OPTIMIZE TABLE`. |
 | `kill_query` | Kill a running query by id. |
+| `kill_mutation` | Cancel a running mutation on a table. |
 
 ### Interaction & Knowledge
 
