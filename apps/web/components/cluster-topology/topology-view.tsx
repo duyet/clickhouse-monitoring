@@ -136,10 +136,10 @@ export function TopologyView({ hostId }: { hostId: number }) {
     if (cpu === undefined || cpu === null) return
     const n = Number(cpu)
     if (!Number.isFinite(n)) return
-    if (lastCpuRef.current === n && cpuHist.length > 0) return
+    if (lastCpuRef.current === n) return
     lastCpuRef.current = n
     setCpuHist((prev) => [...prev.slice(-(HIST_LEN - 1)), n])
-  }, [liveRow?.cpu_pct, cpuHist.length])
+  }, [liveRow?.cpu_pct])
 
   // Keeper latency history (avg across keepers).
   const [latHist, setLatHist] = useState<number[]>([])

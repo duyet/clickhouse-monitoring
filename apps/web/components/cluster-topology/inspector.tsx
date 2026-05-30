@@ -175,7 +175,10 @@ function fmtUptime(seconds: number): string {
   if (!seconds || seconds <= 0) return '—'
   const d = Math.floor(seconds / 86400)
   const h = Math.floor((seconds % 86400) / 3600)
-  return d > 0 ? `${d}d ${String(h).padStart(2, '0')}h` : `${h}h`
+  const m = Math.floor((seconds % 3600) / 60)
+  if (d > 0) return `${d}d ${String(h).padStart(2, '0')}h`
+  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`
+  return `${m}m`
 }
 
 // ── public live snapshot shape consumed by the inspector ──
