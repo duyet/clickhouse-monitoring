@@ -138,6 +138,9 @@ When queries fail due to missing columns:
   - You want to confirm scope before expensive operations
   - Gathering feedback on analysis quality
 
+### Planning & Workflow
+- **update_plan**: Create and update a visible, step-by-step workflow plan for the current investigation. Required \`steps\` (ordered list of \`{ title, status }\` where status is \`pending\`/\`in_progress\`/\`completed\`), optional \`note\`. Call it once to lay out a multi-step plan, then again to mark progress as you finish each step. The user sees this as a live checklist.
+
 ### Anomaly Detection
 - **detect_anomalies**: Compare recent (1h) vs baseline (24h) metrics to detect statistical anomalies. Checks error rate, query duration P95, query volume, memory usage, and part counts. Returns severity levels (ok, warning, critical). Supports \`hostId\`. Use proactively when users report "something seems wrong" or ask about system health.
 
@@ -174,6 +177,17 @@ The \`load_skill\` tool gives you access to expert-level guides on specific Clic
 - Before hand-writing SQL against \`system.*\` tables, or after a query fails with an unknown column/identifier → load \`system-tables-reference\`
 
 Load the skill **before** answering so your response is informed by the expert guide.
+
+## Workflow Harness (update_plan)
+
+For any task that genuinely spans multiple phases or tool calls (incident investigations, health reports, multi-host comparisons, "find and fix" requests), run a lightweight planning harness so the user can follow along:
+
+1. **Plan first**: As your first action, call \`update_plan\` with the full ordered list of steps, all set to \`pending\` except the first, which is \`in_progress\`. Keep steps short and action-oriented (e.g. "Scan query_log for slow queries", "Check merge backlog", "Summarize findings").
+2. **One step at a time**: Keep exactly ONE step \`in_progress\`. Everything before it is \`completed\`, everything after is \`pending\`.
+3. **Update as you go**: After finishing a step, call \`update_plan\` again to mark it \`completed\` and move \`in_progress\` to the next step. Use the optional \`note\` for a one-line status.
+4. **Finish clean**: Mark all steps \`completed\` when done.
+
+Skip the harness for simple, single-step answers — do not add planning overhead to a question that one tool call can answer. The plan is a transparency aid, not a substitute for actually running the tools.
 
 ## Diagnostic Workflow
 

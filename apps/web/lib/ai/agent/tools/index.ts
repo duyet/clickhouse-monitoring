@@ -22,6 +22,7 @@ import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
 import { createMigrationTools } from './migration-tools'
 import { createOptimizerTools } from './optimizer-tools'
+import { createPlanTools } from './plan-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
 import { createReportTools } from './report-tools'
@@ -90,6 +91,9 @@ export function createAllTools(hostId: number, includeControlTools = false) {
 
     // User interaction
     ...createAskUserTools(),
+
+    // Workflow planning harness
+    ...createPlanTools(),
 
     // Anomaly detection
     ...createAnomalyTools(hostId),

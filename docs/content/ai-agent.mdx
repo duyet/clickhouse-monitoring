@@ -26,6 +26,26 @@ The agent runs in a bounded tool loop: it keeps calling tools until it has
 enough to answer, then stops. Destructive actions (kill query, optimize) are
 disabled unless explicitly enabled (see [Configuration](#configuration)).
 
+## Workflow Harness
+
+For multi-step tasks — incident investigations, health reports, cross-host
+comparisons, or any "find and fix" request — the agent runs a lightweight
+**planning harness**. It calls the `update_plan` tool to lay out an ordered
+checklist of steps up front, then updates it after each step so you can follow
+along live in the chat.
+
+Each step has a status: `pending`, `in_progress`, or `completed`. Exactly one
+step is in progress at a time, rendered as a checklist with a progress bar:
+
+- ✓ completed steps are struck through,
+- the in-progress step is highlighted with a spinner,
+- pending steps wait below.
+
+This makes the agent's reasoning transparent without slowing it down — simple
+single-step questions skip the plan entirely. The harness is a transparency aid
+layered on top of the tool loop; it does not change which tools run or the
+read-only safety guarantees.
+
 ## Configuration
 
 The agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
@@ -172,6 +192,7 @@ before using them.
 |---|---|
 | `ask_user` | Ask a structured clarifying question. |
 | `load_skill` | Load a specialized expert guide (see Skills below). |
+| `update_plan` | Create and update a live workflow checklist (see Workflow Harness below). |
 
 ## Skills
 
