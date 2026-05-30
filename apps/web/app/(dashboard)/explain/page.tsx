@@ -10,6 +10,7 @@ import useSWR from 'swr'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
+import { ExplainResult } from '@/components/explain/explain-result'
 import { ErrorAlert } from '@/components/feedback'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
-import { cn } from '@/lib/utils'
 
 const EXPLAIN_MODES = [
   { value: '', label: 'Plan' },
@@ -280,6 +280,12 @@ function ExplainContent() {
 
   const { data, error, isLoading } = useSWR<ApiResponse>(apiUrl, fetcher)
 
+  // EXPLAIN PLAN (mode '') and PIPELINE return indent-nested text that renders
+  // as a tree. AST/SYNTAX/ESTIMATE are flat or non-hierarchical, and the JSON
+  // plan setting emits JSON rather than indented text — show text only there.
+  const treeRenderable =
+    (mode === '' || mode === 'PIPELINE') && planSettings.json !== 1
+
   const handleExplain = () => {
     setQueryToExplain(queryInput)
   }
@@ -356,23 +362,11 @@ function ExplainContent() {
       )}
 
       {data?.data && data.data.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {mode ? `EXPLAIN ${mode}` : 'Execution Plan'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre
-              className={cn(
-                'bg-muted overflow-x-auto rounded-md p-4',
-                'font-mono text-sm whitespace-pre-wrap'
-              )}
-            >
-              {data.data.map((row) => row.explain).join('\n')}
-            </pre>
-          </CardContent>
-        </Card>
+        <ExplainResult
+          title={mode ? `EXPLAIN ${mode}` : 'Execution Plan'}
+          lines={data.data.map((row) => row.explain)}
+          treeRenderable={treeRenderable}
+        />
       )}
 
       {queryToExplain && !isLoading && !error && data?.data?.length === 0 && (
