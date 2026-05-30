@@ -98,6 +98,7 @@ function ChGlyph({
         cursor: 'pointer',
         opacity: dimmed ? 0.28 : 1,
         transition: 'opacity .25s',
+        filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.25))',
       }}
     >
       {selected && (
@@ -134,6 +135,9 @@ function ChGlyph({
         fontSize="12.5"
         fontWeight="700"
         fill="hsl(var(--foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="3"
+        paintOrder="stroke"
         className="font-mono"
       >
         {node.id}
@@ -152,6 +156,9 @@ function ChGlyph({
         fontSize="11.5"
         fontWeight="600"
         fill="hsl(var(--foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="3"
+        paintOrder="stroke"
         className="font-mono"
       >
         {node.host}
@@ -161,6 +168,9 @@ function ChGlyph({
         y={r + 31}
         fontSize="10.5"
         fill="hsl(var(--muted-foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="2.5"
+        paintOrder="stroke"
         className="font-mono"
       >
         {sub1}
@@ -224,6 +234,7 @@ function KeeperGlyph({
         cursor: 'pointer',
         opacity: dimmed ? 0.28 : 1,
         transition: 'opacity .25s',
+        filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.25))',
       }}
     >
       {selected && (
@@ -260,6 +271,9 @@ function KeeperGlyph({
         fontSize="12.5"
         fontWeight="700"
         fill="hsl(var(--foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="3"
+        paintOrder="stroke"
         className="font-mono"
       >
         {node.id}
@@ -283,6 +297,9 @@ function KeeperGlyph({
         fontSize="11.5"
         fontWeight="600"
         fill="hsl(var(--foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="3"
+        paintOrder="stroke"
         className="font-mono"
       >
         {node.host}
@@ -292,6 +309,9 @@ function KeeperGlyph({
         y={r + 31}
         fontSize="10.5"
         fill="hsl(var(--muted-foreground))"
+        stroke="hsl(var(--card))"
+        strokeWidth="2.5"
+        paintOrder="stroke"
         className="font-mono"
       >
         {sub1}
