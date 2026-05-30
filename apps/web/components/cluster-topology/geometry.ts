@@ -217,10 +217,28 @@ export function offsetHullArea(centers: Center[], r: number): number {
 }
 
 /**
- * Rounded convex blob (legacy ring-sampled smooth hull). Retained so existing
- * callers keep working; new code should prefer {@link offsetHullPath} which is
- * exact and handles 1/2-node degeneracies cleanly.
+ * Smooth blob hull matching the design spec: sample a ring of points around
+ * each center, compute the convex hull of all samples, then smooth with
+ * Catmull-Rom. Produces the organic "territory" shapes shown in the mockup.
+ * Handles 1 node (circle), 2 (capsule), and 3+ (smooth blob) naturally.
  */
 export function hullPath(centers: Center[], pad: number): string {
-  return offsetHullPath(centers, pad)
+  if (centers.length === 0 || pad <= 0) return ''
+  // Degenerate: single center → return a circle directly (catmullRom needs ≥3).
+  if (centers.length === 1) {
+    return circlePath(centers[0].x, centers[0].y, pad)
+  }
+
+  // Sample a ring of points around each center, then hull + smooth.
+  const RING_N = 20
+  const ring: Point[] = []
+  for (const c of centers) {
+    for (let i = 0; i < RING_N; i++) {
+      const a = (i / RING_N) * Math.PI * 2
+      ring.push([c.x + Math.cos(a) * pad, c.y + Math.sin(a) * pad])
+    }
+  }
+  const hull = convexHull(ring)
+  if (hull.length < 3) return offsetHullPath(centers, pad) // fallback
+  return catmullRomClosed(hull)
 }

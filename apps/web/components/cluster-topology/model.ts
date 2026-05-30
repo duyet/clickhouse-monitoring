@@ -685,6 +685,10 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   layoutKeepers(keepers)
   layoutChNodes(renderCh, data.clusters)
 
+  // Prevent overlap: push apart any nodes closer than the minimum spacing.
+  enforceMinDistance(keepers, KP_R * 2 + 20)
+  enforceMinDistance(renderCh, CH_R * 2 + 20)
+
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
     nodeById[k.id] = k
@@ -916,6 +920,46 @@ function clampToBand(nodes: ChNode[]) {
   for (const nd of nodes) {
     nd.x = Math.max(CH_MARGIN, Math.min(VB_W - CH_MARGIN, nd.x))
     nd.y = Math.max(CH_BAND_Y - 10, Math.min(CH_BAND_Y + CH_BAND_H, nd.y))
+  }
+}
+
+/**
+ * Push apart any nodes closer than `minDist` from each other.
+ * Iterative repulsion — converges in a few passes for typical cluster sizes.
+ */
+function enforceMinDistance(
+  nodes: { x: number; y: number }[],
+  minDist: number
+) {
+  for (let iter = 0; iter < 12; iter++) {
+    let moved = false
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x
+        const dy = nodes[j].y - nodes[i].y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < minDist) {
+          const push = (minDist - dist) / 2 + 1
+          if (dist > 1e-9) {
+            const nx = dx / dist
+            const ny = dy / dist
+            nodes[i].x -= nx * push
+            nodes[i].y -= ny * push
+            nodes[j].x += nx * push
+            nodes[j].y += ny * push
+          } else {
+            // Coincident — push apart at a spread angle.
+            const angle = (Math.PI * 2 * (i + 1)) / nodes.length
+            nodes[i].x -= Math.cos(angle) * (minDist / 2)
+            nodes[i].y -= Math.sin(angle) * (minDist / 2)
+            nodes[j].x += Math.cos(angle) * (minDist / 2)
+            nodes[j].y += Math.sin(angle) * (minDist / 2)
+          }
+          moved = true
+        }
+      }
+    }
+    if (!moved) break
   }
 }
 
