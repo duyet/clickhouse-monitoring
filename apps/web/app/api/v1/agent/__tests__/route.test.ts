@@ -111,7 +111,7 @@ mock.module('ai', () => {
       try {
         await execute({ writer })
         record.executeCalled = true
-      } catch (err) {
+      } catch (_err) {
         record.executeCalled = false
       }
 
