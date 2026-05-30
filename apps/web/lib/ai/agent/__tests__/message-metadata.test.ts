@@ -1,5 +1,6 @@
 import {
   extractMessageError,
+  extractMessageUsage,
   getAgentMessageMetadata,
 } from '../message-metadata'
 import { describe, expect, test } from 'bun:test'
@@ -236,5 +237,95 @@ describe('agent message metadata', () => {
     expect(metadata.raw.error).toMatchObject({
       message: 'Every upstream failed',
     })
+  })
+})
+
+describe('extractMessageUsage — resolvedModel field', () => {
+  const makeUsagePart = (overrides: Record<string, unknown>) => ({
+    type: 'data-usage',
+    data: [
+      {
+        totalInputTokens: 10,
+        totalOutputTokens: 5,
+        totalTokens: 15,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+        reasoningTokens: 0,
+        stepCount: 1,
+        estimatedCostUsd: 0,
+        model: 'openrouter:openrouter/free',
+        provider: 'openrouter',
+        ...overrides,
+      },
+    ],
+  })
+
+  test('returns resolvedModel when present and is a string', () => {
+    const message = {
+      id: 'msg-resolved',
+      role: 'assistant' as const,
+      parts: [makeUsagePart({ resolvedModel: 'google/gemma-4-26b-it' })],
+    }
+    const usage = extractMessageUsage(message)
+    expect(usage?.resolvedModel).toBe('google/gemma-4-26b-it')
+  })
+
+  test('returns undefined resolvedModel when not present in data', () => {
+    const message = {
+      id: 'msg-no-resolved',
+      role: 'assistant' as const,
+      parts: [makeUsagePart({})],
+    }
+    const usage = extractMessageUsage(message)
+    expect(usage?.resolvedModel).toBeUndefined()
+  })
+
+  test('returns undefined resolvedModel when field is not a string', () => {
+    const message = {
+      id: 'msg-bad-resolved',
+      role: 'assistant' as const,
+      parts: [makeUsagePart({ resolvedModel: 42 })],
+    }
+    const usage = extractMessageUsage(message)
+    expect(usage?.resolvedModel).toBeUndefined()
+  })
+
+  test('returns undefined resolvedModel when field is null', () => {
+    const message = {
+      id: 'msg-null-resolved',
+      role: 'assistant' as const,
+      parts: [makeUsagePart({ resolvedModel: null })],
+    }
+    const usage = extractMessageUsage(message)
+    expect(usage?.resolvedModel).toBeUndefined()
+  })
+
+  test('resolvedModel is present in metadata usage when data-usage contains it', () => {
+    const message = {
+      id: 'msg-meta-resolved',
+      role: 'assistant' as const,
+      parts: [
+        makeUsagePart({ resolvedModel: 'google/gemma-4-26b-it' }),
+      ],
+    }
+    const metadata = getAgentMessageMetadata({ message })
+    expect(metadata.usage?.resolvedModel).toBe('google/gemma-4-26b-it')
+    expect(metadata.usage?.model).toBe('openrouter:openrouter/free')
+  })
+
+  test('resolvedModel equals model when they are the same value', () => {
+    const message = {
+      id: 'msg-same-resolved',
+      role: 'assistant' as const,
+      parts: [
+        makeUsagePart({
+          model: 'openrouter:some-model',
+          resolvedModel: 'openrouter:some-model',
+        }),
+      ],
+    }
+    const usage = extractMessageUsage(message)
+    expect(usage?.resolvedModel).toBe('openrouter:some-model')
+    expect(usage?.model).toBe('openrouter:some-model')
   })
 })
