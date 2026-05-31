@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const kafkaConsumersConfig: QueryConfig = {
   name: 'kafka-consumers',
+  defaultView: 'auto',
+  card: { primary: 'table', badges: ['consumer_id'] },
   description:
     'Kafka table engine consumer state: poll/commit activity, messages read, and last exception per consumer',
   refreshInterval: 15_000,

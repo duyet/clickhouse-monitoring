@@ -21,6 +21,7 @@ export type Row = {
 
 export const diskSpaceConfig: QueryConfig = {
   name: 'disks',
+  card: { primary: 'name' },
   sql: `
       SELECT name,
              path,

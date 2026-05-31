@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const mergesConfig: QueryConfig = {
   name: 'merges',
+  defaultView: 'auto',
+  card: { primary: 'table', badges: ['merge_type', 'is_mutation'] },
   refreshInterval: 30_000,
   description:
     'Merges and part mutations currently in process for tables in the MergeTree family',

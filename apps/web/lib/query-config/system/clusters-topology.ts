@@ -53,6 +53,8 @@ export type ClusterTopologyRow = {
 
 export const clustersTopologyConfig: QueryConfig = {
   name: 'clusters-topology',
+  defaultView: 'auto',
+  card: { primary: 'host_name', badges: ['is_local'] },
   description:
     'Per-replica rows from system.clusters for the Cluster Topology graph (one row per cluster/shard/replica).',
   sql: [

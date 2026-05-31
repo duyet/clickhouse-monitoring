@@ -2,6 +2,8 @@ import type { QueryConfig } from '@/types/query-config'
 
 export const warningsConfig: QueryConfig = {
   name: 'warnings',
+  defaultView: 'auto',
+  card: { primary: 'message' },
   description:
     'Server-side warnings about potential configuration or operational issues',
   // system.warnings may not exist on every server / ClickHouse version
