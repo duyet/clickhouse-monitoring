@@ -1,10 +1,50 @@
 import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
+import { HashIcon, UserIcon } from 'lucide-react'
+import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
 export const expensiveQueriesByMemoryConfig: QueryConfig = {
   name: 'expensive-queries-by-memory',
+  // Query is the hero; total/avg memory are the headline stats in the expand.
+  defaultView: 'auto',
+  card: {
+    primary: 'query',
+    badges: ['query_cache_usage'],
+    metrics: ['user', 'cnt'],
+  },
+  columnIcons: {
+    user: UserIcon,
+    cnt: HashIcon,
+  },
+  expandable: {
+    renderExpanded: createExpandedPanel({
+      sections: [
+        {
+          type: 'stats',
+          columns: [
+            {
+              key: 'sum_memory',
+              label: 'Total memory',
+              readableKey: 'readable_sum_memory',
+            },
+            {
+              key: 'avg_memory',
+              label: 'Avg memory',
+              readableKey: 'readable_avg_memory',
+            },
+          ],
+        },
+        {
+          type: 'fields',
+          title: 'Details',
+          columns: ['user', 'cnt', 'query_cache_usage'],
+        },
+        { type: 'code', title: 'Query', column: 'query' },
+      ],
+    }),
+  },
   description: 'Most expensive queries by memory finished over last 24 hours',
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',

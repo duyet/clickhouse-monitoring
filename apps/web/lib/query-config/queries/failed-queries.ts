@@ -1,10 +1,56 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { ClockIcon, TimerIcon, UserIcon } from 'lucide-react'
+import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
 export const failedQueriesConfig: QueryConfig = {
   name: 'failed-queries',
+  // For a failed query the *exception* is the most important thing — it leads
+  // the card, with type/kind as badges and identity/duration as metrics.
+  defaultView: 'auto',
+  card: {
+    primary: 'exception',
+    badges: ['type', 'query_kind'],
+    metrics: ['user', 'query_start_time', 'query_duration_ms'],
+    hidden: [
+      'stack_trace',
+      'normalized_query',
+      'is_initial_query',
+      'initial_user',
+      'client_hostname',
+    ],
+  },
+  columnIcons: {
+    user: UserIcon,
+    query_start_time: ClockIcon,
+    query_duration_ms: TimerIcon,
+  },
+  expandable: {
+    renderExpanded: createExpandedPanel({
+      sections: [
+        { type: 'code', title: 'Exception', column: 'exception' },
+        { type: 'code', title: 'Stack trace', column: 'stack_trace' },
+        {
+          type: 'fields',
+          title: 'Identity',
+          columns: [
+            'query_id',
+            'user',
+            'initial_user',
+            'type',
+            'query_kind',
+            'query_start_time',
+            'client',
+            'databases',
+            'tables',
+          ],
+        },
+        { type: 'code', title: 'Normalized query', column: 'normalized_query' },
+      ],
+    }),
+  },
   description: "type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']",
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',

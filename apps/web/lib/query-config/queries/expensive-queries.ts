@@ -1,10 +1,54 @@
 import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
+import { HashIcon, TimerIcon } from 'lucide-react'
+import { createConfigExpandedDetails } from '@/components/data-table/cells/config-expanded-details'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
 export const expensiveQueriesConfig: QueryConfig = {
   name: 'expensive-queries',
+  // Query is the hero; the headline cost metrics ride as chips. The 20+ timing
+  // and byte-accounting columns are noise on a card, so they're hidden here and
+  // surfaced in the expand panel's auto-grid instead.
+  defaultView: 'auto',
+  card: {
+    primary: 'query',
+    badges: ['query_cache_usage'],
+    metrics: ['cnt', 'queries_duration', 'real_time'],
+    hidden: [
+      'user_time',
+      'system_time',
+      'disk_read_time',
+      'disk_write_time',
+      'network_send_time',
+      'network_receive_time',
+      'zookeeper_wait_time',
+      'os_io_wait_time',
+      'os_cpu_wait_time',
+      'os_cpu_virtual_time',
+      'selected_rows',
+      'selected_parts',
+      'selected_marks',
+      'selected_ranges',
+      'read_rows',
+      'written_rows',
+      'result_rows',
+      'read_bytes',
+      'written_bytes',
+      'result_bytes',
+      'selected_bytes',
+    ],
+  },
+  columnIcons: {
+    cnt: HashIcon,
+    queries_duration: TimerIcon,
+    real_time: TimerIcon,
+  },
+  expandable: {
+    renderExpanded: createConfigExpandedDetails({
+      primaryColumns: ['action', 'query'],
+    }),
+  },
   description: 'Most expensive queries finished over last 24 hours',
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',
