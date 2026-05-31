@@ -48,6 +48,7 @@ import {
 import type { MenuItem } from '@/components/menu/types'
 
 import { PeerDBLogo } from '@/components/icons/peerdb-brand-logo'
+import { EVENTS_TABLE } from '@/lib/app-tables'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -684,7 +685,7 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'page-views',
         countLabel: 'views',
         icon: BarChartIcon,
-        tableCheck: 'system.monitoring_events',
+        tableCheck: EVENTS_TABLE,
       },
       {
         title: 'MCP Server',

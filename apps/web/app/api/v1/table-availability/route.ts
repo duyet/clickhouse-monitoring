@@ -12,6 +12,7 @@
  */
 
 import { menuItemsConfig } from '@/menu'
+
 import type { MenuItem } from '@/components/menu/types'
 
 import { checkTableExists } from '@chm/clickhouse-client/table-existence-cache'
@@ -42,7 +43,9 @@ function extractTableChecks(items: readonly MenuItem[]): string[] {
   function recurse(menuItems: readonly MenuItem[]) {
     for (const item of menuItems) {
       if (item.tableCheck) {
-        const itemTables = Array.isArray(item.tableCheck) ? item.tableCheck : [item.tableCheck]
+        const itemTables = Array.isArray(item.tableCheck)
+          ? item.tableCheck
+          : [item.tableCheck]
         for (const t of itemTables) {
           tables.add(t)
         }
@@ -58,21 +61,34 @@ function extractTableChecks(items: readonly MenuItem[]): string[] {
 }
 
 /**
- * Finds all menu items referencing a specific table.
+ * Finds all menu items referencing a specific table, threading inherited
+ * parent permissions through the menu tree (same as filterMenuItemsByPermissions).
  */
-function findMenuItemsForTable(items: readonly MenuItem[], table: string): MenuItem[] {
-  const result: MenuItem[] = []
+function findMenuItemsForTable(
+  items: readonly MenuItem[],
+  table: string
+): { item: MenuItem; effectivePermission: MenuItem['permission'] }[] {
+  const result: {
+    item: MenuItem
+    effectivePermission: MenuItem['permission']
+  }[] = []
 
-  function recurse(menuItems: readonly MenuItem[]) {
+  function recurse(
+    menuItems: readonly MenuItem[],
+    inheritedPermission?: MenuItem['permission']
+  ) {
     for (const item of menuItems) {
+      const effectivePermission = item.permission ?? inheritedPermission
       if (item.tableCheck) {
-        const itemTables = Array.isArray(item.tableCheck) ? item.tableCheck : [item.tableCheck]
+        const itemTables = Array.isArray(item.tableCheck)
+          ? item.tableCheck
+          : [item.tableCheck]
         if (itemTables.includes(table)) {
-          result.push(item)
+          result.push({ item, effectivePermission })
         }
       }
       if (item.items) {
-        recurse(item.items)
+        recurse(item.items, effectivePermission)
       }
     }
   }
@@ -89,12 +105,14 @@ async function isTableAuthorized(
   table: string,
   request: Request
 ): Promise<boolean> {
-  const items = findMenuItemsForTable(menuItemsConfig, table)
-  if (items.length === 0) return true
+  const entries = findMenuItemsForTable(menuItemsConfig, table)
+  if (entries.length === 0) return true
 
-  for (const item of items) {
-    const permission = item.permission
-    const permissionResponse = await authorizeFeatureRequest(permission, request)
+  for (const { effectivePermission } of entries) {
+    const permissionResponse = await authorizeFeatureRequest(
+      effectivePermission,
+      request
+    )
     if (!permissionResponse) {
       // User is authorized for at least one feature using this table
       return true
@@ -133,7 +151,7 @@ async function resolveTableAvailability(
       table,
       hostId,
     })
-    return false // Fail-soft on error
+    return undefined // Omit from map — preserves client fail-open
   }
 }
 
@@ -149,9 +167,13 @@ export async function GET(request: Request): Promise<Response> {
       searchParams.get('hostId') ?? '0'
     )
     if (!hostIdResult.success) {
-      error('[GET /api/v1/table-availability] Invalid hostId parameter', undefined, {
-        requestId,
-      })
+      error(
+        '[GET /api/v1/table-availability] Invalid hostId parameter',
+        undefined,
+        {
+          requestId,
+        }
+      )
       const errorResponse = createErrorResponse(
         {
           type: ApiErrorType.ValidationError,
@@ -179,7 +201,12 @@ export async function GET(request: Request): Promise<Response> {
     const tables = extractTableChecks(menuItemsConfig)
     const resolved = await Promise.all(
       tables.map(async (table) => {
-        const available = await resolveTableAvailability(table, hostId, request, requestId)
+        const available = await resolveTableAvailability(
+          table,
+          hostId,
+          request,
+          requestId
+        )
         return [table, available] as const
       })
     )
@@ -199,12 +226,15 @@ export async function GET(request: Request): Promise<Response> {
 
     const response = createSuccessResponse<TableAvailabilityResponse>(
       { available },
-      { queryId: 'table-availability-batch', rows: Object.keys(available).length }
+      {
+        queryId: 'table-availability-batch',
+        rows: Object.keys(available).length,
+      }
     )
 
     const headers = new Headers(response.headers)
     headers.set('X-Request-ID', requestId)
-    headers.set('Cache-Control', CacheControl.MEDIUM)
+    headers.set('Cache-Control', CacheControl.NONE) // private — response varies by permissions
 
     return new Response(response.body, {
       status: response.status,
@@ -212,7 +242,9 @@ export async function GET(request: Request): Promise<Response> {
       headers,
     })
   } catch (err) {
-    error('[GET /api/v1/table-availability] Unexpected error:', err, { requestId })
+    error('[GET /api/v1/table-availability] Unexpected error:', err, {
+      requestId,
+    })
     const errorResponse = createErrorResponse(
       {
         type: ApiErrorType.QueryError,
