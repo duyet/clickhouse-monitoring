@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const metricsConfig: QueryConfig = {
   name: 'metrics',
+  defaultView: 'auto',
+  card: { primary: 'metric' },
   permission: { feature: 'metrics' },
   description:
     'Contains metrics which can be calculated instantly, or have a current value',

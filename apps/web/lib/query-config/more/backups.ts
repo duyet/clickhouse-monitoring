@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const backupsConfig: QueryConfig = {
   name: 'backups',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['status'] },
   description: `To restore a backup:
       RESTORE TABLE data_lake.events AS data_lake.events_restore FROM Disk('s3_backup', 'data_lake.events_20231212')`,
   docs: BACKUP_LOG,

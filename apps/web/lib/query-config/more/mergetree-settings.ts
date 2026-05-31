@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const mergeTreeSettingsConfig: QueryConfig = {
   name: 'mergetree-settings',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['changed', 'type'] },
   permission: { feature: 'settings' },
   tableCheck: 'system.merge_tree_settings',
   sql: `

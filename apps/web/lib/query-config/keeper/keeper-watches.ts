@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const keeperWatchesConfig: QueryConfig = {
   name: 'keeper-watches',
+  defaultView: 'auto',
+  card: { primary: 'path', badges: ['watch_type'] },
   description:
     'Currently active ZooKeeper/Keeper watches registered by this server. One row per watch entry tracking path, session, and callback info. Available only on very recent ClickHouse builds (added by PR #99277, post-26.1).',
   optional: true,

@@ -31,6 +31,8 @@ export type KeeperPresenceRow = {
 
 export const keeperPresenceConfig: QueryConfig = {
   name: 'keeper-presence',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['is_expired'] },
   description:
     'Coordination-layer existence/liveness probe from system.zookeeper_connection (broad version coverage).',
   optional: true,

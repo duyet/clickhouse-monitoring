@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const keeperLogConfig: QueryConfig = {
   name: 'keeper-log',
+  defaultView: 'auto',
+  card: { primary: 'path', badges: ['type'] },
   description:
     'Per-request log of parameters sent to ZooKeeper/Keeper and the responses received. Requires <zookeeper_log> in server config (often absent in default installs). https://clickhouse.com/docs/en/operations/system-tables/zookeeper_log',
   optional: true,

@@ -6,6 +6,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const keeperConnectionsConfig: QueryConfig = {
   name: 'keeper-connections',
+  defaultView: 'auto',
+  card: { primary: 'host', badges: ['is_expired'] },
   description:
     'Current live Keeper/ZooKeeper connections from this ClickHouse server, one row per active connection, with compatibility across ClickHouse releases.',
   optional: true,
