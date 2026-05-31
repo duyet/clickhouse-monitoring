@@ -33,6 +33,7 @@ import {
   getCardErrorTitle,
   getTableMissingInfo,
   shouldShowRetryButton,
+  toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { cn } from '@/lib/utils'
 
@@ -125,7 +126,7 @@ ${error.stack}
     >
       <CardContent className={chartCard.contentError}>
         <EmptyState
-          variant={variant}
+          variant={toEmptyStateVariant(variant)}
           title={title}
           description={description}
           compact={compact}

@@ -5,6 +5,8 @@ import type { MenuItem as MenuItemType } from '@/components/menu/types'
 import { lazy, Suspense, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+import { useHostId } from '@/lib/swr'
+import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 
 const NewBadge = lazy(() =>
   import('@/components/menu/components/new-badge').then((mod) => ({
@@ -34,6 +36,68 @@ interface CollapsedSubmenuProps {
 }
 
 /**
+ * CollapsedSubMenuItem - Renders a single sub-item in the collapsed popover
+ * with async table-availability visual muting.
+ */
+const CollapsedSubMenuItem = function CollapsedSubMenuItem({
+  subItem,
+  pathname,
+  hostId,
+  isMobile,
+  setOpenMobile,
+  setOpen,
+}: {
+  subItem: MenuItemType
+  pathname: string
+  hostId: number
+  isMobile: boolean
+  setOpenMobile: (open: boolean) => void
+  setOpen: (open: boolean) => void
+}) {
+  const { available } = useIsTableAvailable(subItem.tableCheck, hostId)
+  const isActive = isMenuItemActive(subItem.href, pathname)
+
+  return (
+    <HostPrefixedLink
+      href={subItem.href}
+      className={available ? "" : "opacity-50"}
+      title={available ? undefined : "System table not found on this host"}
+      onClick={() => {
+        setOpen(false)
+        if (isMobile) {
+          setOpenMobile(false)
+        }
+      }}
+    >
+      <div
+        className={cn(
+          'flex items-center justify-between gap-2',
+          'rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground',
+          'focus-visible:bg-accent focus-visible:text-accent-foreground',
+          isActive && 'bg-accent text-accent-foreground'
+        )}
+      >
+        <span className="truncate">{subItem.title}</span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          <Suspense fallback={null}>
+            <NewBadge href={subItem.href} isNew={subItem.isNew} />
+          </Suspense>
+          {subItem.countKey && (
+            <Suspense fallback={null}>
+              <CountBadge
+                countKey={subItem.countKey}
+                countLabel={subItem.countLabel}
+                countVariant={subItem.countVariant}
+              />
+            </Suspense>
+          )}
+        </span>
+      </div>
+    </HostPrefixedLink>
+  )
+}
+
+/**
  * CollapsedSubmenu - Renders submenu in a Popover for collapsed sidebar mode
  *
  * Features:
@@ -49,6 +113,7 @@ export const CollapsedSubmenu = function CollapsedSubmenu({
 }: CollapsedSubmenuProps) {
   const [open, setOpen] = useState(false)
   const { isMobile, setOpenMobile } = useSidebar()
+  const hostId = useHostId()
   const hasChildren = item.items && item.items.length > 0
 
   if (!hasChildren) {
@@ -80,47 +145,17 @@ export const CollapsedSubmenu = function CollapsedSubmenu({
           onMouseLeave={() => setOpen(false)}
         >
           <div className="flex flex-col gap-0.5">
-            {item.items?.map((subItem) => {
-              const isActive = isMenuItemActive(subItem.href, pathname)
-
-              return (
-                <HostPrefixedLink
-                  key={subItem.href}
-                  href={subItem.href}
-                  onClick={() => {
-                    setOpen(false)
-                    if (isMobile) {
-                      setOpenMobile(false)
-                    }
-                  }}
-                >
-                  <div
-                    className={cn(
-                      'flex items-center justify-between gap-2',
-                      'rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground',
-                      'focus-visible:bg-accent focus-visible:text-accent-foreground',
-                      isActive && 'bg-accent text-accent-foreground'
-                    )}
-                  >
-                    <span className="truncate">{subItem.title}</span>
-                    <span className="flex shrink-0 items-center gap-1.5">
-                      <Suspense fallback={null}>
-                        <NewBadge href={subItem.href} isNew={subItem.isNew} />
-                      </Suspense>
-                      {subItem.countKey && (
-                        <Suspense fallback={null}>
-                          <CountBadge
-                            countKey={subItem.countKey}
-                            countLabel={subItem.countLabel}
-                            countVariant={subItem.countVariant}
-                          />
-                        </Suspense>
-                      )}
-                    </span>
-                  </div>
-                </HostPrefixedLink>
-              )
-            })}
+            {item.items?.map((subItem) => (
+              <CollapsedSubMenuItem
+                key={subItem.href}
+                subItem={subItem}
+                pathname={pathname}
+                hostId={hostId}
+                isMobile={isMobile}
+                setOpenMobile={setOpenMobile}
+                setOpen={setOpen}
+              />
+            ))}
           </div>
         </PopoverContent>
       </Popover>

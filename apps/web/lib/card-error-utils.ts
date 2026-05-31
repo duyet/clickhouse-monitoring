@@ -32,10 +32,25 @@ export type CardError = Error | ApiError | FetchDataError
 /**
  * Unified error variant for EmptyState component
  */
-export type CardErrorVariant = Extract<
-  EmptyStateVariant,
-  'error' | 'offline' | 'timeout' | 'table-missing'
->
+export type CardErrorVariant =
+  | 'error'
+  | 'offline'
+  | 'timeout'
+  | 'table-missing'
+  | 'permission'
+
+/**
+ * Map a {@link CardErrorVariant} to a variant the shared `EmptyState`
+ * understands. `EmptyState` has no `permission` styling, so permission errors
+ * fall back to the `error` look — the permission-specific title/description are
+ * still supplied separately via {@link getCardErrorTitle} /
+ * {@link getCardErrorDescription}.
+ */
+export function toEmptyStateVariant(
+  variant: CardErrorVariant
+): EmptyStateVariant {
+  return variant === 'permission' ? 'error' : variant
+}
 
 /**
  * Standardized error styling configuration
@@ -76,7 +91,15 @@ const ERROR_KEYWORDS = {
     'cpu/memory',
     'memory limit',
   ],
-  permission: ['permission', 'access denied', 'unauthorized', '401', '403'],
+  permission: [
+    'permission',
+    'access denied',
+    'unauthorized',
+    '401',
+    '403',
+    'not_enough_privileges',
+    'not enough privileges',
+  ],
   tableMissing: [
     'table',
     "doesn't exist",
@@ -97,6 +120,14 @@ export function detectCardErrorVariant(error: CardError): CardErrorVariant {
   const type = (apiError.type ?? fetchError.type)?.toLowerCase() ?? ''
 
   // 1. Check explicit type fields first (most reliable)
+  if (
+    type === 'permission_error' ||
+    apiError.type === ApiErrorType.PermissionError ||
+    ERROR_KEYWORDS.permission.some((keyword) => message.includes(keyword))
+  ) {
+    return 'permission'
+  }
+
   if (
     type === 'table_not_found' ||
     apiError.type === ApiErrorType.TableNotFound
@@ -179,6 +210,12 @@ const ERROR_MESSAGES: Record<
     description:
       'An unexpected error occurred while loading data. Please try again.',
     short: 'An error occurred.',
+  },
+  permission: {
+    title: 'Permission Required',
+    description:
+      'The current ClickHouse user does not have sufficient privileges to query this system table. Contact your administrator to grant SELECT permissions.',
+    short: 'Permission denied.',
   },
 }
 
@@ -272,6 +309,12 @@ export function getCardErrorStyle(variant: CardErrorVariant): CardErrorStyle {
         border: 'border-muted/30',
         background: 'bg-muted/30',
         isDestructive: false,
+      }
+    case 'permission':
+      return {
+        border: 'border-destructive/30',
+        background: 'bg-destructive/5',
+        isDestructive: true,
       }
   }
 }
@@ -384,4 +427,56 @@ export function getTableMissingInfo(
     missingTables,
     guidance: getGuidanceForMissingTables(missingTables),
   }
+}
+
+// ============================================================================
+// Version & Permission Helpers
+// ============================================================================
+
+export interface SimpleVersion {
+  major: number
+  minor: number
+  patch: number
+}
+
+/**
+ * Parse a version string like "24.3.1.1" into simple major.minor.patch components
+ */
+export function parseSimpleVersion(versionStr: string): SimpleVersion {
+  if (typeof versionStr !== 'string' || !versionStr) {
+    return { major: 0, minor: 0, patch: 0 }
+  }
+  const parts = versionStr.split('.')
+  return {
+    major: parseInt(parts[0] || '0', 10),
+    minor: parseInt(parts[1] || '0', 10),
+    patch: parseInt(parts[2] || '0', 10),
+  }
+}
+
+/**
+ * Checks if current ClickHouse version is older than the required version
+ */
+export function isVersionOlder(current: string, required: string): boolean {
+  try {
+    const cur = parseSimpleVersion(current)
+    const req = parseSimpleVersion(required)
+    if (cur.major !== req.major) return cur.major < req.major
+    if (cur.minor !== req.minor) return cur.minor < req.minor
+    if (cur.patch !== req.patch) return cur.patch < req.patch
+    return false
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Extracts table name from ClickHouse permission error messages
+ */
+export function extractTableFromPermissionError(
+  message: string
+): string | undefined {
+  // Match standard patterns like system.query_log or system.processes
+  const match = message.match(/\b(?:system|default)\.[a-zA-Z0-9_]+/i)
+  return match ? match[0] : undefined
 }

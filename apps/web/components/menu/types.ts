@@ -23,4 +23,6 @@ export interface MenuItem {
   docs?: string
   /** Feature gate metadata for deployment-level permissions */
   permission?: FeaturePermission
+  /** ClickHouse system table name(s) to check for availability/muting */
+  tableCheck?: string | string[]
 }
