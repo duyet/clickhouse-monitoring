@@ -187,13 +187,11 @@ export const DataTableContent = memo(function DataTableContent<
   onViewChange,
   bodyRenderKey,
 }: DataTableContentProps<TData, TValue>) {
-  const cardsOnly = view === 'cards'
-  // Visibility per layout. `'auto'` keeps the responsive split (cards only
-  // below `sm`, table only at `sm`+); an explicit choice wins at every width.
-  const cardsVisibility =
-    view === 'cards' ? 'block' : view === 'table' ? 'hidden' : 'sm:hidden'
-  const tableVisibility =
-    view === 'cards' ? 'hidden' : view === 'table' ? 'block' : 'hidden sm:block'
+  const cardsOnly = view === 'cards' || view === 'auto'
+  // Visibility per layout. Both 'auto' and 'cards' show the card grid;
+  // only an explicit 'table' choice shows the table.
+  const cardsVisibility = view === 'table' ? 'hidden' : 'block'
+  const tableVisibility = view === 'table' ? 'block' : 'hidden'
   // Configure drag-and-drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
