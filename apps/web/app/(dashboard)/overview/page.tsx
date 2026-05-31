@@ -3,6 +3,7 @@
 import type { OverviewChartConfig } from './charts-config'
 
 import { OVERVIEW_TABS } from './charts-config'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
@@ -13,6 +14,16 @@ import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+
+// Shared cluster-topology view — large SVG chunk, must not SSR. Reused as-is
+// from the /clusters page so both surfaces render the same component.
+const TopologyView = dynamic(
+  () => import('@/components/cluster-topology').then((m) => m.TopologyView),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[540px] w-full rounded-xl" />,
+  }
+)
 
 const VALID_TABS = new Set(OVERVIEW_TABS.map((tab) => tab.value))
 const DEFAULT_TAB = 'overview'
@@ -166,12 +177,19 @@ function OverviewPageContent() {
               forceMount={visitedTabs.has(tab.value) ? true : undefined}
             >
               {visitedTabs.has(tab.value) ? (
-                <LazyTabContent
-                  charts={tab.charts}
-                  gridClassName={tab.gridClassName}
-                  label={tab.label}
-                  hostId={hostId}
-                />
+                tab.customContent === 'topology' ? (
+                  <TopologyView
+                    hostId={hostId}
+                    detailHref={`/clusters?host=${hostId}`}
+                  />
+                ) : (
+                  <LazyTabContent
+                    charts={tab.charts}
+                    gridClassName={tab.gridClassName}
+                    label={tab.label}
+                    hostId={hostId}
+                  />
+                )
               ) : null}
             </TabsContent>
           ))}

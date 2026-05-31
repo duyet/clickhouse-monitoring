@@ -66,6 +66,19 @@ function hexPath(r: number): string {
   return `M ${pts.join(' L ')} Z`
 }
 
+/** A gently curved connector between two points — softer than a straight line.
+ * The control point is offset perpendicular to the chord by a capped fraction
+ * of its length, so every edge bows consistently. */
+function curvePath(x1: number, y1: number, x2: number, y2: number): string {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.hypot(dx, dy) || 1
+  const bend = Math.min(46, len * 0.16)
+  const cx = (x1 + x2) / 2 - (dy / len) * bend
+  const cy = (y1 + y2) / 2 + (dx / len) * bend
+  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`
+}
+
 /** A small keeper/coordination shield mark. */
 const ShieldMark = ({ color }: { color: string }) => (
   <path
@@ -583,12 +596,10 @@ export function TopoCanvas({
           const e = edge(a, b)
           if (!e) return null
           return (
-            <line
+            <path
               key={`c${i}`}
-              x1={e.x1}
-              y1={e.y1}
-              x2={e.x2}
-              y2={e.y2}
+              d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+              fill="none"
               stroke="var(--muted-foreground)"
               strokeOpacity="0.28"
               strokeWidth="1.2"
@@ -600,12 +611,10 @@ export function TopoCanvas({
           const e = edge(a, b)
           if (!e) return null
           return (
-            <line
+            <path
               key={`r${i}`}
-              x1={e.x1}
-              y1={e.y1}
-              x2={e.x2}
-              y2={e.y2}
+              d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+              fill="none"
               stroke={STATUS_COLOR.healthy}
               strokeOpacity="0.45"
               strokeWidth="1.8"
@@ -618,12 +627,10 @@ export function TopoCanvas({
         if (!e) return null
         const lit = !activeCluster || (memberOf(a) && memberOf(b))
         return (
-          <line
+          <path
             key={`p${i}`}
-            x1={e.x1}
-            y1={e.y1}
-            x2={e.x2}
-            y2={e.y2}
+            d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+            fill="none"
             stroke="#3b82f6"
             strokeOpacity={lit ? 0.55 : 0.12}
             strokeWidth="2"

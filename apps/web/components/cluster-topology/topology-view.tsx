@@ -112,7 +112,15 @@ function Pill({
   )
 }
 
-export function TopologyView({ hostId }: { hostId: number }) {
+export function TopologyView({
+  hostId,
+  detailHref,
+}: {
+  hostId: number
+  /** When set (e.g. embedded on the overview tab), shows a link through to the
+   * full cluster page for more detail. Omitted on the /clusters page itself. */
+  detailHref?: string
+}) {
   // ── structural model assembled server-side (cached hard) ──
   // Real per-node live metrics for EVERY node are included in this document
   // (server-side clusterAllReplicas fan-out), refreshed every 60s.
@@ -329,14 +337,14 @@ export function TopologyView({ hostId }: { hostId: number }) {
             Refresh
           </Button>
           <Button
-            variant="outline"
+            variant={detailHref ? 'default' : 'outline'}
             size="sm"
             asChild
             className="h-7 gap-1.5 px-2 text-[12px]"
           >
-            <Link href={`/clusters?host=${hostId}`}>
+            <Link href={detailHref ?? `/clusters?host=${hostId}`}>
               <ExternalLinkIcon className="h-3 w-3" />
-              system.clusters
+              {detailHref ? 'Cluster details' : 'system.clusters'}
             </Link>
           </Button>
         </div>
