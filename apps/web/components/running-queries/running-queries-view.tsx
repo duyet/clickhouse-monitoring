@@ -21,6 +21,7 @@ import {
   detectCardErrorVariant,
   getCardErrorDescription,
   getCardErrorTitle,
+  toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import {
   parseFiltersFromParams,
@@ -198,7 +199,9 @@ export const RunningQueriesView = function RunningQueriesView() {
   const errVariant = error
     ? detectCardErrorVariant(error as CardError)
     : undefined
-  const emptyStateVariant = errVariant === 'permission' ? 'error' : errVariant
+  const emptyStateVariant = errVariant
+    ? toEmptyStateVariant(errVariant)
+    : undefined
 
   return (
     <TooltipProvider>
@@ -261,13 +264,10 @@ export const RunningQueriesView = function RunningQueriesView() {
             <CardContent className="p-4">
               <EmptyState
                 variant={emptyStateVariant}
-                title={getCardErrorTitle(
-                  errVariant ?? 'error',
-                  'Running Queries'
-                )}
+                title={getCardErrorTitle(errVariant!, 'Running Queries')}
                 description={getCardErrorDescription(
                   error as CardError,
-                  errVariant ?? 'error'
+                  errVariant!
                 )}
                 compact
                 action={{

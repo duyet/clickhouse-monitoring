@@ -443,6 +443,9 @@ export interface SimpleVersion {
  * Parse a version string like "24.3.1.1" into simple major.minor.patch components
  */
 export function parseSimpleVersion(versionStr: string): SimpleVersion {
+  if (typeof versionStr !== 'string' || !versionStr) {
+    return { major: 0, minor: 0, patch: 0 }
+  }
   const parts = versionStr.split('.')
   return {
     major: parseInt(parts[0] || '0', 10),
@@ -474,6 +477,6 @@ export function extractTableFromPermissionError(
   message: string
 ): string | undefined {
   // Match standard patterns like system.query_log or system.processes
-  const match = message.match(/(?:system|default)\.[a-zA-Z0-9_]+/i)
+  const match = message.match(/\b(?:system|default)\.[a-zA-Z0-9_]+/i)
   return match ? match[0] : undefined
 }

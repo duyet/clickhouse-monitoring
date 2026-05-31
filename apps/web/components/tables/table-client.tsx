@@ -19,13 +19,13 @@ import { SuggestionCard } from '@/components/ui/suggestion-card'
 import {
   type CardError,
   detectCardErrorVariant,
+  extractTableFromPermissionError,
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorTitle,
   getTableMissingInfo,
-  shouldShowRetryButton,
   isVersionOlder,
-  extractTableFromPermissionError,
+  shouldShowRetryButton,
 } from '@/lib/card-error-utils'
 import { useHostId } from '@/lib/swr/use-host'
 import { useHostStatus } from '@/lib/swr/use-host-status'
@@ -194,23 +194,35 @@ export const TableClient = function TableClient({
     const serverVersion = hostStatus.data?.version
     const versionedSql = Array.isArray(queryConfig.sql) ? queryConfig.sql : []
     const minSince = versionedSql.length > 0 ? versionedSql[0].since : undefined
-    const isVersionMismatch = serverVersion && minSince ? isVersionOlder(serverVersion, minSince) : false
+    const isVersionMismatch =
+      serverVersion && minSince
+        ? isVersionOlder(serverVersion, minSince)
+        : false
 
     // 1. Version Mismatch Check (Pre-emptive)
     if (isVersionMismatch) {
       return (
-        <Card className={cn('rounded-md shadow-none py-2 group relative border-warning/30 bg-warning/5', className)}>
+        <Card
+          className={cn(
+            'rounded-md shadow-none py-2 group relative border-warning/30 bg-warning/5',
+            className
+          )}
+        >
           <CardContent className="p-4">
             <Alert className="border-0 pr-12">
               <Info className="h-4 w-4 text-warning" />
               <AlertTitle>Version Mismatch</AlertTitle>
               <AlertDescription className="flex flex-col gap-3">
                 <p>
-                  This feature requires ClickHouse version <strong>{minSince}</strong> or newer.
-                  The current ClickHouse host runs version <strong>{serverVersion}</strong>.
+                  This feature requires ClickHouse version{' '}
+                  <strong>{minSince}</strong> or newer. The current ClickHouse
+                  host runs version <strong>{serverVersion}</strong>.
                 </p>
                 <div className="flex flex-col gap-1 border-t pt-3 text-xs text-muted-foreground">
-                  <p>Please upgrade your ClickHouse instance or choose another host that meets the minimum requirement.</p>
+                  <p>
+                    Please upgrade your ClickHouse instance or choose another
+                    host that meets the minimum requirement.
+                  </p>
                 </div>
               </AlertDescription>
             </Alert>
@@ -225,16 +237,31 @@ export const TableClient = function TableClient({
     // 2. Permission / GRANT Suggestion Check
     if (variant === 'permission') {
       const errorTitle = getCardErrorTitle(variant, title)
-      const errorDescription = getCardErrorDescription(error as CardError, variant)
-      
+      const errorDescription = getCardErrorDescription(
+        error as CardError,
+        variant
+      )
+
       const rawMessage = error.message || ''
-      const permissionTable = extractTableFromPermissionError(rawMessage) || queryConfig.tableCheck || 'system.query_log'
-      const targetTable = Array.isArray(permissionTable) ? permissionTable[0] : permissionTable
-      
-      const grantQuery = `GRANT SELECT ON ${targetTable} TO <your_clickhouse_user>;`
+      const rawTable =
+        extractTableFromPermissionError(rawMessage) || queryConfig.tableCheck
+      const targetTable = rawTable
+        ? Array.isArray(rawTable)
+          ? rawTable[0]
+          : rawTable
+        : undefined
+
+      const grantQuery = targetTable
+        ? `GRANT SELECT ON ${targetTable} TO <your_clickhouse_user>;`
+        : undefined
 
       return (
-        <Card className={cn('rounded-md shadow-none py-2 group relative border-destructive/30 bg-destructive/5', className)}>
+        <Card
+          className={cn(
+            'rounded-md shadow-none py-2 group relative border-destructive/30 bg-destructive/5',
+            className
+          )}
+        >
           <div className="absolute top-3 right-3">
             <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
           </div>
@@ -246,10 +273,20 @@ export const TableClient = function TableClient({
                 description={errorDescription}
                 compact={true}
               />
-              <div className="mt-2 text-sm border-t pt-4">
-                <p className="mb-2 font-medium">To grant the required permissions, execute the following SQL query as admin:</p>
-                <SuggestionCard suggestion={grantQuery} />
-              </div>
+              {grantQuery ? (
+                <div className="mt-2 text-sm border-t pt-4">
+                  <p className="mb-2 font-medium">
+                    To grant the required permissions, execute the following SQL
+                    query as admin:
+                  </p>
+                  <SuggestionCard suggestion={grantQuery} />
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-muted-foreground border-t pt-4">
+                  Unable to determine the required table — check ClickHouse user
+                  permissions.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
