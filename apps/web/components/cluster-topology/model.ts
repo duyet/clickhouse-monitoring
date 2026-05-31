@@ -689,6 +689,9 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   enforceMinDistance(keepers, KP_R * 2 + 20)
   enforceMinDistance(renderCh, CH_R * 2 + 20)
 
+  // Re-clamp after collision avoidance (repulsion can push nodes outside bounds).
+  clampToBand(renderCh)
+
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
     nodeById[k.id] = k
