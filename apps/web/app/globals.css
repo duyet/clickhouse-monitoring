@@ -661,8 +661,30 @@
   animation: topo-live-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+/* Cluster Topology "current node" halo — a gentle breathing ring around the
+   connected (is_local) ClickHouse node so it is always identifiable. transform-box
+   keeps the scale centered on the node glyph's own box. */
+@keyframes topo-current-breathe {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.topo-current-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: topo-current-breathe 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .topo-live-dot {
+  .topo-live-dot,
+  .topo-current-ring {
     animation: none;
   }
 }

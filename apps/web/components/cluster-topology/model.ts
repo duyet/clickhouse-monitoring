@@ -119,9 +119,14 @@ export interface ClusterHull {
   d: string
   /** Minkowski-sum area, used to z-order: largest drawn first (behind). */
   area: number
-  /** label anchor near the blob's top edge. */
+  /** resolved label position (may be nudged off the rect to de-overlap). */
   labelX: number
   labelY: number
+  /** the rect's true top-center, where a leader line points back to. */
+  anchorX: number
+  anchorY: number
+  /** draw a thin connector from the label to the anchor (label was moved away). */
+  leader: boolean
 }
 
 export type KeeperSource = 'keeper' | 'zookeeper' | 'none'
@@ -1192,11 +1197,31 @@ function buildKeeperRect(voters: KeeperNode[]): string {
  * offsets overlapping rects so two clusters read as distinct territories (no
  * collinear edges). Sorted by area DESC so the canvas draws the largest first.
  */
+// Each coincident cluster (same member SET) is grown by this much per nesting
+// rank so the rects sit as concentric rings instead of stacking invisibly — the
+// "multiple clusters, same nodes" overlap case from the screenshot.
+const NEST_STEP = 16
+
 function buildClusterHulls(
   clusters: ClusterInfo[],
   nodeById: Record<string, KeeperNode | ChNode>,
   renderedIds: Set<string>
 ): ClusterHull[] {
+  // Group clusters by their rendered-member SET. Coincident clusters (the
+  // implicit all-*/default clusters that all cover the same hosts) are drawn as
+  // nested rings, ranked in a stable order so layout stays deterministic.
+  const memberSig = (cl: ClusterInfo): string =>
+    Object.keys(cl.members)
+      .filter((id) => renderedIds.has(id))
+      .sort()
+      .join(',')
+  const sigCount = new Map<string, number>()
+  for (const cl of clusters) {
+    const sig = memberSig(cl)
+    if (sig) sigCount.set(sig, (sigCount.get(sig) ?? 0) + 1)
+  }
+  const sigRank = new Map<string, number>()
+
   const hulls: ClusterHull[] = []
   for (const cl of clusters) {
     const centers = Object.keys(cl.members)
@@ -1218,17 +1243,31 @@ function buildClusterHulls(
       minY = Math.min(minY, c.y - chUpExtent())
       maxY = Math.max(maxY, c.y + down)
     }
-    // Expand-only jitter (content always stays inside): offsets the edges of
-    // overlapping rects so they don't fall on the same line.
+    const sig = memberSig(cl)
+    const coincident = (sigCount.get(sig) ?? 0) > 1
+    const rank = sigRank.get(sig) ?? 0
+    sigRank.set(sig, rank + 1)
+    // Coincident clusters → concentric outset (deterministic, no jitter so the
+    // rings stay clean). Distinct clusters → tiny expand-only jitter so two
+    // genuinely-overlapping rects don't share a collinear edge.
     const m = ENVELOPE_MARGIN
-    minX -= m + (hashStr(cl.id) % 4) * 7
-    maxX += m + (hashStr(`${cl.id}~r`) % 4) * 7
-    minY -= m + (hashStr(`${cl.id}~t`) % 4) * 7
-    maxY += m + (hashStr(`${cl.id}~b`) % 4) * 7
+    if (coincident) {
+      const out = rank * NEST_STEP
+      minX -= m + out
+      maxX += m + out
+      minY -= m + out
+      maxY += m + out
+    } else {
+      minX -= m + (hashStr(cl.id) % 4) * 7
+      maxX += m + (hashStr(`${cl.id}~r`) % 4) * 7
+      minY -= m + (hashStr(`${cl.id}~t`) % 4) * 7
+      maxY += m + (hashStr(`${cl.id}~b`) % 4) * 7
+    }
     const w = maxX - minX
     const h = maxY - minY
     const d = roundedRectPath(minX, minY, w, h, CLUSTER_RECT_RADIUS)
     if (!d) continue
+    const cx = (minX + maxX) / 2
     hulls.push({
       id: cl.id,
       name: cl.name,
@@ -1236,8 +1275,11 @@ function buildClusterHulls(
       outline: cl.outline,
       d,
       area: w * h,
-      labelX: (minX + maxX) / 2,
+      labelX: cx,
       labelY: minY,
+      anchorX: cx,
+      anchorY: minY,
+      leader: false,
     })
   }
   // Largest first (drawn behind). Tie-break by id for determinism.
@@ -1246,19 +1288,39 @@ function buildClusterHulls(
   return hulls
 }
 
-/** Push overlapping cluster labels apart so they stay readable. Deterministic. */
+/**
+ * De-overlap cluster label pills so every name stays readable. Pills are stacked
+ * upward when they would collide (estimating each pill's half-width from its
+ * character count — matching `HullLabel`'s `text.length * 7 + 20`), and any pill
+ * pushed away from its rect's top anchor is flagged so the canvas draws a thin
+ * leader line back to the territory. Deterministic.
+ */
 function nudgeLabels(hulls: ClusterHull[]) {
+  const ROW_H = 21 // pill height (19) + a hair of breathing room
+  const halfW = (h: ClusterHull) => (h.name.length * 7 + 20) / 2
+  // Place left→right; lift each pill above any already-placed pill it overlaps.
   const sorted = [...hulls].sort(
     (a, b) => a.labelX - b.labelX || a.id.localeCompare(b.id)
   )
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1]
-    const cur = sorted[i]
-    if (
-      Math.abs(cur.labelX - prev.labelX) < 70 &&
-      Math.abs(cur.labelY - prev.labelY) < 16
-    ) {
-      cur.labelY = prev.labelY - 16
+  const placed: ClusterHull[] = []
+  for (const cur of sorted) {
+    let y = cur.anchorY
+    let moved = true
+    let guard = 0
+    while (moved && guard++ < 100) {
+      moved = false
+      for (const p of placed) {
+        const overlapX = Math.abs(cur.labelX - p.labelX) < halfW(cur) + halfW(p)
+        const overlapY = Math.abs(y - p.labelY) < ROW_H
+        if (overlapX && overlapY) {
+          y = p.labelY - ROW_H
+          moved = true
+        }
+      }
     }
+    cur.labelY = y
+    // A pill lifted more than a row above its anchor reads as detached → leader.
+    cur.leader = cur.anchorY - cur.labelY > ROW_H + 2
+    placed.push(cur)
   }
 }

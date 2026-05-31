@@ -147,3 +147,44 @@ export function overlapClusters(): ClusterTopologyRow[] {
     }),
   ]
 }
+
+/**
+ * Local-duplicate case: the connected server appears as `localhost` in the
+ * implicit `default` cluster AND as its real FQDN `chi-...-0-0` in the operator
+ * `cluster` — both with is_local=1 (different host_address, like a k8s pod).
+ * The other two replicas are remote. Mirrors the reported screenshot.
+ */
+export function localDuplicateClusters(): ClusterTopologyRow[] {
+  return [
+    chRow({
+      cluster: 'default',
+      host_name: 'localhost',
+      host_address: '127.0.0.1',
+      is_local: 1,
+      shard_num: 1,
+      replica_num: 1,
+    }),
+    chRow({
+      cluster: 'cluster',
+      host_name: 'chi-clickhouse-cluster-0-0.clickhouse.svc.cluster.local',
+      host_address: '10.0.0.10',
+      is_local: 1,
+      shard_num: 1,
+      replica_num: 1,
+    }),
+    chRow({
+      cluster: 'cluster',
+      host_name: 'chi-clickhouse-cluster-0-1.clickhouse.svc.cluster.local',
+      host_address: '10.0.0.11',
+      shard_num: 2,
+      replica_num: 1,
+    }),
+    chRow({
+      cluster: 'cluster',
+      host_name: 'chi-clickhouse-cluster-0-2.clickhouse.svc.cluster.local',
+      host_address: '10.0.0.12',
+      shard_num: 3,
+      replica_num: 1,
+    }),
+  ]
+}

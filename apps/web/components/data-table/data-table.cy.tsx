@@ -12,6 +12,7 @@ describe('<DataTable />', () => {
     name: 'settings',
     sql: '/* No need */',
     columns: ['col1', 'col2'],
+    defaultView: 'table',
   }
 
   it('renders', () => {
@@ -177,7 +178,6 @@ describe('<DataTable />', () => {
         context={{}}
         enableRowSelection
         onRowSelectionChange={onRowSelectionChange}
-        view="table"
       />
     )
 

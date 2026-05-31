@@ -116,6 +116,40 @@ Tailwind utilities (`bg-card`) are fine because they emit `var(--card)` directly
   enclosure + consistency — the geometry test was updated to match.)
 - **Edges** = gentle quadratic-bezier curves (`curvePath`), never straight lines: blue =
   replication, dashed muted = coordination (CH↔leader), green = raft (keeper mesh).
+- **Current node** = the connected (`is_local`) ClickHouse card carries a persistent breathing
+  primary ring (`.topo-current-ring`, keyframe `topo-current-breathe` in `globals.css`, honoring
+  `prefers-reduced-motion`) — always visible, independent of selection.
+
+## Node identity merge (de-dupe the local server)
+
+`system.clusters` is evaluated on the ONE server you queried, so **every row with `is_local = 1`
+is that same physical machine** — even when listed under different `host_name`s across clusters
+(the implicit `default` cluster lists `localhost`; the operator cluster lists the pod FQDN
+`chi-...-0-0`). `assembleTopology` runs a small **union-find** so they collapse to ONE node
+(otherwise the local server is drawn twice, e.g. `localhost` AND `chi-...-0-0`):
+
+- **(a)** all `is_local` keys → one node (definitive — same queried server);
+- **(b)** rows sharing a **routable** `host_address:port` → one node (a hostname-vs-IP duplicate of
+  a *remote* node; loopback `127.*`/`::1`/`localhost` excluded so distinct remotes don't merge).
+
+The merged node keeps the most descriptive name (`nameScore`: a real FQDN beats `localhost`), unions
+its host_name/address **aliases** for live-metric matching, and `is_local`/errors are OR'd/summed.
+The merged node then belongs to *both* clusters → it correctly sits inside both territories.
+Locked by `model.test.ts` → "local-duplicate merge".
+
+## Label legibility (overlap, FQDNs, coincident clusters)
+
+- **Long host labels** are middle-truncated in `topo-canvas.tsx` (`truncateMiddle`, ~24 chars ≈
+  `chHalfExtent`) with the full host on hover (a `<title>`) — a 60-char FQDN otherwise blows past
+  its cluster boundary. Truncation length is the horizontal half of the envelope contract.
+- **Coincident clusters** (same member SET — the implicit `all-*`/`default` clusters all covering
+  the same hosts) are drawn as **concentric nested rects**: `buildClusterHulls` ranks each cluster
+  within its member-set signature and outsets ring `k` by `k * NEST_STEP`. Distinct-but-overlapping
+  clusters keep the small `hashStr` jitter instead.
+- **Cluster label pills** de-overlap in `nudgeLabels`: width-aware (`name.length*7+20`, matching
+  `HullLabel`) upward stacking against ALL already-placed pills. A pill lifted off its rect sets
+  `ClusterHull.leader`, and the canvas draws a thin dashed **leader line** from the pill back to the
+  rect's top-center (`anchorX/anchorY`) so the name stays attributed.
 
 ## Shared component
 

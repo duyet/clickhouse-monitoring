@@ -1,6 +1,7 @@
 import { buildTopologyModel, CH_RENDER_CAP, VB_H, VB_W } from '../model'
 import {
   keepers,
+  localDuplicateClusters,
   mixedCluster,
   overlapClusters,
   replicatedCluster,
@@ -116,6 +117,30 @@ describe('shared nodes land between their clusters (overlap lens)', () => {
     // both cluster hulls exist and (sharing a node) their paths are present
     expect(model.clusterHulls.length).toBe(2)
     // dedup: the shared host is ONE node, not two
+    expect(model.counts.chNodes).toBe(3)
+  })
+})
+
+describe('local-duplicate merge (localhost === chi-...-0-0)', () => {
+  it('collapses the local server listed under two names into ONE node', () => {
+    const model = buildTopologyModel(localDuplicateClusters(), [])
+    // 4 rows, but localhost + chi-...-0-0 are the same machine → 3 nodes
+    expect(model.counts.chNodes).toBe(3)
+    // the surviving local node keeps the descriptive FQDN-derived id, not localhost
+    const local = model.chNodes.find((n) => n.isLocal)
+    expect(local).toBeDefined()
+    expect(local?.id).toBe('chi-clickhouse-cluster-0-0')
+    expect(model.chNodes.some((n) => n.id === 'localhost')).toBe(false)
+    // and it belongs to BOTH clusters → it sits inside both territories
+    const dflt = model.clusters.find((c) => c.name === 'default')
+    const oper = model.clusters.find((c) => c.name === 'cluster')
+    expect(dflt?.members[local!.id]).toBeDefined()
+    expect(oper?.members[local!.id]).toBeDefined()
+  })
+
+  it('does NOT merge distinct remote nodes that only share a loopback addr', () => {
+    // remote replicas all defaulting host_address to 127.0.0.1 stay separate
+    const model = buildTopologyModel(replicatedCluster('repl', 3), [])
     expect(model.counts.chNodes).toBe(3)
   })
 })

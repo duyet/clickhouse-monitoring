@@ -33,6 +33,20 @@ function fit(s: string, max: number): string {
 }
 
 /**
+ * Bound a host label's width so long FQDNs
+ * (`chi-...-0-0.clickhouse.svc.cluster.local`) don't sprawl past their cluster
+ * boundary into neighbours — keeps the meaningful head + tail with a middle
+ * ellipsis. ~24 chars ≈ the `chHalfExtent` the layout reserves. The full host is
+ * still available on hover (a <title>) and in the inspector.
+ */
+function truncateMiddle(s: string, max = 24): string {
+  if (s.length <= max) return s
+  const head = Math.ceil((max - 1) / 2)
+  const tail = Math.floor((max - 1) / 2)
+  return `${s.slice(0, head)}…${s.slice(s.length - tail)}`
+}
+
+/**
  * The official ClickHouse logo mark, drawn in its native 9×8 unit grid then
  * scaled + centered at (0,0): four full-height yellow bars (x = 0,2,4,6), a red
  * square at the foot of the first bar, and a short bar at x = 8. Width `w`.
@@ -121,7 +135,8 @@ function NodeLabel({
           paintOrder="stroke"
           className="font-mono"
         >
-          {host}
+          <title>{host}</title>
+          {truncateMiddle(host)}
         </text>
       )}
       <text
@@ -209,6 +224,21 @@ function ChGlyph({
         outline: 'none',
       }}
     >
+      {/* current (connected) node: a persistent breathing ring so the node this
+          dashboard is talking to is always identifiable, independent of selection. */}
+      {node.isLocal && (
+        <rect
+          className="topo-current-ring"
+          x={-r - 5}
+          y={-r - 5}
+          width={side + 10}
+          height={side + 10}
+          rx="17"
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth="2"
+        />
+      )}
       {selected && (
         <rect
           x={-r - 7}
@@ -599,6 +629,21 @@ export function TopoCanvas({
               strokeWidth={active ? 2.2 : 1.5}
               strokeLinejoin="round"
             />
+            {/* leader line: when the pill was lifted off the rect to stay
+                readable, connect it back so the name stays clearly attributed. */}
+            {h.leader && (
+              <line
+                x1={h.labelX}
+                y1={h.labelY + 9}
+                x2={h.anchorX}
+                y2={h.anchorY}
+                stroke={h.color}
+                strokeOpacity={active ? 0.7 : 0.4}
+                strokeWidth="1"
+                strokeDasharray="2 3"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
             <HullLabel
               x={h.labelX}
               y={h.labelY}
