@@ -188,14 +188,25 @@ function ChGlyph({
   return (
     <g
       transform={`translate(${node.x} ${node.y})`}
+      tabIndex={0}
+      role="button"
+      aria-label={`ClickHouse node ${idText}`}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(node.id)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onSelect(node.id)
+        }
       }}
       style={{
         cursor: 'pointer',
         opacity: dimmed ? 0.25 : unreachable ? 0.72 : 1,
         transition: 'opacity .25s',
+        outline: 'none',
       }}
     >
       {selected && (
@@ -329,21 +340,32 @@ function KeeperGlyph({
   const isLeader = node.isLeader
   const statusCol = node.isConnected ? STATUS_COLOR.healthy : STATUS_COLOR.down
   const accent = isLeader ? STATUS_COLOR.warn : statusCol
-  const sub = `${node.role} · ${node.avgLatency ? `${node.avgLatency.toFixed(1)}ms` : '—'}`
+  const sub = `${node.role} · ${node.avgLatency != null ? `${node.avgLatency.toFixed(1)}ms` : '—'}`
   const d = hexPath(r)
   const idText = fit(node.id, 11)
 
   return (
     <g
       transform={`translate(${node.x} ${node.y})`}
+      tabIndex={0}
+      role="button"
+      aria-label={`Keeper node ${idText}`}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(node.id)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onSelect(node.id)
+        }
       }}
       style={{
         cursor: 'pointer',
         opacity: dimmed ? 0.25 : 1,
         transition: 'opacity .25s',
+        outline: 'none',
       }}
     >
       {selected && (

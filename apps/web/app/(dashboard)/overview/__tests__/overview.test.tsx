@@ -19,6 +19,7 @@ type OverviewTabConfig = {
   label: string
   gridClassName: string
   charts: OverviewChartConfig[]
+  customContent?: string
 }
 
 mock.module('@/lib/swr', () => ({
@@ -70,6 +71,13 @@ describe('charts-config', () => {
         expect(tab).toHaveProperty('charts')
         expect(Array.isArray(tab.charts)).toBe(true)
       })
+    })
+
+    it('topology tab uses customContent with empty charts', () => {
+      const topoTab = OVERVIEW_TABS.find((t) => t.value === 'topology')
+      expect(topoTab).toBeDefined()
+      expect(topoTab!.customContent).toBe('topology')
+      expect(topoTab!.charts).toEqual([])
     })
 
     it('should have properly structured chart configurations', () => {

@@ -336,17 +336,19 @@ export function TopologyView({
             <RefreshCwIcon className="h-3 w-3" />
             Refresh
           </Button>
-          <Button
-            variant={detailHref ? 'default' : 'outline'}
-            size="sm"
-            asChild
-            className="h-7 gap-1.5 px-2 text-[12px]"
-          >
-            <Link href={detailHref ?? `/clusters?host=${hostId}`}>
-              <ExternalLinkIcon className="h-3 w-3" />
-              {detailHref ? 'Cluster details' : 'system.clusters'}
-            </Link>
-          </Button>
+          {detailHref && (
+            <Button
+              variant="default"
+              size="sm"
+              asChild
+              className="h-7 gap-1.5 px-2 text-[12px]"
+            >
+              <Link href={detailHref}>
+                <ExternalLinkIcon className="h-3 w-3" />
+                Cluster details
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

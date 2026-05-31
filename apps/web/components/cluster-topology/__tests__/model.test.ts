@@ -78,6 +78,27 @@ describe('keeper quorum hull is optional', () => {
       expect((m.keeperHull.match(/A /g) ?? []).length).toBe(4)
     }
   })
+
+  it('keeper hull stays inside the viewBox after centerContent', () => {
+    for (const k of [1, 3, 5]) {
+      const m = buildTopologyModel(replicatedCluster('c', 3), keepers(k))
+      // Parse the rounded-rect path to extract bounding coordinates.
+      // roundedRectPath produces: M x y H ... V ... H ... A arcs ... Z
+      // The first M gives us the top-left corner.
+      const nums = m.keeperHull.match(/[-\d.]+/g)?.map(Number) ?? []
+      // First two numbers are the top-left x,y of the rect.
+      const minX = nums[0]
+      const minY = nums[1]
+      expect(minX).toBeGreaterThanOrEqual(0)
+      expect(minY).toBeGreaterThanOrEqual(0)
+      // Width and height are the 3rd/4th numbers in the H/V commands.
+      // Approximate: no hull coordinate should exceed the viewBox.
+      for (const v of nums) {
+        expect(v).toBeGreaterThanOrEqual(-10) // small margin for envelope padding
+        expect(v).toBeLessThanOrEqual(Math.max(VB_W, VB_H) + 10)
+      }
+    }
+  })
 })
 
 describe('shared nodes land between their clusters (overlap lens)', () => {
