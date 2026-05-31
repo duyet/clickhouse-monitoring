@@ -309,6 +309,8 @@ export const DataTableContent = memo(function DataTableContent<
               isVirtualized={isVirtualized}
               virtualizer={virtualizer}
               expandable={expandable}
+              card={queryConfig.card}
+              columnIcons={queryConfig.columnIcons}
             />
           </div>
         )}
