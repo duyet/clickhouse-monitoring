@@ -259,7 +259,7 @@ export const DataTableHeader = memo(function DataTableHeader<
             onValueChange={onGlobalSearchChange}
             placeholder={`Search across all fields...`}
             debounceMs={300}
-            className="h-9 w-full pl-9 pr-8 text-sm bg-muted/20 border-border/50 focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all rounded-lg"
+            className="h-9 w-full pl-9 pr-8 text-sm bg-muted/20 border-border/50 focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all rounded-lg shadow-none"
           />
           {globalSearch && (
             <button
@@ -370,7 +370,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                           applyFilters()
                         }
                       }}
-                      className="h-8 flex-1 text-xs"
+                      className="h-8 flex-1 text-xs shadow-none"
                     />
 
                     {/* Trash Delete button */}

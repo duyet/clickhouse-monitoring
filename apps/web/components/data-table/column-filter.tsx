@@ -73,7 +73,7 @@ export const ColumnFilter = memo(function ColumnFilter({
           placeholder={placeholder}
           debounceMs={300}
           className={cn(
-            'h-7 w-full pl-6 text-xs',
+            'h-7 w-full pl-6 text-xs shadow-none',
             'bg-muted/30 border-transparent',
             'focus:bg-background focus:border-primary/50',
             'placeholder:text-muted-foreground/60',

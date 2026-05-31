@@ -520,15 +520,6 @@ export function DataTable<
     tableState.rowSelection,
   ])
 
-  // Virtual rows for datasets larger than the standard pagination range.
-  // Disabled when row expansion is on because expanded rows add out-of-band
-  // height the fixed-size virtualizer can't account for.
-  const rows = table.getRowModel().rows
-  const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
-    rows.length,
-    { disabled: Boolean(expandable) }
-  )
-
   // Card vs. table view. Only offered (with a toolbar toggle) when the config
   // opts in via `defaultView`; otherwise tables behave exactly as before.
   //
@@ -540,6 +531,15 @@ export function DataTable<
   const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
   const baseView: 'table' | 'cards' | 'auto' = queryConfig.defaultView ?? 'auto'
   const view = userView ?? baseView
+
+  // Virtual rows for datasets larger than the standard pagination range.
+  // Disabled when row expansion is on because expanded rows add out-of-band
+  // height the fixed-size virtualizer can't account for.
+  const rows = table.getRowModel().rows
+  const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
+    rows.length,
+    { disabled: Boolean(expandable) || view === 'cards' }
+  )
 
   // Auto-fit columns functionality
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
