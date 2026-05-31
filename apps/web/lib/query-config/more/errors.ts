@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const errorsConfig: QueryConfig = {
   name: 'errors',
+  defaultView: 'auto',
+  card: { primary: 'error', badges: ['remote'] },
   description: 'System error logs and history',
   optional: true,
   tableCheck: 'system.error_log',

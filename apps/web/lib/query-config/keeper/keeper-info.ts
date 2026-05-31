@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const keeperInfoConfig: QueryConfig = {
   name: 'keeper-info',
+  defaultView: 'auto',
+  card: { primary: 'host', badges: ['server_state', 'is_leader'] },
   description:
     'Cluster health introspection of all available Keeper/ZooKeeper nodes: one row per node with role, latency, raft log indices, znode/watch counts, and data size metrics.',
   optional: true,

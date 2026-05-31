@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const topUsageColumnsConfig: QueryConfig = {
   name: 'top-usage-columns',
+  defaultView: 'auto',
+  card: { primary: 'column' },
   description: 'Most usage columns of table based on system.query_log',
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',

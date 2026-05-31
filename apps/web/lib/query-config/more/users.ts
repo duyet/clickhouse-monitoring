@@ -17,6 +17,8 @@ const USERS_COLUMNS = [
 
 export const usersConfig: QueryConfig = {
   name: 'users',
+  defaultView: 'auto',
+  card: { primary: 'name' },
   description: 'Users account',
   tableCheck: 'system.users',
   sql: `

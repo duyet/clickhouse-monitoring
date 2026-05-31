@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const dictionariesConfig: QueryConfig = {
   name: 'dictionaries',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['status', 'type'] },
   description: 'External dictionaries loaded in ClickHouse',
   suggestion: `Create an external dictionary:
 

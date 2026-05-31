@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const keeperConnectionLogConfig: QueryConfig = {
   name: 'keeper-connection-log',
+  defaultView: 'auto',
+  card: { primary: 'host', badges: ['type'] },
   description:
     'Time-series log of ZooKeeper/Keeper connection and disconnection events with reason codes, ordered by most recent activity. https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
   optional: true,

@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const zookeeperConfig: QueryConfig = {
   name: 'zookeeper',
+  defaultView: 'auto',
+  card: { primary: '_path' },
   description:
     'Exposes data from the Keeper cluster defined in the config. https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
   docs: ZOOKEEPER,

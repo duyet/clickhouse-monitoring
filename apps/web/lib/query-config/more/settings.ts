@@ -7,6 +7,8 @@ const SETTINGS_COLUMNS = ['name', 'value', 'changed', 'description', 'default']
 
 export const settingsConfig: QueryConfig = {
   name: 'settings',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['changed'] },
   permission: { feature: 'settings' },
   tableCheck: 'system.settings',
   sql: `
