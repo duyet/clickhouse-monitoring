@@ -2,6 +2,8 @@ import type { QueryConfig } from '@/types/query-config'
 
 export const replicatedFetchesConfig: QueryConfig = {
   name: 'replicated-fetches',
+  defaultView: 'auto',
+  card: { primary: 'table' },
   description:
     'Currently executing background part downloads from replica sources',
   // system.replicated_fetches can be absent on servers/versions without

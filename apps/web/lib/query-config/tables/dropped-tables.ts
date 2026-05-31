@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const droppedTablesConfig: QueryConfig = {
   name: 'dropped-tables',
+  defaultView: 'auto',
+  card: { primary: 'table', badges: ['engine'] },
   refreshInterval: 30_000,
   description:
     'Tables awaiting final asynchronous drop (Atomic database engine)',

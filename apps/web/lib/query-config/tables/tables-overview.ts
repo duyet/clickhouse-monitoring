@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const tablesOverviewConfig: QueryConfig = {
   name: 'tables-overview',
+  defaultView: 'auto',
+  card: { primary: 'table', badges: ['engine'] },
   sql: `
       WITH
         detached_parts AS

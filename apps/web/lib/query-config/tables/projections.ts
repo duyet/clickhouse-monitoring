@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const projectionsConfig: QueryConfig = {
   name: 'projections',
+  defaultView: 'auto',
+  card: { primary: 'name' },
   description: `Projection size. https://clickhouse.com/docs/en/sql-reference/statements/alter/projection`,
   sql: `
       SELECT
