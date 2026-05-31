@@ -116,7 +116,9 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-background">
         <ClerkAuthProvider>
           <Providers>
-            <DynamicTitle />
+            <Suspense fallback={null}>
+              <DynamicTitle />
+            </Suspense>
             <NetworkStatusBanner />
             <Suspense fallback={null}>
               <KeyboardShortcuts />
