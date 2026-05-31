@@ -43,6 +43,8 @@ const baseSelect = `
 
 export const queryDetailConfig: QueryConfig = {
   name: 'query-detail',
+  defaultView: 'auto',
+  card: { primary: 'query', badges: ['type', 'query_kind'] },
   description: 'Detailed information about a specific query execution',
   docs: QUERY_LOG,
   permission: { feature: 'queries' },

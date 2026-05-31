@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const queryViewsLogConfig: QueryConfig = {
   name: 'query-views-log',
+  defaultView: 'auto',
+  card: { primary: 'view_name', badges: ['status'] },
   description:
     'Materialized view execution log (target views, durations, read/written rows) with compatibility for old and new ClickHouse releases.',
   optional: true,

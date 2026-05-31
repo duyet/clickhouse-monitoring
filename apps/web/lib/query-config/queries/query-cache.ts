@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const queryCacheConfig: QueryConfig = {
   name: 'query-cache',
+  defaultView: 'auto',
+  card: { primary: 'query', badges: ['stale', 'shared', 'compressed'] },
   description:
     'https://clickhouse.com/blog/introduction-to-the-clickhouse-query-cache-and-design',
   suggestion: `Enable query cache with these settings:

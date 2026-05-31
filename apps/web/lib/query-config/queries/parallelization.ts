@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const parallelizationConfig: QueryConfig = {
   name: 'parallelization',
+  defaultView: 'auto',
+  card: { primary: 'query_id' },
   description: 'Query parallelization efficiency analysis',
   optional: true,
   tableCheck: 'system.query_thread_log',
