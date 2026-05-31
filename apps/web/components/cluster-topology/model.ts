@@ -783,9 +783,9 @@ function layoutKeepers(keepers: KeeperNode[]) {
 
 // CH region: a band below the keepers. Layout is deterministic + seeded only by
 // structure so positions are stable across live ticks.
-const CH_BAND_Y = 380
-const CH_BAND_H = 150
-const CH_MARGIN = CH_R + 50
+const CH_BAND_Y = 280
+const CH_BAND_H = 240
+const CH_MARGIN = CH_R + 60
 
 /**
  * ClickHouse node layout that makes overlapping clusters legible:
@@ -875,8 +875,8 @@ function fanOut(members: ChNode[], gx: number, gy: number) {
   }
   const cols = Math.ceil(Math.sqrt(k))
   const rows = Math.ceil(k / cols)
-  const stepY = Math.min(96, rows > 1 ? CH_BAND_H / (rows - 1) : 96)
-  const stepX = Math.min(88, Math.max(60, stepY))
+  const stepY = Math.min(110, rows > 1 ? CH_BAND_H / (rows - 1) : 110)
+  const stepX = Math.min(100, Math.max(70, stepY))
   members.forEach((nd, i) => {
     const row = Math.floor(i / cols)
     const col = i % cols
@@ -896,22 +896,22 @@ function layoutArc(nodes: ChNode[], cx: number) {
   const rows = Math.ceil(n / perRow)
   if (rows <= 1) {
     const baseY = CH_BAND_Y + CH_BAND_H / 2
-    const step = n > 1 ? Math.min(170, usable / (n - 1)) : 0
+    const step = n > 1 ? Math.min(180, usable / (n - 1)) : 0
     const total = (n - 1) * step
     nodes.forEach((node, i) => {
       node.x = cx - total / 2 + i * step
       const t = n > 1 ? (i / (n - 1)) * 2 - 1 : 0
-      node.y = baseY + Math.round((1 - t * t) * 24)
+      node.y = baseY + Math.round((1 - t * t) * 28)
     })
     return
   }
-  const rowStep = Math.min(110, CH_BAND_H / Math.max(1, rows - 1))
+  const rowStep = Math.min(120, CH_BAND_H / Math.max(1, rows - 1))
   const top = CH_BAND_Y
   nodes.forEach((node, i) => {
     const row = Math.floor(i / perRow)
     const col = i % perRow
     const inRow = Math.min(perRow, n - row * perRow)
-    const step = inRow > 1 ? Math.min(150, usable / (inRow - 1)) : 0
+    const step = inRow > 1 ? Math.min(160, usable / (inRow - 1)) : 0
     const total = (inRow - 1) * step
     node.x = cx - total / 2 + col * step
     node.y = top + row * rowStep

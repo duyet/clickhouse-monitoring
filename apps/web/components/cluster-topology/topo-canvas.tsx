@@ -111,13 +111,23 @@ function ChGlyph({
           style={{ filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.5))' }}
         />
       )}
+      {/* status-tinted glow so nodes are visible in dark mode */}
+      <circle r={r} fill={statusCol} fillOpacity="0.12" />
       <circle
         r={r}
         fill="hsl(var(--card))"
-        stroke="hsl(var(--border))"
+        fillOpacity="0.55"
+        stroke={statusCol}
+        strokeOpacity="0.35"
         strokeWidth="1.5"
       />
-      <circle r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+      <circle
+        r={r}
+        fill="none"
+        stroke="hsl(var(--muted-foreground))"
+        strokeOpacity="0.2"
+        strokeWidth="4"
+      />
       <circle
         r={r}
         fill="none"
@@ -247,13 +257,22 @@ function KeeperGlyph({
           style={{ filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.5))' }}
         />
       )}
+      <circle r={r} fill={statusCol} fillOpacity="0.12" />
       <circle
         r={r}
         fill="hsl(var(--card))"
-        stroke="hsl(var(--border))"
+        fillOpacity="0.55"
+        stroke={statusCol}
+        strokeOpacity="0.35"
         strokeWidth="1.5"
       />
-      <circle r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+      <circle
+        r={r}
+        fill="none"
+        stroke="hsl(var(--muted-foreground))"
+        strokeOpacity="0.2"
+        strokeWidth="4"
+      />
       <circle
         r={r}
         fill="none"
