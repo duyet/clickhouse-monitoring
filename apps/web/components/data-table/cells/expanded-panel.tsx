@@ -125,6 +125,41 @@ function toPct(value: unknown): number {
   return Math.max(0, Math.min(100, n))
 }
 
+/**
+ * Whether a section has any data to render for this row. Needed because the
+ * empty-state must be decided from the DATA, not from the rendered element list
+ * — React elements are always truthy, so a `.filter(Boolean)` over rendered
+ * sections never empties even when every section renders nothing.
+ */
+function sectionHasData(
+  section: ExpandedSection,
+  row: Record<string, unknown>
+): boolean {
+  switch (section.type) {
+    case 'code':
+      return hasValue(row[section.column])
+    case 'fields':
+      return section.columns.some((field) => {
+        const key = typeof field === 'string' ? field : field.key
+        return hasValue(row[key]) || hasValue(row[`readable_${key}`])
+      })
+    case 'stats':
+      return section.columns.some(
+        (stat) =>
+          hasValue(row[stat.key]) ||
+          hasValue(row[stat.readableKey ?? `readable_${stat.key}`])
+      )
+    case 'bars':
+      return section.columns.some(
+        (bar) =>
+          hasValue(row[bar.key]) ||
+          hasValue(row[bar.readableKey ?? `readable_${bar.key}`])
+      )
+    default:
+      return false
+  }
+}
+
 // ───────────────────────── section primitives ─────────────────────────
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -330,25 +365,11 @@ interface ExpandedPanelProps extends CreateExpandedPanelOptions {
 }
 
 export function ExpandedPanel({ sections, row }: ExpandedPanelProps) {
-  const rendered = sections
-    .map((section, index) => {
-      const key = `${section.type}-${index}`
-      switch (section.type) {
-        case 'fields':
-          return <FieldsSection key={key} section={section} row={row} />
-        case 'stats':
-          return <StatsSection key={key} section={section} row={row} />
-        case 'bars':
-          return <BarsSection key={key} section={section} row={row} />
-        case 'code':
-          return <CodeSection key={key} section={section} row={row} />
-        default:
-          return null
-      }
-    })
-    .filter(Boolean)
+  // Keep only sections that actually have data for this row, so the empty-state
+  // is reachable (see `sectionHasData`).
+  const visible = sections.filter((section) => sectionHasData(section, row))
 
-  if (!rendered.length) {
+  if (!visible.length) {
     return (
       <div className="text-xs text-muted-foreground">
         No additional details.
@@ -358,7 +379,21 @@ export function ExpandedPanel({ sections, row }: ExpandedPanelProps) {
 
   return (
     <div data-slot="expanded-panel" className="space-y-3.5">
-      {rendered}
+      {visible.map((section, index) => {
+        const key = `${section.type}-${index}`
+        switch (section.type) {
+          case 'fields':
+            return <FieldsSection key={key} section={section} row={row} />
+          case 'stats':
+            return <StatsSection key={key} section={section} row={row} />
+          case 'bars':
+            return <BarsSection key={key} section={section} row={row} />
+          case 'code':
+            return <CodeSection key={key} section={section} row={row} />
+          default:
+            return null
+        }
+      })}
     </div>
   )
 }

@@ -231,14 +231,26 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
     card?.badges
       ? card.badges.map((name) => matchCell(cells, name))
       : [cells.find((cell) => cell.column.id === 'query_kind')]
-  ).filter((cell): cell is Cell<TData, unknown> => Boolean(cell))
+  )
+    .filter((cell): cell is Cell<TData, unknown> => Boolean(cell))
+    // A column lives in exactly one zone — the hero never repeats as a badge.
+    .filter((cell) => cell.id !== primaryCell?.id)
+
+  // Cells already shown as the hero or a header badge must not also appear in
+  // the metric chip row.
+  const placedIds = new Set(
+    [primaryCell?.id, ...badgeCells.map((cell) => cell.id)].filter(
+      (id): id is string => Boolean(id)
+    )
+  )
 
   // Metric chips: a compact icon+value row of the most glanceable live metrics.
   // Only populated when the config opts in via `card.metrics`.
   const metricEntries = (card?.metrics ?? [])
     .map((name) => ({ name, cell: matchCell(cells, name) }))
-    .filter((entry): entry is { name: string; cell: Cell<TData, unknown> } =>
-      Boolean(entry.cell)
+    .filter(
+      (entry): entry is { name: string; cell: Cell<TData, unknown> } =>
+        entry.cell != null && !placedIds.has(entry.cell.id)
     )
 
   const hiddenIds = new Set(
@@ -292,7 +304,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
               onClick={() => row.toggleExpanded()}
               aria-expanded={isExpanded}
               aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-              className="-ml-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-transform duration-100 hover:bg-muted/60 hover:text-foreground active:scale-[0.96]"
+              className="-ml-1 relative inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-transform duration-100 before:absolute before:-inset-2 before:content-[''] hover:bg-muted/60 hover:text-foreground active:scale-[0.96]"
               data-testid="mobile-table-card-expand"
             >
               <ExpandIcon className="size-4" />
