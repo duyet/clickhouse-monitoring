@@ -593,9 +593,9 @@ export function TopoCanvas({
       {/* cluster overlays — offset rounded rects, z-ordered area DESC (largest
           behind). A background-colored CASING under each colored boundary lets
           crossing / nested boundaries read cleanly instead of tangling at their
-          intersections. Logical = vivid color + soft fill + solid pill; physical/
-          implicit = slate, lighter fill + a dashed-border pill (a bit different,
-          no dots). Physical hulls are present only when toggled on upstream. */}
+          intersections. EVERY cluster gets its own palette color + a solid label
+          pill; physical/implicit clusters just read softer (lower fill/stroke
+          opacity) and are present only when toggled on upstream. */}
       {clusterHulls.map((h) => {
         const active = activeCluster === h.id
         const faded = activeCluster && !active

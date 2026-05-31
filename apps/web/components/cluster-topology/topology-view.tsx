@@ -193,12 +193,15 @@ export function TopologyView({
   const [activeCluster, setActiveCluster] = useState<string | null>(null)
   const [secsAgo, setSecsAgo] = useState(0)
 
-  // Don't leave a hidden physical cluster as the active filter when it's toggled
-  // off — its hull is gone from the canvas, so the filter would have no anchor.
-  useEffect(() => {
-    if (showPhysical || !activeCluster) return
-    if (model.clusterById[activeCluster]?.outline) setActiveCluster(null)
-  }, [showPhysical, activeCluster, model.clusterById])
+  // A hidden physical cluster must not act as the filter — its hull isn't drawn,
+  // so it would fade every visible hull with no anchor. Derive the EFFECTIVE
+  // active cluster in-render (rather than clearing via an effect, which would dim
+  // everything for one frame); toggling physical back on restores the filter.
+  const effectiveActiveCluster =
+    activeCluster &&
+    (showPhysical || !model.clusterById[activeCluster]?.outline)
+      ? activeCluster
+      : null
 
   useEffect(() => {
     setSecsAgo(0)
@@ -460,7 +463,7 @@ export function TopologyView({
                     : `Implicit (${physicalCount})`}
                 </button>
               )}
-              {activeCluster && (
+              {effectiveActiveCluster && (
                 <button
                   type="button"
                   onClick={() => setActiveCluster(null)}
@@ -537,7 +540,7 @@ export function TopologyView({
                 model={model}
                 liveById={liveById}
                 selected={selected}
-                activeCluster={activeCluster}
+                activeCluster={effectiveActiveCluster}
                 onSelect={setSelected}
                 onClearSelect={() => setSelected(null)}
               />
