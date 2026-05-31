@@ -71,15 +71,6 @@ const SQL_PRIMARY_COLUMNS = new Set(['query', 'query_detail'])
 // messages, mutation commands) read far better as one wide, readable column
 // than squeezed into a grid cell — so the multi-column card grid keeps these
 // single-column and only grids short, scannable entity heroes.
-const STACK_PRIMARY_COLUMNS = new Set([
-  'query',
-  'query_detail',
-  'exception',
-  'command',
-  'message',
-  'error',
-  'last_error_message',
-])
 
 function formatColumnLabel(columnId: string) {
   return columnId.replaceAll('_', ' ')
@@ -458,14 +449,10 @@ export const MobileTableCards = function MobileTableCards<
 }: MobileTableCardsProps<TData>) {
   const rows = table.getRowModel().rows
 
-  // Multi-column card grid — only when the user has explicitly switched to the
-  // 'cards' view (in 'auto' mode cards only show on phones, where a single
-  // column is right), and only for short entity heroes. Long-form heroes (SQL,
-  // exceptions) stay single-column. The virtualized path always stacks.
-  const gridLayout =
-    view === 'cards' &&
-    !!card?.primary &&
-    !STACK_PRIMARY_COLUMNS.has(normalizeColumnName(card.primary))
+  // Multi-column card grid — active in both explicit 'cards' view and 'auto'
+  // mode. The virtualized path always stacks (separate code branch).
+  // Phones get 2 cols via grid-cols-2 base; desktop gets 3 at xl.
+  const gridLayout = view === 'cards' || view === 'auto'
 
   if (!rows.length) {
     return (
@@ -527,7 +514,7 @@ export const MobileTableCards = function MobileTableCards<
         <div
           className={
             gridLayout
-              ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+              ? 'grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-3'
               : 'flex flex-col gap-3'
           }
         >
