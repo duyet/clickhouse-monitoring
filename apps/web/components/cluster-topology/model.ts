@@ -312,6 +312,40 @@ function shortId(host: string, index: number): string {
   return label || `node-${index}`
 }
 
+/** Loopback / non-routable addresses that do NOT uniquely identify a machine. */
+function isLoopbackAddr(addr: string | undefined): boolean {
+  if (!addr) return true
+  return (
+    addr === '::1' ||
+    addr === '0.0.0.0' ||
+    addr === 'localhost' ||
+    addr.startsWith('127.')
+  )
+}
+
+/** A host_name that is a placeholder for "this server" rather than a real name. */
+function isLoopbackName(name: string): boolean {
+  return (
+    name === 'localhost' ||
+    name === '127.0.0.1' ||
+    name === '::1' ||
+    name === '0.0.0.0'
+  )
+}
+
+/**
+ * How "descriptive" a host_name is, used to pick the canonical label when several
+ * names resolve to ONE physical machine. A real FQDN (`chi-...-0-0.svc...`) beats
+ * the implicit `localhost` placeholder so the merged node shows its true name.
+ */
+function nameScore(name: string): number {
+  let s = 0
+  if (!isLoopbackName(name)) s += 100 // a real name always beats localhost
+  if (name.includes('.')) s += 10 // FQDN preferred over a bare label
+  s += Math.min(name.length, 40) / 100 // longer = more specific (tiny tiebreak)
+  return s
+}
+
 function isPhysicalName(name: string): boolean {
   // Heuristic: the implicit per-server clusters and the conventional defaults are
   // "physical"; everything else is treated as a logical/virtual cluster.
@@ -380,10 +414,58 @@ export function assembleTopology(
   liveSource: TopologyMeta['liveSource'] = 'none'
 ): TopologyData {
   // ── 1. collect unique CH hosts across all clusters ──
-  // A host key combines name+port so the same machine in multiple clusters maps
-  // to ONE node (the overlapping-hull story).
+  // A host key combines name+port so the same machine listed in multiple clusters
+  // maps to ONE node (the overlapping-territory story).
   const hostKey = (r: { host_name: string; port: number }) =>
     `${r.host_name}:${r.port}`
+
+  // ── machine-identity merge ──────────────────────────────────────────────
+  // system.clusters is evaluated on the ONE server we queried, so EVERY row with
+  // is_local=1 is that SAME physical machine — even when listed under different
+  // host_names across clusters (the implicit `default` cluster lists `localhost`
+  // while the operator cluster lists the pod FQDN `chi-...-0-0`). Without this,
+  // the local server is drawn twice (`localhost` AND `chi-...-0-0`). We union:
+  //   (a) all is_local rows → one node (definitive: same queried server), and
+  //   (b) rows sharing a ROUTABLE host_address:port → one node (catches a
+  //       hostname-vs-IP duplicate of a remote node; loopback addrs excluded).
+  const parent = new Map<string, string>()
+  const find = (x: string): string => {
+    let root = x
+    while (parent.get(root) !== root) root = parent.get(root)!
+    let cur = x
+    while (parent.get(cur) !== root) {
+      const next = parent.get(cur)!
+      parent.set(cur, root)
+      cur = next
+    }
+    return root
+  }
+  const union = (a: string, b: string) => {
+    const ra = find(a)
+    const rb = find(b)
+    if (ra !== rb) parent.set(ra, rb)
+  }
+  for (const r of clusterRows) {
+    const k = hostKey(r)
+    if (!parent.has(k)) parent.set(k, k)
+  }
+  let localAnchor: string | null = null
+  const addrSeen = new Map<string, string>()
+  for (const r of clusterRows) {
+    const k = hostKey(r)
+    if (truthy(r.is_local)) {
+      if (localAnchor === null) localAnchor = k
+      else union(localAnchor, k)
+    }
+    if (!isLoopbackAddr(r.host_address)) {
+      const ak = `${r.host_address}:${num(r.port)}`
+      const prev = addrSeen.get(ak)
+      if (prev) union(prev, k)
+      else addrSeen.set(ak, k)
+    }
+  }
+  // Canonical machine key for a row (the union-find root of its raw host key).
+  const canonKey = (r: { host_name: string; port: number }) => find(hostKey(r))
 
   const hostOrder: string[] = []
   const hostMeta = new Map<
@@ -393,26 +475,38 @@ export function assembleTopology(
       errors: number
       slowdowns: number
       replicationLag: number | null
+      isLocal: boolean
+      /** every host_name + host_address seen for this machine, for live matching */
+      aliases: Set<string>
     }
   >()
 
   for (const r of clusterRows) {
-    const k = hostKey(r)
-    if (!hostMeta.has(k)) {
+    const k = canonKey(r)
+    const existing = hostMeta.get(k)
+    if (!existing) {
       hostOrder.push(k)
       hostMeta.set(k, {
         row: r,
         errors: num(r.errors_count),
         slowdowns: num(r.slowdowns_count),
         replicationLag: numOrNull(r.replication_lag),
+        isLocal: truthy(r.is_local),
+        aliases: new Set([r.host_name, r.host_address].filter(Boolean)),
       })
     } else {
-      const m = hostMeta.get(k)!
-      m.errors += num(r.errors_count)
-      m.slowdowns += num(r.slowdowns_count)
+      existing.errors += num(r.errors_count)
+      existing.slowdowns += num(r.slowdowns_count)
       const lag = numOrNull(r.replication_lag)
-      if (lag !== null) m.replicationLag = Math.max(m.replicationLag ?? 0, lag)
-      if (truthy(r.is_local)) m.row = r
+      if (lag !== null)
+        existing.replicationLag = Math.max(existing.replicationLag ?? 0, lag)
+      existing.isLocal = existing.isLocal || truthy(r.is_local)
+      existing.aliases.add(r.host_name)
+      if (r.host_address) existing.aliases.add(r.host_address)
+      // Keep the most descriptive name as this machine's representative row, so
+      // a merged `localhost`/FQDN pair displays the FQDN, not `localhost`.
+      if (nameScore(r.host_name) > nameScore(existing.row.host_name))
+        existing.row = r
     }
   }
 
@@ -433,19 +527,26 @@ export function assembleTopology(
       version: lr.version ?? null,
     })
   }
-  // A live fan-out can match by host_name OR resolved host_address. Build both keys.
-  const matchLive = (row: ClusterTopologyRow): NodeLiveMetrics | undefined =>
-    liveByHost.get(row.host_name) ?? liveByHost.get(row.host_address)
+  // A live fan-out can match by ANY of a machine's aliases (host_name or resolved
+  // host_address) collected across the clusters that list it.
+  const matchLive = (aliases: Set<string>): NodeLiveMetrics | undefined => {
+    for (const a of aliases) {
+      const v = liveByHost.get(a)
+      if (v) return v
+    }
+    return undefined
+  }
 
-  const idByHostKey = new Map<string, string>()
+  const idByCanonKey = new Map<string, string>()
   const chNodes: ChNode[] = hostOrder.map((k, i) => {
-    const { row, errors, slowdowns, replicationLag } = hostMeta.get(k)!
+    const { row, errors, slowdowns, replicationLag, isLocal, aliases } =
+      hostMeta.get(k)!
     const id = shortId(row.host_name, i)
-    idByHostKey.set(k, id)
+    idByCanonKey.set(k, id)
     const isActive = row.is_active
     const inactive =
       isActive !== null && isActive !== undefined && !truthy(isActive)
-    const live = matchLive(row) ?? null
+    const live = matchLive(aliases) ?? null
     // status precedence: down (is_active=0) → warn (errors) →
     // unreachable (expected by fan-out but no live row) → healthy.
     let status: ChStatus
@@ -463,7 +564,7 @@ export function assembleTopology(
       host: row.host_name,
       address: row.host_address,
       port: num(row.port),
-      isLocal: truthy(row.is_local),
+      isLocal,
       status,
       errors,
       slowdowns,
@@ -488,7 +589,7 @@ export function assembleTopology(
   const clusterReplicatedDb = new Map<string, boolean>()
 
   for (const r of clusterRows) {
-    const id = idByHostKey.get(hostKey(r))
+    const id = idByCanonKey.get(canonKey(r))
     if (!id) continue
     if (!clusterMembers.has(r.cluster)) {
       clusterNames.push(r.cluster)
