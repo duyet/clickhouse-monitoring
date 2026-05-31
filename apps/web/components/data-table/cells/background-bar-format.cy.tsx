@@ -27,14 +27,15 @@ describe('<BackgroundBarFormat />', () => {
       />
     )
 
-    cy.get('div[aria-roledescription="background-bar"]').as('cell')
+    cy.get('div[role="progressbar"]').as('cell')
 
     cy.get('@cell').should('contain.text', '100')
     cy.get('@cell').should('have.attr', 'title', '100 (50%)')
+    cy.get('@cell').should('have.attr', 'aria-valuenow', '50')
     cy.get('@cell')
       .find('[aria-hidden="true"]')
       .should('have.attr', 'style')
-      .and('include', 'width: 50%')
+      .and('include', 'scaleX(0.5)')
       .and('include', 'background-color')
   })
 
@@ -48,7 +49,7 @@ describe('<BackgroundBarFormat />', () => {
         options={{ numberFormat: true }}
       />
     )
-    cy.get('div[aria-roledescription="background-bar"]').as('cell')
+    cy.get('div[role="progressbar"]').as('cell')
     cy.get('@cell').should('contain.text', '1,000')
   })
 
@@ -62,7 +63,7 @@ describe('<BackgroundBarFormat />', () => {
       />
     )
 
-    cy.get('div[aria-roledescription="background-bar"]').as('cell')
+    cy.get('div[role="progressbar"]').as('cell')
     cy.get('@cell').should('contain.text', 'Two hundred')
     cy.get('@cell').should('have.attr', 'title', '200 (75%)')
   })
@@ -83,7 +84,7 @@ describe('<BackgroundBarFormat />', () => {
       />
     )
 
-    cy.get('div[aria-roledescription="background-bar"]').should('not.exist')
+    cy.get('div[role="progressbar"]').should('not.exist')
     cy.contains('100').should('exist')
   })
 

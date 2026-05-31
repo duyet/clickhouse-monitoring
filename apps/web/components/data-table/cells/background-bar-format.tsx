@@ -49,13 +49,22 @@ export const BackgroundBarFormat = function BackgroundBarFormat({
     <div
       className="relative flex items-center w-full h-full overflow-hidden"
       title={`${orgValue} (${pct}%)`}
+      role="progressbar"
       aria-label={`${orgValue} (${pct}%)`}
-      aria-roledescription="background-bar"
+      aria-valuenow={Number(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
     >
-      {/* Background bar - uses inline styles for dynamic color */}
+      {/* Background bar — a solid-color div. Animate fill with a GPU-composited
+          transform (scaleX) instead of width, so the per-refresh transition
+          doesn't trigger layout. */}
       <div
-        className="absolute inset-y-0 left-0 transition-[width]"
-        style={{ width: `${pct}%`, ...barStyle }}
+        className="absolute inset-y-0 left-0 origin-left transition-transform"
+        style={{
+          width: '100%',
+          transform: `scaleX(${Number(pct) / 100})`,
+          ...barStyle,
+        }}
         aria-hidden="true"
       />
       <span className="relative inline-block min-w-0 truncate px-1.5">
