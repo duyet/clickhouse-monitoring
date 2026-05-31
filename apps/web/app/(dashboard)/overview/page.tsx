@@ -4,7 +4,7 @@ import type { OverviewChartConfig } from './charts-config'
 
 import { OVERVIEW_TABS } from './charts-config'
 import dynamic from 'next/dynamic'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
@@ -107,16 +107,15 @@ const LazyTabContent = function LazyTabContent({
 function OverviewPageContent() {
   const hostId = useHostId()
   const searchParams = useSearchParams()
-  const router = useRouter()
 
-  // Read tab from URL, validate and fallback to default
-  const activeTab = (() => {
+  // Active tab is LOCAL state (source of truth for rendering) seeded once from
+  // the URL. We persist changes back to the URL via the History API rather than
+  // reading the tab from `useSearchParams()` on every render — a router-driven
+  // param read would re-suspend and flash the page fallback on each tab click.
+  const [activeTab, setActiveTab] = useState<string>(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam && VALID_TABS.has(tabParam)) {
-      return tabParam
-    }
-    return DEFAULT_TAB
-  })()
+    return tabParam && VALID_TABS.has(tabParam) ? tabParam : DEFAULT_TAB
+  })
 
   // Track visited tabs for lazy loading (include the initial tab from URL)
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
@@ -133,9 +132,19 @@ function OverviewPageContent() {
       params.set('tab', value)
     }
 
-    // Use replace to avoid adding to browser history for every tab change
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    router.replace(newUrl, { scroll: false })
+    // Update the URL via the native History API rather than router.replace().
+    // A router navigation refetches the route's RSC payload, which re-suspends
+    // the searchParams boundary and flashes `OverviewPageFallback` (the 4 KPI
+    // skeletons) on EVERY tab click — even though the cards' SWR data is cached.
+    // History.replaceState updates `useSearchParams()` reactively with no
+    // navigation, so only the (cached) tab content swaps in. Matches the pattern
+    // in use-table-filters.ts / time-range-context.tsx.
+    const qs = params.toString()
+    const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`
+    window.history.replaceState(window.history.state, '', newUrl)
+
+    // Local state drives the active tab instantly (no navigation round-trip).
+    setActiveTab(value)
 
     // Update visited tabs for lazy loading
     setVisitedTabs((prev) => {
