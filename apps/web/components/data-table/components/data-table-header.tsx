@@ -1,11 +1,9 @@
 'use client'
 
 import {
-  DownloadIcon,
   FilterIcon,
   Loader2Icon,
   PlusIcon,
-  RotateCcwIcon,
   SearchIcon,
   Settings2Icon,
   Trash2Icon,
@@ -49,7 +47,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
 import { getSqlForDisplay } from '@/types/query-config'
 
 export interface DataTableHeaderProps<TData extends RowData> {
@@ -126,7 +123,6 @@ export const DataTableHeader = memo(function DataTableHeader<
   onAdvancedFiltersChange,
 }: DataTableHeaderProps<TData>) {
   const displaySql = executedSql || getSqlForDisplay(queryConfig.sql)
-  const isCompact = density === 'compact' || density === 'dense'
 
   // Popover filter draft state
   const [filterDrafts, setFilterDrafts] = useState<TableFilterCondition[]>([])
@@ -315,7 +311,7 @@ export const DataTableHeader = memo(function DataTableHeader<
 
               {/* List of active filters rules */}
               <div className="flex flex-col gap-3 py-4 max-h-[300px] overflow-y-auto">
-                {filterDrafts.map((draft, idx) => (
+                {filterDrafts.map((draft) => (
                   <div key={draft.id} className="flex items-center gap-2">
                     {/* Column Select */}
                     <Select
