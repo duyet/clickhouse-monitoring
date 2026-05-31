@@ -67,6 +67,20 @@ const PRIMARY_COLUMN_PRIORITY = [
 // (the "hero") at the top of the card so it reads first.
 const SQL_PRIMARY_COLUMNS = new Set(['query', 'query_detail'])
 
+// Heroes whose content is long-form (SQL, stack traces, exception / error
+// messages, mutation commands) read far better as one wide, readable column
+// than squeezed into a grid cell — so the multi-column card grid keeps these
+// single-column and only grids short, scannable entity heroes.
+const STACK_PRIMARY_COLUMNS = new Set([
+  'query',
+  'query_detail',
+  'exception',
+  'command',
+  'message',
+  'error',
+  'last_error_message',
+])
+
 function formatColumnLabel(columnId: string) {
   return columnId.replaceAll('_', ' ')
 }
@@ -190,6 +204,8 @@ interface MobileTableCardProps<TData extends RowData> {
   card?: CardConfig
   /** Leading icons for metric chips, keyed by column name. */
   columnIcons?: Record<string, Icon>
+  /** In a multi-column card grid, an expanded card spans the full row. */
+  gridLayout?: boolean
 }
 
 const MobileTableCard = function MobileTableCard<TData extends RowData>({
@@ -198,6 +214,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
   expandable,
   card,
   columnIcons,
+  gridLayout,
 }: MobileTableCardProps<TData>) {
   const cells = row.getVisibleCells()
   const selectCell = cells.find((cell) => cell.column.id === 'select')
@@ -262,6 +279,8 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
       data-expanded={isExpanded || undefined}
       className={cn(
         'rounded-lg border border-border/60 bg-card/40 p-3',
+        // An expanded card needs the full row so its detail panel has room.
+        isExpanded && gridLayout && 'col-span-full',
         customClass
       )}
     >
@@ -407,6 +426,8 @@ export interface MobileTableCardsProps<TData extends RowData> {
   card?: CardConfig
   /** Leading icons for metric chips, keyed by column name. */
   columnIcons?: Record<string, Icon>
+  /** Active result view; an explicit 'cards' view enables the card grid. */
+  view?: 'table' | 'cards' | 'auto'
 }
 
 export const MobileTableCards = function MobileTableCards<
@@ -421,8 +442,18 @@ export const MobileTableCards = function MobileTableCards<
   expandable,
   card,
   columnIcons,
+  view,
 }: MobileTableCardsProps<TData>) {
   const rows = table.getRowModel().rows
+
+  // Multi-column card grid — only when the user has explicitly switched to the
+  // 'cards' view (in 'auto' mode cards only show on phones, where a single
+  // column is right), and only for short entity heroes. Long-form heroes (SQL,
+  // exceptions) stay single-column. The virtualized path always stacks.
+  const gridLayout =
+    view === 'cards' &&
+    !!card?.primary &&
+    !STACK_PRIMARY_COLUMNS.has(normalizeColumnName(card.primary))
 
   if (!rows.length) {
     return (
@@ -481,7 +512,13 @@ export const MobileTableCards = function MobileTableCards<
           })}
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div
+          className={
+            gridLayout
+              ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+              : 'flex flex-col gap-3'
+          }
+        >
           {rows.map((row) => (
             <MobileTableCard
               key={row.id}
@@ -490,6 +527,7 @@ export const MobileTableCards = function MobileTableCards<
               expandable={expandable}
               card={card}
               columnIcons={columnIcons}
+              gridLayout={gridLayout}
             />
           ))}
         </div>
