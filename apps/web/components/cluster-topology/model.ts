@@ -190,7 +190,11 @@ export function isKeeperNode(n: KeeperNode | ChNode): n is KeeperNode {
 // room for each node's labels to sit INSIDE its cluster boundary.
 // Imported by the layout tests, so the in-viewBox bounds check moves with them.
 export const VB_W = 1280
-export const VB_H = 580
+// Taller than a pure 2-col fit so the keeper region (FQDN labels), the gap to
+// the CH band, and deeply-nested cluster rings + their bottom pills all sit in
+// view. The fixed-height container scales with preserveAspectRatio="meet", so
+// the extra height letterboxes gracefully instead of clipping content.
+export const VB_H = 640
 // Node radii are exported so the canvas glyphs render at exactly the size the
 // layout reserves spacing/hull padding for — no drift between layout and paint.
 // Sized so a typical hostname fits INSIDE the glyph (square card / hexagon).
@@ -211,7 +215,7 @@ export const CH_RENDER_CAP = 24
 // matching extent here or the label spills outside its cluster rect. The numbers
 // below decompose as: glyph radius (CH_R/KP_R) + label offset + line/badge height
 // + a small descender allowance. See docs/knowledge/cluster-topology.md.
-const ENVELOPE_MARGIN = 9 // breathing room between content and the boundary
+const ENVELOPE_MARGIN = 12 // breathing room between content and the boundary
 
 /** How far a ClickHouse glyph + its labels extend below its center. */
 function chDownExtent(n: ChNode): number {
@@ -224,9 +228,15 @@ const chUpExtent = () => CH_R + 8
 // Sub-line can be wider than the card (e.g. "cpu 99% · mem 99%"); clear it.
 const chHalfExtent = () => CH_R + 34
 
-/** Keeper hexagon + its labels. Leader has a star above; sub-line below. */
+/** Keeper hexagon + its labels. Leader has a star above; sub-line below.
+ *
+ * CONTRACT with `NodeLabel` in topo-canvas.tsx: when the host differs from the
+ * short id (an FQDN), the canvas paints the host line at `r+16` AND the sub-line
+ * at `r+31`; otherwise only the sub-line at `r+16`. The down-extent must cover
+ * whichever is drawn (+ a descender) or the follower labels spill below the
+ * keeper boundary into the cluster region — the reported overlap. */
 const keeperUpExtent = (k: KeeperNode) => KP_R + (k.isLeader ? 22 : 8)
-const keeperDownExtent = () => KP_R + 22
+const keeperDownExtent = (k: KeeperNode) => KP_R + (k.host !== k.id ? 42 : 26)
 const keeperHalfExtent = () => KP_R + 16
 
 export const STATUS_COLOR: Record<string, string> = {
@@ -833,7 +843,11 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   // Auto-layout: translate the whole composition so its content (every node +
   // its labels) is centered in the draw area. This handles the no-keeper case
   // and any sparse layout — content sits in the middle instead of a fixed band.
-  centerContent(keepers, renderCh)
+  // Cluster RECTS outset past the node envelopes (margin + concentric NEST_STEP
+  // rings) and the name pills sit on the bottom edge, so reserve that room or a
+  // densely-nested graph spills below the viewBox.
+  const { padTop, padBottom } = boundaryReserve(data.clusters, chNodes)
+  centerContent(keepers, renderCh, padTop, padBottom)
 
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
@@ -915,18 +929,22 @@ function layoutKeepers(keepers: KeeperNode[]) {
   const followers = keepers.filter((_, i) => i !== leaderIdx)
   keepers[leaderIdx].x = cx
   keepers[leaderIdx].y = 100
-  const spread = Math.min(170, 110 + followers.length * 14)
+  // Spread followers wide enough that adjacent FQDN host labels (~166px when
+  // truncated to ~24 chars) never overlap — the glyph gap alone is not enough.
+  const spread = Math.min(280, 188 + followers.length * 16)
   const total = (followers.length - 1) * spread
+  // Sit the follower row below the leader's own label block (host + sub-line)
+  // so the leader's text never grazes the follower glyphs.
   followers.forEach((f, i) => {
     f.x = cx - total / 2 + i * spread
-    f.y = 198
+    f.y = 214
   })
 }
 
 // CH region: a band below the keepers. Layout is deterministic + seeded only by
 // structure so positions are stable across live ticks. The band leaves headroom
 // below for each node's two label lines + LOCAL badge (≈ CH_R + 46).
-const CH_BAND_Y = 340
+const CH_BAND_Y = 356
 const CH_BAND_H = 120
 const CH_MARGIN = 170
 
@@ -1087,7 +1105,45 @@ function clampToBand(nodes: ChNode[]) {
  * This is the "auto layout" — sparse graphs (no keeper, one node) sit centered
  * instead of stuck in a fixed band.
  */
-function centerContent(keepers: KeeperNode[], chNodes: ChNode[]) {
+/**
+ * Vertical room the cluster boundary rects + their bottom pills occupy BEYOND the
+ * node envelopes, so `centerContent` can keep the whole composition in view.
+ * Coincident logical clusters (same rendered member set) nest as concentric
+ * rings stepped by `NEST_STEP`; distinct ones get the small expand-only jitter.
+ * Name pills sit on the bottom edge → bottom needs an extra pill's worth.
+ */
+function boundaryReserve(
+  clusters: ClusterInfo[],
+  chNodes: ChNode[]
+): { padTop: number; padBottom: number } {
+  const ids = new Set(chNodes.map((n) => n.id))
+  const logical = clusters.filter(
+    (c) => !c.outline && Object.keys(c.members).some((id) => ids.has(id))
+  )
+  if (logical.length === 0) return { padTop: 0, padBottom: 0 }
+  const sig = (c: ClusterInfo) =>
+    Object.keys(c.members)
+      .filter((id) => ids.has(id))
+      .sort()
+      .join(',')
+  const groupSize = new Map<string, number>()
+  for (const c of logical) {
+    const s = sig(c)
+    groupSize.set(s, (groupSize.get(s) ?? 0) + 1)
+  }
+  const maxNest = Math.max(...groupSize.values())
+  // Outermost-ring outset for the deepest nest, else the distinct-rect jitter.
+  const ring = Math.max((maxNest - 1) * NEST_STEP, 21)
+  const pad = ring + ENVELOPE_MARGIN
+  return { padTop: pad, padBottom: pad + 20 }
+}
+
+function centerContent(
+  keepers: KeeperNode[],
+  chNodes: ChNode[],
+  padTop = 0,
+  padBottom = 0
+) {
   if (keepers.length === 0 && chNodes.length === 0) return
   let minX = Infinity
   let maxX = -Infinity
@@ -1097,7 +1153,7 @@ function centerContent(keepers: KeeperNode[], chNodes: ChNode[]) {
     minX = Math.min(minX, k.x - keeperHalfExtent())
     maxX = Math.max(maxX, k.x + keeperHalfExtent())
     minY = Math.min(minY, k.y - keeperUpExtent(k))
-    maxY = Math.max(maxY, k.y + keeperDownExtent())
+    maxY = Math.max(maxY, k.y + keeperDownExtent(k))
   }
   for (const c of chNodes) {
     minX = Math.min(minX, c.x - chHalfExtent())
@@ -1105,6 +1161,10 @@ function centerContent(keepers: KeeperNode[], chNodes: ChNode[]) {
     minY = Math.min(minY, c.y - chUpExtent())
     maxY = Math.max(maxY, c.y + chDownExtent(c))
   }
+  // Reserve room for the cluster boundary rects + their bottom pills, which sit
+  // outside the node envelopes, so the centered composition still fits.
+  minY -= padTop
+  maxY += padBottom
   let dx = (VB_W - minX - maxX) / 2
   let dy = (VB_H - minY - maxY) / 2
   // When content fits, keep it fully inside; otherwise anchor the top edge.
@@ -1178,7 +1238,7 @@ function buildKeeperRect(voters: KeeperNode[]): string {
   const minX = Math.min(...voters.map((k) => k.x - keeperHalfExtent()))
   const maxX = Math.max(...voters.map((k) => k.x + keeperHalfExtent()))
   const minY = Math.min(...voters.map((k) => k.y - keeperUpExtent(k)))
-  const maxY = Math.max(...voters.map((k) => k.y + keeperDownExtent()))
+  const maxY = Math.max(...voters.map((k) => k.y + keeperDownExtent(k)))
   const m = ENVELOPE_MARGIN
   return roundedRectPath(
     minX - m,
@@ -1200,7 +1260,7 @@ function buildKeeperRect(voters: KeeperNode[]): string {
 // Each coincident cluster (same member SET) is grown by this much per nesting
 // rank so the rects sit as concentric rings instead of stacking invisibly — the
 // "multiple clusters, same nodes" overlap case from the screenshot.
-const NEST_STEP = 16
+const NEST_STEP = 24
 
 function buildClusterHulls(
   clusters: ClusterInfo[],
@@ -1236,7 +1296,7 @@ function buildClusterHulls(
     let maxY = -Infinity
     for (const c of centers) {
       const down = isKeeperNode(c)
-        ? keeperDownExtent()
+        ? keeperDownExtent(c)
         : chDownExtent(c as ChNode)
       minX = Math.min(minX, c.x - chHalfExtent())
       maxX = Math.max(maxX, c.x + chHalfExtent())
@@ -1268,6 +1328,9 @@ function buildClusterHulls(
     const d = roundedRectPath(minX, minY, w, h, CLUSTER_RECT_RADIUS)
     if (!d) continue
     const cx = (minX + maxX) / 2
+    // Anchor the label to the rect's BOTTOM edge: the top edge sits in the
+    // crowded zone just under the keeper region, where pills get hidden or
+    // overlap node sub-lines. Below the cards is open space — pills stay clear.
     hulls.push({
       id: cl.id,
       name: cl.name,
@@ -1276,9 +1339,9 @@ function buildClusterHulls(
       d,
       area: w * h,
       labelX: cx,
-      labelY: minY,
+      labelY: maxY,
       anchorX: cx,
-      anchorY: minY,
+      anchorY: maxY,
       leader: false,
     })
   }
@@ -1289,16 +1352,18 @@ function buildClusterHulls(
 }
 
 /**
- * De-overlap cluster label pills so every name stays readable. Pills are stacked
- * upward when they would collide (estimating each pill's half-width from its
- * character count — matching `HullLabel`'s `text.length * 7 + 20`), and any pill
- * pushed away from its rect's top anchor is flagged so the canvas draws a thin
- * leader line back to the territory. Deterministic.
+ * De-overlap cluster label pills so every name stays readable. Pills anchor to
+ * each rect's BOTTOM edge and are stacked DOWNWARD when they would collide
+ * (estimating each pill's half-width from its character count — matching
+ * `HullLabel`'s `text.length * 7 + 20`). Any pill pushed away from its anchor is
+ * flagged so the canvas draws a thin leader line back to the territory. The open
+ * space below the cards means downward stacking never lands on a node.
+ * Deterministic.
  */
 function nudgeLabels(hulls: ClusterHull[]) {
   const ROW_H = 21 // pill height (19) + a hair of breathing room
   const halfW = (h: ClusterHull) => (h.name.length * 7 + 20) / 2
-  // Place left→right; lift each pill above any already-placed pill it overlaps.
+  // Place left→right; drop each pill below any already-placed pill it overlaps.
   const sorted = [...hulls].sort(
     (a, b) => a.labelX - b.labelX || a.id.localeCompare(b.id)
   )
@@ -1313,14 +1378,14 @@ function nudgeLabels(hulls: ClusterHull[]) {
         const overlapX = Math.abs(cur.labelX - p.labelX) < halfW(cur) + halfW(p)
         const overlapY = Math.abs(y - p.labelY) < ROW_H
         if (overlapX && overlapY) {
-          y = p.labelY - ROW_H
+          y = p.labelY + ROW_H
           moved = true
         }
       }
     }
     cur.labelY = y
-    // A pill lifted more than a row above its anchor reads as detached → leader.
-    cur.leader = cur.anchorY - cur.labelY > ROW_H + 2
+    // A pill dropped more than a row below its anchor reads as detached → leader.
+    cur.leader = cur.labelY - cur.anchorY > ROW_H + 2
     placed.push(cur)
   }
 }

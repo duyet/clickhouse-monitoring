@@ -620,21 +620,21 @@ export function TopoCanvas({
             opacity={faded ? 0.2 : 1}
             style={{ transition: 'opacity .25s' }}
           >
-            <path d={h.d} fill={h.color} fillOpacity={active ? 0.16 : 0.1} />
+            <path d={h.d} fill={h.color} fillOpacity={active ? 0.14 : 0.08} />
             <path
               d={h.d}
               fill="none"
               stroke={h.color}
-              strokeOpacity={active ? 0.95 : 0.55}
-              strokeWidth={active ? 2.2 : 1.5}
+              strokeOpacity={active ? 0.95 : 0.65}
+              strokeWidth={active ? 2.4 : 1.7}
               strokeLinejoin="round"
             />
-            {/* leader line: when the pill was lifted off the rect to stay
-                readable, connect it back so the name stays clearly attributed. */}
+            {/* leader line: when the pill was dropped below the rect to stay
+                readable, connect it back up so the name stays attributed. */}
             {h.leader && (
               <line
                 x1={h.labelX}
-                y1={h.labelY + 9}
+                y1={h.labelY - 9}
                 x2={h.anchorX}
                 y2={h.anchorY}
                 stroke={h.color}
