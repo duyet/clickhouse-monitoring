@@ -1,10 +1,70 @@
 import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
+import { ClockIcon, TimerIcon, UserIcon } from 'lucide-react'
+import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
 
 export const slowQueriesConfig: QueryConfig = {
   name: 'slow-queries',
+  // Query is the hero; user/duration/start ride as metric chips, with memory
+  // and I/O surfaced in the expand panel.
+  defaultView: 'auto',
+  card: {
+    primary: 'query',
+    badges: ['query_cache_usage'],
+    metrics: ['user', 'query_duration', 'query_start_time'],
+  },
+  columnIcons: {
+    user: UserIcon,
+    query_duration: TimerIcon,
+    query_start_time: ClockIcon,
+  },
+  expandable: {
+    renderExpanded: createExpandedPanel({
+      sections: [
+        {
+          type: 'stats',
+          columns: [
+            {
+              key: 'memory_usage',
+              label: 'Memory',
+              readableKey: 'readable_memory_usage',
+            },
+          ],
+        },
+        {
+          type: 'bars',
+          title: 'I/O (relative to result set)',
+          columns: [
+            {
+              key: 'read_rows',
+              label: 'Read rows',
+              readableKey: 'readable_read_rows',
+              pctKey: 'pct_read_rows',
+            },
+            {
+              key: 'read_bytes',
+              label: 'Read bytes',
+              readableKey: 'readable_read_bytes',
+              pctKey: 'pct_read_bytes',
+            },
+          ],
+        },
+        {
+          type: 'fields',
+          title: 'Identity',
+          columns: [
+            'query_id',
+            'user',
+            'query_cache_usage',
+            'query_start_time',
+          ],
+        },
+        { type: 'code', title: 'Query', column: 'query' },
+      ],
+    }),
+  },
   description: 'Top 10 slowest queries with query_duration_ms >= 5000',
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',
