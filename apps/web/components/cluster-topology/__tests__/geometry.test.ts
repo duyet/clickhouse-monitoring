@@ -3,6 +3,7 @@ import {
   convexHull,
   offsetHullArea,
   offsetHullPath,
+  roundedRectPath,
 } from '../geometry'
 import { describe, expect, it } from 'bun:test'
 
@@ -113,5 +114,26 @@ describe('determinism', () => {
       { x: 90, y: 260 },
     ]
     expect(offsetHullPath(pts, R)).toBe(offsetHullPath(pts, R))
+  })
+})
+
+describe('roundedRectPath — cluster territory boundary', () => {
+  it('is a closed path with exactly four corner arcs', () => {
+    const d = roundedRectPath(10, 20, 200, 120, 40)
+    expect(isClosedPath(d)).toBe(true)
+    expect((d.match(/A /g) ?? []).length).toBe(4)
+  })
+
+  it('clamps the corner radius to half the shorter side (no self-overlap)', () => {
+    // r=999 on an 80×40 rect must clamp to 20 (= h/2); the arc radius is 20.0.
+    const d = roundedRectPath(0, 0, 80, 40, 999)
+    expect(isClosedPath(d)).toBe(true)
+    expect(d).toContain('A 20.0 20.0')
+  })
+
+  it('is deterministic for identical input', () => {
+    expect(roundedRectPath(5, 5, 100, 60, 24)).toBe(
+      roundedRectPath(5, 5, 100, 60, 24)
+    )
   })
 })

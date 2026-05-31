@@ -418,7 +418,34 @@ export function TopologyView({ hostId }: { hostId: number }) {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-[10.5px] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10.5px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden>
+                  <rect
+                    x="1.5"
+                    y="1.5"
+                    width="10"
+                    height="10"
+                    rx="2.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  />
+                </svg>
+                ClickHouse
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden>
+                  <path
+                    d="M6.5 1 L11 3.6 V8.4 L6.5 11 L2 8.4 V3.6 Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Keeper
+              </span>
               <span className="inline-flex items-center gap-1.5">
                 <span
                   className="h-0.5 w-4 rounded-full"
@@ -430,7 +457,7 @@ export function TopologyView({ hostId }: { hostId: number }) {
                 <span
                   className="w-4 border-t-2 border-dashed"
                   style={{
-                    borderColor: 'hsl(var(--muted-foreground))',
+                    borderColor: 'var(--muted-foreground)',
                     opacity: 0.5,
                   }}
                 />
@@ -444,9 +471,13 @@ export function TopologyView({ hostId }: { hostId: number }) {
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
                 warn
               </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-slate-400" />
+                unreachable
+              </span>
             </div>
           </div>
-          <div className="h-[480px] bg-background/40 sm:h-[540px]">
+          <div className="h-[480px] bg-muted/60 sm:h-[540px]">
             <TopoCanvas
               model={model}
               liveById={liveById}
