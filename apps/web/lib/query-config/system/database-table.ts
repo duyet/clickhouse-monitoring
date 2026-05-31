@@ -16,6 +16,8 @@ export type Row = {
 
 export const databaseTableColumnsConfig: QueryConfig = {
   name: 'columns',
+  defaultView: 'auto',
+  card: { primary: 'column', badges: ['type'] },
   sql: `
     WITH columns AS (
       SELECT database,

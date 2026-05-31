@@ -11,6 +11,7 @@ export type Row = {
 
 export const clustersConfig: QueryConfig = {
   name: 'clusters',
+  card: { primary: 'cluster', badges: ['replica_status'] },
   description:
     'Contains information about clusters available in the config file and the servers in them',
   sql: `

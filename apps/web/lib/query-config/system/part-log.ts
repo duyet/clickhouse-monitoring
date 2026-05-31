@@ -5,6 +5,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const partLogConfig: QueryConfig = {
   name: 'part-log',
+  defaultView: 'auto',
+  card: { primary: 'part_name', badges: ['event_type', 'merge_reason'] },
   description:
     'Part lifecycle timeline: creation, merges, mutations, downloads, and removals from system.part_log',
   docs: PART_LOG,

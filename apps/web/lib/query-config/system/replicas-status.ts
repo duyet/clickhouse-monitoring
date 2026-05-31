@@ -14,6 +14,8 @@ export type Row = {
 
 export const clustersReplicasStatusConfig: QueryConfig = {
   name: 'replicas-status',
+  defaultView: 'auto',
+  card: { primary: 'host' },
   description: 'Replica status for all tables in the cluster',
   sql: `
       SELECT
