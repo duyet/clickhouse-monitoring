@@ -69,15 +69,14 @@ describe('keeper quorum hull is optional', () => {
     })
   }
 
-  it('keeper hull degenerates: N=1 ring, N=2 capsule, N>=3 polygon', () => {
-    const one = buildTopologyModel(replicatedCluster('c', 1), keepers(1))
-    expect((one.keeperHull.match(/A /g) ?? []).length).toBe(2) // ring
-    const two = buildTopologyModel(replicatedCluster('c', 1), keepers(2))
-    expect((two.keeperHull.match(/A /g) ?? []).length).toBe(2) // capsule
-    const three = buildTopologyModel(replicatedCluster('c', 1), keepers(3))
-    expect((three.keeperHull.match(/A /g) ?? []).length).toBeGreaterThanOrEqual(
-      3
-    )
+  it('keeper region is a closed rounded rectangle (4 corner arcs) for any N', () => {
+    for (const k of [1, 2, 3, 5]) {
+      const m = buildTopologyModel(replicatedCluster('c', 1), keepers(k))
+      expect(m.keeperHull).not.toBe('')
+      expect(m.keeperHull.trim().startsWith('M')).toBe(true)
+      expect(m.keeperHull.trim().endsWith('Z')).toBe(true)
+      expect((m.keeperHull.match(/A /g) ?? []).length).toBe(4)
+    }
   })
 })
 
