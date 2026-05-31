@@ -7,7 +7,9 @@ import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
 import { lazy, Suspense } from 'react'
+import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
+import { useHostId } from '@/lib/swr'
 
 const NewBadge = lazy(() =>
   import('@/components/menu/components/new-badge').then((mod) => ({
@@ -78,10 +80,21 @@ const SingleMenuItem = function SingleMenuItem({
   isActive: boolean
 }) {
   const closeMobileSidebar = useCloseMobileSidebar()
+  const hostId = useHostId()
+  const { available } = useIsTableAvailable(item.tableCheck, hostId)
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        tooltip={
+          available
+            ? item.title
+            : `${item.title} (System table not found on this host)`
+        }
+        className={available ? '' : 'opacity-50 text-muted-foreground/50'}
+      >
         <HostPrefixedLink
           href={item.href}
           className="flex w-full items-center"
@@ -116,6 +129,61 @@ const SingleMenuItem = function SingleMenuItem({
 }
 
 /**
+ * Renders a single sub-item under a collapsible menu
+ */
+const SubMenuItem = function SubMenuItem({
+  subItem,
+  pathname,
+  hostId,
+  closeMobileSidebar,
+}: {
+  subItem: MenuItemType
+  pathname: string
+  hostId: number
+  closeMobileSidebar: () => void
+}) {
+  const { available } = useIsTableAvailable(subItem.tableCheck, hostId)
+
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton
+        asChild
+        isActive={isMenuItemActive(subItem.href, pathname)}
+        className={available ? '' : 'opacity-50 text-muted-foreground/50'}
+      >
+        <HostPrefixedLink
+          href={subItem.href}
+          className="flex w-full items-center gap-2"
+          onClick={closeMobileSidebar}
+        >
+          <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
+            {subItem.title}
+          </span>
+          {subItem.isNew && (
+            <span className="ml-auto flex shrink-0">
+              <Suspense fallback={null}>
+                <NewBadge href={subItem.href} isNew={subItem.isNew} />
+              </Suspense>
+            </span>
+          )}
+          {subItem.countKey && (
+            <span className="ml-auto flex shrink-0">
+              <Suspense fallback={null}>
+                <CountBadge
+                  countKey={subItem.countKey}
+                  countLabel={subItem.countLabel}
+                  countVariant={subItem.countVariant}
+                />
+              </Suspense>
+            </span>
+          )}
+        </HostPrefixedLink>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
+  )
+}
+
+/**
  * Renders a menu item with children (collapsible)
  * Uses standard shadcn/ui pattern - entire button triggers toggle
  */
@@ -130,6 +198,7 @@ const CollapsibleMenuItem = function CollapsibleMenuItem({
 }) {
   const { state } = useSidebar()
   const closeMobileSidebar = useCloseMobileSidebar()
+  const hostId = useHostId()
   const isCollapsed = state === 'collapsed'
 
   // When collapsed, use Popover submenu
@@ -197,40 +266,13 @@ const CollapsibleMenuItem = function CollapsibleMenuItem({
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.items?.map((subItem) => (
-              <SidebarMenuSubItem key={subItem.href}>
-                <SidebarMenuSubButton
-                  asChild
-                  isActive={isMenuItemActive(subItem.href, pathname)}
-                >
-                  <HostPrefixedLink
-                    href={subItem.href}
-                    className="flex w-full items-center gap-2"
-                    onClick={closeMobileSidebar}
-                  >
-                    <span className="group-data-[state=collapsed]/sidebar:hidden min-w-0 truncate">
-                      {subItem.title}
-                    </span>
-                    {subItem.isNew && (
-                      <span className="ml-auto flex shrink-0">
-                        <Suspense fallback={null}>
-                          <NewBadge href={subItem.href} isNew={subItem.isNew} />
-                        </Suspense>
-                      </span>
-                    )}
-                    {subItem.countKey && (
-                      <span className="ml-auto flex shrink-0">
-                        <Suspense fallback={null}>
-                          <CountBadge
-                            countKey={subItem.countKey}
-                            countLabel={subItem.countLabel}
-                            countVariant={subItem.countVariant}
-                          />
-                        </Suspense>
-                      </span>
-                    )}
-                  </HostPrefixedLink>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
+              <SubMenuItem
+                key={subItem.href}
+                subItem={subItem}
+                pathname={pathname}
+                hostId={hostId}
+                closeMobileSidebar={closeMobileSidebar}
+              />
             ))}
           </SidebarMenuSub>
         </CollapsibleContent>

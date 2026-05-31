@@ -48,6 +48,7 @@ import {
 import type { MenuItem } from '@/components/menu/types'
 
 import { PeerDBLogo } from '@/components/icons/peerdb-brand-logo'
+import { EVENTS_TABLE } from '@/lib/app-tables'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -99,6 +100,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'running',
         icon: MixIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/processes',
+        tableCheck: 'system.processes',
       },
       {
         title: 'History Queries',
@@ -107,6 +109,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Historical query log with execution metrics, memory usage, and performance data',
         icon: CounterClockwiseClockIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
+        tableCheck: 'system.query_log',
       },
       {
         title: 'Failed Queries',
@@ -115,6 +118,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Query execution failures with error details and stack traces',
         icon: CrossCircledIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
+        tableCheck: 'system.query_log',
       },
       {
         title: 'Most Expensive Queries',
@@ -123,6 +127,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Resource-intensive queries ranked by CPU, memory, and duration',
         icon: CircleDollarSignIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
+        tableCheck: 'system.query_log',
       },
       {
         title: 'Slow Queries',
@@ -130,6 +135,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Top 10 slowest finished queries by duration',
         icon: CounterClockwiseClockIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_log',
+        tableCheck: 'system.query_log',
       },
       {
         title: 'Explain',
@@ -145,6 +151,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Materialized view execution history with status, duration, and row throughput',
         icon: CounterClockwiseClockIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_views_log',
+        tableCheck: 'system.query_views_log',
       },
       {
         title: 'Thread & Parallelization',
@@ -154,6 +161,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: CpuIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_thread_log',
+        tableCheck: 'system.query_thread_log',
       },
       {
         title: 'User Processes',
@@ -162,6 +170,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: UsersIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/user_processes',
+        tableCheck: 'system.user_processes',
       },
       {
         title: 'Query Metric Log',
@@ -171,6 +180,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: GaugeIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_metric_log',
+        tableCheck: 'system.query_metric_log',
       },
     ],
   },
@@ -189,6 +199,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'tables',
         icon: TableIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/databases',
+        tableCheck: ['system.databases', 'system.tables'],
       },
       {
         title: 'Tables Overview',
@@ -198,6 +209,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Table storage statistics with part counts and sizes',
         icon: Grid2x2CheckIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/parts',
+        tableCheck: 'system.parts',
       },
       {
         title: 'DDL Queue',
@@ -207,6 +219,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Cluster-wide DDL task queue status and execution history',
         icon: ShuffleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/distributed_ddl_queue',
+        tableCheck: 'system.distributed_ddl_queue',
       },
       {
         title: 'Table Replicas',
@@ -216,6 +229,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'replicas',
         icon: CopyIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicas',
+        tableCheck: 'system.replicas',
       },
       {
         title: 'Replication Queue',
@@ -226,6 +240,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'pending',
         icon: ShuffleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replication_queue',
+        tableCheck: 'system.replication_queue',
       },
       {
         title: 'Replicated Fetches',
@@ -234,6 +249,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Currently executing background part downloads from replica sources',
         icon: DownloadIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicated_fetches',
+        tableCheck: 'system.replicated_fetches',
       },
       {
         title: 'Readonly Tables',
@@ -244,6 +260,7 @@ export const menuItemsConfig: MenuItem[] = [
         countVariant: 'destructive',
         icon: ExclamationTriangleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicas',
+        tableCheck: 'system.replicas',
       },
       {
         title: 'Dropped Tables',
@@ -252,6 +269,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Tables awaiting final asynchronous drop (Atomic database engine)',
         icon: Trash2Icon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/dropped_tables',
+        tableCheck: 'system.dropped_tables',
       },
       {
         title: 'Dictionaries',
@@ -262,6 +280,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BookOpenIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/dictionaries',
+        tableCheck: 'system.dictionaries',
       },
       {
         title: 'Kafka Consumers',
@@ -269,6 +288,7 @@ export const menuItemsConfig: MenuItem[] = [
         description:
           'Kafka table engine consumer lag, poll/commit activity, and ingestion errors',
         icon: RssIcon,
+        tableCheck: 'system.kafka_consumers',
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/kafka',
       },
@@ -291,6 +311,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'active',
         icon: CombineIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/merges',
+        tableCheck: 'system.merges',
       },
       {
         title: 'Merge Performance',
@@ -298,6 +319,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Historical merge operation statistics and trends',
         icon: LightningBoltIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
+        tableCheck: 'system.part_log',
       },
       {
         title: 'Mutations',
@@ -305,6 +327,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Table mutation status with progress and failures',
         icon: UpdateIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/mutations',
+        tableCheck: 'system.mutations',
       },
       {
         title: 'Moves',
@@ -313,6 +336,7 @@ export const menuItemsConfig: MenuItem[] = [
           'In-progress part moves between disks and volumes (TTL / storage policy)',
         icon: MoveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/moves',
+        tableCheck: 'system.moves',
       },
       {
         title: 'Part Log',
@@ -321,6 +345,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Part lifecycle timeline: creations, merges, mutations, downloads, and removals',
         icon: LayersIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/part_log',
+        tableCheck: 'system.part_log',
       },
     ],
   },
@@ -339,6 +364,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BarChartIcon,
         permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
+        tableCheck: 'system.metrics',
       },
       {
         title: 'Async Metrics',
@@ -347,6 +373,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: BarChartIcon,
         permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics',
+        tableCheck: 'system.asynchronous_metrics',
       },
       {
         title: 'Profiler',
@@ -356,6 +383,7 @@ export const menuItemsConfig: MenuItem[] = [
         isNew: true,
         permission: { feature: 'metrics' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/processors_profile_log',
+        tableCheck: 'system.processors_profile_log',
       },
     ],
   },
@@ -373,6 +401,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Keeper health at a glance: liveness, request load, latency, and per-node cluster state',
         icon: HeartPulseIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
+        tableCheck: 'system.zookeeper_info',
       },
       {
         title: 'Data Browser',
@@ -381,6 +410,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Browse the ZooKeeper/Keeper znode tree for distributed coordination',
         icon: RollerCoasterIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper',
+        tableCheck: 'system.zookeeper',
       },
       {
         title: 'Keeper Info',
@@ -389,6 +419,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Cluster-health introspection of every Keeper node: role, latency, raft log, znode counts',
         icon: InfoCircledIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_info',
+        tableCheck: 'system.zookeeper_info',
       },
       {
         title: 'Connections',
@@ -397,6 +428,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Live connections from this ClickHouse server to Keeper/ZooKeeper',
         icon: UnplugIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection',
+        tableCheck: 'system.zookeeper_connection',
       },
       {
         title: 'Connection Log',
@@ -405,6 +437,7 @@ export const menuItemsConfig: MenuItem[] = [
           'History of Keeper/ZooKeeper connect and disconnect events with reasons',
         icon: CounterClockwiseClockIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_connection_log',
+        tableCheck: 'system.zookeeper_connection_log',
       },
       {
         title: 'Request Log',
@@ -413,6 +446,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Per-request log of Keeper/ZooKeeper operations and responses (requires <zookeeper_log>)',
         icon: ScrollTextIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_log',
+        tableCheck: 'system.zookeeper_log',
       },
       {
         title: 'Watches',
@@ -421,6 +455,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Currently active ZooKeeper/Keeper watches registered by this server',
         icon: EyeIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_watches',
+        tableCheck: 'system.zookeeper_watches',
       },
     ],
   },
@@ -467,6 +502,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: UsersIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/session_log',
+        tableCheck: 'system.session_log',
       },
       {
         title: 'Login Attempts',
@@ -475,6 +511,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: KeyIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/session_log',
+        tableCheck: 'system.session_log',
       },
       {
         title: 'Audit Log',
@@ -483,6 +520,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ShieldIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_event_log',
+        tableCheck: 'system.session_log',
       },
     ],
   },
@@ -501,6 +539,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ScrollTextIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/text_log',
+        tableCheck: 'system.text_log',
       },
       {
         title: 'Stack Traces',
@@ -509,6 +548,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ScrollTextIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/stack_trace',
+        tableCheck: 'system.stack_trace',
       },
       {
         title: 'Crashes',
@@ -517,6 +557,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ShieldAlertIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
+        tableCheck: 'system.crash_log',
       },
     ],
   },
@@ -535,6 +576,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: GearIcon,
         permission: { feature: 'settings' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/settings',
+        tableCheck: 'system.settings',
       },
       {
         title: 'MergeTree Settings',
@@ -545,6 +587,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: TableIcon,
         permission: { feature: 'settings' },
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/merge_tree_settings',
+        tableCheck: 'system.merge_tree_settings',
       },
       {
         title: 'Replicated MergeTree Settings',
@@ -553,6 +596,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Replicated MergeTree engine settings and whether each was changed from default',
         icon: SlidersHorizontalIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicated_merge_tree_settings',
+        tableCheck: 'system.replicated_merge_tree_settings',
       },
       {
         title: 'Disks',
@@ -562,6 +606,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'disks',
         icon: HardDriveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/disks',
+        tableCheck: 'system.disks',
       },
       {
         title: 'Warnings',
@@ -570,6 +615,7 @@ export const menuItemsConfig: MenuItem[] = [
           'Server-side warnings about potential configuration or operational issues',
         icon: AlertTriangleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/warnings',
+        tableCheck: 'system.warnings',
       },
     ],
   },
@@ -588,6 +634,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'clusters',
         icon: UngroupIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/clusters',
+        tableCheck: 'system.clusters',
       },
       {
         title: 'Connections',
@@ -595,6 +642,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Client and inter-server connection metrics',
         icon: UnplugIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/metrics',
+        tableCheck: 'system.metrics',
       },
     ],
   },
@@ -620,6 +668,7 @@ export const menuItemsConfig: MenuItem[] = [
         countLabel: 'backups',
         icon: ArchiveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/backup_log',
+        tableCheck: 'system.backup_log',
       },
       {
         title: 'Errors',
@@ -627,6 +676,7 @@ export const menuItemsConfig: MenuItem[] = [
         description: 'Detailed error events with stack traces',
         icon: ShieldAlertIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/error_log',
+        tableCheck: 'system.error_log',
       },
       {
         title: 'Page Views',
@@ -635,6 +685,7 @@ export const menuItemsConfig: MenuItem[] = [
         countKey: 'page-views',
         countLabel: 'views',
         icon: BarChartIcon,
+        tableCheck: EVENTS_TABLE,
       },
       {
         title: 'MCP Server',

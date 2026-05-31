@@ -17,6 +17,7 @@ import {
   detectCardErrorVariant,
   getCardErrorDescription,
   getCardErrorTitle,
+  toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { arrayToCsv, downloadCsv } from '@/lib/csv'
 import { useHostId } from '@/lib/swr/use-host'
@@ -147,7 +148,9 @@ export function PartLogView() {
         <Card className="rounded-xl">
           <CardContent className="p-4">
             <EmptyState
-              variant={detectCardErrorVariant(error as CardError)}
+              variant={toEmptyStateVariant(
+                detectCardErrorVariant(error as CardError)
+              )}
               title={getCardErrorTitle(
                 detectCardErrorVariant(error as CardError),
                 'Part Log'
