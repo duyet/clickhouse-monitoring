@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  GripVertical,
-  InfoIcon,
-} from 'lucide-react'
+import { GripVertical } from 'lucide-react'
 import { flexRender, type Header } from '@tanstack/react-table'
 
 import { useSortable } from '@dnd-kit/sortable'
@@ -14,12 +8,6 @@ import { CSS } from '@dnd-kit/utilities'
 import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-header-dropdown'
 import { Button } from '@/components/ui/button'
 import { TableHead, TableRow } from '@/components/ui/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 export const COMMON_COLUMN_DESCRIPTIONS: Record<string, string> = {
@@ -144,7 +132,6 @@ interface DraggableTableHeaderProps {
   onAutoFit?: (columnId: string) => void
   isSelectColumn?: boolean
   compact?: boolean
-  columnDescriptions?: Record<string, string>
 }
 
 /**
@@ -159,7 +146,6 @@ function DraggableTableHeader({
   onAutoFit,
   isSelectColumn,
   compact,
-  columnDescriptions,
 }: DraggableTableHeaderProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useSortable({
@@ -168,7 +154,6 @@ function DraggableTableHeader({
 
   const canResize = enableResize && header.column.getCanResize()
   const canSort = header.column.getCanSort()
-  const isSorted = header.column.getIsSorted()
 
   const style = {
     // Apply CSS transform during drag for visual feedback
@@ -181,12 +166,6 @@ function DraggableTableHeader({
 
   const headerPy = compact ? 'py-0.5' : 'py-2'
   const headerPx = isSelectColumn ? 'px-2' : compact ? 'px-1' : 'px-4'
-
-  const colId = header.column.id
-  const description =
-    columnDescriptions?.[colId] ??
-    COMMON_COLUMN_DESCRIPTIONS[colId] ??
-    COMMON_COLUMN_DESCRIPTIONS[colId.toLowerCase()]
 
   return (
     <TableHead
@@ -264,7 +243,6 @@ export const TableHeaderRow = function TableHeaderRow({
   onAutoFit,
   enableColumnReordering = false,
   compact = false,
-  columnDescriptions,
 }: TableHeaderRowProps) {
   // Header padding matches body cell density
   const headerPx = compact ? 'px-1' : 'px-4'
@@ -312,18 +290,11 @@ export const TableHeaderRow = function TableHeaderRow({
               onAutoFit={onAutoFit}
               isSelectColumn={isSelectColumn}
               compact={compact}
-              columnDescriptions={columnDescriptions}
             />
           )
         }
 
         // Standard header without drag-and-drop, but with sort dropdown and click-to-sort
-        const isSorted = header.column.getIsSorted()
-        const colId = header.column.id
-        const description =
-          columnDescriptions?.[colId] ??
-          COMMON_COLUMN_DESCRIPTIONS[colId] ??
-          COMMON_COLUMN_DESCRIPTIONS[colId.toLowerCase()]
 
         return (
           <TableHead
@@ -400,7 +371,6 @@ export const TableHeader = function TableHeader({
   onAutoFit,
   enableColumnReordering = false,
   compact = false,
-  columnDescriptions,
 }: TableHeaderProps) {
   return (
     <>
@@ -411,7 +381,6 @@ export const TableHeader = function TableHeader({
           onAutoFit={onAutoFit}
           enableColumnReordering={enableColumnReordering}
           compact={compact}
-          columnDescriptions={columnDescriptions}
         />
       ))}
     </>
