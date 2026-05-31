@@ -624,7 +624,7 @@ export function TopoCanvas({
               d={h.d}
               fill="none"
               stroke="var(--card)"
-              strokeOpacity={0.55}
+              strokeOpacity={0.95}
               strokeWidth={strokeW + 2.2}
               strokeLinejoin="round"
             />

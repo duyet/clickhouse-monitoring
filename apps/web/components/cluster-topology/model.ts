@@ -1426,9 +1426,10 @@ function buildClusterHulls(
     // Keep the box BELOW the keeper region: clamp the top edge to the ceiling so
     // the outermost concentric ring can't climb into the keeper region and engulf
     // a keeper (a non-member). Only trims the decorative outset band above the
-    // members; guarded by `contentMinY` so it can never clip a node's own box.
-    if (topCeiling != null && topCeiling <= contentMinY) {
-      minY = Math.max(minY, topCeiling)
+    // members; guarded by `Math.min(topCeiling, contentMinY)` so it can never clip
+    // a node's own box even when the keeper region extends below content's top.
+    if (topCeiling != null) {
+      minY = Math.max(minY, Math.min(topCeiling, contentMinY))
     }
     const w = maxX - minX
     const h = maxY - minY
