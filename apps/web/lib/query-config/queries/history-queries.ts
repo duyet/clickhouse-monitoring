@@ -18,6 +18,7 @@ import {
 import type { FilterSchema } from '@/lib/filters/types'
 import type { QueryConfig } from '@/types/query-config'
 
+import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { FILTER_PLACEHOLDER } from '@/lib/filters/where-builder'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
@@ -274,6 +275,61 @@ export const historyQueriesConfig: QueryConfig = {
     user: UserIcon,
     query_duration: TimerIcon,
     event_time: ClockIcon,
+  },
+  // Rich expand panel (declarative): headline outcome tiles, relative-row
+  // mini-bars, an identity grid, then the full query as a code block. Renders
+  // identically in the table (full-width row) and card (inline) views.
+  expandable: {
+    renderExpanded: createExpandedPanel({
+      sections: [
+        {
+          type: 'stats',
+          columns: [
+            {
+              key: 'result_rows',
+              label: 'Result rows',
+              readableKey: 'readable_result_rows',
+            },
+            {
+              key: 'memory_usage',
+              label: 'Memory',
+              readableKey: 'readable_memory_usage',
+            },
+          ],
+        },
+        {
+          type: 'bars',
+          title: 'Rows scanned (relative to result set)',
+          columns: [
+            {
+              key: 'read_rows',
+              label: 'Read rows',
+              readableKey: 'readable_read_rows',
+              pctKey: 'pct_read_rows',
+            },
+            {
+              key: 'written_rows',
+              label: 'Written rows',
+              readableKey: 'readable_written_rows',
+              pctKey: 'pct_written_rows',
+            },
+          ],
+        },
+        {
+          type: 'fields',
+          title: 'Identity',
+          columns: [
+            'query_id',
+            'user',
+            'client_name',
+            'query_kind',
+            'type',
+            'event_time',
+          ],
+        },
+        { type: 'code', title: 'Full query', column: 'query' },
+      ],
+    }),
   },
   description:
     'Contains information about executed queries: start time, duration of processing, error messages',
