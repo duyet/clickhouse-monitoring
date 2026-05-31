@@ -156,6 +156,10 @@ export function getColumnDefs<
           name={name}
           format={columnFormat as ColumnFormat}
           icon={config.columnIcons?.[name]}
+          description={
+            config.columnDescriptions?.[name] ??
+            config.columnDescriptions?.[column]
+          }
           isFilterable={isFilterable}
           filterValue={columnFilters[name] || ''}
           onFilterChange={(value) => setColumnFilter?.(name, value)}

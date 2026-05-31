@@ -235,48 +235,6 @@ function DraggableTableHeader({
                   )}
             </span>
             <div className="flex items-center gap-1 shrink-0">
-              {/* Column Description / Info Icon with Tooltip */}
-              {description && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-0.5 rounded cursor-help shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <InfoIcon className="size-3.5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="max-w-xs bg-popover text-popover-foreground border shadow-md font-normal"
-                    >
-                      <p className="text-xs">{description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {/* Sort indicator next to text */}
-              {canSort && (
-                <button
-                  type="button"
-                  onClick={header.column.getToggleSortingHandler()}
-                  className={cn(
-                    'p-0.5 rounded transition-colors text-muted-foreground/30 hover:text-foreground shrink-0',
-                    isSorted && 'text-primary opacity-100'
-                  )}
-                  title="Click to sort"
-                >
-                  {isSorted === 'asc' ? (
-                    <ArrowUp className="size-3.5 text-primary" />
-                  ) : isSorted === 'desc' ? (
-                    <ArrowDown className="size-3.5 text-primary" />
-                  ) : (
-                    <ArrowUpDown className="size-3.5 opacity-40 hover:opacity-100" />
-                  )}
-                </button>
-              )}
               {/* Dropdown menu for sort/copy actions - shown on hover */}
               {canSort && <ColumnHeaderDropdown header={header} />}
             </div>
@@ -396,48 +354,6 @@ export const TableHeaderRow = function TableHeaderRow({
                         )}
                   </span>
                   <div className="flex items-center gap-1 shrink-0">
-                    {/* Column Description / Info Icon with Tooltip */}
-                    {description && (
-                      <TooltipProvider>
-                        <Tooltip delayDuration={300}>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-0.5 rounded cursor-help shrink-0"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <InfoIcon className="size-3.5" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            className="max-w-xs bg-popover text-popover-foreground border shadow-md font-normal"
-                          >
-                            <p className="text-xs">{description}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    {/* Sort indicator next to text */}
-                    {canSort && (
-                      <button
-                        type="button"
-                        onClick={header.column.getToggleSortingHandler()}
-                        className={cn(
-                          'p-0.5 rounded transition-colors text-muted-foreground/30 hover:text-foreground shrink-0',
-                          isSorted && 'text-primary opacity-100'
-                        )}
-                        title="Click to sort"
-                      >
-                        {isSorted === 'asc' ? (
-                          <ArrowUp className="size-3.5 text-primary" />
-                        ) : isSorted === 'desc' ? (
-                          <ArrowDown className="size-3.5 text-primary" />
-                        ) : (
-                          <ArrowUpDown className="size-3.5 opacity-40 hover:opacity-100" />
-                        )}
-                      </button>
-                    )}
                     {/* Dropdown menu for sort/copy actions - shown on hover */}
                     {canSort && <ColumnHeaderDropdown header={header} />}
                   </div>
