@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const commonErrorsConfig: QueryConfig = {
   name: 'common-errors',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['remote'] },
   description:
     'This table `system.errors` contains error codes and the number of times each error has been triggered. Furthermore, we can see when the error last occurred coupled with the exact error message',
   tableCheck: 'system.errors',

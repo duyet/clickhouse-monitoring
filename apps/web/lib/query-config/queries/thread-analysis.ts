@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const threadAnalysisConfig: QueryConfig = {
   name: 'thread-analysis',
+  defaultView: 'auto',
+  card: { primary: 'thread_name' },
   description: 'Per-thread query execution statistics',
   optional: true,
   tableCheck: 'system.query_thread_log',

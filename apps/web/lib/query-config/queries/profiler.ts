@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const profilerConfig: QueryConfig = {
   name: 'profiler',
+  defaultView: 'auto',
+  card: { primary: 'processor_name' },
   description: 'Query processor profiling data',
   optional: true,
   tableCheck: 'system.processors_profile_log',
