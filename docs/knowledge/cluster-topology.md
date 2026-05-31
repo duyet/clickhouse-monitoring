@@ -11,6 +11,7 @@ tags:
   - geometry
   - oklch
   - shared-component
+  - dynamic-viewbox
 related:
   - conventions
   - static-site-architecture
@@ -55,10 +56,14 @@ Inside `layoutTopology`, in order:
    lens between them). `fanOut` spreads a group on a wide, zigzag-staggered grid.
 3. `enforceMinDistance` — iterative repulsion so glyphs + labels never collide.
 4. `clampToBand` — keep CH nodes inside the readable band.
-5. **`centerContent`** — translate the WHOLE composition so its content bounding box is centered
-   in the viewBox. This is the "auto layout": no-keeper / sparse / dense graphs all self-center,
-   so absolute band coordinates don't have to fit `VB_H` precisely.
+5. **`fitContent`** — center the composition horizontally in `VB_W` and compute a **data-driven
+   `vbHeight`** that fits the content (keeper region + CH band + the deepest ring outset + bottom
+   pills, via `boundaryReserve`'s `padTop`/`padBottom`), floored at `VB_H`, then center vertically
+   within it. This is the "auto layout": no-keeper / sparse / dense graphs all self-fit; the
+   returned height flows out as `model.vbHeight`.
 6. `buildClusterHulls` + `buildKeeperRect` — territory rectangles from member positions.
+   `buildClusterHulls` clamps each rect's top to the keeper ceiling (`KEEPER_CLUSTER_GAP`) and
+   receives only the VISIBLE clusters (physical dropped when `showPhysical` is false).
 
 **Determinism is mandatory.** No `Math.random` / `Date.now` (would break SWR-stable layout and
 the determinism test). Per-cluster size jitter uses a stable string hash (`hashStr`).
@@ -69,7 +74,9 @@ All in `model.ts` unless noted. **Do not change a number in isolation; check the
 
 | Constant | Meaning | Contract / why |
 |----------|---------|----------------|
-| `VB_W` `VB_H` | viewBox (1280×640) | Taller than a pure 2-col fit so the keeper region (FQDN labels), the keeper↔CH gap, and deeply-nested rings + bottom pills all sit in view. The fixed-height container scales `preserveAspectRatio="meet"`, so extra height letterboxes instead of clipping. **Imported by the layout tests** so the in-bounds check moves with them. |
+| `VB_W` | viewBox width (1280) | Fixed. Wide aspect so the graph fills the xl two-column container. |
+| `VB_H` | **MINIMUM** viewBox height (560) | The ACTUAL height is **data-driven** (`model.vbHeight`, computed in `fitContent`): it grows to fit the keeper region, the keeper↔CH gap, and the deepest cluster-ring nesting + bottom pills for THIS model, floored at `VB_H`. A sparse graph stays compact (big glyphs); a deeply-nested one grows taller and letterboxes (`preserveAspectRatio="meet"`). **The canvas reads `model.vbHeight`, NOT `VB_H`.** Layout tests bound node `y` by `model.vbHeight`. |
+| `KEEPER_CLUSTER_GAP` | min gap below the keeper region (16) | `buildClusterHulls` clamps every cluster rect's TOP edge to `max(keeperBottom)+gap` so the outermost concentric ring can never climb into the keeper region — a keeper (a non-member) always stays OUTSIDE the CH cluster boxes. Guarded by the cluster's content-top so it only trims the decorative outset band, never a node's own box. |
 | `CH_R` `KP_R` | node radii (42 / 40) | **Exported & imported by `topo-canvas.tsx`** so the drawn glyph == the size layout reserves. Single source of truth — never redeclare in the canvas. |
 | `chHalfExtent / chUpExtent / chDownExtent` | CH node CONTENT envelope (glyph + labels) | **CONTRACT with `topo-canvas.tsx` label positions.** `chDownExtent` must cover the sub-line / host line / LOCAL badge the canvas paints (see `NodeLabel` + the LOCAL badge `r + …`). If you move a label in the canvas, update the matching extent here or it spills outside its cluster boundary. |
 | `keeperHalf/Up/DownExtent` | Keeper envelope | Same contract with the keeper glyph (`star` above → bigger up-extent for leaders). `keeperDownExtent(k)` is **node-aware**: when the keeper host is an FQDN (`host !== id`), `NodeLabel` paints a host line AT `r+16` **and** a sub-line at `r+31`, so the extent is `KP_R + 42` (vs `KP_R + 26` for short hosts). Get this wrong and follower labels spill below the green boundary into the cluster region. |
@@ -109,9 +116,17 @@ Tailwind utilities (`bg-card`) are fine because they emit `var(--card)` directly
   the lower edge, status dot at the corner. Unreachable → dashed slate border + grayed logo + dimmed.
 - **Keeper node** = hexagon (`hexPath`). Leader = gold border + ★. Distinct silhouette from CH on purpose.
 - **Cluster territory** = rounded **rectangle** (not a blob): simple, predictable, and two
-  overlapping rects read as a clean lens. Physical/`default` = dotted outline; logical = soft
-  fill + thin border + a centered label pill (`HullLabel`). A small expand-only `hashStr` jitter
-  offsets overlapping rects so their edges aren't collinear.
+  overlapping rects read as a clean lens. EVERY cluster (logical AND physical) gets its own
+  palette color + a soft fill + a solid-bordered label pill (`HullLabel`) — physical clusters
+  read a touch softer (lower fill/stroke opacity), not a flat gray. Each colored boundary is
+  drawn over a **card-colored casing** (a slightly wider stroke beneath it) so crossing / nested
+  boundaries don't tangle at their intersections. A small expand-only `hashStr` jitter offsets
+  distinct overlapping rects so their edges aren't collinear.
+- **Physical/implicit clusters** (`all-replicated`, `all-sharded`, `default` — see `isPhysicalName`)
+  are **hidden by default**. A legend eye-toggle (`showPhysical`, lifted in `TopologyView`, passed
+  to `layoutTopology({ showPhysical })`) reveals them. Hiding them drops their hulls AND their
+  height reserve (they are the outermost rings), so the viewBox shrinks; node positions are
+  logical-cluster-driven so they never move when toggling.
 - **Keeper region** = its own rounded rect (`buildKeeperRect`), dashed green, with the
   "Keeper quorum · Raft" pill. (Earlier it was an offset hull; switched to a rect for label
   enclosure + consistency — the geometry test was updated to match.)
@@ -144,9 +159,10 @@ Locked by `model.test.ts` → "local-duplicate merge".
   `chHalfExtent`) with the full host on hover (a `<title>`) — a 60-char FQDN otherwise blows past
   its cluster boundary. Truncation length is the horizontal half of the envelope contract.
 - **Coincident clusters** (same member SET — the implicit `all-*`/`default` clusters all covering
-  the same hosts) are drawn as **concentric nested rects**: `buildClusterHulls` ranks each cluster
-  within its member-set signature and outsets ring `k` by `k * NEST_STEP`. Distinct-but-overlapping
-  clusters keep the small `hashStr` jitter instead.
+  the same hosts) are drawn as **concentric nested rects** in distinct palette colors:
+  `buildClusterHulls` ranks each cluster within its member-set signature and outsets ring `k` by
+  `k * NEST_STEP` (30 — wide enough that each colored ring + its casing has clear air, so adjacent
+  borders never overlap). Distinct-but-overlapping clusters keep the small `hashStr` jitter instead.
 - **Cluster label pills** anchor to each rect's **BOTTOM** edge (`labelY = maxY`), not the top: the
   top edge sits in the crowded zone just under the keeper region where pills got hidden or overlapped
   node sub-lines; below the cards is open space. `nudgeLabels` de-overlaps width-aware
@@ -168,13 +184,16 @@ only branch in `page.tsx`.
 
 ## Test invariants (do not break)
 
-`bun test apps/web/components/cluster-topology/__tests__/` — 36 pure tests, runnable without
+`bun test apps/web/components/cluster-topology/__tests__/` — 39 pure tests, runnable without
 `node_modules`. They lock:
 - hull path shape per node count; **area-DESC z-order**; replication-edge rules.
-- **shared-node-between-centroids** (overlap lens) — relative x order; `centerContent` translates
+- **shared-node-between-centroids** (overlap lens) — relative x order; `fitContent` translates
   all nodes equally so it's preserved.
-- `CH_RENDER_CAP` (24) with every rendered node inside `[0,VB_W]×[0,VB_H]`.
-- **determinism**: identical input → identical paths + x/y.
+- `CH_RENDER_CAP` (24) with every rendered node inside `[0,VB_W]×[0,model.vbHeight]`.
+- **determinism**: identical input → identical paths + x/y + `vbHeight`.
+- **data-driven height**: `vbHeight ≥ VB_H` floor; deeper nesting ⇒ taller; deterministic.
+- **keeper separation**: every CH cluster box top sits below the lowest keeper (clamp works).
+- **physical toggle**: `showPhysical:false` drops outline hulls + shrinks `vbHeight`; counts stay; node x unchanged.
 - `roundedRectPath` = closed, 4 corner arcs, clamped radius; keeper region = rounded rect for any N.
 
 `app/(dashboard)/overview/__tests__/overview.test.tsx` asserts the exact `OVERVIEW_TABS` value

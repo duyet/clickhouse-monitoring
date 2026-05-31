@@ -178,6 +178,11 @@ export interface TopologyModel extends TopologyData {
   /** mirror of keeper.quorumHealthy for existing consumers */
   quorumHealthy: boolean
   counts: TopologyMeta['counts']
+  /** viewBox height the canvas should use — DATA-DRIVEN: grows to fit the keeper
+   * region, the CH band, and the deepest cluster-ring nesting + bottom pills for
+   * THIS model, never below `VB_H`. A simple graph stays compact (big glyphs); a
+   * deeply-nested one grows taller and letterboxes. Width is always `VB_W`. */
+  vbHeight: number
 }
 
 /** Type guard: is this node a Keeper (vs a ClickHouse node)? */
@@ -190,11 +195,13 @@ export function isKeeperNode(n: KeeperNode | ChNode): n is KeeperNode {
 // room for each node's labels to sit INSIDE its cluster boundary.
 // Imported by the layout tests, so the in-viewBox bounds check moves with them.
 export const VB_W = 1280
-// Taller than a pure 2-col fit so the keeper region (FQDN labels), the gap to
-// the CH band, and deeply-nested cluster rings + their bottom pills all sit in
-// view. The fixed-height container scales with preserveAspectRatio="meet", so
-// the extra height letterboxes gracefully instead of clipping content.
-export const VB_H = 640
+// MINIMUM viewBox height. The ACTUAL height is computed per-model (`vbHeight`,
+// see `fitContent`) so it grows to fit the keeper region, the widened keeper↔CH
+// gap (keepers sit fully OUTSIDE the CH cluster boxes), and deeply-nested cluster
+// rings + their now-labelled bottom pills — and stays compact (this floor) for a
+// simple graph so glyphs render large. The fixed-height container scales with
+// preserveAspectRatio="meet", so a taller viewBox letterboxes instead of clipping.
+export const VB_H = 560
 // Node radii are exported so the canvas glyphs render at exactly the size the
 // layout reserves spacing/hull padding for — no drift between layout and paint.
 // Sized so a typical hostname fits INSIDE the glyph (square card / hexagon).
@@ -246,16 +253,21 @@ export const STATUS_COLOR: Record<string, string> = {
   unreachable: '#94a3b8',
 }
 
-// Stable palette for logical clusters (default/physical is always slate).
+// Stable palette — EVERY cluster (logical and physical alike) draws a distinct
+// color from this list in encounter order, so concentric/overlapping territories
+// read as separate colored boundaries instead of a muddy stack of gray lines.
+// Claude-style: warm, editorial, muted earth tones led by the Claude clay/coral,
+// hues alternated warm↔cool so ADJACENT nested rings stay easy to tell apart.
 const CLUSTER_PALETTE = [
-  '#3b82f6',
-  '#f59e0b',
-  '#8b5cf6',
-  '#ec4899',
-  '#14b8a6',
-  '#ef4444',
+  '#CC785C', // Claude clay (coral) — brand signature
+  '#7AA2C0', // dusty blue
+  '#D9A05B', // honey amber
+  '#9B8BC4', // periwinkle
+  '#6BA292', // sage teal
+  '#C77B8B', // dusty rose
+  '#B5925A', // ochre
+  '#8FA876', // olive
 ]
-const PHYSICAL_COLOR = '#64748b'
 
 /** Keeper-info raw row shape (subset of keeper-info columns we use). */
 export interface KeeperInfoRow {
@@ -631,9 +643,10 @@ export function assembleTopology(
     const physical = !clusterReplicatedDb.get(name) && isPhysicalName(name)
     // replicas-per-shard: max replica_num seen
     const maxR = Math.max(...clusterReplicas.get(name)!, 1)
-    const color = physical
-      ? PHYSICAL_COLOR
-      : CLUSTER_PALETTE[paletteIdx++ % CLUSTER_PALETTE.length]
+    // Every cluster gets its own palette color (physical included) so nested
+    // rings stay distinguishable; the physical/logical split is conveyed by the
+    // toggle + a softer fill, not by a flat gray.
+    const color = CLUSTER_PALETTE[paletteIdx++ % CLUSTER_PALETTE.length]
     return {
       id: name,
       name,
@@ -810,7 +823,19 @@ export function assembleTopology(
  * meta.hiddenChNodes report what was hidden. Edges referencing hidden nodes are
  * dropped by the canvas (it skips edges whose endpoints are missing).
  */
-export function layoutTopology(data: TopologyData): TopologyModel {
+export interface LayoutOptions {
+  /** Whether physical/implicit (outline) clusters are drawn. Default true. When
+   * false they are dropped from the hulls AND the height reserve — they are the
+   * OUTERMOST concentric rings, so hiding them lets the viewBox shrink. CH node
+   * positions are driven only by LOGICAL clusters, so toggling never moves a
+   * node — only the outer rings appear/disappear and the height adjusts. */
+  showPhysical?: boolean
+}
+
+export function layoutTopology(
+  data: TopologyData,
+  { showPhysical = true }: LayoutOptions = {}
+): TopologyModel {
   // Render cap: keep the local node + the first CH_RENDER_CAP nodes.
   let chNodes = data.chNodes
   let truncated = data.meta.truncated
@@ -827,6 +852,13 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   // Clone so layout mutation does not affect the source data.
   const keepers = data.keepers.map((k) => ({ ...k }))
   const renderCh = chNodes.map((n) => ({ ...n }))
+
+  // Visible cluster territories. Node LAYOUT always uses the full set (positions
+  // are logical-cluster-driven, so this is a no-op there), but hull building and
+  // the height reserve drop physical/outline clusters when they are toggled off.
+  const visibleClusters = showPhysical
+    ? data.clusters
+    : data.clusters.filter((c) => !c.outline)
 
   layoutKeepers(keepers)
   layoutChNodes(renderCh, data.clusters)
@@ -846,8 +878,8 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   // Cluster RECTS outset past the node envelopes (margin + concentric NEST_STEP
   // rings) and the name pills sit on the bottom edge, so reserve that room or a
   // densely-nested graph spills below the viewBox.
-  const { padTop, padBottom } = boundaryReserve(data.clusters, chNodes)
-  centerContent(keepers, renderCh, padTop, padBottom)
+  const { padTop, padBottom } = boundaryReserve(visibleClusters, chNodes)
+  const vbHeight = fitContent(keepers, renderCh, padTop, padBottom)
 
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
@@ -863,8 +895,22 @@ export function layoutTopology(data: TopologyData): TopologyModel {
 
   const renderedIds = new Set(renderCh.map((n) => n.id))
 
+  // Ceiling that keeps CH cluster boxes BELOW the keeper region: the lowest point
+  // any keeper glyph + its label reaches, plus a gap. Computed from the FINAL
+  // (post-centerContent) keeper positions so it matches the node coords the hulls
+  // are built from. Null when there are no keepers (nothing to clear).
+  const clusterTopCeiling = keepers.length
+    ? Math.max(...keepers.map((k) => k.y + keeperDownExtent(k))) +
+      KEEPER_CLUSTER_GAP
+    : null
+
   // Cluster overlays: offset convex hulls, z-ordered by area DESC, label-nudged.
-  const clusterHulls = buildClusterHulls(data.clusters, nodeById, renderedIds)
+  const clusterHulls = buildClusterHulls(
+    visibleClusters,
+    nodeById,
+    renderedIds,
+    clusterTopCeiling
+  )
 
   // Keeper quorum region over VOTING keepers (observers excluded): a rounded
   // rectangle whose envelope encloses every keeper glyph + its label. Absent → ''.
@@ -885,6 +931,7 @@ export function layoutTopology(data: TopologyData): TopologyModel {
     leaderId: data.keeper.leaderId,
     quorumHealthy: data.keeper.quorumHealthy,
     counts: data.meta.counts,
+    vbHeight,
     meta: { ...data.meta, truncated, hiddenChNodes },
   }
 }
@@ -898,7 +945,8 @@ export function buildTopologyModel(
   keeperRows: KeeperInfoRow[],
   presenceRows: KeeperPresenceRow[] = [],
   liveRows: ClusterLiveRow[] = [],
-  liveSource: TopologyMeta['liveSource'] = 'none'
+  liveSource: TopologyMeta['liveSource'] = 'none',
+  opts?: LayoutOptions
 ): TopologyModel {
   return layoutTopology(
     assembleTopology(
@@ -907,7 +955,8 @@ export function buildTopologyModel(
       presenceRows,
       liveRows,
       liveSource
-    )
+    ),
+    opts
   )
 }
 
@@ -950,8 +999,10 @@ function layoutKeepers(keepers: KeeperNode[]) {
 
 // CH region: a band below the keepers. Layout is deterministic + seeded only by
 // structure so positions are stable across live ticks. The band leaves headroom
-// below for each node's two label lines + LOCAL badge (≈ CH_R + 46).
-const CH_BAND_Y = 356
+// below for each node's two label lines + LOCAL badge (≈ CH_R + 46). Sits low
+// enough that keeper follower FQDN labels clear the CH cards + the topmost
+// (outermost concentric) cluster boundary — see `KEEPER_CLUSTER_GAP`.
+const CH_BAND_Y = 392
 const CH_BAND_H = 120
 const CH_MARGIN = 170
 
@@ -1124,17 +1175,20 @@ function boundaryReserve(
   chNodes: ChNode[]
 ): { padTop: number; padBottom: number } {
   const ids = new Set(chNodes.map((n) => n.id))
-  const logical = clusters.filter(
-    (c) => !c.outline && Object.keys(c.members).some((id) => ids.has(id))
+  // Count EVERY cluster that produces a hull (outline ones too — they are now
+  // labelled and nest as concentric rings exactly like logical ones), matching
+  // `buildClusterHulls`'s coincident grouping so the reserve never undercounts.
+  const drawn = clusters.filter((c) =>
+    Object.keys(c.members).some((id) => ids.has(id))
   )
-  if (logical.length === 0) return { padTop: 0, padBottom: 0 }
+  if (drawn.length === 0) return { padTop: 0, padBottom: 0 }
   const sig = (c: ClusterInfo) =>
     Object.keys(c.members)
       .filter((id) => ids.has(id))
       .sort()
       .join(',')
   const groupSize = new Map<string, number>()
-  for (const c of logical) {
+  for (const c of drawn) {
     const s = sig(c)
     groupSize.set(s, (groupSize.get(s) ?? 0) + 1)
   }
@@ -1150,13 +1204,24 @@ function boundaryReserve(
   return { padTop: pad, padBottom: pad + stackRows * PILL_ROW_H + 8 }
 }
 
-function centerContent(
+// Symmetric margin between the content bounding box and the viewBox edges when
+// the viewBox grows to fit. Keeps the territory rings off the very edge.
+const FIT_MARGIN = 20
+
+/**
+ * Center the composition horizontally in `VB_W` and compute a DATA-DRIVEN viewBox
+ * height that exactly fits the content (keeper region + CH band + the deepest
+ * cluster-ring outset and bottom pills, via `padTop`/`padBottom`), never below
+ * `VB_H`. Content is then centered vertically within that height. Returns the
+ * height for the canvas to use. Mutates node x/y in place. Deterministic.
+ */
+function fitContent(
   keepers: KeeperNode[],
   chNodes: ChNode[],
   padTop = 0,
   padBottom = 0
-) {
-  if (keepers.length === 0 && chNodes.length === 0) return
+): number {
+  if (keepers.length === 0 && chNodes.length === 0) return VB_H
   let minX = Infinity
   let maxX = -Infinity
   let minY = Infinity
@@ -1174,13 +1239,16 @@ function centerContent(
     maxY = Math.max(maxY, c.y + chDownExtent(c))
   }
   // Reserve room for the cluster boundary rects + their bottom pills, which sit
-  // outside the node envelopes, so the centered composition still fits.
+  // outside the node envelopes, so the fitted composition still encloses them.
   minY -= padTop
   maxY += padBottom
+
+  // Height grows to fit content (+ margins), floored at VB_H so a sparse graph
+  // stays compact and its glyphs render large.
+  const vbHeight = Math.max(VB_H, Math.round(maxY - minY + 2 * FIT_MARGIN))
+
   let dx = (VB_W - minX - maxX) / 2
-  let dy = (VB_H - minY - maxY) / 2
-  // When content fits, keep it fully inside; otherwise anchor the top edge.
-  if (minY + dy < 0 || maxY + dy > VB_H) dy = Math.max(-minY, dy)
+  const dy = (vbHeight - minY - maxY) / 2
   if (minX + dx < 0 || maxX + dx > VB_W) dx = Math.max(-minX, dx)
   for (const k of keepers) {
     k.x += dx
@@ -1190,6 +1258,7 @@ function centerContent(
     c.x += dx
     c.y += dy
   }
+  return vbHeight
 }
 
 /**
@@ -1276,13 +1345,24 @@ function buildKeeperRect(voters: KeeperNode[]): string {
  */
 // Each coincident cluster (same member SET) is grown by this much per nesting
 // rank so the rects sit as concentric rings instead of stacking invisibly — the
-// "multiple clusters, same nodes" overlap case from the screenshot.
-const NEST_STEP = 24
+// "multiple clusters, same nodes" overlap case from the screenshot. Wide enough
+// that each ring's stroke + its casing has clear air around it, so adjacent
+// borders never visually overlap even with several coincident clusters.
+const NEST_STEP = 30
+
+// Minimum vertical gap kept between the bottom of the keeper region and the TOP
+// of any CH cluster boundary. `buildClusterHulls` clamps each rect's top edge to
+// this ceiling so the outermost concentric ring can never climb into the keeper
+// region — a keeper (which is NOT a CH-cluster member) always stays OUTSIDE the
+// CH cluster boxes, no matter how deep the nesting. The clamp only trims the
+// decorative outset band above the nodes; node envelopes sit well below it.
+const KEEPER_CLUSTER_GAP = 16
 
 function buildClusterHulls(
   clusters: ClusterInfo[],
   nodeById: Record<string, KeeperNode | ChNode>,
-  renderedIds: Set<string>
+  renderedIds: Set<string>,
+  topCeiling: number | null = null
 ): ClusterHull[] {
   // Group clusters by their rendered-member SET. Coincident clusters (the
   // implicit all-*/default clusters that all cover the same hosts) are drawn as
@@ -1320,6 +1400,9 @@ function buildClusterHulls(
       minY = Math.min(minY, c.y - chUpExtent())
       maxY = Math.max(maxY, c.y + down)
     }
+    // The true top of member CONTENT (before the decorative outset). The top
+    // clamp must never rise above this, or it would clip a node's own box.
+    const contentMinY = minY
     const sig = memberSig(cl)
     const coincident = (sigCount.get(sig) ?? 0) > 1
     const rank = sigRank.get(sig) ?? 0
@@ -1339,6 +1422,13 @@ function buildClusterHulls(
       maxX += m + (hashStr(`${cl.id}~r`) % 4) * 7
       minY -= m + (hashStr(`${cl.id}~t`) % 4) * 7
       maxY += m + (hashStr(`${cl.id}~b`) % 4) * 7
+    }
+    // Keep the box BELOW the keeper region: clamp the top edge to the ceiling so
+    // the outermost concentric ring can't climb into the keeper region and engulf
+    // a keeper (a non-member). Only trims the decorative outset band above the
+    // members; guarded by `contentMinY` so it can never clip a node's own box.
+    if (topCeiling != null && topCeiling <= contentMinY) {
+      minY = Math.max(minY, topCeiling)
     }
     const w = maxX - minX
     const h = maxY - minY

@@ -37,6 +37,42 @@ const coincidentClusters = () =>
     )
   )
 
+/** The reported screenshot: physical clusters (all-replicated, all-sharded,
+ * default — dotted, now LABELLED) + logical clusters (all-clusters, cluster) all
+ * over the same 3 hosts, with 3 FQDN keepers. Exercises the outline-label render
+ * AND the keeper↔cluster gap with deep concentric nesting. Physical clusters omit
+ * the Replicated-DB markers so they classify as `outline`. */
+const screenshotClusters = () => {
+  const hosts = [0, 1, 2].map(
+    (i) => `chi-clickhouse-cluster-0-${i}.clickhouse.svc.cluster.local`
+  )
+  const physical = ['all-replicated', 'all-sharded', 'default'].flatMap(
+    (cluster) =>
+      hosts.map((host_name, i) =>
+        chRow({
+          cluster,
+          host_name,
+          host_address: `10.0.0.${10 + i}`,
+          shard_num: i + 1,
+          replica_num: 1,
+        })
+      )
+  )
+  const logical = ['all-clusters', 'cluster'].flatMap((cluster) =>
+    hosts.map((host_name, i) =>
+      chRow({
+        cluster,
+        host_name,
+        host_address: `10.0.0.${10 + i}`,
+        shard_num: i + 1,
+        replica_num: 1,
+        database_shard_name: 'sh', // Replicated-DB → logical (filled) territory
+      })
+    )
+  )
+  return [...physical, ...logical]
+}
+
 /** Keepers with real FQDN hosts (matches the reported screenshot). */
 const fqdnKeepers = (n: number): KeeperInfoRow[] =>
   Array.from({ length: n }, (_, i) => ({
@@ -74,6 +110,32 @@ const scenarios: {
     name: 'coincident: 3 logical clusters over the same 3 hosts (nested rings)',
     model: buildTopologyModel(coincidentClusters(), fqdnKeepers(3)),
   },
+  {
+    name: 'screenshot DEFAULT: physical clusters hidden (only logical shown)',
+    model: buildTopologyModel(
+      screenshotClusters(),
+      fqdnKeepers(3),
+      [],
+      [],
+      'none',
+      {
+        showPhysical: false,
+      }
+    ),
+  },
+  {
+    name: 'screenshot SHOWN: physical toggled on (solid slate, dashed pill)',
+    model: buildTopologyModel(
+      screenshotClusters(),
+      fqdnKeepers(3),
+      [],
+      [],
+      'none',
+      {
+        showPhysical: true,
+      }
+    ),
+  },
 ]
 
 const cards = scenarios
@@ -103,8 +165,10 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   body{margin:0;background:var(--background);font-family:ui-sans-serif,system-ui;color:var(--foreground)}
   section{padding:24px}
   h2{font-size:14px;font-weight:600;margin:0 0 8px;color:var(--muted-foreground)}
+  /* Mirror the production container: FIXED height, full width (h-[540px]).
+     A taller data-driven viewBox letterboxes via preserveAspectRatio="meet". */
   .frame{border:1px solid var(--border);border-radius:12px;background:var(--background);
-    aspect-ratio:2/1;width:100%;max-width:1280px;overflow:hidden}
+    height:540px;width:100%;max-width:1280px;overflow:hidden}
   .frame svg{width:100%;height:100%}
 </style></head><body>${cards}</body></html>`
 
