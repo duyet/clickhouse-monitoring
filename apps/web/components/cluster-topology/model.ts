@@ -25,7 +25,7 @@
 
 import type { ClusterTopologyRow } from '@/lib/query-config/system/clusters-topology'
 
-import { offsetHullArea, offsetHullPath } from './geometry'
+import { roundedRectPath } from './geometry'
 
 export interface NodeLiveMetrics {
   cpuPct: number | null
@@ -180,19 +180,49 @@ export function isKeeperNode(n: KeeperNode | ChNode): n is KeeperNode {
   return 'role' in n
 }
 
-// Canvas viewBox. Keep in sync with TopoCanvas VB_W/VB_H.
-export const VB_W = 770
-export const VB_H = 560
-const CH_R = 33
-const KP_R = 27
+// Canvas viewBox. WIDE aspect so it fills the xl two-column container instead of
+// letterboxing horizontally — the "relax the space" ask. The extra height leaves
+// room for each node's labels to sit INSIDE its cluster boundary.
+// Imported by the layout tests, so the in-viewBox bounds check moves with them.
+export const VB_W = 1280
+export const VB_H = 580
+// Node radii are exported so the canvas glyphs render at exactly the size the
+// layout reserves spacing/hull padding for — no drift between layout and paint.
+// Sized so a typical hostname fits INSIDE the glyph (square card / hexagon).
+export const CH_R = 42
+export const KP_R = 40
 
 // Cap CH nodes drawn on the canvas so large clusters stay readable. The full
 // structural truth is preserved in meta.counts / meta.hiddenChNodes.
 export const CH_RENDER_CAP = 24
 
-/** Hull padding: comfortably clears a node glyph ring + its label allowance. */
-const CH_HULL_PAD = CH_R + 18
-const KP_HULL_PAD = KP_R + 16
+// Per-node CONTENT envelope (relative to the node center). A cluster boundary is
+// the bounding box of its members' envelopes, so every node AND its labels sit
+// inside the boundary.
+//
+// CONTRACT: these extents MUST track the label positions painted in
+// topo-canvas.tsx (`NodeLabel`'s `r + 16` / `r + 31`, the LOCAL badge's
+// `r + 25` / `r + 40`). If you move/resize a label in the canvas, update the
+// matching extent here or the label spills outside its cluster rect. The numbers
+// below decompose as: glyph radius (CH_R/KP_R) + label offset + line/badge height
+// + a small descender allowance. See docs/knowledge/cluster-topology.md.
+const ENVELOPE_MARGIN = 9 // breathing room between content and the boundary
+
+/** How far a ClickHouse glyph + its labels extend below its center. */
+function chDownExtent(n: ChNode): number {
+  const showHost = n.host !== n.id || n.id.length > 12
+  // sub-line at r+(16|31); LOCAL badge (local node) adds another ~17 below that.
+  if (n.isLocal) return CH_R + (showHost ? 57 : 42)
+  return CH_R + (showHost ? 36 : 21)
+}
+const chUpExtent = () => CH_R + 8
+// Sub-line can be wider than the card (e.g. "cpu 99% · mem 99%"); clear it.
+const chHalfExtent = () => CH_R + 34
+
+/** Keeper hexagon + its labels. Leader has a star above; sub-line below. */
+const keeperUpExtent = (k: KeeperNode) => KP_R + (k.isLeader ? 22 : 8)
+const keeperDownExtent = () => KP_R + 22
+const keeperHalfExtent = () => KP_R + 16
 
 export const STATUS_COLOR: Record<string, string> = {
   healthy: '#10b981',
@@ -686,11 +716,18 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   layoutChNodes(renderCh, data.clusters)
 
   // Prevent overlap: push apart any nodes closer than the minimum spacing.
-  enforceMinDistance(keepers, KP_R * 2 + 20)
-  enforceMinDistance(renderCh, CH_R * 2 + 20)
+  // Wide gaps so a single-node cluster boundary can't reach a neighbor glyph
+  // and labels never collide.
+  enforceMinDistance(keepers, KP_R * 2 + 48)
+  enforceMinDistance(renderCh, CH_R * 2 + 92)
 
   // Re-clamp after collision avoidance (repulsion can push nodes outside bounds).
   clampToBand(renderCh)
+
+  // Auto-layout: translate the whole composition so its content (every node +
+  // its labels) is centered in the draw area. This handles the no-keeper case
+  // and any sparse layout — content sits in the middle instead of a fixed band.
+  centerContent(keepers, renderCh)
 
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
@@ -709,11 +746,10 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   // Cluster overlays: offset convex hulls, z-ordered by area DESC, label-nudged.
   const clusterHulls = buildClusterHulls(data.clusters, nodeById, renderedIds)
 
-  // Keeper quorum hull over VOTING keepers (observers excluded). Generalized to
-  // any N: N=1 ring, N=2 capsule, N≥3 rounded polygon. Absent keeper → ''.
+  // Keeper quorum region over VOTING keepers (observers excluded): a rounded
+  // rectangle whose envelope encloses every keeper glyph + its label. Absent → ''.
   const voters = keepers.filter((k) => k.role !== 'observer')
-  const keeperHull =
-    voters.length >= 1 ? offsetHullPath(voters, KP_HULL_PAD) : ''
+  const keeperHull = voters.length >= 1 ? buildKeeperRect(voters) : ''
 
   return {
     ...data,
@@ -762,7 +798,7 @@ function layoutKeepers(keepers: KeeperNode[]) {
   const cx = VB_W / 2
   if (n === 1) {
     keepers[0].x = cx
-    keepers[0].y = 110
+    keepers[0].y = 120
     return
   }
   // leader on top apex, followers spread on a lower row
@@ -772,20 +808,21 @@ function layoutKeepers(keepers: KeeperNode[]) {
   )
   const followers = keepers.filter((_, i) => i !== leaderIdx)
   keepers[leaderIdx].x = cx
-  keepers[leaderIdx].y = 92
-  const spread = Math.min(110, 70 + followers.length * 10)
+  keepers[leaderIdx].y = 100
+  const spread = Math.min(170, 110 + followers.length * 14)
   const total = (followers.length - 1) * spread
   followers.forEach((f, i) => {
     f.x = cx - total / 2 + i * spread
-    f.y = 176
+    f.y = 198
   })
 }
 
 // CH region: a band below the keepers. Layout is deterministic + seeded only by
-// structure so positions are stable across live ticks.
-const CH_BAND_Y = 280
-const CH_BAND_H = 240
-const CH_MARGIN = CH_R + 60
+// structure so positions are stable across live ticks. The band leaves headroom
+// below for each node's two label lines + LOCAL badge (≈ CH_R + 46).
+const CH_BAND_Y = 340
+const CH_BAND_H = 120
+const CH_MARGIN = 170
 
 /**
  * ClickHouse node layout that makes overlapping clusters legible:
@@ -873,17 +910,28 @@ function fanOut(members: ChNode[], gx: number, gy: number) {
     members[0].y = gy
     return
   }
-  const cols = Math.ceil(Math.sqrt(k))
+  // Prefer a WIDE grid (more columns, fewer rows) — the canvas has width to
+  // spare and tall stacks overlap. Small groups stay on a single row; even a
+  // capped 24-node cluster needs only ~3 rows.
+  const cols =
+    k <= 5
+      ? k
+      : Math.min(k, Math.max(Math.ceil(Math.sqrt(k)), Math.ceil(k / 3)))
   const rows = Math.ceil(k / cols)
-  const stepY = Math.min(110, rows > 1 ? CH_BAND_H / (rows - 1) : 110)
-  const stepX = Math.min(100, Math.max(70, stepY))
+  const stepY = Math.min(132, rows > 1 ? CH_BAND_H / (rows - 1) : 132)
+  const stepX = Math.min(160, Math.max(108, stepY))
+  // Zigzag: alternate columns sit half a stagger above/below the row line so
+  // adjacent nodes are never on the same horizontal line — their labels can't
+  // collide even when the group is squeezed near a margin.
+  const STAGGER = 46
   members.forEach((nd, i) => {
     const row = Math.floor(i / cols)
     const col = i % cols
     const rowCount = Math.min(cols, k - row * cols)
     const rowOffset = ((rowCount - 1) * stepX) / 2
+    const zig = cols > 1 ? (col % 2 === 0 ? -STAGGER / 2 : STAGGER / 2) : 0
     nd.x = gx - rowOffset + col * stepX
-    nd.y = gy + row * stepY - ((rows - 1) * stepY) / 2
+    nd.y = gy + row * stepY - ((rows - 1) * stepY) / 2 + zig
   })
 }
 
@@ -896,12 +944,12 @@ function layoutArc(nodes: ChNode[], cx: number) {
   const rows = Math.ceil(n / perRow)
   if (rows <= 1) {
     const baseY = CH_BAND_Y + CH_BAND_H / 2
-    const step = n > 1 ? Math.min(180, usable / (n - 1)) : 0
+    const step = n > 1 ? Math.min(220, usable / (n - 1)) : 0
     const total = (n - 1) * step
     nodes.forEach((node, i) => {
       node.x = cx - total / 2 + i * step
       const t = n > 1 ? (i / (n - 1)) * 2 - 1 : 0
-      node.y = baseY + Math.round((1 - t * t) * 28)
+      node.y = baseY + Math.round((1 - t * t) * 34)
     })
     return
   }
@@ -923,6 +971,46 @@ function clampToBand(nodes: ChNode[]) {
   for (const nd of nodes) {
     nd.x = Math.max(CH_MARGIN, Math.min(VB_W - CH_MARGIN, nd.x))
     nd.y = Math.max(CH_BAND_Y - 10, Math.min(CH_BAND_Y + CH_BAND_H, nd.y))
+  }
+}
+
+/**
+ * Translate the whole composition (keepers + CH nodes) so the bounding box of
+ * its CONTENT envelopes is centered in the draw area. Keeps relative positions
+ * intact; offset is clamped so content never leaves the viewBox when it fits.
+ * This is the "auto layout" — sparse graphs (no keeper, one node) sit centered
+ * instead of stuck in a fixed band.
+ */
+function centerContent(keepers: KeeperNode[], chNodes: ChNode[]) {
+  if (keepers.length === 0 && chNodes.length === 0) return
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+  for (const k of keepers) {
+    minX = Math.min(minX, k.x - keeperHalfExtent())
+    maxX = Math.max(maxX, k.x + keeperHalfExtent())
+    minY = Math.min(minY, k.y - keeperUpExtent(k))
+    maxY = Math.max(maxY, k.y + keeperDownExtent())
+  }
+  for (const c of chNodes) {
+    minX = Math.min(minX, c.x - chHalfExtent())
+    maxX = Math.max(maxX, c.x + chHalfExtent())
+    minY = Math.min(minY, c.y - chUpExtent())
+    maxY = Math.max(maxY, c.y + chDownExtent(c))
+  }
+  let dx = (VB_W - minX - maxX) / 2
+  let dy = (VB_H - minY - maxY) / 2
+  // When content fits, keep it fully inside; otherwise anchor the top edge.
+  if (minY + dy < 0 || maxY + dy > VB_H) dy = Math.max(-minY, dy)
+  if (minX + dx < 0 || maxX + dx > VB_W) dx = Math.max(-minX, dx)
+  for (const k of keepers) {
+    k.x += dx
+    k.y += dy
+  }
+  for (const c of chNodes) {
+    c.x += dx
+    c.y += dy
   }
 }
 
@@ -966,10 +1054,42 @@ function enforceMinDistance(
   }
 }
 
+// Corner radius for the cluster territory rectangles — round enough that a
+// single-node cluster reads as a soft squircle, capped so it never over-rounds.
+const CLUSTER_RECT_RADIUS = 54
+
+/** Stable string hash → non-negative int. Deterministic (layout is tested). */
+function hashStr(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++)
+    h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+/** Keeper quorum region: a rounded rect whose envelope encloses every voting
+ * keeper glyph + its star/label. Asymmetric (small top, room for the label). */
+function buildKeeperRect(voters: KeeperNode[]): string {
+  const minX = Math.min(...voters.map((k) => k.x - keeperHalfExtent()))
+  const maxX = Math.max(...voters.map((k) => k.x + keeperHalfExtent()))
+  const minY = Math.min(...voters.map((k) => k.y - keeperUpExtent(k)))
+  const maxY = Math.max(...voters.map((k) => k.y + keeperDownExtent()))
+  const m = ENVELOPE_MARGIN
+  return roundedRectPath(
+    minX - m,
+    minY - m,
+    maxX - minX + 2 * m,
+    maxY - minY + 2 * m,
+    CLUSTER_RECT_RADIUS
+  )
+}
+
 /**
  * Build the cluster overlay paths from rendered member positions. Pure: depends
- * only on structure + layout, not live metrics. Sorted by area DESCENDING so the
- * canvas draws the largest blob first (behind) and smaller ones on top.
+ * only on structure + layout, not live metrics. Each territory is a rounded
+ * bounding RECTANGLE around its members' CONTENT envelope (glyph + labels) so
+ * every node and its text sit INSIDE the boundary. A small expand-only jitter
+ * offsets overlapping rects so two clusters read as distinct territories (no
+ * collinear edges). Sorted by area DESC so the canvas draws the largest first.
  */
 function buildClusterHulls(
   clusters: ClusterInfo[],
@@ -983,20 +1103,40 @@ function buildClusterHulls(
       .map((id) => nodeById[id])
       .filter(Boolean)
     if (centers.length === 0) continue
-    const d = offsetHullPath(centers, CH_HULL_PAD)
+    // Content bounding box: each member's glyph + labels, so nothing spills out.
+    let minX = Infinity
+    let maxX = -Infinity
+    let minY = Infinity
+    let maxY = -Infinity
+    for (const c of centers) {
+      const down = isKeeperNode(c)
+        ? keeperDownExtent()
+        : chDownExtent(c as ChNode)
+      minX = Math.min(minX, c.x - chHalfExtent())
+      maxX = Math.max(maxX, c.x + chHalfExtent())
+      minY = Math.min(minY, c.y - chUpExtent())
+      maxY = Math.max(maxY, c.y + down)
+    }
+    // Expand-only jitter (content always stays inside): offsets the edges of
+    // overlapping rects so they don't fall on the same line.
+    const m = ENVELOPE_MARGIN
+    minX -= m + (hashStr(cl.id) % 4) * 7
+    maxX += m + (hashStr(`${cl.id}~r`) % 4) * 7
+    minY -= m + (hashStr(`${cl.id}~t`) % 4) * 7
+    maxY += m + (hashStr(`${cl.id}~b`) % 4) * 7
+    const w = maxX - minX
+    const h = maxY - minY
+    const d = roundedRectPath(minX, minY, w, h, CLUSTER_RECT_RADIUS)
     if (!d) continue
-    const area = offsetHullArea(centers, CH_HULL_PAD)
-    const minY = Math.min(...centers.map((c) => c.y))
-    const labelX = centers.reduce((s, c) => s + c.x, 0) / centers.length
     hulls.push({
       id: cl.id,
       name: cl.name,
       color: cl.color,
       outline: cl.outline,
       d,
-      area,
-      labelX,
-      labelY: minY - CH_HULL_PAD - 6,
+      area: w * h,
+      labelX: (minX + maxX) / 2,
+      labelY: minY,
     })
   }
   // Largest first (drawn behind). Tie-break by id for determinism.

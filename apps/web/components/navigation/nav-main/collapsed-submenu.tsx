@@ -4,9 +4,9 @@ import type { MenuItem as MenuItemType } from '@/components/menu/types'
 
 import { lazy, Suspense, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
+import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 import { useHostId } from '@/lib/swr'
-import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 
 const NewBadge = lazy(() =>
   import('@/components/menu/components/new-badge').then((mod) => ({
@@ -60,8 +60,8 @@ const CollapsedSubMenuItem = function CollapsedSubMenuItem({
   return (
     <HostPrefixedLink
       href={subItem.href}
-      className={available ? "" : "opacity-50"}
-      title={available ? undefined : "System table not found on this host"}
+      className={available ? '' : 'opacity-50'}
+      title={available ? undefined : 'System table not found on this host'}
       onClick={() => {
         setOpen(false)
         if (isMobile) {

@@ -7,9 +7,9 @@ import type { MenuItemActiveState, MenuItemProps } from './types'
 
 import { CollapsedSubmenu } from './collapsed-submenu'
 import { lazy, Suspense } from 'react'
+import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 import { useHostId } from '@/lib/swr'
-import { useIsTableAvailable } from '@/components/menu/hooks/use-table-availability'
 
 const NewBadge = lazy(() =>
   import('@/components/menu/components/new-badge').then((mod) => ({
@@ -88,8 +88,12 @@ const SingleMenuItem = function SingleMenuItem({
       <SidebarMenuButton
         asChild
         isActive={isActive}
-        tooltip={available ? item.title : `${item.title} (System table not found on this host)`}
-        className={available ? "" : "opacity-50 text-muted-foreground/50"}
+        tooltip={
+          available
+            ? item.title
+            : `${item.title} (System table not found on this host)`
+        }
+        className={available ? '' : 'opacity-50 text-muted-foreground/50'}
       >
         <HostPrefixedLink
           href={item.href}
@@ -145,7 +149,7 @@ const SubMenuItem = function SubMenuItem({
       <SidebarMenuSubButton
         asChild
         isActive={isMenuItemActive(subItem.href, pathname)}
-        className={available ? "" : "opacity-50 text-muted-foreground/50"}
+        className={available ? '' : 'opacity-50 text-muted-foreground/50'}
       >
         <HostPrefixedLink
           href={subItem.href}

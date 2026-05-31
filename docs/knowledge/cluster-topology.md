@@ -1,0 +1,170 @@
+---
+id: cluster-topology
+title: Cluster Topology Visualization
+type: spec
+status: active
+updated: 2026-05-31
+tags:
+  - cluster-topology
+  - svg
+  - layout
+  - geometry
+  - oklch
+  - shared-component
+related:
+  - conventions
+  - static-site-architecture
+  - query-config-format
+---
+
+# Cluster Topology Visualization
+
+The SVG graph on `/clusters` (and the **Cluster Topology** tab on `/overview`) that
+draws ClickHouse nodes, the Keeper quorum, cluster territories, and the edges
+between them from **real** `system.clusters` + Keeper data.
+
+> **Why this doc exists:** the layout is a chain of pure functions tuned with many
+> interdependent numbers. The numbers are not arbitrary — each encodes a geometric
+> relationship, and several form **cross-file contracts** (change one side, you must
+> change the other). This note is the single place those contracts are written down.
+> Read it before touching `model.ts` / `topo-canvas.tsx`.
+
+## File map
+
+| File | Responsibility |
+|------|----------------|
+| `components/cluster-topology/model.ts` | Data model + **pure layout** (assemble → layout → center → build hulls). No React. |
+| `components/cluster-topology/geometry.ts` | Pure path math: `roundedRectPath`, `offsetHullPath` (legacy), `convexHull`. |
+| `components/cluster-topology/topo-canvas.tsx` | The SVG render: node glyphs, hull paths, curved edges, label pills. |
+| `components/cluster-topology/topology-view.tsx` | Wrapper: status strip, pills, legend, **canvas container**, inspector. Accepts `detailHref`. |
+| `components/cluster-topology/inspector.tsx` | Right-hand detail panel (per-node / cluster overview). |
+| `components/cluster-topology/use-topology.ts` | SWR hook → `/api/v1/cluster-topology`. |
+| `components/cluster-topology/__tests__/{model,geometry}.test.ts` | Lock the pure-logic **invariants** (see below). |
+| `app/api/v1/cluster-topology/route.ts` | Server route: assembles the layout-free `TopologyData`. |
+
+## Layout pipeline (pure, deterministic)
+
+`assembleTopology(rows…)` → `TopologyData` (no x/y; the server wire shape)
+→ `layoutTopology(data)` adds x/y + hulls → `TopologyModel` (what the canvas renders).
+
+Inside `layoutTopology`, in order:
+
+1. `layoutKeepers` — keeper quorum near the top (single centered; multi = leader apex + follower row).
+2. `layoutChNodes` — group CH nodes by **logical**-cluster membership signature; place each
+   group at the average of its clusters' centroids (a node shared by 2 clusters lands in the
+   lens between them). `fanOut` spreads a group on a wide, zigzag-staggered grid.
+3. `enforceMinDistance` — iterative repulsion so glyphs + labels never collide.
+4. `clampToBand` — keep CH nodes inside the readable band.
+5. **`centerContent`** — translate the WHOLE composition so its content bounding box is centered
+   in the viewBox. This is the "auto layout": no-keeper / sparse / dense graphs all self-center,
+   so absolute band coordinates don't have to fit `VB_H` precisely.
+6. `buildClusterHulls` + `buildKeeperRect` — territory rectangles from member positions.
+
+**Determinism is mandatory.** No `Math.random` / `Date.now` (would break SWR-stable layout and
+the determinism test). Per-cluster size jitter uses a stable string hash (`hashStr`).
+
+## The constants — and the contracts between them
+
+All in `model.ts` unless noted. **Do not change a number in isolation; check the contract.**
+
+| Constant | Meaning | Contract / why |
+|----------|---------|----------------|
+| `VB_W` `VB_H` | viewBox (1280×580) | Wide aspect fills the 2-col container (≈2.2). **Imported by the layout tests** so the in-bounds check moves with them. |
+| `CH_R` `KP_R` | node radii (42 / 40) | **Exported & imported by `topo-canvas.tsx`** so the drawn glyph == the size layout reserves. Single source of truth — never redeclare in the canvas. |
+| `chHalfExtent / chUpExtent / chDownExtent` | CH node CONTENT envelope (glyph + labels) | **CONTRACT with `topo-canvas.tsx` label positions.** `chDownExtent` must cover the sub-line / host line / LOCAL badge the canvas paints (see `NodeLabel` + the LOCAL badge `r + …`). If you move a label in the canvas, update the matching extent here or it spills outside its cluster boundary. |
+| `keeperHalf/Up/DownExtent` | Keeper envelope | Same contract with the keeper glyph (`star` above → bigger up-extent for leaders). |
+| `ENVELOPE_MARGIN` | breathing room between content and a boundary | Applied in `buildClusterHulls` + `buildKeeperRect`. |
+| `CLUSTER_RECT_RADIUS` | corner radius of territory rects | Capped to half the shorter side in `roundedRectPath`. |
+| `enforceMinDistance(... CH_R*2 + 92)` | min node gap | Sized so a **single-node** cluster boundary (≈ `CH_R + chHalfExtent + margin`) cannot reach a neighbor glyph. If you shrink this, boundaries start cutting neighbors. |
+| `CH_BAND_Y/H`, `CH_MARGIN` | the CH region rectangle | Relative placement only — `centerContent` re-centers afterward, so exact values matter less than the keeper↔CH gap. |
+| keeper pill `y` (canvas) | `max(13, min(keeperY) − KP_R − 32)` | Tracks the region top and clears the leader ★. Recomputed from live keeper positions — not a fixed y. |
+
+### The #1 maintenance hazard: envelope ↔ label positions
+
+`buildClusterHulls` draws each territory as the bounding box of its members' **content
+envelopes**, so nodes *and their labels* sit inside the boundary. The envelope numbers in
+`model.ts` (`chDownExtent` etc.) are derived from where `topo-canvas.tsx` actually paints the
+labels (`NodeLabel`'s `r + 16` / `r + 31`, the LOCAL badge's `r + 25`/`r + 40`). These are two
+files that **must agree**. When editing either:
+
+- Changed a label offset/size in the canvas? → update the matching `*Extent` in `model.ts`.
+- Verify with the harness (below) that no label pokes outside its cluster rect.
+
+## OKLCH gotcha (critical, repo-wide)
+
+The theme tokens are **OKLCH** (`--card: oklch(1 0 0)`), so the old shadcn-era SVG idiom
+`hsl(var(--card))` evaluates to `hsl(oklch(…))` — **invalid CSS → black fill**. This is what
+made the original nodes render black. **In SVG, reference tokens bare: `fill="var(--card)"`** and
+express alpha via `fill-opacity` / `stroke-opacity` (or `oklch(from var(--x) l c h / a)`).
+Tailwind utilities (`bg-card`) are fine because they emit `var(--card)` directly.
+
+> Same latent bug still exists in `explorer/sql-editor.tsx`, `explorer/dependency-graph`, and
+> `peerdb/mirror-phase-timeline.tsx` — a worthwhile follow-up, out of scope for the topology PR.
+
+## Visual elements
+
+- **ClickHouse node** = rounded-square server card carrying the **official ClickHouse logo**
+  (4 yellow bars + a red foot, native 9×8 grid, `ChLogo`), node id inside, a live CPU meter on
+  the lower edge, status dot at the corner. Unreachable → dashed slate border + grayed logo + dimmed.
+- **Keeper node** = hexagon (`hexPath`). Leader = gold border + ★. Distinct silhouette from CH on purpose.
+- **Cluster territory** = rounded **rectangle** (not a blob): simple, predictable, and two
+  overlapping rects read as a clean lens. Physical/`default` = dotted outline; logical = soft
+  fill + thin border + a centered label pill (`HullLabel`). A small expand-only `hashStr` jitter
+  offsets overlapping rects so their edges aren't collinear.
+- **Keeper region** = its own rounded rect (`buildKeeperRect`), dashed green, with the
+  "Keeper quorum · Raft" pill. (Earlier it was an offset hull; switched to a rect for label
+  enclosure + consistency — the geometry test was updated to match.)
+- **Edges** = gentle quadratic-bezier curves (`curvePath`), never straight lines: blue =
+  replication, dashed muted = coordination (CH↔leader), green = raft (keeper mesh).
+
+## Shared component
+
+`TopologyView` is mounted in **two** places, both via `dynamic(..., { ssr: false })`:
+- `app/(dashboard)/clusters/page.tsx` — full page (topology + the raw `system.clusters` table).
+- `app/(dashboard)/overview/page.tsx` — the **Cluster Topology** tab (`OverviewTabConfig.customContent === 'topology'`),
+  passing `detailHref="/clusters?host=N"` to show a "Cluster details" link through to the full page.
+
+Keep it one component. The overview tab is config-driven; the `customContent` discriminator is the
+only branch in `page.tsx`.
+
+## Test invariants (do not break)
+
+`bun test apps/web/components/cluster-topology/__tests__/` — 33 pure tests, runnable without
+`node_modules`. They lock:
+- hull path shape per node count; **area-DESC z-order**; replication-edge rules.
+- **shared-node-between-centroids** (overlap lens) — relative x order; `centerContent` translates
+  all nodes equally so it's preserved.
+- `CH_RENDER_CAP` (24) with every rendered node inside `[0,VB_W]×[0,VB_H]`.
+- **determinism**: identical input → identical paths + x/y.
+- `roundedRectPath` = closed, 4 corner arcs, clamped radius; keeper region = rounded rect for any N.
+
+`app/(dashboard)/overview/__tests__/overview.test.tsx` asserts the exact `OVERVIEW_TABS` value
+list — **update it when adding/removing a tab** (it imports `next/dynamic` transitively, so it
+only runs where `node_modules` is present, i.e. CI — not in a bare worktree).
+
+## Verification harness (how to eyeball changes safely)
+
+The canvas uses theme CSS vars, so you can't judge it from path strings. The reliable check:
+render the **real laid-out model** into a standalone HTML page with the app's true OKLCH vars
+(light + dark) and screenshot it. Pattern used during development:
+
+1. A bun script imports `buildTopologyModel` from `model.ts` (works without `node_modules` —
+   the model's only real import is `./geometry`; everything else is `import type`).
+2. Build fixtures (rich multi-cluster, single-node-no-keeper, dense) → models.
+3. Emit an SVG that **mirrors `topo-canvas.tsx`** glyphs, with `--card/--foreground/--muted/…`
+   set to the real oklch values for each theme.
+4. Open via the chrome-devtools MCP and screenshot.
+
+This catches the OKLCH black-fill regression, label-outside-boundary, collisions, and clipping
+that pure tests can't. Mirror any canvas glyph change into the harness so the preview stays faithful.
+
+## Safe-change recipes
+
+- **Resize nodes**: change `CH_R`/`KP_R` in `model.ts` only (canvas imports them). Re-tune id
+  `fontSize` + `fit()` limits so hostnames fit; bump envelopes/`enforceMinDistance` accordingly.
+- **Move/restyle a label**: edit `NodeLabel` (or the LOCAL badge) in the canvas, THEN update the
+  matching `*Extent` in `model.ts` so the boundary still encloses it. Verify with the harness.
+- **Change overlap look**: it's normal alpha blending (no `mix-blend-mode`) + the `hashStr`
+  jitter. Keep jitter **expand-only** so content never leaves the rect.
+- **Add an overview sub-view**: extend `OverviewTabConfig.customContent` + branch in `page.tsx`;
+  update `overview.test.tsx`.

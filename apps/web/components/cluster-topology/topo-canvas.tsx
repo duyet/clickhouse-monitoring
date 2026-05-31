@@ -2,10 +2,7 @@
 
 import type { ChNode, KeeperNode, TopologyModel } from './model'
 
-import { STATUS_COLOR, VB_H, VB_W } from './model'
-
-const CH_R = 33
-const KP_R = 27
+import { CH_R, KP_R, STATUS_COLOR, VB_H, VB_W } from './model'
 
 interface LiveMetrics {
   cpuPct: number | null
@@ -22,34 +19,126 @@ interface TopoCanvasProps {
   onClearSelect: () => void
 }
 
+// ── ClickHouse brand colors (theme-independent — the logo is self-colored) ──
+const CH_YELLOW = '#FAFF00'
+const CH_RED = '#FF1F00'
+
 function clampPct(v: number): number {
-  return Math.max(0.02, Math.min(1, v || 0))
+  return Math.max(0, Math.min(1, v || 0))
 }
 
-const DbMark = ({ r }: { r: number }) => (
-  <g
-    transform={`translate(0 ${-r * 0.42})`}
-    stroke="hsl(var(--muted-foreground))"
-    strokeWidth="1.4"
+/** Truncate an id so it fits inside the glyph; the full host shows below it. */
+function fit(s: string, max: number): string {
+  return s.length > max ? `${s.slice(0, max - 1)}…` : s
+}
+
+/**
+ * The official ClickHouse logo mark, drawn in its native 9×8 unit grid then
+ * scaled + centered at (0,0): four full-height yellow bars (x = 0,2,4,6), a red
+ * square at the foot of the first bar, and a short bar at x = 8. Width `w`.
+ */
+function ChLogo({ w, muted }: { w: number; muted?: boolean }) {
+  const s = w / 9 // unit size
+  const h = 8 * s
+  return (
+    <g
+      transform={`translate(${(-w / 2).toFixed(2)} ${(-h / 2).toFixed(2)}) scale(${s.toFixed(3)})`}
+      opacity={muted ? 0.32 : 1}
+      style={{ filter: muted ? 'grayscale(1)' : undefined }}
+    >
+      <rect x="0" y="7" width="1" height="1" fill={CH_RED} />
+      <rect x="0" y="0" width="1" height="7" fill={CH_YELLOW} />
+      <rect x="2" y="0" width="1" height="8" fill={CH_YELLOW} />
+      <rect x="4" y="0" width="1" height="8" fill={CH_YELLOW} />
+      <rect x="6" y="0" width="1" height="8" fill={CH_YELLOW} />
+      <rect x="8" y="3.25" width="1" height="1.5" fill={CH_YELLOW} />
+    </g>
+  )
+}
+
+/** Pointy-top regular hexagon path of "radius" r centered at the origin. */
+function hexPath(r: number): string {
+  const pts: string[] = []
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 180) * (60 * i - 90)
+    pts.push(`${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`)
+  }
+  return `M ${pts.join(' L ')} Z`
+}
+
+/** A gently curved connector between two points — softer than a straight line.
+ * The control point is offset perpendicular to the chord by a capped fraction
+ * of its length, so every edge bows consistently. */
+function curvePath(x1: number, y1: number, x2: number, y2: number): string {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.hypot(dx, dy) || 1
+  const bend = Math.min(46, len * 0.16)
+  const cx = (x1 + x2) / 2 - (dy / len) * bend
+  const cy = (y1 + y2) / 2 + (dx / len) * bend
+  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`
+}
+
+/** A small keeper/coordination shield mark. */
+const ShieldMark = ({ color }: { color: string }) => (
+  <path
+    transform="translate(0 -1)"
+    d="M 0 -7 L 6.5 -3.6 v 5 c 0 4.4 -3.3 7.1 -6.5 8.2 c -3.2 -1.1 -6.5 -3.8 -6.5 -8.2 v -5 Z"
     fill="none"
-    opacity="0.55"
-  >
-    <ellipse cx="0" cy="0" rx="7" ry="2.6" />
-    <path d="M -7 0 v 5 c 0 1.4 3.1 2.6 7 2.6 s 7 -1.2 7 -2.6 v -5" />
-  </g>
+    stroke={color}
+    strokeWidth="1.5"
+    opacity="0.8"
+  />
 )
 
-const KeeperMark = ({ r, isLeader }: { r: number; isLeader: boolean }) => (
-  <g
-    transform={`translate(0 ${-r * 0.42})`}
-    stroke={isLeader ? '#f59e0b' : 'hsl(var(--muted-foreground))'}
-    strokeWidth="1.5"
-    fill="none"
-    opacity="0.7"
-  >
-    <path d="M 0 -6 L 6 -3 v 4.5 c 0 4 -3 6.5 -6 7.5 c -3 -1 -6 -3.5 -6 -7.5 V -3 Z" />
-  </g>
-)
+// Shared label sub-line below a node glyph.
+function NodeLabel({
+  r,
+  host,
+  id,
+  sub,
+}: {
+  r: number
+  host: string
+  id: string
+  sub: string
+}) {
+  // Dedupe: the id is already shown inside the glyph; only repeat the full host
+  // below when it carries more than the short id (e.g. an FQDN).
+  const showHost = host !== id
+  const subY = showHost ? r + 31 : r + 16
+  return (
+    <>
+      {showHost && (
+        <text
+          textAnchor="middle"
+          y={r + 16}
+          fontSize="11.5"
+          fontWeight="600"
+          fill="var(--foreground)"
+          stroke="var(--card)"
+          strokeWidth="3"
+          paintOrder="stroke"
+          className="font-mono"
+        >
+          {host}
+        </text>
+      )}
+      <text
+        textAnchor="middle"
+        y={subY}
+        fontSize="10.5"
+        fill="var(--muted-foreground)"
+        stroke="var(--card)"
+        strokeWidth="2.5"
+        paintOrder="stroke"
+        className="font-mono"
+      >
+        {sub}
+      </text>
+    </>
+  )
+}
 
 function ChGlyph({
   node,
@@ -65,136 +154,159 @@ function ChGlyph({
   onSelect: (id: string) => void
 }) {
   const r = CH_R
+  const side = r * 2
   const statusCol = STATUS_COLOR[node.status]
+  const unreachable = node.status === 'unreachable'
   const cpu = live?.cpuPct ?? null
-  // Ring: live CPU when available (local node), else a thin structural arc.
-  const ringPct = cpu !== null ? clampPct(cpu / 100) : 0.04
-  const ringCol =
+  const meterCol =
     cpu !== null
-      ? ringPct > 0.85
-        ? '#f43f5e'
-        : ringPct > 0.6
-          ? '#f59e0b'
-          : '#3b82f6'
-      : 'hsl(var(--muted-foreground))'
-  const circ = 2 * Math.PI * r
-  const sub1 =
-    cpu !== null
-      ? `cpu ${Math.round(cpu)}%${live?.memPct !== null && live?.memPct !== undefined ? ` · mem ${Math.round(live.memPct)}%` : ''}`
+      ? cpu > 85
+        ? STATUS_COLOR.down
+        : cpu > 60
+          ? STATUS_COLOR.warn
+          : 'hsl(217 91% 60%)'
+      : statusCol
+  const sub = unreachable
+    ? 'unreachable'
+    : cpu !== null
+      ? `cpu ${Math.round(cpu)}%${
+          live?.memPct !== null && live?.memPct !== undefined
+            ? ` · mem ${Math.round(live.memPct)}%`
+            : ''
+        }`
       : node.errors > 0
-        ? `${node.errors} errors`
+        ? `${node.errors} error${node.errors === 1 ? '' : 's'}`
         : node.isLocal
           ? 'local node'
           : 'remote node'
 
+  // CPU meter geometry (a thin bar inside the card's lower edge).
+  const meterW = side - 24
+  const meterPct = cpu !== null ? clampPct(cpu / 100) : 0
+  const idText = fit(node.id, 13)
+
   return (
     <g
       transform={`translate(${node.x} ${node.y})`}
+      tabIndex={0}
+      role="button"
+      aria-label={`ClickHouse node ${idText}`}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(node.id)
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onSelect(node.id)
+        }
+      }}
       style={{
         cursor: 'pointer',
-        opacity: dimmed ? 0.28 : 1,
+        opacity: dimmed ? 0.25 : unreachable ? 0.72 : 1,
         transition: 'opacity .25s',
-        filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.25))',
+        outline: 'none',
       }}
     >
       {selected && (
-        <circle
-          r={r + 9}
+        <rect
+          x={-r - 7}
+          y={-r - 7}
+          width={side + 14}
+          height={side + 14}
+          rx="18"
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="var(--primary)"
           strokeWidth="2.5"
           opacity="0.9"
-          style={{ filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.5))' }}
         />
       )}
-      {/* status-tinted glow so nodes are visible in dark mode */}
-      <circle r={r} fill={statusCol} fillOpacity="0.12" />
-      <circle
-        r={r}
-        fill="hsl(var(--card))"
-        fillOpacity="0.55"
+      {/* status glow keeps the card visible over the dotted grid in dark mode */}
+      <rect
+        x={-r}
+        y={-r}
+        width={side}
+        height={side}
+        rx="13"
+        fill={statusCol}
+        fillOpacity="0.1"
+      />
+      {/* the server card */}
+      <rect
+        x={-r}
+        y={-r}
+        width={side}
+        height={side}
+        rx="13"
+        fill="var(--card)"
+        fillOpacity="0.97"
         stroke={statusCol}
-        strokeOpacity="0.35"
-        strokeWidth="1.5"
+        strokeOpacity={unreachable ? 0.9 : 0.85}
+        strokeWidth="2"
+        strokeDasharray={unreachable ? '4 4' : undefined}
+        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.18))' }}
       />
-      <circle
-        r={r}
-        fill="none"
-        stroke="hsl(var(--muted-foreground))"
-        strokeOpacity="0.2"
-        strokeWidth="4"
-      />
-      <circle
-        r={r}
-        fill="none"
-        stroke={ringCol}
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeDasharray={`${(circ * ringPct).toFixed(1)} ${circ.toFixed(1)}`}
-        transform="rotate(-90)"
-        style={{ transition: 'stroke-dasharray .6s ease' }}
-      />
-      <DbMark r={r} />
+      {/* ClickHouse brand mark — instantly identifies a ClickHouse server */}
+      <g transform={`translate(0 ${-r * 0.36})`}>
+        <ChLogo w={r * 0.7} muted={unreachable} />
+      </g>
+      {/* short node id, inside the card */}
       <text
         textAnchor="middle"
-        y={7}
-        fontSize="12.5"
+        y={r * 0.42}
+        fontSize="12"
         fontWeight="700"
-        fill="hsl(var(--foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="3"
-        paintOrder="stroke"
+        fill="var(--foreground)"
         className="font-mono"
       >
-        {node.id}
+        {idText}
       </text>
+      {/* live CPU meter along the card's lower edge */}
+      <g transform={`translate(0 ${r - 11})`}>
+        <rect
+          x={-meterW / 2}
+          y="0"
+          width={meterW}
+          height="3.5"
+          rx="1.75"
+          fill="var(--muted-foreground)"
+          fillOpacity="0.18"
+        />
+        {cpu !== null && (
+          <rect
+            x={-meterW / 2}
+            y="0"
+            width={Math.max(2, meterW * meterPct)}
+            height="3.5"
+            rx="1.75"
+            fill={meterCol}
+            style={{ transition: 'width .6s ease' }}
+          />
+        )}
+      </g>
+      {/* status dot at the top-right corner */}
       <circle
-        cx={r * 0.72}
-        cy={-r * 0.72}
+        cx={r - 4}
+        cy={-r + 4}
         r="5.5"
         fill={statusCol}
-        stroke="hsl(var(--card))"
+        stroke="var(--card)"
         strokeWidth="2"
       />
-      <text
-        textAnchor="middle"
-        y={r + 16}
-        fontSize="11.5"
-        fontWeight="600"
-        fill="hsl(var(--foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="3"
-        paintOrder="stroke"
-        className="font-mono"
-      >
-        {node.host}
-      </text>
-      <text
-        textAnchor="middle"
-        y={r + 31}
-        fontSize="10.5"
-        fill="hsl(var(--muted-foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="2.5"
-        paintOrder="stroke"
-        className="font-mono"
-      >
-        {sub1}
-      </text>
+      <NodeLabel r={r} host={node.host} id={idText} sub={sub} />
       {node.isLocal && (
-        <g transform={`translate(0 ${r + 40})`}>
+        <g transform={`translate(0 ${r + (node.host !== idText ? 40 : 25)})`}>
           <rect
             x="-22"
             y="0"
             width="44"
             height="15"
             rx="7.5"
-            fill="hsl(var(--primary)/0.12)"
-            stroke="hsl(var(--primary)/0.4)"
+            fill="var(--primary)"
+            fillOpacity="0.12"
+            stroke="var(--primary)"
+            strokeOpacity="0.4"
             strokeWidth="1"
           />
           <text
@@ -202,7 +314,7 @@ function ChGlyph({
             y="10.5"
             fontSize="8.5"
             fontWeight="700"
-            fill="hsl(var(--primary))"
+            fill="var(--primary)"
             style={{ letterSpacing: '0.06em' }}
           >
             LOCAL
@@ -227,113 +339,137 @@ function KeeperGlyph({
   const r = KP_R
   const isLeader = node.isLeader
   const statusCol = node.isConnected ? STATUS_COLOR.healthy : STATUS_COLOR.down
-  // Ring reflects connection + latency lightly; full arc when connected.
-  const ringPct = node.isConnected ? 1 : 0.04
-  const ringCol = isLeader ? '#f59e0b' : '#10b981'
-  const circ = 2 * Math.PI * r
-  const sub1 = `${node.role} · ${node.avgLatency ? `${node.avgLatency.toFixed(1)}ms` : '—'}`
+  const accent = isLeader ? STATUS_COLOR.warn : statusCol
+  const sub = `${node.role} · ${node.avgLatency != null ? `${node.avgLatency.toFixed(1)}ms` : '—'}`
+  const d = hexPath(r)
+  const idText = fit(node.id, 11)
 
   return (
     <g
       transform={`translate(${node.x} ${node.y})`}
+      tabIndex={0}
+      role="button"
+      aria-label={`Keeper node ${idText}`}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(node.id)
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onSelect(node.id)
+        }
+      }}
       style={{
         cursor: 'pointer',
-        opacity: dimmed ? 0.28 : 1,
+        opacity: dimmed ? 0.25 : 1,
         transition: 'opacity .25s',
-        filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.25))',
+        outline: 'none',
       }}
     >
       {selected && (
-        <circle
-          r={r + 9}
+        <path
+          d={hexPath(r + 8)}
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="var(--primary)"
           strokeWidth="2.5"
           opacity="0.9"
-          style={{ filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.5))' }}
         />
       )}
-      <circle r={r} fill={statusCol} fillOpacity="0.12" />
-      <circle
-        r={r}
-        fill="hsl(var(--card))"
-        fillOpacity="0.55"
-        stroke={statusCol}
-        strokeOpacity="0.35"
-        strokeWidth="1.5"
+      {/* status glow */}
+      <path d={d} fill={accent} fillOpacity="0.12" />
+      {/* the hexagon body */}
+      <path
+        d={d}
+        fill="var(--card)"
+        fillOpacity="0.97"
+        stroke={accent}
+        strokeWidth={isLeader ? 2.5 : 2}
+        strokeOpacity="0.9"
+        strokeLinejoin="round"
+        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.18))' }}
       />
-      <circle
-        r={r}
-        fill="none"
-        stroke="hsl(var(--muted-foreground))"
-        strokeOpacity="0.2"
-        strokeWidth="4"
-      />
-      <circle
-        r={r}
-        fill="none"
-        stroke={ringCol}
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeDasharray={`${(circ * ringPct).toFixed(1)} ${circ.toFixed(1)}`}
-        transform="rotate(-90)"
-        style={{ transition: 'stroke-dasharray .6s ease' }}
-      />
-      <KeeperMark r={r} isLeader={isLeader} />
+      {/* coordination shield in the upper band */}
+      <g transform={`translate(0 ${-r * 0.44})`}>
+        <ShieldMark color={accent} />
+      </g>
+      {/* node id, inside the wide middle band of the hexagon */}
       <text
         textAnchor="middle"
-        y={5}
-        fontSize="12.5"
+        y={r * 0.24}
+        fontSize="11.5"
         fontWeight="700"
-        fill="hsl(var(--foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="3"
-        paintOrder="stroke"
+        fill="var(--foreground)"
         className="font-mono"
       >
-        {node.id}
+        {idText}
       </text>
+      {/* connection status dot at the upper-right vertex */}
       <circle
         cx={r * 0.72}
-        cy={-r * 0.72}
-        r="5.5"
+        cy={-r * 0.5}
+        r="5"
         fill={statusCol}
-        stroke="hsl(var(--card))"
+        stroke="var(--card)"
         strokeWidth="2"
       />
       {isLeader && (
-        <text textAnchor="middle" y={-r - 6} fontSize="15" fill="#f59e0b">
+        <text
+          textAnchor="middle"
+          y={-r - 7}
+          fontSize="15"
+          fill={STATUS_COLOR.warn}
+        >
           ★
         </text>
       )}
+      <NodeLabel r={r} host={node.host} id={idText} sub={sub} />
+    </g>
+  )
+}
+
+/** A rounded label chip rendered over a hull so the name stays readable. */
+function HullLabel({
+  x,
+  y,
+  text,
+  color,
+}: {
+  x: number
+  y: number
+  text: string
+  color: string
+}) {
+  const h = 19
+  const w = text.length * 7 + 20
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {/* rect + text both centered on (x, y) so the label sits dead-center */}
+      <rect
+        x={x - w / 2}
+        y={y - h / 2}
+        width={w}
+        height={h}
+        rx={h / 2}
+        fill="var(--card)"
+        fillOpacity="0.95"
+        stroke={color}
+        strokeOpacity="0.5"
+        strokeWidth="1.2"
+      />
       <text
+        x={x}
+        y={y}
         textAnchor="middle"
-        y={r + 16}
+        dominantBaseline="central"
         fontSize="11.5"
-        fontWeight="600"
-        fill="hsl(var(--foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="3"
-        paintOrder="stroke"
+        fontWeight="700"
+        fill={color}
         className="font-mono"
+        style={{ letterSpacing: '0.01em' }}
       >
-        {node.host}
-      </text>
-      <text
-        textAnchor="middle"
-        y={r + 31}
-        fontSize="10.5"
-        fill="hsl(var(--muted-foreground))"
-        stroke="hsl(var(--card))"
-        strokeWidth="2.5"
-        paintOrder="stroke"
-        className="font-mono"
-      >
-        {sub1}
+        {text}
       </text>
     </g>
   )
@@ -380,22 +516,22 @@ export function TopoCanvas({
       <defs>
         <pattern
           id="topo-dots"
-          width="22"
-          height="22"
+          width="24"
+          height="24"
           patternUnits="userSpaceOnUse"
         >
           <circle
             cx="1.2"
             cy="1.2"
             r="1.2"
-            fill="hsl(var(--muted-foreground))"
-            opacity="0.1"
+            fill="var(--muted-foreground)"
+            opacity="0.09"
           />
         </pattern>
       </defs>
       <rect x="0" y="0" width={VB_W} height={VB_H} fill="url(#topo-dots)" />
 
-      {/* keeper quorum hull */}
+      {/* keeper quorum region — soft container + a clear label chip */}
       {keeperHull && (
         <g
           opacity={activeCluster ? 0.4 : 1}
@@ -403,25 +539,20 @@ export function TopoCanvas({
         >
           <path
             d={keeperHull}
-            fill="#10b981"
-            fillOpacity="0.06"
-            stroke="#10b981"
-            strokeOpacity="0.45"
-            strokeWidth="1.5"
-            strokeDasharray="5 4"
+            fill={STATUS_COLOR.healthy}
+            fillOpacity="0.05"
+            stroke={STATUS_COLOR.healthy}
+            strokeOpacity="0.4"
+            strokeWidth="1.4"
+            strokeDasharray="6 5"
           />
           {keepers[0] && (
-            <text
+            <HullLabel
               x={VB_W / 2}
-              y={42}
-              textAnchor="middle"
-              fontSize="11"
-              fontWeight="700"
-              fill="#10b981"
-              style={{ letterSpacing: '0.04em' }}
-            >
-              Keeper quorum · Raft
-            </text>
+              y={Math.max(13, Math.min(...keepers.map((k) => k.y)) - KP_R - 32)}
+              text="Keeper quorum · Raft"
+              color={STATUS_COLOR.healthy}
+            />
           )}
         </g>
       )}
@@ -429,12 +560,12 @@ export function TopoCanvas({
       {/* cluster overlays — offset convex hulls, z-ordered area DESC (largest
           behind). Translucent fills blend via mix-blend-mode so a host shared by
           two clusters shows a distinct lens, not last-one-wins opaque. Dotted
-          outline = physical/default cluster; dashed border = logical/virtual. */}
+          outline = physical/default cluster; soft fill + thin border = logical. */}
       {clusterHulls.map((h) => {
         const active = activeCluster === h.id
         const faded = activeCluster && !active
         if (h.outline) {
-          // physical / default cluster: dotted outline, no fill
+          // physical / default cluster: dotted outline, no fill (legend names it)
           return (
             <g
               key={h.id}
@@ -445,9 +576,9 @@ export function TopoCanvas({
                 d={h.d}
                 fill="none"
                 stroke={h.color}
-                strokeOpacity={active ? 0.9 : 0.5}
+                strokeOpacity={active ? 0.9 : 0.45}
                 strokeWidth={active ? 2 : 1.4}
-                strokeDasharray="2 5"
+                strokeDasharray="2 6"
                 strokeLinecap="round"
               />
             </g>
@@ -456,37 +587,24 @@ export function TopoCanvas({
         return (
           <g
             key={h.id}
-            opacity={faded ? 0.22 : 1}
+            opacity={faded ? 0.2 : 1}
             style={{ transition: 'opacity .25s' }}
           >
-            <path
-              d={h.d}
-              fill={h.color}
-              fillOpacity={active ? 0.16 : 0.1}
-              className="[mix-blend-mode:multiply] dark:[mix-blend-mode:screen]"
-            />
+            <path d={h.d} fill={h.color} fillOpacity={active ? 0.16 : 0.1} />
             <path
               d={h.d}
               fill="none"
               stroke={h.color}
-              strokeOpacity={active ? 0.9 : 0.5}
-              strokeWidth={active ? 2 : 1.4}
-              strokeDasharray="7 5"
-              strokeLinecap="round"
+              strokeOpacity={active ? 0.95 : 0.55}
+              strokeWidth={active ? 2.2 : 1.5}
+              strokeLinejoin="round"
             />
-            <text
+            <HullLabel
               x={h.labelX}
               y={h.labelY}
-              textAnchor="middle"
-              fontSize="11.5"
-              fontWeight="700"
-              fill={h.color}
-              opacity={active ? 1 : 0.85}
-              className="font-mono"
-              style={{ letterSpacing: '0.02em' }}
-            >
-              {h.name}
-            </text>
+              text={h.name}
+              color={h.color}
+            />
           </g>
         )
       })}
@@ -500,16 +618,14 @@ export function TopoCanvas({
           const e = edge(a, b)
           if (!e) return null
           return (
-            <line
+            <path
               key={`c${i}`}
-              x1={e.x1}
-              y1={e.y1}
-              x2={e.x2}
-              y2={e.y2}
-              stroke="hsl(var(--muted-foreground))"
-              strokeOpacity="0.3"
-              strokeWidth="1.2"
-              strokeDasharray="4 5"
+              d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+              fill="none"
+              stroke="var(--muted-foreground)"
+              strokeOpacity="0.5"
+              strokeWidth="1.5"
+              strokeDasharray="5 5"
             />
           )
         })}
@@ -517,13 +633,11 @@ export function TopoCanvas({
           const e = edge(a, b)
           if (!e) return null
           return (
-            <line
+            <path
               key={`r${i}`}
-              x1={e.x1}
-              y1={e.y1}
-              x2={e.x2}
-              y2={e.y2}
-              stroke="#10b981"
+              d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+              fill="none"
+              stroke={STATUS_COLOR.healthy}
               strokeOpacity="0.45"
               strokeWidth="1.8"
             />
@@ -535,12 +649,10 @@ export function TopoCanvas({
         if (!e) return null
         const lit = !activeCluster || (memberOf(a) && memberOf(b))
         return (
-          <line
+          <path
             key={`p${i}`}
-            x1={e.x1}
-            y1={e.y1}
-            x2={e.x2}
-            y2={e.y2}
+            d={curvePath(e.x1, e.y1, e.x2, e.y2)}
+            fill="none"
             stroke="#3b82f6"
             strokeOpacity={lit ? 0.55 : 0.12}
             strokeWidth="2"

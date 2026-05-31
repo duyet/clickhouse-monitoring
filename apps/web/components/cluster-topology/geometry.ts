@@ -103,6 +103,32 @@ export function catmullRomClosed(p: Point[]): string {
 
 const f = (n: number) => n.toFixed(1)
 
+/**
+ * Axis-aligned rounded-rectangle path (four corner arcs). Used for the cluster
+ * territory overlay — a simple, predictable boundary whose overlap with another
+ * rect reads as a clean lens. Pure + deterministic.
+ */
+export function roundedRectPath(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+): string {
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2))
+  return (
+    `M ${f(x + rr)} ${f(y)} ` +
+    `L ${f(x + w - rr)} ${f(y)} ` +
+    `A ${f(rr)} ${f(rr)} 0 0 1 ${f(x + w)} ${f(y + rr)} ` +
+    `L ${f(x + w)} ${f(y + h - rr)} ` +
+    `A ${f(rr)} ${f(rr)} 0 0 1 ${f(x + w - rr)} ${f(y + h)} ` +
+    `L ${f(x + rr)} ${f(y + h)} ` +
+    `A ${f(rr)} ${f(rr)} 0 0 1 ${f(x)} ${f(y + h - rr)} ` +
+    `L ${f(x)} ${f(y + rr)} ` +
+    `A ${f(rr)} ${f(rr)} 0 0 1 ${f(x + rr)} ${f(y)} Z`
+  )
+}
+
 /** Full-circle path (used when the hull degenerates to a single point). */
 function circlePath(cx: number, cy: number, r: number): string {
   // Two half-arcs form a full circle (a single A 360° arc is undefined in SVG).

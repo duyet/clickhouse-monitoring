@@ -69,6 +69,11 @@ export interface OverviewTabConfig {
   gridClassName: string
   /** Charts to display in this tab */
   charts: OverviewChartConfig[]
+  /**
+   * Renders bespoke content instead of the chart grid. 'topology' mounts the
+   * shared cluster-topology view (with a link through to the full /clusters page).
+   */
+  customContent?: 'topology'
 }
 
 // ============================================================================
@@ -965,6 +970,13 @@ export const OVERVIEW_TABS: OverviewTabConfig[] = [
     label: 'Overview',
     gridClassName: GRID_LAYOUT_3_COL,
     charts: OVERVIEW_TAB_CHARTS,
+  },
+  {
+    value: 'topology',
+    label: 'Cluster Topology',
+    gridClassName: '',
+    charts: [],
+    customContent: 'topology',
   },
   {
     value: 'queries',
