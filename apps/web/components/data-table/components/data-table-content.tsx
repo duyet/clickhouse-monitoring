@@ -311,6 +311,7 @@ export const DataTableContent = memo(function DataTableContent<
               expandable={expandable}
               card={queryConfig.card}
               columnIcons={queryConfig.columnIcons}
+              view={view}
             />
           </div>
         )}
