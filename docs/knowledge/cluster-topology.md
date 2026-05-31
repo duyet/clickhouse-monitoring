@@ -81,10 +81,10 @@ All in `model.ts` unless noted. **Do not change a number in isolation; check the
 | `chHalfExtent / chUpExtent / chDownExtent` | CH node CONTENT envelope (glyph + labels) | **CONTRACT with `topo-canvas.tsx` label positions.** `chDownExtent` must cover the sub-line / host line / LOCAL badge the canvas paints (see `NodeLabel` + the LOCAL badge `r + …`). If you move a label in the canvas, update the matching extent here or it spills outside its cluster boundary. |
 | `keeperHalf/Up/DownExtent` | Keeper envelope | Same contract with the keeper glyph (`star` above → bigger up-extent for leaders). `keeperDownExtent(k)` is **node-aware**: when the keeper host is an FQDN (`host !== id`), `NodeLabel` paints a host line AT `r+16` **and** a sub-line at `r+31`, so the extent is `KP_R + 42` (vs `KP_R + 26` for short hosts). Get this wrong and follower labels spill below the green boundary into the cluster region. |
 | `ENVELOPE_MARGIN` | breathing room between content and a boundary (12) | Applied in `buildClusterHulls` + `buildKeeperRect`. |
-| `boundaryReserve(...) → centerContent padTop/padBottom` | room the rings + bottom pills need beyond the node envelopes | `centerContent` only knows node envelopes; the rects outset past them (`ENVELOPE_MARGIN` + concentric `NEST_STEP`) and pills sit on the bottom edge. `boundaryReserve` derives a top/bottom pad from the deepest coincident nest so a densely-nested graph stays in view. |
+| `boundaryReserve(...) → fitContent padTop/padBottom` | room the rings + bottom pills need beyond the node envelopes | `fitContent` only knows node envelopes; the rects outset past them (`ENVELOPE_MARGIN` + concentric `NEST_STEP`) and pills sit on the bottom edge. `boundaryReserve` derives a top/bottom pad from the deepest coincident nest (counting ALL drawn clusters, physical included) so a densely-nested graph stays in view. |
 | `CLUSTER_RECT_RADIUS` | corner radius of territory rects | Capped to half the shorter side in `roundedRectPath`. |
 | `enforceMinDistance(... CH_R*2 + 92)` | min node gap | Sized so a **single-node** cluster boundary (≈ `CH_R + chHalfExtent + margin`) cannot reach a neighbor glyph. If you shrink this, boundaries start cutting neighbors. |
-| `CH_BAND_Y/H`, `CH_MARGIN` | the CH region rectangle | Relative placement only — `centerContent` re-centers afterward, so exact values matter less than the keeper↔CH gap. |
+| `CH_BAND_Y/H`, `CH_MARGIN` | the CH region rectangle | Relative placement only — `fitContent` re-centers afterward, so exact values matter less than the keeper↔CH gap. |
 | keeper pill `y` (canvas) | `max(13, min(keeperY) − KP_R − 32)` | Tracks the region top and clears the leader ★. Recomputed from live keeper positions — not a fixed y. |
 
 ### The #1 maintenance hazard: envelope ↔ label positions
@@ -169,7 +169,7 @@ Locked by `model.test.ts` → "local-duplicate merge".
   (`name.length*7+20`, matching `HullLabel`) by stacking **downward** against ALL already-placed
   pills. A pill dropped off its rect sets `ClusterHull.leader`, and the canvas draws a thin dashed
   **leader line** from the pill UP to the rect's bottom-center (`anchorX/anchorY`). Concentric
-  coincident rings are stepped by `NEST_STEP` (24) > pill height, so each ring's pill sits on its own
+  coincident rings are stepped by `NEST_STEP` (30) > pill height, so each ring's pill sits on its own
   bottom edge without stacking.
 
 ## Shared component
