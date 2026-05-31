@@ -36,6 +36,7 @@ import {
 import { TableDensityProvider } from '@/components/data-table/context/table-density-context'
 import { useColumnFilterState } from '@/components/data-table/filters/use-column-filter-state'
 import {
+  type TableFilterCondition,
   useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
@@ -204,6 +205,11 @@ export function DataTable<
     enableColumnReordering: resolvedEnableColumnReordering,
   } = resolveTableBehavior({ queryConfig, enableColumnReorderingProp })
 
+  const [globalSearch, setGlobalSearch] = useState('')
+  const [advancedFilters, setAdvancedFilters] = useState<
+    TableFilterCondition[]
+  >([])
+
   // Determine which columns should be filterable (memoized)
   const configuredColumns = queryConfig.columns.map(normalizeColumnName)
 
@@ -224,6 +230,8 @@ export function DataTable<
     data,
     enableColumnFilters,
     columnFilters,
+    globalSearch,
+    advancedFilters,
   })
 
   // Memoize filterableColumns to prevent filterContext recreation
@@ -601,6 +609,10 @@ export function DataTable<
             onResetColumnOrder={handleResetColumnOrder}
             density={density}
             onDensityChange={setDensity}
+            globalSearch={globalSearch}
+            onGlobalSearchChange={setGlobalSearch}
+            advancedFilters={advancedFilters}
+            onAdvancedFiltersChange={setAdvancedFilters}
           />
         )}
 

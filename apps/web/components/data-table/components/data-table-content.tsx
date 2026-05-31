@@ -256,6 +256,7 @@ export const DataTableContent = memo(function DataTableContent<
           onAutoFit={onAutoFit}
           enableColumnReordering={enableColumnReordering}
           compact={compact}
+          columnDescriptions={queryConfig.columnDescriptions}
         />
       </TableHeader>
       <TableBody>
