@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const userProcessesConfig: QueryConfig = {
   name: 'user-processes',
+  defaultView: 'auto',
+  card: { primary: 'user' },
   description: 'Per-user memory usage and resource summary',
   refreshInterval: 30_000,
   // system.user_processes may not exist on every server / version

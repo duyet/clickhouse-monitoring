@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const replicasConfig: QueryConfig = {
   name: 'replicas',
+  defaultView: 'auto',
+  card: { primary: 'database_table', badges: ['is_readonly', 'is_leader'] },
   refreshInterval: 30_000,
   description: `Contains information and status for replicated tables residing on the local server`,
   sql: `

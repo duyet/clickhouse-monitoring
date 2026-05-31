@@ -2,6 +2,8 @@ import type { QueryConfig } from '@/types/query-config'
 
 export const movesConfig: QueryConfig = {
   name: 'moves',
+  defaultView: 'auto',
+  card: { primary: 'table' },
   description:
     'In-progress part moves between disks and volumes (TTL / storage policy)',
   refreshInterval: 30_000,

@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const partInfoConfig: QueryConfig = {
   name: 'part-info',
+  defaultView: 'auto',
+  card: { primary: 'name', badges: ['partition'] },
   description:
     'Information about currently active parts and levels for a table',
 

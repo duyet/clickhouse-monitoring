@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const viewRefreshesConfig: QueryConfig = {
   name: 'view-refreshes',
+  defaultView: 'auto',
+  card: { primary: 'view', badges: ['status'] },
   description: `Contains information about refresh operations for materialized views using the REFRESH keyword. https://clickhouse.com/docs/operations/system-tables/view_refreshes`,
   suggestion: `Create a materialized view with REFRESH:
 

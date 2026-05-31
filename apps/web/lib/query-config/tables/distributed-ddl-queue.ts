@@ -4,6 +4,8 @@ import { ColumnFormat } from '@/types/column-format'
 
 export const distributedDdlQueueConfig: QueryConfig = {
   name: 'distributed-ddl-queue',
+  defaultView: 'auto',
+  card: { primary: 'query', badges: ['status'] },
   description:
     'Distributed ddl queries (ON CLUSTER clause) that were executed on a cluster',
   optional: true,
