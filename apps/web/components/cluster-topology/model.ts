@@ -184,13 +184,13 @@ export function isKeeperNode(n: KeeperNode | ChNode): n is KeeperNode {
 // letterboxing horizontally — the "relax the space" ask. The extra height leaves
 // room for each node's labels to sit INSIDE its cluster boundary.
 // Imported by the layout tests, so the in-viewBox bounds check moves with them.
-export const VB_W = 1200
-export const VB_H = 560
+export const VB_W = 1280
+export const VB_H = 580
 // Node radii are exported so the canvas glyphs render at exactly the size the
 // layout reserves spacing/hull padding for — no drift between layout and paint.
 // Sized so a typical hostname fits INSIDE the glyph (square card / hexagon).
-export const CH_R = 40
-export const KP_R = 38
+export const CH_R = 42
+export const KP_R = 40
 
 // Cap CH nodes drawn on the canvas so large clusters stay readable. The full
 // structural truth is preserved in meta.counts / meta.hiddenChNodes.
@@ -709,12 +709,18 @@ export function layoutTopology(data: TopologyData): TopologyModel {
   layoutChNodes(renderCh, data.clusters)
 
   // Prevent overlap: push apart any nodes closer than the minimum spacing.
-  // Generous gaps (the canvas is now wide) so glyphs + their labels breathe.
-  enforceMinDistance(keepers, KP_R * 2 + 34)
-  enforceMinDistance(renderCh, CH_R * 2 + 46)
+  // Wide gaps so a single-node cluster boundary can't reach a neighbor glyph
+  // and labels never collide.
+  enforceMinDistance(keepers, KP_R * 2 + 48)
+  enforceMinDistance(renderCh, CH_R * 2 + 92)
 
   // Re-clamp after collision avoidance (repulsion can push nodes outside bounds).
   clampToBand(renderCh)
+
+  // Auto-layout: translate the whole composition so its content (every node +
+  // its labels) is centered in the draw area. This handles the no-keeper case
+  // and any sparse layout — content sits in the middle instead of a fixed band.
+  centerContent(keepers, renderCh)
 
   const nodeById: Record<string, KeeperNode | ChNode> = {}
   keepers.forEach((k) => {
@@ -807,9 +813,9 @@ function layoutKeepers(keepers: KeeperNode[]) {
 // CH region: a band below the keepers. Layout is deterministic + seeded only by
 // structure so positions are stable across live ticks. The band leaves headroom
 // below for each node's two label lines + LOCAL badge (≈ CH_R + 46).
-const CH_BAND_Y = 352
-const CH_BAND_H = 78
-const CH_MARGIN = 130
+const CH_BAND_Y = 340
+const CH_BAND_H = 120
+const CH_MARGIN = 170
 
 /**
  * ClickHouse node layout that makes overlapping clusters legible:
@@ -897,17 +903,28 @@ function fanOut(members: ChNode[], gx: number, gy: number) {
     members[0].y = gy
     return
   }
-  const cols = Math.ceil(Math.sqrt(k))
+  // Prefer a WIDE grid (more columns, fewer rows) — the canvas has width to
+  // spare and tall stacks overlap. Small groups stay on a single row; even a
+  // capped 24-node cluster needs only ~3 rows.
+  const cols =
+    k <= 5
+      ? k
+      : Math.min(k, Math.max(Math.ceil(Math.sqrt(k)), Math.ceil(k / 3)))
   const rows = Math.ceil(k / cols)
-  const stepY = Math.min(120, rows > 1 ? CH_BAND_H / (rows - 1) : 120)
-  const stepX = Math.min(150, Math.max(96, stepY))
+  const stepY = Math.min(132, rows > 1 ? CH_BAND_H / (rows - 1) : 132)
+  const stepX = Math.min(160, Math.max(108, stepY))
+  // Zigzag: alternate columns sit half a stagger above/below the row line so
+  // adjacent nodes are never on the same horizontal line — their labels can't
+  // collide even when the group is squeezed near a margin.
+  const STAGGER = 46
   members.forEach((nd, i) => {
     const row = Math.floor(i / cols)
     const col = i % cols
     const rowCount = Math.min(cols, k - row * cols)
     const rowOffset = ((rowCount - 1) * stepX) / 2
+    const zig = cols > 1 ? (col % 2 === 0 ? -STAGGER / 2 : STAGGER / 2) : 0
     nd.x = gx - rowOffset + col * stepX
-    nd.y = gy + row * stepY - ((rows - 1) * stepY) / 2
+    nd.y = gy + row * stepY - ((rows - 1) * stepY) / 2 + zig
   })
 }
 
@@ -947,6 +964,46 @@ function clampToBand(nodes: ChNode[]) {
   for (const nd of nodes) {
     nd.x = Math.max(CH_MARGIN, Math.min(VB_W - CH_MARGIN, nd.x))
     nd.y = Math.max(CH_BAND_Y - 10, Math.min(CH_BAND_Y + CH_BAND_H, nd.y))
+  }
+}
+
+/**
+ * Translate the whole composition (keepers + CH nodes) so the bounding box of
+ * its CONTENT envelopes is centered in the draw area. Keeps relative positions
+ * intact; offset is clamped so content never leaves the viewBox when it fits.
+ * This is the "auto layout" — sparse graphs (no keeper, one node) sit centered
+ * instead of stuck in a fixed band.
+ */
+function centerContent(keepers: KeeperNode[], chNodes: ChNode[]) {
+  if (keepers.length === 0 && chNodes.length === 0) return
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+  for (const k of keepers) {
+    minX = Math.min(minX, k.x - keeperHalfExtent())
+    maxX = Math.max(maxX, k.x + keeperHalfExtent())
+    minY = Math.min(minY, k.y - keeperUpExtent(k))
+    maxY = Math.max(maxY, k.y + keeperDownExtent())
+  }
+  for (const c of chNodes) {
+    minX = Math.min(minX, c.x - chHalfExtent())
+    maxX = Math.max(maxX, c.x + chHalfExtent())
+    minY = Math.min(minY, c.y - chUpExtent())
+    maxY = Math.max(maxY, c.y + chDownExtent(c))
+  }
+  let dx = (VB_W - minX - maxX) / 2
+  let dy = (VB_H - minY - maxY) / 2
+  // When content fits, keep it fully inside; otherwise anchor the top edge.
+  if (minY + dy < 0 || maxY + dy > VB_H) dy = Math.max(-minY, dy)
+  if (minX + dx < 0 || maxX + dx > VB_W) dx = Math.max(-minX, dx)
+  for (const k of keepers) {
+    k.x += dx
+    k.y += dy
+  }
+  for (const c of chNodes) {
+    c.x += dx
+    c.y += dy
   }
 }
 

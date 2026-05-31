@@ -51,9 +51,10 @@ const {
 describe('charts-config', () => {
   describe('Configuration Structure', () => {
     it('should have all required tab configurations', () => {
-      expect(OVERVIEW_TABS).toHaveLength(5)
+      expect(OVERVIEW_TABS).toHaveLength(6)
       expect(OVERVIEW_TABS.map((t) => t.value)).toEqual([
         'overview',
+        'topology',
         'queries',
         'storage',
         'operations',

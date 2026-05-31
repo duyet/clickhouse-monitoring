@@ -183,7 +183,7 @@ function ChGlyph({
   // CPU meter geometry (a thin bar inside the card's lower edge).
   const meterW = side - 24
   const meterPct = cpu !== null ? clampPct(cpu / 100) : 0
-  const idText = fit(node.id, 12)
+  const idText = fit(node.id, 13)
 
   return (
     <g
@@ -244,7 +244,7 @@ function ChGlyph({
       <text
         textAnchor="middle"
         y={r * 0.42}
-        fontSize="11.5"
+        fontSize="12"
         fontWeight="700"
         fill="var(--foreground)"
         className="font-mono"
@@ -331,7 +331,7 @@ function KeeperGlyph({
   const accent = isLeader ? STATUS_COLOR.warn : statusCol
   const sub = `${node.role} · ${node.avgLatency ? `${node.avgLatency.toFixed(1)}ms` : '—'}`
   const d = hexPath(r)
-  const idText = fit(node.id, 10)
+  const idText = fit(node.id, 11)
 
   return (
     <g
@@ -375,8 +375,8 @@ function KeeperGlyph({
       {/* node id, inside the wide middle band of the hexagon */}
       <text
         textAnchor="middle"
-        y={r * 0.26}
-        fontSize="11"
+        y={r * 0.24}
+        fontSize="11.5"
         fontWeight="700"
         fill="var(--foreground)"
         className="font-mono"
@@ -601,9 +601,9 @@ export function TopoCanvas({
               d={curvePath(e.x1, e.y1, e.x2, e.y2)}
               fill="none"
               stroke="var(--muted-foreground)"
-              strokeOpacity="0.28"
-              strokeWidth="1.2"
-              strokeDasharray="4 5"
+              strokeOpacity="0.5"
+              strokeWidth="1.5"
+              strokeDasharray="5 5"
             />
           )
         })}

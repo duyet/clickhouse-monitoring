@@ -485,15 +485,19 @@ export function TopologyView({
               </span>
             </div>
           </div>
-          <div className="h-[480px] bg-muted/60 sm:h-[540px]">
-            <TopoCanvas
-              model={model}
-              liveById={liveById}
-              selected={selected}
-              activeCluster={activeCluster}
-              onSelect={setSelected}
-              onClearSelect={() => setSelected(null)}
-            />
+          {/* Scrolls horizontally on narrow screens (min-width) so the wide
+              topology stays readable instead of shrinking to fit. */}
+          <div className="h-[480px] overflow-x-auto bg-muted/60 sm:h-[540px]">
+            <div className="h-full w-full min-w-[720px]">
+              <TopoCanvas
+                model={model}
+                liveById={liveById}
+                selected={selected}
+                activeCluster={activeCluster}
+                onSelect={setSelected}
+                onClearSelect={() => setSelected(null)}
+              />
+            </div>
           </div>
         </Card>
 
