@@ -5,7 +5,7 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
-import { MobileTableCards } from './mobile-table-cards'
+import { MobileSortMenu, MobileTableCards } from './mobile-table-cards'
 import {
   closestCenter,
   DndContext,
@@ -187,11 +187,14 @@ export const DataTableContent = memo(function DataTableContent<
   onViewChange,
   bodyRenderKey,
 }: DataTableContentProps<TData, TValue>) {
-  const cardsOnly = view === 'cards' || view === 'auto'
+  const cardsOnly = view === 'cards'
   // Visibility per layout. Both 'auto' and 'cards' show the card grid;
   // only an explicit 'table' choice shows the table.
-  const cardsVisibility = view === 'table' ? 'hidden' : 'block'
-  const tableVisibility = view === 'table' ? 'block' : 'hidden'
+  const cardsVisibility =
+    view === 'table' ? 'hidden' : view === 'cards' ? 'block' : 'sm:hidden block'
+
+  const tableVisibility =
+    view === 'table' ? 'block' : view === 'cards' ? 'hidden' : 'sm:block hidden'
   // Configure drag-and-drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -278,7 +281,12 @@ export const DataTableContent = memo(function DataTableContent<
   return (
     <div className="relative">
       {offerViewToggle && !compact && (
-        <div className="mb-2 flex justify-end">
+        <div className="mb-2 flex items-center justify-end gap-2">
+          {view !== 'table' && (
+            <div className={cn(view === 'auto' ? 'sm:hidden block' : 'block')}>
+              <MobileSortMenu table={table} />
+            </div>
+          )}
           <ViewToggle view={view} onViewChange={onViewChange} />
         </div>
       )}
