@@ -4,6 +4,8 @@ import {
   BoxesIcon,
   DatabaseIcon,
   ExternalLinkIcon,
+  EyeIcon,
+  EyeOffIcon,
   HashIcon,
   RefreshCwIcon,
   ShieldIcon,
@@ -148,10 +150,17 @@ export function TopologyView({
       }
     )
 
-  // ── model: layout applied client-side; rebuilt ONLY when structure changes ──
+  // ── physical/implicit clusters (all-replicated, all-sharded, default) are
+  // HIDDEN by default — they are structural scaffolding that clutters the graph.
+  // A legend toggle reveals them (rendered solid + slate, a bit different). ──
+  const [showPhysical, setShowPhysical] = useState(false)
+
+  // ── model: layout applied client-side; rebuilt ONLY when structure or the
+  // physical-visibility toggle changes (toggling drops the outer rings + shrinks
+  // the viewBox; node positions are logical-driven so they never move). ──
   const model = useMemo(
-    () => layoutTopology(topology ?? EMPTY_TOPOLOGY),
-    [topology]
+    () => layoutTopology(topology ?? EMPTY_TOPOLOGY, { showPhysical }),
+    [topology, showPhysical]
   )
 
   const liveRow = liveRows?.[0]
@@ -183,6 +192,16 @@ export function TopologyView({
   const [selected, setSelected] = useState<string | null>(null)
   const [activeCluster, setActiveCluster] = useState<string | null>(null)
   const [secsAgo, setSecsAgo] = useState(0)
+
+  // A hidden physical cluster must not act as the filter — its hull isn't drawn,
+  // so it would fade every visible hull with no anchor. Derive the EFFECTIVE
+  // active cluster in-render (rather than clearing via an effect, which would dim
+  // everything for one frame); toggling physical back on restores the filter.
+  const effectiveActiveCluster =
+    activeCluster &&
+    (showPhysical || !model.clusterById[activeCluster]?.outline)
+      ? activeCluster
+      : null
 
   useEffect(() => {
     setSecsAgo(0)
@@ -290,6 +309,8 @@ export function TopologyView({
     model.clusters[0]?.name ??
     '—'
   const leaderLabel = model.leaderId ? `leader ${model.leaderId}` : '—'
+  // Count of physical/implicit clusters — drives the legend show/hide toggle.
+  const physicalCount = model.clusters.filter((c) => c.outline).length
 
   return (
     <div className="max-w-[1640px]">
@@ -389,36 +410,60 @@ export function TopologyView({
               <span className="mr-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Clusters
               </span>
-              {model.clusters.map((cl) => {
-                const on = activeCluster === cl.id
-                return (
-                  <button
-                    type="button"
-                    key={cl.id}
-                    onClick={() => setActiveCluster(on ? null : cl.id)}
-                    className={cn(
-                      'inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-[12px] font-medium transition-colors',
-                      on
-                        ? 'border-foreground/30 bg-muted text-foreground'
-                        : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    {cl.outline ? (
-                      <span
-                        className="h-2.5 w-2.5 rounded-sm border-2 border-dotted"
-                        style={{ borderColor: cl.color }}
-                      />
-                    ) : (
+              {model.clusters
+                // Physical/implicit clusters only appear when toggled on.
+                .filter((cl) => showPhysical || !cl.outline)
+                .map((cl) => {
+                  const on = activeCluster === cl.id
+                  return (
+                    <button
+                      type="button"
+                      key={cl.id}
+                      onClick={() => setActiveCluster(on ? null : cl.id)}
+                      className={cn(
+                        'inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-[12px] font-medium transition-colors',
+                        on
+                          ? 'border-foreground/30 bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                    >
                       <span
                         className="h-2.5 w-2.5 rounded-sm"
                         style={{ background: cl.color }}
                       />
-                    )}
-                    <span className="font-mono">{cl.name}</span>
-                  </button>
-                )
-              })}
-              {activeCluster && (
+                      <span className="font-mono">{cl.name}</span>
+                    </button>
+                  )
+                })}
+              {/* toggle: reveal/hide the implicit (physical) clusters. */}
+              {physicalCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowPhysical((v) => !v)}
+                  aria-pressed={showPhysical}
+                  title={
+                    showPhysical
+                      ? 'Hide implicit clusters (all-replicated, all-sharded, default)'
+                      : 'Show implicit clusters (all-replicated, all-sharded, default)'
+                  }
+                  className={cn(
+                    'inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-[12px] font-medium transition-colors',
+                    showPhysical
+                      ? 'border-foreground/30 bg-muted text-foreground'
+                      : 'border-dashed border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )}
+                >
+                  {showPhysical ? (
+                    <EyeOffIcon className="h-3 w-3" />
+                  ) : (
+                    <EyeIcon className="h-3 w-3" />
+                  )}
+                  {showPhysical
+                    ? 'Hide implicit'
+                    : `Implicit (${physicalCount})`}
+                </button>
+              )}
+              {effectiveActiveCluster && (
                 <button
                   type="button"
                   onClick={() => setActiveCluster(null)}
@@ -495,7 +540,7 @@ export function TopologyView({
                 model={model}
                 liveById={liveById}
                 selected={selected}
-                activeCluster={activeCluster}
+                activeCluster={effectiveActiveCluster}
                 onSelect={setSelected}
                 onClearSelect={() => setSelected(null)}
               />

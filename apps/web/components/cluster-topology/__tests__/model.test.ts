@@ -96,7 +96,7 @@ describe('keeper quorum hull is optional', () => {
       // Approximate: no hull coordinate should exceed the viewBox.
       for (const v of nums) {
         expect(v).toBeGreaterThanOrEqual(-10) // small margin for envelope padding
-        expect(v).toBeLessThanOrEqual(Math.max(VB_W, VB_H) + 10)
+        expect(v).toBeLessThanOrEqual(Math.max(VB_W, m.vbHeight) + 10)
       }
     }
   })
@@ -156,7 +156,7 @@ describe('large N respects CH_RENDER_CAP without breaking counts', () => {
       expect(n.x).toBeGreaterThan(0)
       expect(n.x).toBeLessThan(VB_W)
       expect(n.y).toBeGreaterThan(0)
-      expect(n.y).toBeLessThan(VB_H)
+      expect(n.y).toBeLessThan(model.vbHeight)
     }
   })
 })
@@ -173,6 +173,77 @@ describe('determinism across rebuilds (stable for live ticks)', () => {
       m2.chNodes.map((n) => [n.x, n.y])
     )
     expect(m1.keeperHull).toBe(m2.keeperHull)
+    expect(m1.vbHeight).toBe(m2.vbHeight)
+  })
+})
+
+describe('data-driven viewBox height', () => {
+  it('never drops below the VB_H floor and is deterministic', () => {
+    // A sparse single-node graph fits within the floor; a deeply-nested,
+    // multi-cluster graph must grow taller than it to keep its rings + pills in.
+    const sparse = buildTopologyModel(replicatedCluster('c', 1), keepers(1))
+    expect(sparse.vbHeight).toBeGreaterThanOrEqual(VB_H)
+
+    // Same 3 hosts under 3 cluster names → coincident concentric rings (the deep
+    // nesting that previously climbed into the keeper region).
+    const nestedRows = ['all-replicated', 'all-sharded', 'analytics'].flatMap(
+      (cluster) => replicatedCluster(cluster, 3, 'shared')
+    )
+    const nested = buildTopologyModel(nestedRows, keepers(3))
+    expect(nested.vbHeight).toBeGreaterThanOrEqual(VB_H)
+    // Deeper nesting reserves strictly more vertical room than the sparse case.
+    expect(nested.vbHeight).toBeGreaterThan(sparse.vbHeight)
+  })
+
+  it('hiding physical clusters drops their hulls and shrinks the height', () => {
+    // 2 physical (default, all-replicated) + 1 logical, same hosts.
+    const rows = [
+      ...replicatedCluster('default', 3, 'shared'),
+      ...replicatedCluster('all-replicated', 3, 'shared'),
+      ...replicatedCluster('analytics', 3, 'shared'),
+    ]
+    const shown = buildTopologyModel(rows, keepers(3), [], [], 'none', {
+      showPhysical: true,
+    })
+    const hidden = buildTopologyModel(rows, keepers(3), [], [], 'none', {
+      showPhysical: false,
+    })
+    // Physical hulls present when shown, gone when hidden.
+    expect(shown.clusterHulls.some((h) => h.outline)).toBe(true)
+    expect(hidden.clusterHulls.some((h) => h.outline)).toBe(false)
+    // The logical hull survives either way.
+    expect(hidden.clusterHulls.filter((h) => !h.outline).length).toBe(1)
+    // Counts are structural truth regardless of visibility.
+    expect(hidden.counts.physical).toBe(shown.counts.physical)
+    // Dropping the outer physical rings lets the viewBox shrink.
+    expect(hidden.vbHeight).toBeLessThan(shown.vbHeight)
+    // Layout is logical-driven: horizontal positions and the relative vertical
+    // arrangement are unchanged (only the whole composition re-centers in the
+    // now-shorter viewBox, so absolute y shifts uniformly).
+    expect(hidden.chNodes.map((n) => n.x)).toEqual(
+      shown.chNodes.map((n) => n.x)
+    )
+    const spread = (m: typeof shown) => {
+      const ys = m.chNodes.map((n) => n.y)
+      return Math.max(...ys) - Math.min(...ys)
+    }
+    expect(spread(hidden)).toBeCloseTo(spread(shown), 5)
+  })
+
+  it('keeps every CH cluster box BELOW the keeper region (keepers stay outside)', () => {
+    // Coincident clusters over the same hosts produce the deep concentric rings
+    // that previously climbed into the keeper region. The topmost cluster-rect
+    // edge must sit below the lowest keeper glyph/label.
+    const rows = ['all-replicated', 'all-sharded', 'analytics'].flatMap(
+      (cluster) => replicatedCluster(cluster, 3, 'shared')
+    )
+    const m = buildTopologyModel(rows, keepers(3))
+    const keeperBottom = Math.max(...m.keepers.map((k) => k.y))
+    // Each hull path starts "M x y …"; the second number is the rect's top edge.
+    for (const h of m.clusterHulls) {
+      const topY = h.d.match(/[-\d.]+/g)?.map(Number)[1] ?? 0
+      expect(topY).toBeGreaterThan(keeperBottom)
+    }
   })
 })
 

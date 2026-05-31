@@ -2,7 +2,7 @@
 
 import type { ChNode, KeeperNode, TopologyModel } from './model'
 
-import { CH_R, KP_R, STATUS_COLOR, VB_H, VB_W } from './model'
+import { CH_R, KP_R, STATUS_COLOR, VB_W } from './model'
 
 interface LiveMetrics {
   cpuPct: number | null
@@ -459,7 +459,9 @@ function KeeperGlyph({
   )
 }
 
-/** A rounded label chip rendered over a hull so the name stays readable. */
+/** A rounded label chip rendered over a hull so the name stays readable. Every
+ * cluster — logical or physical — gets the same solid-bordered pill in its own
+ * color; the physical/logical distinction lives in the toggle, not the pill. */
 function HullLabel({
   x,
   y,
@@ -523,6 +525,7 @@ export function TopoCanvas({
     coordEdges,
     clusterHulls,
     keeperHull,
+    vbHeight,
   } = model
 
   const edge = (a: string, b: string) => {
@@ -536,7 +539,7 @@ export function TopoCanvas({
 
   return (
     <svg
-      viewBox={`0 0 ${VB_W} ${VB_H}`}
+      viewBox={`0 0 ${VB_W} ${vbHeight}`}
       preserveAspectRatio="xMidYMid meet"
       className="block h-full w-full select-none"
       onClick={onClearSelect}
@@ -559,7 +562,7 @@ export function TopoCanvas({
           />
         </pattern>
       </defs>
-      <rect x="0" y="0" width={VB_W} height={VB_H} fill="url(#topo-dots)" />
+      <rect x="0" y="0" width={VB_W} height={vbHeight} fill="url(#topo-dots)" />
 
       {/* keeper quorum region — soft container + a clear label chip */}
       {keeperHull && (
@@ -587,46 +590,50 @@ export function TopoCanvas({
         </g>
       )}
 
-      {/* cluster overlays — offset convex hulls, z-ordered area DESC (largest
-          behind). Translucent fills blend via mix-blend-mode so a host shared by
-          two clusters shows a distinct lens, not last-one-wins opaque. Dotted
-          outline = physical/default cluster; soft fill + thin border = logical. */}
+      {/* cluster overlays — offset rounded rects, z-ordered area DESC (largest
+          behind). A background-colored CASING under each colored boundary lets
+          crossing / nested boundaries read cleanly instead of tangling at their
+          intersections. EVERY cluster gets its own palette color + a solid label
+          pill; physical/implicit clusters just read softer (lower fill/stroke
+          opacity) and are present only when toggled on upstream. */}
       {clusterHulls.map((h) => {
         const active = activeCluster === h.id
         const faded = activeCluster && !active
-        if (h.outline) {
-          // physical / default cluster: dotted outline, no fill (legend names it)
-          return (
-            <g
-              key={h.id}
-              opacity={faded ? 0.25 : 1}
-              style={{ transition: 'opacity .25s' }}
-            >
-              <path
-                d={h.d}
-                fill="none"
-                stroke={h.color}
-                strokeOpacity={active ? 0.9 : 0.45}
-                strokeWidth={active ? 2 : 1.4}
-                strokeDasharray="2 6"
-                strokeLinecap="round"
-              />
-            </g>
-          )
-        }
+        // Physical/implicit clusters read softer than logical ones so the eye
+        // still separates "implicit scaffolding" from configured territories.
+        const fillOp = h.outline ? (active ? 0.07 : 0.04) : active ? 0.14 : 0.08
+        const strokeOp = h.outline
+          ? active
+            ? 0.85
+            : 0.5
+          : active
+            ? 0.95
+            : 0.65
+        const strokeW = h.outline ? (active ? 2 : 1.5) : active ? 2.4 : 1.7
         return (
           <g
             key={h.id}
-            opacity={faded ? 0.2 : 1}
+            opacity={faded ? (h.outline ? 0.22 : 0.2) : 1}
             style={{ transition: 'opacity .25s' }}
           >
-            <path d={h.d} fill={h.color} fillOpacity={active ? 0.14 : 0.08} />
+            <path d={h.d} fill={h.color} fillOpacity={fillOp} />
+            {/* casing: a wider card-colored stroke beneath the colored one so two
+                overlapping/nested boundaries don't visually collide where they
+                cross — the topmost boundary reads as cutting cleanly through. */}
+            <path
+              d={h.d}
+              fill="none"
+              stroke="var(--card)"
+              strokeOpacity={0.95}
+              strokeWidth={strokeW + 2.2}
+              strokeLinejoin="round"
+            />
             <path
               d={h.d}
               fill="none"
               stroke={h.color}
-              strokeOpacity={active ? 0.95 : 0.65}
-              strokeWidth={active ? 2.4 : 1.7}
+              strokeOpacity={strokeOp}
+              strokeWidth={strokeW}
               strokeLinejoin="round"
             />
             {/* leader line: when the pill was dropped below the rect to stay
