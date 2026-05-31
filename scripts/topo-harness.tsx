@@ -48,6 +48,7 @@ const fqdnKeepers = (n: number): KeeperInfoRow[] =>
     avg_latency: i,
   }))
 
+/** Synthetic per-node CPU/mem so the live CPU meter + sub-line render. */
 const liveFor = (model: ReturnType<typeof buildTopologyModel>) => {
   const live: Record<string, { cpuPct: number | null; memPct: number | null }> =
     {}
@@ -103,7 +104,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   section{padding:24px}
   h2{font-size:14px;font-weight:600;margin:0 0 8px;color:var(--muted-foreground)}
   .frame{border:1px solid var(--border);border-radius:12px;background:var(--background);
-    aspect-ratio:1280/580;width:100%;max-width:1280px;overflow:hidden}
+    aspect-ratio:2/1;width:100%;max-width:1280px;overflow:hidden}
   .frame svg{width:100%;height:100%}
 </style></head><body>${cards}</body></html>`
 

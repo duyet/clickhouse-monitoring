@@ -930,8 +930,15 @@ function layoutKeepers(keepers: KeeperNode[]) {
   keepers[leaderIdx].x = cx
   keepers[leaderIdx].y = 100
   // Spread followers wide enough that adjacent FQDN host labels (~166px when
-  // truncated to ~24 chars) never overlap — the glyph gap alone is not enough.
-  const spread = Math.min(280, 188 + followers.length * 16)
+  // truncated to ~24 chars) never overlap — the glyph gap alone is not enough —
+  // but cap the row to the usable width so large ensembles (7+ keepers) stay in
+  // the viewBox. centerContent can only clamp one side, so an over-wide row
+  // would leave the end keeper + its label off-canvas.
+  const desired = Math.min(280, 188 + followers.length * 16)
+  const spread =
+    followers.length > 1
+      ? Math.min(desired, (VB_W - 2 * CH_MARGIN) / (followers.length - 1))
+      : desired
   const total = (followers.length - 1) * spread
   // Sit the follower row below the leader's own label block (host + sub-line)
   // so the leader's text never grazes the follower glyphs.
@@ -1135,7 +1142,12 @@ function boundaryReserve(
   // Outermost-ring outset for the deepest nest, else the distinct-rect jitter.
   const ring = Math.max((maxNest - 1) * NEST_STEP, 21)
   const pad = ring + ENVELOPE_MARGIN
-  return { padTop: pad, padBottom: pad + 20 }
+  // Bottom pills can stack DOWNWARD by a PILL_ROW per horizontally-overlapping
+  // distinct cluster (coincident clusters nest as rings instead, so count member
+  // SETS, not clusters). Reserve a few rows so a busy graph's lowest pill stays
+  // in view; capped because spread-out pills rarely all share one x-column.
+  const stackRows = Math.min(groupSize.size, 3)
+  return { padTop: pad, padBottom: pad + stackRows * PILL_ROW_H + 8 }
 }
 
 function centerContent(
@@ -1223,6 +1235,11 @@ function enforceMinDistance(
 // Corner radius for the cluster territory rectangles — round enough that a
 // single-node cluster reads as a soft squircle, capped so it never over-rounds.
 const CLUSTER_RECT_RADIUS = 54
+
+// One stacked label-pill row (pill height 19 + a hair). Shared by `nudgeLabels`
+// (the actual downward stacking) and `boundaryReserve` (the room reserved for
+// it) so the two never drift.
+const PILL_ROW_H = 21
 
 /** Stable string hash → non-negative int. Deterministic (layout is tested). */
 function hashStr(s: string): number {
@@ -1361,7 +1378,7 @@ function buildClusterHulls(
  * Deterministic.
  */
 function nudgeLabels(hulls: ClusterHull[]) {
-  const ROW_H = 21 // pill height (19) + a hair of breathing room
+  const ROW_H = PILL_ROW_H
   const halfW = (h: ClusterHull) => (h.name.length * 7 + 20) / 2
   // Place left→right; drop each pill below any already-placed pill it overlaps.
   const sorted = [...hulls].sort(

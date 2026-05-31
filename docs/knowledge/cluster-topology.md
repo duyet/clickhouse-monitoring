@@ -186,7 +186,7 @@ only runs where `node_modules` is present, i.e. CI — not in a bare worktree).
 The canvas uses theme CSS vars, so you can't judge it from path strings. The reliable check is the
 committed harness **`scripts/topo-harness.tsx`**:
 
-```
+```shell
 bun run scripts/topo-harness.tsx > /tmp/topo.html   # then open via chrome-devtools MCP
 ```
 
