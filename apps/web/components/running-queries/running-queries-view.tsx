@@ -195,6 +195,11 @@ export const RunningQueriesView = function RunningQueriesView() {
   const mergedCompleted =
     livePending.length > 0 ? [...livePending, ...completedRows] : completedRows
 
+  const errVariant = error
+    ? detectCardErrorVariant(error as CardError)
+    : undefined
+  const emptyStateVariant = errVariant === 'permission' ? 'error' : errVariant
+
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-4">
@@ -255,14 +260,14 @@ export const RunningQueriesView = function RunningQueriesView() {
           <Card className="rounded-xl">
             <CardContent className="p-4">
               <EmptyState
-                variant={detectCardErrorVariant(error as CardError)}
+                variant={emptyStateVariant}
                 title={getCardErrorTitle(
-                  detectCardErrorVariant(error as CardError),
+                  errVariant ?? 'error',
                   'Running Queries'
                 )}
                 description={getCardErrorDescription(
                   error as CardError,
-                  detectCardErrorVariant(error as CardError)
+                  errVariant ?? 'error'
                 )}
                 compact
                 action={{

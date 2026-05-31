@@ -24,8 +24,11 @@ import {
   getCardErrorTitle,
   getTableMissingInfo,
   shouldShowRetryButton,
+  isVersionOlder,
+  extractTableFromPermissionError,
 } from '@/lib/card-error-utils'
 import { useHostId } from '@/lib/swr/use-host'
+import { useHostStatus } from '@/lib/swr/use-host-status'
 import { useTableData } from '@/lib/swr/use-table-data'
 import { cn } from '@/lib/utils'
 import { getSqlForDisplay } from '@/types/query-config'
@@ -159,6 +162,7 @@ export const TableClient = function TableClient({
   showFilterBar = true,
 }: TableClientProps) {
   const hostId = useHostId()
+  const hostStatus = useHostStatus(hostId)
   const refreshInterval = queryConfig.refreshInterval ?? 0
 
   // Memoize context to prevent columnDefs recalculation on every render.
@@ -187,20 +191,80 @@ export const TableClient = function TableClient({
   const sql = queryConfig.sql ? getSqlForDisplay(queryConfig.sql) : undefined
 
   if (error) {
+    const serverVersion = hostStatus.data?.version
+    const versionedSql = Array.isArray(queryConfig.sql) ? queryConfig.sql : []
+    const minSince = versionedSql.length > 0 ? versionedSql[0].since : undefined
+    const isVersionMismatch = serverVersion && minSince ? isVersionOlder(serverVersion, minSince) : false
+
+    // 1. Version Mismatch Check (Pre-emptive)
+    if (isVersionMismatch) {
+      return (
+        <Card className={cn('rounded-md shadow-none py-2 group relative border-warning/30 bg-warning/5', className)}>
+          <CardContent className="p-4">
+            <Alert className="border-0 pr-12">
+              <Info className="h-4 w-4 text-warning" />
+              <AlertTitle>Version Mismatch</AlertTitle>
+              <AlertDescription className="flex flex-col gap-3">
+                <p>
+                  This feature requires ClickHouse version <strong>{minSince}</strong> or newer.
+                  The current ClickHouse host runs version <strong>{serverVersion}</strong>.
+                </p>
+                <div className="flex flex-col gap-1 border-t pt-3 text-xs text-muted-foreground">
+                  <p>Please upgrade your ClickHouse instance or choose another host that meets the minimum requirement.</p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      )
+    }
+
     const variant = detectCardErrorVariant(error as CardError)
     const showRetry = shouldShowRetryButton(error as CardError)
 
-    // Get table-specific guidance for table-missing errors
-    const tableMissingInfo = getTableMissingInfo(error as CardError)
-    const guidance = tableMissingInfo?.guidance
+    // 2. Permission / GRANT Suggestion Check
+    if (variant === 'permission') {
+      const errorTitle = getCardErrorTitle(variant, title)
+      const errorDescription = getCardErrorDescription(error as CardError, variant)
+      
+      const rawMessage = error.message || ''
+      const permissionTable = extractTableFromPermissionError(rawMessage) || queryConfig.tableCheck || 'system.query_log'
+      const targetTable = Array.isArray(permissionTable) ? permissionTable[0] : permissionTable
+      
+      const grantQuery = `GRANT SELECT ON ${targetTable} TO <your_clickhouse_user>;`
 
-    // For table-missing errors without specific guidance, show a helpful card
+      return (
+        <Card className={cn('rounded-md shadow-none py-2 group relative border-destructive/30 bg-destructive/5', className)}>
+          <div className="absolute top-3 right-3">
+            <CardToolbar sql={sql} metadata={metadata} alwaysVisible />
+          </div>
+          <CardContent className="p-6">
+            <div className="flex flex-col gap-4">
+              <EmptyState
+                variant="error"
+                title={errorTitle}
+                description={errorDescription}
+                compact={true}
+              />
+              <div className="mt-2 text-sm border-t pt-4">
+                <p className="mb-2 font-medium">To grant the required permissions, execute the following SQL query as admin:</p>
+                <SuggestionCard suggestion={grantQuery} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // 3. Table Missing Check
     if (variant === 'table-missing') {
       const errorTitle = getCardErrorTitle(variant, title)
       const errorDescription = getCardErrorDescription(
         error as CardError,
         variant
       )
+      const tableMissingInfo = getTableMissingInfo(error as CardError)
+      const guidance = tableMissingInfo?.guidance
 
       return (
         <Card

@@ -125,7 +125,7 @@ ${error.stack}
     >
       <CardContent className={chartCard.contentError}>
         <EmptyState
-          variant={variant}
+          variant={variant === 'permission' ? 'error' : variant}
           title={title}
           description={description}
           compact={compact}

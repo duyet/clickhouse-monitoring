@@ -5,12 +5,15 @@
 import {
   type CardError,
   detectCardErrorVariant,
+  extractTableFromPermissionError,
   formatCardErrorForLogging,
   getCardErrorClassName,
   getCardErrorDescription,
   getCardErrorStyle,
   getCardErrorTitle,
   isCardErrorRetryable,
+  isVersionOlder,
+  parseSimpleVersion,
   shouldShowRetryButton,
 } from '../card-error-utils'
 import { describe, expect, it } from 'bun:test'
@@ -60,7 +63,7 @@ describe('card-error-utils', () => {
           ApiErrorType.PermissionError,
           'Access denied'
         )
-        expect(detectCardErrorVariant(error)).toBe('error')
+        expect(detectCardErrorVariant(error)).toBe('permission')
       })
 
       it('should detect query_error', () => {
@@ -499,6 +502,82 @@ describe('card-error-utils', () => {
       const formatted = formatCardErrorForLogging(timeoutError)
 
       expect(formatted.variant).toBe('timeout')
+    })
+  })
+
+  describe('parseSimpleVersion', () => {
+    it('parses major.minor.patch', () => {
+      expect(parseSimpleVersion('24.3.1')).toEqual({
+        major: 24,
+        minor: 3,
+        patch: 1,
+      })
+    })
+
+    it('defaults missing minor/patch to 0', () => {
+      expect(parseSimpleVersion('24')).toEqual({
+        major: 24,
+        minor: 0,
+        patch: 0,
+      })
+    })
+
+    it('ignores extra version segments (e.g. build number)', () => {
+      expect(parseSimpleVersion('24.8.14.10459')).toEqual({
+        major: 24,
+        minor: 8,
+        patch: 14,
+      })
+    })
+
+    it('treats an empty string as 0.0.0', () => {
+      expect(parseSimpleVersion('')).toEqual({ major: 0, minor: 0, patch: 0 })
+    })
+  })
+
+  describe('isVersionOlder', () => {
+    it('is true when the current minor is lower', () => {
+      expect(isVersionOlder('24.1', '24.3')).toBe(true)
+    })
+
+    it('is true when the current major is lower', () => {
+      expect(isVersionOlder('23.8', '24.1')).toBe(true)
+    })
+
+    it('is false when the current version is newer', () => {
+      expect(isVersionOlder('25.1', '24.8')).toBe(false)
+      expect(isVersionOlder('24.3', '24.1')).toBe(false)
+    })
+
+    it('is false when the versions are equal', () => {
+      expect(isVersionOlder('24.3', '24.3')).toBe(false)
+    })
+
+    it('compares the patch level', () => {
+      expect(isVersionOlder('24.3.1', '24.3.2')).toBe(true)
+      expect(isVersionOlder('24.3.2', '24.3.1')).toBe(false)
+    })
+  })
+
+  describe('extractTableFromPermissionError', () => {
+    it('extracts a system.* table from a GRANT error', () => {
+      expect(
+        extractTableFromPermissionError(
+          "Not enough privileges. To execute this query, it's necessary to have the grant SELECT ON system.query_log"
+        )
+      ).toBe('system.query_log')
+    })
+
+    it('extracts a default.* table', () => {
+      expect(
+        extractTableFromPermissionError('GRANT SELECT ON default.events TO bob')
+      ).toBe('default.events')
+    })
+
+    it('returns undefined when no qualified table is present', () => {
+      expect(
+        extractTableFromPermissionError('access denied for this operation')
+      ).toBeUndefined()
     })
   })
 })

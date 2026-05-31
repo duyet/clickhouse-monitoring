@@ -18,6 +18,7 @@ import {
   detectCardErrorVariant,
   getCardErrorDescription,
   getCardErrorTitle,
+  toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { expensiveQueriesConfig } from '@/lib/query-config/queries/expensive-queries'
 import { useHostId } from '@/lib/swr/use-host'
@@ -91,7 +92,9 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
           <Card className="rounded-xl">
             <CardContent className="p-4">
               <EmptyState
-                variant={detectCardErrorVariant(error as CardError)}
+                variant={toEmptyStateVariant(
+                  detectCardErrorVariant(error as CardError)
+                )}
                 title={getCardErrorTitle(
                   detectCardErrorVariant(error as CardError),
                   'Expensive Queries'
