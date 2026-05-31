@@ -196,9 +196,16 @@ export const KP_R = 40
 // structural truth is preserved in meta.counts / meta.hiddenChNodes.
 export const CH_RENDER_CAP = 24
 
-// Per-node CONTENT envelope (relative to the node center), matching the glyph +
-// label positions in topo-canvas. A cluster boundary is the bounding box of its
-// members' envelopes, so every node AND its labels sit inside the boundary.
+// Per-node CONTENT envelope (relative to the node center). A cluster boundary is
+// the bounding box of its members' envelopes, so every node AND its labels sit
+// inside the boundary.
+//
+// CONTRACT: these extents MUST track the label positions painted in
+// topo-canvas.tsx (`NodeLabel`'s `r + 16` / `r + 31`, the LOCAL badge's
+// `r + 25` / `r + 40`). If you move/resize a label in the canvas, update the
+// matching extent here or the label spills outside its cluster rect. The numbers
+// below decompose as: glyph radius (CH_R/KP_R) + label offset + line/badge height
+// + a small descender allowance. See docs/knowledge/cluster-topology.md.
 const ENVELOPE_MARGIN = 9 // breathing room between content and the boundary
 
 /** How far a ClickHouse glyph + its labels extend below its center. */

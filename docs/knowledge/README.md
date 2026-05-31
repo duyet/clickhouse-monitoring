@@ -33,6 +33,7 @@ Agents discover knowledge in this order:
 | **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
 | **Specs** | [query-config-format.md](query-config-format.md) | spec | QueryConfig type format, versioned SQL, BackgroundBar columns |
+| **Specs** | [cluster-topology.md](cluster-topology.md) | spec | Cluster topology SVG: layout pipeline, constant contracts, OKLCH gotcha, shared component, verification harness |
 | **Development** | [component-ci-stability.md](component-ci-stability.md) | incident | Cypress component test fragility findings and fix direction |
 | **Development** | [conventions.md](conventions.md) | workflow | Coding conventions, file organization, component patterns |
 | **Tools** | [standalone-cli.md](standalone-cli.md) | reference | Rust CLI for monitoring via terminal and TUI |
