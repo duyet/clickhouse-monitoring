@@ -526,6 +526,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                 <button
                   type="button"
                   onClick={() => removeCommittedFilter(filter.id)}
+                  aria-label="Remove filter"
                   className="text-muted-foreground/60 hover:text-foreground p-0.5 rounded"
                 >
                   <XIcon className="size-3" />

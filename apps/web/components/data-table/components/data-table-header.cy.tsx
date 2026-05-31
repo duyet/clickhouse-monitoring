@@ -138,43 +138,73 @@ describe('<DataTableHeader />', () => {
     cy.get('[data-testid="right-extra"]').contains('Right Extra')
   })
 
-  it('shows filter clear button when filters are active', () => {
-    cy.mount(
-      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={2} />
-    )
-
-    cy.contains('Clear 2 filters').should('be.visible')
-  })
-
-  it('shows singular filter text when one filter is active', () => {
-    cy.mount(
-      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={1} />
-    )
-
-    cy.contains('Clear 1 filter').should('be.visible')
-  })
-
-  it('does not show filter clear button when no filters are active', () => {
-    cy.mount(
-      <TestDataTableHeader enableColumnFilters={true} activeFilterCount={0} />
-    )
-
-    cy.contains('Clear').should('not.exist')
-  })
-
-  it('calls clearAllColumnFilters when clear button is clicked', () => {
-    const clearStub = cy.stub()
-
+  it('shows filter chips when advanced filters are active', () => {
     cy.mount(
       <TestDataTableHeader
-        enableColumnFilters={true}
-        activeFilterCount={1}
-        clearAllColumnFilters={clearStub}
+        advancedFilters={[
+          {
+            id: '1',
+            columnId: 'col1',
+            operator: 'contains',
+            value: 'test',
+          },
+        ]}
       />
     )
 
-    cy.contains('Clear 1 filter').click()
-    cy.wrap(clearStub).should('have.been.calledOnce')
+    cy.contains('col1 contains “test”').should('be.visible')
+    cy.contains('Clear all').should('be.visible')
+  })
+
+  it('does not show filter chips when no filters are active', () => {
+    cy.mount(<TestDataTableHeader advancedFilters={[]} />)
+
+    cy.contains('Clear all').should('not.exist')
+  })
+
+  it('calls onAdvancedFiltersChange when a filter chip is deleted', () => {
+    const filterChangeStub = cy.stub()
+
+    cy.mount(
+      <TestDataTableHeader
+        advancedFilters={[
+          {
+            id: '1',
+            columnId: 'col1',
+            operator: 'contains',
+            value: 'test',
+          },
+        ]}
+        onAdvancedFiltersChange={filterChangeStub}
+      />
+    )
+
+    cy.get('button[aria-label="Remove filter"]').click()
+    cy.wrap(filterChangeStub).should('have.been.calledOnce')
+  })
+
+  it('calls clearAllFilters when Clear all button is clicked', () => {
+    const filterChangeStub = cy.stub()
+    const globalSearchChangeStub = cy.stub()
+
+    cy.mount(
+      <TestDataTableHeader
+        advancedFilters={[
+          {
+            id: '1',
+            columnId: 'col1',
+            operator: 'contains',
+            value: 'test',
+          },
+        ]}
+        onAdvancedFiltersChange={filterChangeStub}
+        onGlobalSearchChange={globalSearchChangeStub}
+      />
+    )
+
+    cy.contains('Clear all').click()
+    cy.wrap(filterChangeStub).should('have.been.calledWith', [])
+    cy.wrap(globalSearchChangeStub).should('have.been.calledWith', '')
   })
 
   it('opens SQL dialog from request info menu', () => {
