@@ -21,15 +21,20 @@ import {
 } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
 
+import type { Icon } from '@chm/types/icon'
 import type { UseVirtualRowsResult } from '@/components/data-table/hooks/use-virtual-rows'
 import type {
+  CardConfig,
   ExpandableConfig,
   ExpandedRenderer,
   RowClassNameFn,
 } from '@/types/query-config'
 
 import { Fragment } from 'react'
-import { EXPAND_COLUMN_ID } from '@/components/data-table/column-defs'
+import {
+  EXPAND_COLUMN_ID,
+  normalizeColumnName,
+} from '@/components/data-table/column-defs'
 import { DefaultExpandedRow } from '@/components/data-table/row-expand/default-renderer'
 import { Button } from '@/components/ui/button'
 import {
@@ -70,6 +75,25 @@ function getColumnLabel<TData extends RowData>(column: Column<TData, unknown>) {
   return typeof column.columnDef.header === 'string'
     ? column.columnDef.header
     : formatColumnLabel(column.id)
+}
+
+/**
+ * Resolve a config-declared column name (e.g. `readable_memory_usage`) to the
+ * matching table cell. Column ids and config names can differ by case and the
+ * `readable_` prefix, so we try an exact id match first, then a normalized
+ * match — this keeps `card` configs robust regardless of which form the column
+ * def settled on.
+ */
+function matchCell<TData extends RowData>(
+  cells: Cell<TData, unknown>[],
+  name: string
+): Cell<TData, unknown> | undefined {
+  const normalized = normalizeColumnName(name)
+  return (
+    cells.find((cell) => cell.column.id === name) ??
+    cells.find((cell) => cell.column.id === normalized) ??
+    cells.find((cell) => normalizeColumnName(cell.column.id) === normalized)
+  )
 }
 
 function pickPrimaryCell<TData extends RowData>(cells: Cell<TData, unknown>[]) {
@@ -162,33 +186,75 @@ interface MobileTableCardProps<TData extends RowData> {
   row: Row<TData>
   rowClassName?: RowClassNameFn
   expandable?: true | ExpandableConfig
+  /** Declarative card layout (hero / badges / metrics / hidden). */
+  card?: CardConfig
+  /** Leading icons for metric chips, keyed by column name. */
+  columnIcons?: Record<string, Icon>
 }
 
 const MobileTableCard = function MobileTableCard<TData extends RowData>({
   row,
   rowClassName,
   expandable,
+  card,
+  columnIcons,
 }: MobileTableCardProps<TData>) {
   const cells = row.getVisibleCells()
   const selectCell = cells.find((cell) => cell.column.id === 'select')
   const actionCell = cells.find((cell) => cell.column.id === 'action')
-  const kindCell = cells.find((cell) => cell.column.id === 'query_kind')
-  const primaryCell = pickPrimaryCell(cells)
-  // Every non-utility cell stays as a label/value row, except the primary (it
-  // becomes the hero) and the query kind (surfaced as a header badge instead).
+
+  // Hero column: declared `card.primary` wins, else the historical heuristic.
+  const primaryCell = card?.primary
+    ? matchCell(cells, card.primary)
+    : pickPrimaryCell(cells)
+
+  // Header badges: declared `card.badges`, else fall back to the single
+  // `query_kind` badge the renderer has always surfaced.
+  const badgeCells = (
+    card?.badges
+      ? card.badges.map((name) => matchCell(cells, name))
+      : [cells.find((cell) => cell.column.id === 'query_kind')]
+  ).filter((cell): cell is Cell<TData, unknown> => Boolean(cell))
+
+  // Metric chips: a compact icon+value row of the most glanceable live metrics.
+  // Only populated when the config opts in via `card.metrics`.
+  const metricEntries = (card?.metrics ?? [])
+    .map((name) => ({ name, cell: matchCell(cells, name) }))
+    .filter((entry): entry is { name: string; cell: Cell<TData, unknown> } =>
+      Boolean(entry.cell)
+    )
+
+  const hiddenIds = new Set(
+    (card?.hidden ?? [])
+      .map((name) => matchCell(cells, name)?.id)
+      .filter((id): id is string => Boolean(id))
+  )
+
+  // Cells already placed elsewhere (hero, header badges, metric row) must not
+  // repeat as label/value detail rows.
+  const usedIds = new Set(
+    [
+      primaryCell?.id,
+      ...badgeCells.map((cell) => cell.id),
+      ...metricEntries.map((entry) => entry.cell.id),
+    ].filter((id): id is string => Boolean(id))
+  )
+
   const detailCells = cells.filter(
     (cell) =>
-      cell.id !== primaryCell?.id &&
-      cell.id !== kindCell?.id &&
+      !usedIds.has(cell.id) &&
+      !hiddenIds.has(cell.id) &&
       !UTILITY_COLUMNS.has(cell.column.id)
   )
+
   const isSqlPrimary =
     !!primaryCell && SQL_PRIMARY_COLUMNS.has(primaryCell.column.id)
   const customClass = rowClassName?.(row.original as Record<string, unknown>)
   const isExpandable = !!expandable && row.getCanExpand()
   const isExpanded = isExpandable && row.getIsExpanded()
   const ExpandIcon = isExpanded ? ChevronDown : ChevronRight
-  const hasHeader = isExpandable || !!selectCell || !!kindCell || !!actionCell
+  const hasHeader =
+    isExpandable || !!selectCell || badgeCells.length > 0 || !!actionCell
 
   return (
     <article
@@ -207,7 +273,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
               onClick={() => row.toggleExpanded()}
               aria-expanded={isExpanded}
               aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-              className="-ml-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              className="-ml-1 inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-transform duration-100 hover:bg-muted/60 hover:text-foreground active:scale-[0.96]"
               data-testid="mobile-table-card-expand"
             >
               <ExpandIcon className="size-4" />
@@ -223,14 +289,11 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
             </div>
           )}
 
-          {kindCell && (
-            <div className="min-w-0 [&_*]:max-w-full">
-              {flexRender(
-                kindCell.column.columnDef.cell,
-                kindCell.getContext()
-              )}
+          {badgeCells.map((cell) => (
+            <div key={cell.id} className="min-w-0 [&_*]:max-w-full">
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </div>
-          )}
+          ))}
 
           {actionCell && (
             <div className="-mr-1 ml-auto shrink-0">
@@ -271,6 +334,31 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
         </div>
       )}
 
+      {metricEntries.length > 0 && (
+        <div
+          data-testid="mobile-table-card-metrics"
+          className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground"
+        >
+          {metricEntries.map(({ name, cell }) => {
+            const MetricIcon = columnIcons?.[name]
+            return (
+              <span
+                key={cell.id}
+                className="inline-flex min-w-0 items-center gap-1 tabular-nums"
+                title={formatColumnLabel(cell.column.id)}
+              >
+                {MetricIcon && (
+                  <MetricIcon className="size-3 shrink-0 opacity-70" />
+                )}
+                <span className="min-w-0 truncate [&_*]:max-w-full [&_code]:whitespace-normal">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </span>
+              </span>
+            )
+          })}
+        </div>
+      )}
+
       {detailCells.length > 0 && (
         <dl className="mt-3 divide-y divide-border/50">
           {detailCells.map((cell) => (
@@ -281,7 +369,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
               <dt className="min-w-0 truncate text-xs text-muted-foreground">
                 {formatColumnLabel(cell.column.id)}
               </dt>
-              <dd className="min-w-0 text-right text-sm text-foreground [&_*]:max-w-full [&_code]:whitespace-normal">
+              <dd className="min-w-0 text-right text-sm tabular-nums text-foreground [&_*]:max-w-full [&_code]:whitespace-normal">
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </dd>
             </div>
@@ -315,6 +403,10 @@ export interface MobileTableCardsProps<TData extends RowData> {
   isVirtualized?: boolean
   virtualizer?: UseVirtualRowsResult['virtualizer']
   expandable?: true | ExpandableConfig
+  /** Declarative card layout (hero / badges / metrics / hidden). */
+  card?: CardConfig
+  /** Leading icons for metric chips, keyed by column name. */
+  columnIcons?: Record<string, Icon>
 }
 
 export const MobileTableCards = function MobileTableCards<
@@ -327,6 +419,8 @@ export const MobileTableCards = function MobileTableCards<
   isVirtualized = false,
   virtualizer,
   expandable,
+  card,
+  columnIcons,
 }: MobileTableCardsProps<TData>) {
   const rows = table.getRowModel().rows
 
@@ -379,6 +473,8 @@ export const MobileTableCards = function MobileTableCards<
                   row={row}
                   rowClassName={rowClassName}
                   expandable={expandable}
+                  card={card}
+                  columnIcons={columnIcons}
                 />
               </div>
             )
@@ -392,6 +488,8 @@ export const MobileTableCards = function MobileTableCards<
               row={row}
               rowClassName={rowClassName}
               expandable={expandable}
+              card={card}
+              columnIcons={columnIcons}
             />
           ))}
         </div>

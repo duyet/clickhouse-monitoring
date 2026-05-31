@@ -59,6 +59,50 @@ export interface ExpandableConfig<TData = Record<string, unknown>> {
 }
 
 /**
+ * Declarative card-view layout. Tells the responsive card renderer how to
+ * rank a row's columns by importance instead of guessing: which column is the
+ * hero (rendered as the prominent block that reads first), which are surfaced
+ * as header badges, which collapse into the compact metric chip row, and which
+ * to omit. When a config sets none of these, the renderer falls back to its
+ * historical heuristic, so this is purely opt-in.
+ *
+ * This is how a page declares "the query matters more than its metadata".
+ *
+ * @example Running / history queries — the SQL is the hero
+ * ```ts
+ * card: {
+ *   primary: 'query',
+ *   badges: ['query_kind', 'type'],
+ *   metrics: ['user', 'query_duration', 'event_time'],
+ *   hidden: ['readable_result_rows'],
+ * }
+ * ```
+ */
+export interface CardConfig<TColumns extends readonly string[] = string[]> {
+  /**
+   * Hero column rendered prominently at the top of each card. Overrides the
+   * heuristic primary-column detection.
+   */
+  primary?: TColumns[number]
+  /**
+   * Columns surfaced as badges in the card header — typically status / kind /
+   * type columns formatted with {@link ColumnFormat.ColoredBadge}.
+   */
+  badges?: TColumns[number][]
+  /**
+   * Columns shown as a compact icon+value metric chip row beneath the hero, in
+   * the order declared. Leading icons come from `columnIcons`. These should be
+   * the live metrics that must read at a glance (duration, memory, time, …).
+   */
+  metrics?: TColumns[number][]
+  /**
+   * Columns to omit from the card entirely — noise, or values already implied
+   * by the hero / metrics.
+   */
+  hidden?: TColumns[number][]
+}
+
+/**
  * Per-table behavior configuration. Each flag is optional and falls back to a
  * sensible default. Use this on a QueryConfig to override defaults for a
  * specific table (e.g. disable resizing for compact summary tables).
@@ -425,6 +469,15 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * @default 'table'
    */
   defaultView?: 'table' | 'cards' | 'auto'
+  /**
+   * Declarative card-view layout — which column is the hero, which become
+   * header badges, which collapse into the metric chip row, and which are
+   * hidden. Drives the responsive card renderer so importance is a config
+   * decision, not a render-time guess. Falls back to a heuristic when unset.
+   *
+   * @see {@link CardConfig}
+   */
+  card?: CardConfig<TColumns>
   /**
    * Bulk actions available for selected rows (shown in toolbar).
    * These actions apply to all selected rows at once.

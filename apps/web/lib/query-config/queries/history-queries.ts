@@ -257,6 +257,24 @@ export const historyQueriesConfig: QueryConfig = {
   // Cards on phones (the wide query_log table is unreadable in a scroll box),
   // table on desktop — with a toggle so either view is reachable anywhere.
   defaultView: 'auto',
+  // Importance ranking for the card view: the SQL is the hero, kind/status are
+  // header badges, the live scalars form the metric chip row, and the rest
+  // (memory / read-rows mini-bars, query_id, client) stay as detail rows.
+  card: {
+    primary: 'query',
+    badges: ['query_kind', 'type'],
+    metrics: ['user', 'query_duration', 'event_time'],
+    hidden: [
+      'readable_written_rows',
+      'readable_result_rows',
+      'query_cache_usage',
+    ],
+  },
+  columnIcons: {
+    user: UserIcon,
+    query_duration: TimerIcon,
+    event_time: ClockIcon,
+  },
   description:
     'Contains information about executed queries: start time, duration of processing, error messages',
   docs: QUERY_LOG,
