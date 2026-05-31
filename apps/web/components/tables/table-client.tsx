@@ -237,19 +237,25 @@ export const TableClient = function TableClient({
     // 2. Permission / GRANT Suggestion Check
     if (variant === 'permission') {
       const errorTitle = getCardErrorTitle(variant, title)
-      const errorDescription = getCardErrorDescription(
-        error as CardError,
-        variant
-      )
+      // Use standardized copy — never pass through raw ClickHouse error text
+      const errorDescription =
+        'The current ClickHouse user does not have sufficient privileges to query this table. Contact your administrator to grant SELECT permissions.'
 
       const rawMessage = error.message || ''
-      const rawTable =
-        extractTableFromPermissionError(rawMessage) || queryConfig.tableCheck
-      const targetTable = rawTable
-        ? Array.isArray(rawTable)
-          ? rawTable[0]
-          : rawTable
-        : undefined
+      const extracted = extractTableFromPermissionError(rawMessage)
+      // Only construct GRANT when we have a single unambiguous table
+      const rawCheck = queryConfig.tableCheck
+      const hasExtracted = typeof extracted === 'string'
+      const hasSingleCheck =
+        typeof rawCheck === 'string' ||
+        (Array.isArray(rawCheck) && rawCheck.length === 1)
+      const targetTable = hasExtracted
+        ? extracted
+        : hasSingleCheck
+          ? Array.isArray(rawCheck)
+            ? rawCheck[0]
+            : rawCheck
+          : undefined
 
       const grantQuery = targetTable
         ? `GRANT SELECT ON ${targetTable} TO <your_clickhouse_user>;`

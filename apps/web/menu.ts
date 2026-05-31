@@ -520,7 +520,7 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ShieldIcon,
         isNew: true,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_event_log',
-        tableCheck: 'system.opentelemetry_event_log',
+        tableCheck: 'system.session_log',
       },
     ],
   },
