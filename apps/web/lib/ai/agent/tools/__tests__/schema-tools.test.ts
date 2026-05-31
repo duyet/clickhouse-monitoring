@@ -326,7 +326,6 @@ describe('createSchemaTools', () => {
       mockFetchData.mockImplementation(
         async ({
           query,
-          query_params,
         }: {
           query: string
           query_params?: Record<string, unknown>

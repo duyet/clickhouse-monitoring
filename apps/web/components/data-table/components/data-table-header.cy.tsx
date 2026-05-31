@@ -56,6 +56,10 @@ describe('<DataTableHeader />', () => {
         enableColumnFilters={false}
         activeFilterCount={0}
         clearAllColumnFilters={() => {}}
+        globalSearch=""
+        onGlobalSearchChange={() => {}}
+        advancedFilters={[]}
+        onAdvancedFiltersChange={() => {}}
         {...props}
       />
     )

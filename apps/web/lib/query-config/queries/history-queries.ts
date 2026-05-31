@@ -32,7 +32,7 @@ const historyQueryTail = `
           FROM system.query_log
           ${FILTER_PLACEHOLDER}
           ORDER BY event_time DESC
-          LIMIT 1000`
+          LIMIT 250`
 
 /** Service users excluded from the result by default (configurable per deploy). */
 const defaultExcludedUsers = process.env.CLICKHOUSE_EXCLUDE_USER_DEFAULT || ''
@@ -255,6 +255,9 @@ export const historyQueryFilterSchema: FilterSchema = {
 
 export const historyQueriesConfig: QueryConfig = {
   name: 'history-queries',
+  clickhouseSettings: {
+    max_result_rows: '250',
+  },
   // Cards on phones (the wide query_log table is unreadable in a scroll box),
   // table on desktop — with a toggle so either view is reachable anywhere.
   defaultView: 'auto',
@@ -347,7 +350,6 @@ export const historyQueriesConfig: QueryConfig = {
               query_duration_ms / 1000 as query_duration,
               event_time,
               query,
-              formatted_query AS readable_query,
               user,
               read_rows,
               formatReadableQuantity(read_rows) AS readable_read_rows,
@@ -376,7 +378,6 @@ ${historyQueryTail}
               query_duration_ms / 1000 as query_duration,
               event_time,
               query,
-              formatted_query AS readable_query,
               user,
               read_rows,
               formatReadableQuantity(read_rows) AS readable_read_rows,
@@ -435,7 +436,6 @@ ${historyQueryTail}
     query_duration: ColumnFormat.Duration,
     query_kind: ColumnFormat.ColoredBadge,
     query_cache_usage: ColumnFormat.ColoredBadge,
-    readable_query: ColumnFormat.Code,
     query: [
       ColumnFormat.CodeDialog,
       {

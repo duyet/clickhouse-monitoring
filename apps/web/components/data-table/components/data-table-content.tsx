@@ -308,6 +308,11 @@ export const DataTableContent = memo(function DataTableContent<
         {/* Card layout: on mobile by default, and at all widths when view==='cards'. */}
         {!compact && (
           <div className={cn('p-3', cardsVisibility)}>
+            {!offerViewToggle && (
+              <div className="mb-2 flex justify-end">
+                <MobileSortMenu table={table} />
+              </div>
+            )}
             <MobileTableCards
               table={table}
               title={title}

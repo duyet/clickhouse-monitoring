@@ -214,7 +214,7 @@ describe('<DataTableContent />', () => {
 
     cy.get('button[aria-label="Drag to reorder col1 column"]')
       .should('have.attr', 'type', 'button')
-      .and('have.class', 'size-7')
+      .and('have.class', 'size-6')
       .and('have.class', 'hidden')
       .and('have.class', 'sm:inline-flex')
       .find('[data-icon]')
