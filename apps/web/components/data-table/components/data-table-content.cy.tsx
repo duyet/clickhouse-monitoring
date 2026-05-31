@@ -169,7 +169,7 @@ describe('<DataTableContent />', () => {
   })
 
   it('renders table with border and background styles', () => {
-    cy.mount(<TestDataTableContent />)
+    cy.mount(<TestDataTableContent view="table" />)
 
     cy.get('[role="region"]')
       .should('have.class', 'border-border/50')

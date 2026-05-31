@@ -177,6 +177,7 @@ describe('<DataTable />', () => {
         context={{}}
         enableRowSelection
         onRowSelectionChange={onRowSelectionChange}
+        view="table"
       />
     )
 
