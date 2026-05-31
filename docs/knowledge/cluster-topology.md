@@ -69,11 +69,12 @@ All in `model.ts` unless noted. **Do not change a number in isolation; check the
 
 | Constant | Meaning | Contract / why |
 |----------|---------|----------------|
-| `VB_W` `VB_H` | viewBox (1280×580) | Wide aspect fills the 2-col container (≈2.2). **Imported by the layout tests** so the in-bounds check moves with them. |
+| `VB_W` `VB_H` | viewBox (1280×640) | Taller than a pure 2-col fit so the keeper region (FQDN labels), the keeper↔CH gap, and deeply-nested rings + bottom pills all sit in view. The fixed-height container scales `preserveAspectRatio="meet"`, so extra height letterboxes instead of clipping. **Imported by the layout tests** so the in-bounds check moves with them. |
 | `CH_R` `KP_R` | node radii (42 / 40) | **Exported & imported by `topo-canvas.tsx`** so the drawn glyph == the size layout reserves. Single source of truth — never redeclare in the canvas. |
 | `chHalfExtent / chUpExtent / chDownExtent` | CH node CONTENT envelope (glyph + labels) | **CONTRACT with `topo-canvas.tsx` label positions.** `chDownExtent` must cover the sub-line / host line / LOCAL badge the canvas paints (see `NodeLabel` + the LOCAL badge `r + …`). If you move a label in the canvas, update the matching extent here or it spills outside its cluster boundary. |
-| `keeperHalf/Up/DownExtent` | Keeper envelope | Same contract with the keeper glyph (`star` above → bigger up-extent for leaders). |
-| `ENVELOPE_MARGIN` | breathing room between content and a boundary | Applied in `buildClusterHulls` + `buildKeeperRect`. |
+| `keeperHalf/Up/DownExtent` | Keeper envelope | Same contract with the keeper glyph (`star` above → bigger up-extent for leaders). `keeperDownExtent(k)` is **node-aware**: when the keeper host is an FQDN (`host !== id`), `NodeLabel` paints a host line AT `r+16` **and** a sub-line at `r+31`, so the extent is `KP_R + 42` (vs `KP_R + 26` for short hosts). Get this wrong and follower labels spill below the green boundary into the cluster region. |
+| `ENVELOPE_MARGIN` | breathing room between content and a boundary (12) | Applied in `buildClusterHulls` + `buildKeeperRect`. |
+| `boundaryReserve(...) → centerContent padTop/padBottom` | room the rings + bottom pills need beyond the node envelopes | `centerContent` only knows node envelopes; the rects outset past them (`ENVELOPE_MARGIN` + concentric `NEST_STEP`) and pills sit on the bottom edge. `boundaryReserve` derives a top/bottom pad from the deepest coincident nest so a densely-nested graph stays in view. |
 | `CLUSTER_RECT_RADIUS` | corner radius of territory rects | Capped to half the shorter side in `roundedRectPath`. |
 | `enforceMinDistance(... CH_R*2 + 92)` | min node gap | Sized so a **single-node** cluster boundary (≈ `CH_R + chHalfExtent + margin`) cannot reach a neighbor glyph. If you shrink this, boundaries start cutting neighbors. |
 | `CH_BAND_Y/H`, `CH_MARGIN` | the CH region rectangle | Relative placement only — `centerContent` re-centers afterward, so exact values matter less than the keeper↔CH gap. |
@@ -146,10 +147,14 @@ Locked by `model.test.ts` → "local-duplicate merge".
   the same hosts) are drawn as **concentric nested rects**: `buildClusterHulls` ranks each cluster
   within its member-set signature and outsets ring `k` by `k * NEST_STEP`. Distinct-but-overlapping
   clusters keep the small `hashStr` jitter instead.
-- **Cluster label pills** de-overlap in `nudgeLabels`: width-aware (`name.length*7+20`, matching
-  `HullLabel`) upward stacking against ALL already-placed pills. A pill lifted off its rect sets
-  `ClusterHull.leader`, and the canvas draws a thin dashed **leader line** from the pill back to the
-  rect's top-center (`anchorX/anchorY`) so the name stays attributed.
+- **Cluster label pills** anchor to each rect's **BOTTOM** edge (`labelY = maxY`), not the top: the
+  top edge sits in the crowded zone just under the keeper region where pills got hidden or overlapped
+  node sub-lines; below the cards is open space. `nudgeLabels` de-overlaps width-aware
+  (`name.length*7+20`, matching `HullLabel`) by stacking **downward** against ALL already-placed
+  pills. A pill dropped off its rect sets `ClusterHull.leader`, and the canvas draws a thin dashed
+  **leader line** from the pill UP to the rect's bottom-center (`anchorX/anchorY`). Concentric
+  coincident rings are stepped by `NEST_STEP` (24) > pill height, so each ring's pill sits on its own
+  bottom edge without stacking.
 
 ## Shared component
 
@@ -163,7 +168,7 @@ only branch in `page.tsx`.
 
 ## Test invariants (do not break)
 
-`bun test apps/web/components/cluster-topology/__tests__/` — 33 pure tests, runnable without
+`bun test apps/web/components/cluster-topology/__tests__/` — 36 pure tests, runnable without
 `node_modules`. They lock:
 - hull path shape per node count; **area-DESC z-order**; replication-edge rules.
 - **shared-node-between-centroids** (overlap lens) — relative x order; `centerContent` translates
@@ -178,19 +183,20 @@ only runs where `node_modules` is present, i.e. CI — not in a bare worktree).
 
 ## Verification harness (how to eyeball changes safely)
 
-The canvas uses theme CSS vars, so you can't judge it from path strings. The reliable check:
-render the **real laid-out model** into a standalone HTML page with the app's true OKLCH vars
-(light + dark) and screenshot it. Pattern used during development:
+The canvas uses theme CSS vars, so you can't judge it from path strings. The reliable check is the
+committed harness **`scripts/topo-harness.tsx`**:
 
-1. A bun script imports `buildTopologyModel` from `model.ts` (works without `node_modules` —
-   the model's only real import is `./geometry`; everything else is `import type`).
-2. Build fixtures (rich multi-cluster, single-node-no-keeper, dense) → models.
-3. Emit an SVG that **mirrors `topo-canvas.tsx`** glyphs, with `--card/--foreground/--muted/…`
-   set to the real oklch values for each theme.
-4. Open via the chrome-devtools MCP and screenshot.
+```shell
+bun run scripts/topo-harness.tsx > /tmp/topo.html   # then open via chrome-devtools MCP
+```
 
-This catches the OKLCH black-fill regression, label-outside-boundary, collisions, and clipping
-that pure tests can't. Mirror any canvas glyph change into the harness so the preview stays faithful.
+It renders the **real `<TopoCanvas>`** via `react-dom/server` (no glyph mirroring → no drift) for
+representative fixtures (local-duplicate = the reported screenshot, host-overlap, coincident nested
+rings), into a page carrying the true light-theme OKLCH vars from `globals.css`. Screenshot it, and
+for hard cases measure overflow directly in the browser — `getBoundingClientRect` of every `<text>`
+vs the `<svg>`'s client box is the ground truth for "does a label clip the viewBox" (`getBBox`
+returns *local* coords and will mislead). This catches the OKLCH black-fill regression,
+label-outside-boundary, collisions, and clipping that pure tests can't.
 
 ## Safe-change recipes
 
