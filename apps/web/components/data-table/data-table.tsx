@@ -169,8 +169,8 @@ export function DataTable<
   toolbarExtras,
   topRightToolbarExtras,
   queryConfig,
-  queryParams: deprecatedQueryParams,
-  apiParams,
+  queryParams: _deprecatedQueryParams,
+  apiParams: _apiParams,
   data,
   context,
   defaultPageSize = 100,
@@ -192,9 +192,6 @@ export function DataTable<
   expandable: expandableProp,
   showFilterBar = true,
 }: DataTableProps<TData>) {
-  // Support both old and new prop names for backward compatibility
-  const queryParams = apiParams ?? deprecatedQueryParams
-
   // Resolve expansion config: explicit prop wins over QueryConfig declaration
   const expandable = expandableProp ?? queryConfig.expandable
 
@@ -218,7 +215,7 @@ export function DataTable<
     columnFilters,
     setColumnFilter,
     clearColumnFilter,
-    clearAllColumnFilters,
+    clearAllColumnFilters: _clearAllColumnFilters,
     activeFilterCount,
   } = useTableFilters({
     enableUrlSync: enableFilterUrlSync,
