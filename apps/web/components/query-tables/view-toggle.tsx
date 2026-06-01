@@ -22,7 +22,7 @@ export function ViewToggle({
         type="button"
         variant={active === 'table' ? 'secondary' : 'ghost'}
         size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
+        className="gap-1.5 px-2 text-xs"
         aria-pressed={active === 'table'}
         onClick={() => onChange('table')}
       >
@@ -33,7 +33,7 @@ export function ViewToggle({
         type="button"
         variant={active === 'cards' ? 'secondary' : 'ghost'}
         size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
+        className="gap-1.5 px-2 text-xs"
         aria-pressed={active === 'cards'}
         onClick={() => onChange('cards')}
       >

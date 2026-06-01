@@ -125,7 +125,7 @@ function ViewToggle({
         type="button"
         variant={active === 'table' ? 'secondary' : 'ghost'}
         size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
+        className="gap-1.5 px-2 text-xs"
         aria-pressed={active === 'table'}
         onClick={() => onViewChange?.('table')}
       >
@@ -136,7 +136,7 @@ function ViewToggle({
         type="button"
         variant={active === 'cards' ? 'secondary' : 'ghost'}
         size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
+        className="gap-1.5 px-2 text-xs"
         aria-pressed={active === 'cards'}
         onClick={() => onViewChange?.('cards')}
       >
@@ -326,7 +326,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 gap-1.5 px-3 border-border/50 rounded-lg text-xs"
+                  className="gap-1.5 px-3 border-border/50 rounded-lg text-xs"
                   aria-label="Column Options"
                   title="Column Options"
                 >
@@ -413,7 +413,7 @@ export const DataTableHeader = memo(function DataTableHeader<
               onValueChange={onGlobalSearchChange}
               placeholder="Search across all fields..."
               debounceMs={300}
-              className="h-9 w-full pl-9 pr-8 text-sm bg-muted/20 border-border/50 focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all rounded-lg shadow-none"
+              className="h-8 w-full pl-9 pr-8 text-sm bg-muted/20 border-border/50 focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all rounded-lg shadow-none"
             />
             {globalSearch && (
               <button
@@ -436,7 +436,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                   variant={advancedFilters.length > 0 ? 'secondary' : 'outline'}
                   size="sm"
                   disabled={filterableColumns.length === 0}
-                  className="h-9 gap-1.5 px-3 border-border/50 rounded-lg text-xs"
+                  className="gap-1.5 px-3 border-border/50 rounded-lg text-xs"
                 >
                   <FilterIcon className="size-3.5" />
                   <span>Filters</span>
@@ -583,7 +583,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 gap-1.5 px-3 border-border/50 rounded-lg text-xs"
+                  className="gap-1.5 px-3 border-border/50 rounded-lg text-xs"
                   aria-label="Column Options"
                   title="Column Options"
                 >

@@ -22,7 +22,7 @@ export function PresetsMenu({ presets, onApply }: PresetsMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
+        <Button variant="outline" size="sm" className="gap-1.5 px-3 rounded-lg">
           <SparklesIcon className="size-3.5" />
           Presets
         </Button>
