@@ -9,7 +9,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 
-import { SignInButton, SignOutButton, useClerk, useUser } from '@clerk/nextjs'
+import { SignInButton, useClerk, useUser } from '@clerk/nextjs'
 import { useState } from 'react'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
@@ -42,7 +42,7 @@ import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
  */
 export function ClerkNavWrapper() {
   const { user, isLoaded, isSignedIn } = useUser()
-  const { openUserProfile } = useClerk()
+  const { openUserProfile, signOut } = useClerk()
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
@@ -193,12 +193,20 @@ export function ClerkNavWrapper() {
                   )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <SignOutButton>
-                  <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
-                    <LogOut className="size-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </SignOutButton>
+                <DropdownMenuItem
+                  className="flex items-center gap-2 text-destructive focus:text-destructive"
+                  onSelect={async () => {
+                    try {
+                      await signOut({ redirectUrl: '/' })
+                    } catch {
+                      // Fallback: force navigation to clear client-side state
+                      window.location.href = '/'
+                    }
+                  }}
+                >
+                  <LogOut className="size-4" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
