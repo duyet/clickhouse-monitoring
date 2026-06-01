@@ -203,15 +203,20 @@ function TableCheckCell({
   )
 }
 
+interface TableResizeHandleProps extends React.ComponentProps<'div'> {
+  'aria-valuenow'?: number
+}
+
 function TableResizeHandle({
   className,
+  'aria-valuenow': ariaValueNow,
   ...props
-}: React.ComponentProps<'div'>) {
+}: TableResizeHandleProps) {
   return (
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-valuenow={0}
+      aria-valuenow={ariaValueNow ?? 0}
       className={cn(
         'absolute right-0 top-0 z-20 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
         'after:absolute after:right-1 after:top-0 after:h-full after:w-px',
