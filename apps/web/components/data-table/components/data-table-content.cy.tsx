@@ -276,21 +276,6 @@ describe('<DataTableContent />', () => {
     cy.get('[data-testid="mobile-table-card"]').should('contain', 'val2')
   })
 
-  it('offers a view toggle when opted in and reflects it to the caller', () => {
-    const onViewChange = cy.stub().as('onViewChange')
-    cy.mount(
-      <TestDataTableContent
-        view="auto"
-        offerViewToggle={true}
-        onViewChange={onViewChange}
-      />
-    )
-
-    cy.get('[role="group"][aria-label="Result view"]').should('be.visible')
-    cy.contains('button', 'Cards').click()
-    cy.get('@onViewChange').should('have.been.calledWith', 'cards')
-  })
-
   it('forces the full table on mobile when the user picks table view', () => {
     // The bug this guards against: phones were stuck in cards because the
     // table/card split was CSS-breakpoint-only. With an explicit table choice

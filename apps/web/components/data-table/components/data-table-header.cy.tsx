@@ -176,7 +176,7 @@ describe('<DataTableHeader />', () => {
       />
     )
 
-    cy.get('button[aria-label="Remove filter"]').click()
+    cy.get('button[aria-label="Remove col1 filter"]').click()
     cy.wrap(filterChangeStub).should('have.been.calledOnce')
   })
 
@@ -262,8 +262,25 @@ describe('<DataTableHeader />', () => {
 
     cy.contains('button', 'Filters').click()
     // Radix Select mounts its options lazily — open the column select first.
-    cy.get('button').contains('query').click()
+    // Use cy.contains('button', ...) to target the <button> itself, not the
+    // inner <span> which has pointer-events: none.
+    cy.contains('button', 'query').click()
     cy.get('[role="option"]').should('contain.text', 'query')
     cy.get('[role="option"]').should('not.contain.text', 'action')
+  })
+
+  it('offers a view toggle when opted in and reflects it to the caller', () => {
+    const onViewChange = cy.stub().as('onViewChange')
+    cy.mount(
+      <TestDataTableHeader
+        view="auto"
+        offerViewToggle={true}
+        onViewChange={onViewChange}
+      />
+    )
+
+    cy.get('[role="group"][aria-label="Result view"]').should('be.visible')
+    cy.contains('button', 'Cards').click()
+    cy.get('@onViewChange').should('have.been.calledWith', 'cards')
   })
 })
