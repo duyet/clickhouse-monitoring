@@ -515,6 +515,8 @@ export function DataTable<
     tableState.columnOrder,
     tableState.columnVisibility,
     tableState.rowSelection,
+    globalSearch,
+    advancedFilters,
   ])
 
   // Card vs. table view. Only offered (with a toolbar toggle) when the config
