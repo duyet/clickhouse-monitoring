@@ -51,11 +51,7 @@ export function AddFilterPopover({
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1 border-dashed text-xs"
-        >
+        <Button variant="outline" className="gap-1 border-dashed text-xs">
           <PlusIcon className="size-3.5" />
           Add filter
         </Button>

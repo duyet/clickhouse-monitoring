@@ -350,13 +350,22 @@ export const DataTableHeader = memo(function DataTableHeader<
                     <DropdownMenuRadioItem
                       value="comfortable"
                       className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
                     >
                       Comfortable
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="compact" className="text-xs">
+                    <DropdownMenuRadioItem
+                      value="compact"
+                      className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
+                    >
                       Compact
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="dense" className="text-xs">
+                    <DropdownMenuRadioItem
+                      value="dense"
+                      className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
+                    >
                       Dense
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -598,13 +607,22 @@ export const DataTableHeader = memo(function DataTableHeader<
                     <DropdownMenuRadioItem
                       value="comfortable"
                       className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
                     >
                       Comfortable
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="compact" className="text-xs">
+                    <DropdownMenuRadioItem
+                      value="compact"
+                      className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
+                    >
                       Compact
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="dense" className="text-xs">
+                    <DropdownMenuRadioItem
+                      value="dense"
+                      className="text-xs"
+                      onSelect={(e) => e.preventDefault()}
+                    >
                       Dense
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>

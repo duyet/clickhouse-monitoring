@@ -159,8 +159,7 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
       {activeFilters.length > 0 && (
         <Button
           variant="ghost"
-          size="sm"
-          className="h-7 text-xs text-muted-foreground"
+          className="text-xs text-muted-foreground"
           onClick={clearAll}
         >
           Clear all
