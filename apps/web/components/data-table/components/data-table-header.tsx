@@ -182,7 +182,7 @@ export const DataTableHeader = memo(function DataTableHeader<
   // Get eligible columns for advanced filtering
   const filterableColumns = table.getAllLeafColumns().filter((col) => {
     const id = col.id
-    return id !== '__expand' && id !== 'select' && id !== 'actions'
+    return id !== '__expand' && id !== 'select' && id !== 'action'
   })
 
   // Stable unique IDs for filter drafts (avoids Math.random collisions)
