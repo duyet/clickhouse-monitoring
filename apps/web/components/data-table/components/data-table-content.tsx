@@ -1,6 +1,5 @@
 'use client'
 
-import { LayoutGrid, Table2 } from 'lucide-react'
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
@@ -25,55 +24,9 @@ import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
-import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-
-/** Segmented table/cards toggle shown above the content when offered. */
-function ViewToggle({
-  view,
-  onViewChange,
-}: {
-  view: 'table' | 'cards' | 'auto'
-  onViewChange?: (view: 'table' | 'cards') => void
-}) {
-  // `'auto'` is resolved per breakpoint so the pressed state reflects what the
-  // user is actually looking at (cards on phones, table on wider screens).
-  const isMobile = useIsMobile()
-  const active = view === 'auto' ? (isMobile ? 'cards' : 'table') : view
-  return (
-    <div
-      className="inline-flex items-center gap-0.5 rounded-md border border-border/60 p-0.5"
-      role="group"
-      aria-label="Result view"
-    >
-      <Button
-        type="button"
-        variant={active === 'table' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'table'}
-        onClick={() => onViewChange?.('table')}
-      >
-        <Table2 className="size-3.5" />
-        Table
-      </Button>
-      <Button
-        type="button"
-        variant={active === 'cards' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'cards'}
-        onClick={() => onViewChange?.('cards')}
-      >
-        <LayoutGrid className="size-3.5" />
-        Cards
-      </Button>
-    </div>
-  )
-}
 
 /**
  * Props for the DataTableContent component
@@ -185,7 +138,7 @@ export const DataTableContent = memo(function DataTableContent<
   expandable,
   view = 'auto',
   offerViewToggle = false,
-  onViewChange,
+  onViewChange: _onViewChange,
   bodyRenderKey,
 }: DataTableContentProps<TData, TValue>) {
   const cardsOnly = view === 'cards'
@@ -281,16 +234,11 @@ export const DataTableContent = memo(function DataTableContent<
   return (
     <TooltipProvider>
       <div className="relative">
-        {offerViewToggle && !compact && (
-          <div className="mb-2 flex items-center justify-end gap-2">
-            {view !== 'table' && (
-              <div
-                className={cn(view === 'auto' ? 'sm:hidden block' : 'block')}
-              >
-                <MobileSortMenu table={table} />
-              </div>
-            )}
-            <ViewToggle view={view} onViewChange={onViewChange} />
+        {offerViewToggle && !compact && view !== 'table' && (
+          <div className="mb-2 flex justify-end">
+            <div className={cn(view === 'auto' ? 'sm:hidden block' : 'block')}>
+              <MobileSortMenu table={table} />
+            </div>
           </div>
         )}
         <div

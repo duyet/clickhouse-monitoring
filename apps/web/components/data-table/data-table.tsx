@@ -606,12 +606,15 @@ export function DataTable<
             onGlobalSearchChange={setGlobalSearch}
             advancedFilters={advancedFilters}
             onAdvancedFiltersChange={setAdvancedFilters}
-            hasSchemaFilters={!!queryConfig.filterSchema}
+            filterBarSlot={
+              !compact && showFilterBar && queryConfig.filterSchema ? (
+                <FilterBar queryConfig={queryConfig} />
+              ) : undefined
+            }
+            offerViewToggle={offerViewToggle}
+            view={view}
+            onViewChange={setUserView}
           />
-        )}
-
-        {!compact && showFilterBar && queryConfig.filterSchema && (
-          <FilterBar queryConfig={queryConfig} />
         )}
 
         <DataTableContent

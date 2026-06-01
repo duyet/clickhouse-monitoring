@@ -99,9 +99,9 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
   const searchValue = searchParams.get('q') ?? ''
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-t-xl border border-b-0 border-border/50 bg-card/30 px-3 py-2.5">
+    <>
       {/* Search input */}
-      <div className="relative flex h-8 min-w-[160px] flex-1 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 sm:w-64 sm:flex-none md:w-72">
+      <div className="relative flex h-9 min-w-[160px] flex-1 items-center gap-1.5 rounded-lg border border-border/50 bg-muted/20 px-2.5 sm:w-64 sm:flex-none md:w-72 shadow-none">
         <SearchIcon
           className="size-3.5 shrink-0 text-muted-foreground"
           aria-hidden
@@ -115,7 +115,7 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
             })
           }}
           placeholder="Search queries..."
-          className="h-7 flex-1 border-0 bg-transparent px-0 text-[12.5px] shadow-none focus-visible:ring-0"
+          className="h-9 flex-1 border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0 focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all"
           debounceMs={300}
         />
         {searchValue && (
@@ -166,6 +166,6 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
           Clear all
         </Button>
       )}
-    </div>
+    </>
   )
 }
