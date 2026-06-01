@@ -308,6 +308,8 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   columnIcons?: {
     [key: string]: Icon
   }
+  /** Optional human-readable descriptions/tooltips for table columns */
+  columnDescriptions?: Record<string, string>
   /**
    * Optional TanStack column sizing hints keyed by normalized or raw column name.
    * Use this only for columns whose default width creates poor scan density.

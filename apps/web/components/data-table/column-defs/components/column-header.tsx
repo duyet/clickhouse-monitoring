@@ -9,7 +9,7 @@ import {
   CaretSortIcon,
   CaretUpIcon,
 } from '@radix-ui/react-icons'
-import { MoreHorizontal } from 'lucide-react'
+import { InfoIcon, MoreHorizontal } from 'lucide-react'
 import type { Column, RowData } from '@tanstack/react-table'
 
 import type { Icon } from '@chm/types/icon'
@@ -20,6 +20,12 @@ import type { ColumnFilterDef } from '@/types/query-config'
 
 import { ColumnFilter } from '@/components/data-table/column-filter'
 import { ColumnFilterPopover } from '@/components/data-table/filters/column-filter-popover'
+import { COMMON_COLUMN_DESCRIPTIONS } from '@/components/data-table/renderers/table-header'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 export interface SchemaFilterContext {
@@ -36,6 +42,7 @@ export interface ColumnHeaderProps<TData extends RowData> {
   name: string
   format: ColumnFormat
   icon?: Icon
+  description?: string
   isFilterable: boolean
   filterValue: string
   onFilterChange: (value: string) => void
@@ -82,6 +89,7 @@ export function ColumnHeader<TData extends RowData>({
   name,
   format,
   icon,
+  description,
   isFilterable,
   filterValue,
   onFilterChange,
@@ -90,11 +98,16 @@ export function ColumnHeader<TData extends RowData>({
   const sortState = column.getIsSorted()
   const canSort = column.getCanSort()
 
+  const resolvedDescription =
+    description ??
+    COMMON_COLUMN_DESCRIPTIONS[name] ??
+    COMMON_COLUMN_DESCRIPTIONS[name.toLowerCase()]
+
   return (
     <div className="flex flex-col gap-1">
       <div
         className={cn(
-          'flex w-full items-center gap-0.5 truncate text-xs font-medium uppercase tracking-wider select-none'
+          'flex w-full items-center gap-1 truncate text-xs font-medium uppercase tracking-wider select-none'
         )}
       >
         <button
@@ -118,6 +131,29 @@ export function ColumnHeader<TData extends RowData>({
             />
           )}
         </button>
+
+        {/* Info Icon with Tooltip */}
+        {resolvedDescription && (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={`About ${name} column`}
+                className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-0.5 rounded cursor-help shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <InfoIcon className="size-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="max-w-xs bg-popover text-popover-foreground border shadow-md font-normal lowercase normal-case"
+            >
+              <p className="text-xs">{resolvedDescription}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {schemaFilter && (
           <ColumnFilterPopover
             field={schemaFilter.field}

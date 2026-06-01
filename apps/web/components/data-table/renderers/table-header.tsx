@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown, ArrowUp, GripVertical } from 'lucide-react'
+import { GripVertical } from 'lucide-react'
 import { flexRender, type Header } from '@tanstack/react-table'
 
 import { useSortable } from '@dnd-kit/sortable'
@@ -9,6 +9,40 @@ import { ColumnHeaderDropdown } from '@/components/data-table/buttons/column-hea
 import { Button } from '@/components/ui/button'
 import { TableHead, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+
+export const COMMON_COLUMN_DESCRIPTIONS: Record<string, string> = {
+  query_id: 'The unique ID associated with the query execution.',
+  query: 'The SQL query string that was executed.',
+  database: 'The database name targeted by this operation.',
+  table: 'The table name targeted by this operation.',
+  event_time: 'The date and time when the event occurred.',
+  event_date: 'The date when the event occurred.',
+  query_duration_ms: 'Total execution time of the query in milliseconds.',
+  read_rows: 'Total number of rows read from all shards and replicas.',
+  read_bytes: 'Total number of bytes read from disk/cache.',
+  written_rows: 'Total number of rows written to disk.',
+  written_bytes: 'Total number of bytes written to disk.',
+  result_rows: 'Number of rows returned to the client in the result set.',
+  result_bytes: 'Number of bytes returned to the client in the result set.',
+  memory_usage: 'Peak memory consumed by this query during execution.',
+  user: 'The user account that ran the query.',
+  client_hostname:
+    'The hostname of the client machine that initiated the query.',
+  client_name: 'The name of the client application or library used.',
+  exception: 'Detailed error/exception message if the query failed.',
+  exception_code: 'Numeric error code returned by ClickHouse.',
+  threads: 'Number of CPU threads used for parallel query execution.',
+  active: 'Whether the query or process is currently running.',
+  host: 'The hostname or IP address of the database node.',
+  rows: 'Number of rows in the table or part.',
+  bytes: 'Disk space consumed by the table or part.',
+  bytes_on_disk: 'Actual disk space used after compression.',
+  parts: 'Number of active data parts inside the table.',
+  active_parts: 'Number of active data parts.',
+  engine: 'The storage engine used by this table (e.g. MergeTree).',
+  partition: 'The partition key value for this data part.',
+  partition_id: 'The unique ID of the partition.',
+}
 
 /**
  * Props for TableHeaderRow component
@@ -74,7 +108,7 @@ function ColumnResizer({ header, onAutoFit }: ColumnResizerProps) {
       className={cn(
         'absolute right-0 top-0 z-20 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
         'after:absolute after:right-1 after:top-0 after:h-full after:w-px',
-        'after:bg-border/40 hover:after:bg-primary active:after:bg-primary',
+        'after:bg-border/60 hover:after:bg-primary active:after:bg-primary',
         'after:transition-colors',
         header.column.getIsResizing() && 'after:bg-primary'
       )}
@@ -118,7 +152,6 @@ function DraggableTableHeader({
 
   const canResize = enableResize && header.column.getCanResize()
   const canSort = header.column.getCanSort()
-  const _isSorted = header.column.getIsSorted()
 
   const style = {
     // Apply CSS transform during drag for visual feedback
@@ -129,7 +162,7 @@ function DraggableTableHeader({
     maxWidth: header.column.columnDef.maxSize ?? undefined,
   }
 
-  const headerPy = compact ? 'py-0.5' : 'py-1.5'
+  const headerPy = compact ? 'py-0.5' : 'py-2'
   const headerPx = isSelectColumn ? 'px-2' : compact ? 'px-1' : 'px-4'
 
   return (
@@ -137,11 +170,16 @@ function DraggableTableHeader({
       ref={setNodeRef}
       key={header.id}
       scope="col"
-      className={cn('relative', headerPy, headerPx, isDragging && 'opacity-50')}
+      className={cn(
+        'relative font-semibold text-foreground/90 transition-colors',
+        headerPy,
+        headerPx,
+        isDragging && 'opacity-50'
+      )}
       style={style}
       colSpan={header.colSpan}
     >
-      <div className="group flex min-w-0 items-center pr-2">
+      <div className="group flex min-w-0 items-center pr-1.5">
         {/* Drag handle for column reordering - hidden by default, shown on hover */}
         <Button
           {...attributes}
@@ -150,7 +188,7 @@ function DraggableTableHeader({
           variant="ghost"
           size="icon-sm"
           className={cn(
-            'mr-1.5 hidden size-7 shrink-0 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
+            'mr-1 hidden size-6 shrink-0 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
             'active:cursor-grabbing',
             'group-hover:opacity-40 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100',
             'transition',
@@ -161,11 +199,11 @@ function DraggableTableHeader({
           style={{ touchAction: 'none' }}
           onClick={(e) => e.stopPropagation()} // Prevent drag from triggering sort
         >
-          <GripVertical data-icon className="size-3.5" />
+          <GripVertical data-icon className="size-3" />
         </Button>
         <div className="min-w-0 flex-1">
-          <div className="group flex min-w-0 items-center gap-1">
-            <span className="min-w-0 flex-1 truncate">
+          <div className="group flex min-w-0 items-center gap-1.5 justify-between">
+            <span className="min-w-0 flex-1 truncate select-none">
               {header.isPlaceholder
                 ? null
                 : flexRender(
@@ -173,8 +211,10 @@ function DraggableTableHeader({
                     header.getContext()
                   )}
             </span>
-            {/* Dropdown menu for sort/copy actions - shown on hover */}
-            {canSort && <ColumnHeaderDropdown header={header} />}
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Dropdown menu for sort/copy actions - shown on hover */}
+              {canSort && <ColumnHeaderDropdown header={header} />}
+            </div>
           </div>
         </div>
       </div>
@@ -204,7 +244,7 @@ export const TableHeaderRow = function TableHeaderRow({
 }: TableHeaderRowProps) {
   // Header padding matches body cell density
   const headerPx = compact ? 'px-1' : 'px-4'
-  const headerPy = compact ? 'py-0.5' : 'py-1.5'
+  const headerPy = compact ? 'py-0.5' : 'py-2'
 
   return (
     <TableRow className="border-b border-border/70 hover:bg-transparent">
@@ -253,13 +293,13 @@ export const TableHeaderRow = function TableHeaderRow({
         }
 
         // Standard header without drag-and-drop, but with sort dropdown and click-to-sort
-        const isSorted = header.column.getIsSorted()
+
         return (
           <TableHead
             key={header.id}
             scope="col"
             className={cn(
-              'relative',
+              'relative font-semibold text-foreground/90 transition-colors',
               headerPy,
               isSelectColumn ? 'px-2' : headerPx,
               // Show pointer cursor for sortable columns
@@ -271,17 +311,10 @@ export const TableHeaderRow = function TableHeaderRow({
               width: header.column.getSize(),
             }}
           >
-            <div className="group flex min-w-0 items-center pr-2">
+            <div className="group flex min-w-0 items-center pr-1.5">
               <div className="min-w-0 flex-1">
-                <div className="group flex min-w-0 items-center gap-1">
-                  {/* Sort indicator */}
-                  {isSorted === 'asc' && (
-                    <ArrowUp className="size-3.5 shrink-0 text-primary" />
-                  )}
-                  {isSorted === 'desc' && (
-                    <ArrowDown className="size-3.5 shrink-0 text-primary" />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">
+                <div className="group flex min-w-0 items-center gap-1.5 justify-between">
+                  <span className="min-w-0 flex-1 truncate select-none">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -289,8 +322,10 @@ export const TableHeaderRow = function TableHeaderRow({
                           header.getContext()
                         )}
                   </span>
-                  {/* Dropdown menu for sort/copy actions - shown on hover */}
-                  {canSort && <ColumnHeaderDropdown header={header} />}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Dropdown menu for sort/copy actions - shown on hover */}
+                    {canSort && <ColumnHeaderDropdown header={header} />}
+                  </div>
                 </div>
               </div>
             </div>

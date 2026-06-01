@@ -111,7 +111,7 @@ function pickPrimaryCell<TData extends RowData>(cells: Cell<TData, unknown>[]) {
   )
 }
 
-function MobileSortMenu<TData extends RowData>({
+export function MobileSortMenu<TData extends RowData>({
   table,
 }: {
   table: Table<TData>
@@ -131,59 +131,57 @@ function MobileSortMenu<TData extends RowData>({
     : 'Sort'
 
   return (
-    <div className="mb-3 flex justify-end">
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 max-w-full gap-2 text-xs"
-            data-testid="mobile-table-sort"
-          >
-            <ArrowUpDown className="size-3.5 shrink-0" />
-            <span className="min-w-0 truncate">{activeLabel}</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="max-h-80 w-56 overflow-y-auto"
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 max-w-full gap-2 text-xs"
+          data-testid="mobile-table-sort"
         >
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-          {sortableColumns.map((column) => {
-            const label = getColumnLabel(column)
-            const isAsc =
-              activeSort?.id === column.id && activeSort.desc === false
-            const isDesc =
-              activeSort?.id === column.id && activeSort.desc === true
+          <ArrowUpDown className="size-3.5 shrink-0" />
+          <span className="min-w-0 truncate">{activeLabel}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="max-h-80 w-56 overflow-y-auto"
+      >
+        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+        {sortableColumns.map((column) => {
+          const label = getColumnLabel(column)
+          const isAsc =
+            activeSort?.id === column.id && activeSort.desc === false
+          const isDesc =
+            activeSort?.id === column.id && activeSort.desc === true
 
-            return (
-              <Fragment key={column.id}>
-                <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-                  <SortAsc className="mr-2 size-3.5" />
-                  <span className="min-w-0 flex-1 truncate">
-                    {label} ascending
-                  </span>
-                  {isAsc && <Check className="ml-2 size-3.5" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-                  <SortDesc className="mr-2 size-3.5" />
-                  <span className="min-w-0 flex-1 truncate">
-                    {label} descending
-                  </span>
-                  {isDesc && <Check className="ml-2 size-3.5" />}
-                </DropdownMenuItem>
-              </Fragment>
-            )
-          })}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => table.resetSorting()}>
-            <RotateCcw className="mr-2 size-3.5" />
-            Reset sort
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          return (
+            <Fragment key={column.id}>
+              <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+                <SortAsc className="mr-2 size-3.5" />
+                <span className="min-w-0 flex-1 truncate">
+                  {label} ascending
+                </span>
+                {isAsc && <Check className="ml-2 size-3.5" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+                <SortDesc className="mr-2 size-3.5" />
+                <span className="min-w-0 flex-1 truncate">
+                  {label} descending
+                </span>
+                {isDesc && <Check className="ml-2 size-3.5" />}
+              </DropdownMenuItem>
+            </Fragment>
+          )
+        })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => table.resetSorting()}>
+          <RotateCcw className="mr-2 size-3.5" />
+          Reset sort
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -479,7 +477,6 @@ export const MobileTableCards = function MobileTableCards<
 
   return (
     <div aria-label={`${title || 'Data'} cards`}>
-      <MobileSortMenu table={table} />
       {virtualRows ? (
         <div
           className="relative"

@@ -1,6 +1,7 @@
+import { HashIcon, TimerIcon } from 'lucide-react'
+
 import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
-import { HashIcon, TimerIcon } from 'lucide-react'
 import { createConfigExpandedDetails } from '@/components/data-table/cells/config-expanded-details'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'

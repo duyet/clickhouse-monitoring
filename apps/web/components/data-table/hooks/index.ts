@@ -1,3 +1,4 @@
+export type { TableFilterCondition } from './use-filtered-data'
 export type { TableDensity } from './use-table-density'
 
 export { useAutoFitColumns } from './use-auto-fit-columns'

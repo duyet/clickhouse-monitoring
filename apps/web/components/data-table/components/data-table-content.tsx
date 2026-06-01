@@ -1,11 +1,10 @@
 'use client'
 
-import { LayoutGrid, Table2 } from 'lucide-react'
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
-import { MobileTableCards } from './mobile-table-cards'
+import { MobileSortMenu, MobileTableCards } from './mobile-table-cards'
 import {
   closestCenter,
   DndContext,
@@ -25,54 +24,9 @@ import {
   TableBody as TableBodyRenderer,
   TableHeader as TableHeaderRenderer,
 } from '@/components/data-table/renderers'
-import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-
-/** Segmented table/cards toggle shown above the content when offered. */
-function ViewToggle({
-  view,
-  onViewChange,
-}: {
-  view: 'table' | 'cards' | 'auto'
-  onViewChange?: (view: 'table' | 'cards') => void
-}) {
-  // `'auto'` is resolved per breakpoint so the pressed state reflects what the
-  // user is actually looking at (cards on phones, table on wider screens).
-  const isMobile = useIsMobile()
-  const active = view === 'auto' ? (isMobile ? 'cards' : 'table') : view
-  return (
-    <div
-      className="inline-flex items-center gap-0.5 rounded-md border border-border/60 p-0.5"
-      role="group"
-      aria-label="Result view"
-    >
-      <Button
-        type="button"
-        variant={active === 'table' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'table'}
-        onClick={() => onViewChange?.('table')}
-      >
-        <Table2 className="size-3.5" />
-        Table
-      </Button>
-      <Button
-        type="button"
-        variant={active === 'cards' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="h-7 gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'cards'}
-        onClick={() => onViewChange?.('cards')}
-      >
-        <LayoutGrid className="size-3.5" />
-        Cards
-      </Button>
-    </div>
-  )
-}
 
 /**
  * Props for the DataTableContent component
@@ -184,14 +138,17 @@ export const DataTableContent = memo(function DataTableContent<
   expandable,
   view = 'auto',
   offerViewToggle = false,
-  onViewChange,
+  onViewChange: _onViewChange,
   bodyRenderKey,
 }: DataTableContentProps<TData, TValue>) {
-  const cardsOnly = view === 'cards' || view === 'auto'
+  const cardsOnly = view === 'cards'
   // Visibility per layout. Both 'auto' and 'cards' show the card grid;
   // only an explicit 'table' choice shows the table.
-  const cardsVisibility = view === 'table' ? 'hidden' : 'block'
-  const tableVisibility = view === 'table' ? 'block' : 'hidden'
+  const cardsVisibility =
+    view === 'table' ? 'hidden' : view === 'cards' ? 'block' : 'sm:hidden block'
+
+  const tableVisibility =
+    view === 'table' ? 'block' : view === 'cards' ? 'hidden' : 'sm:block hidden'
   // Configure drag-and-drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -275,65 +232,77 @@ export const DataTableContent = memo(function DataTableContent<
   )
 
   return (
-    <div className="relative">
-      {offerViewToggle && !compact && (
-        <div className="mb-2 flex justify-end">
-          <ViewToggle view={view} onViewChange={onViewChange} />
-        </div>
-      )}
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'min-h-0 min-w-0',
-          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
-          {
-            'max-h-[50vh]': compact && !isVirtualized,
-            'mb-5 rounded-lg border border-border/50 bg-card/30':
-              !compact && !cardsOnly,
-          }
-        )}
-        role="region"
-        aria-label={`${title || 'Data'} table`}
-        style={isVirtualized ? { height: '60vh' } : undefined}
-      >
-        {/* Card layout: on mobile by default, and at all widths when view==='cards'. */}
-        {!compact && (
-          <div className={cn('p-3', cardsVisibility)}>
-            <MobileTableCards
-              table={table}
-              title={title}
-              activeFilterCount={activeFilterCount}
-              rowClassName={queryConfig.rowClassName}
-              isVirtualized={isVirtualized}
-              virtualizer={virtualizer}
-              expandable={expandable}
-              card={queryConfig.card}
-              columnIcons={queryConfig.columnIcons}
-              view={view}
-            />
+    <TooltipProvider>
+      <div className="relative">
+        {offerViewToggle && !compact && view !== 'table' && (
+          <div
+            className={cn(
+              'mb-2 flex justify-end',
+              view === 'auto' && 'sm:hidden'
+            )}
+          >
+            <MobileSortMenu table={table} />
           </div>
         )}
-        <div className={cn(compact ? undefined : tableVisibility)}>
-          {enableColumnReordering ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-              modifiers={[restrictToHorizontalAxis]}
-            >
-              <SortableContext
-                items={columnIds}
-                strategy={horizontalListSortingStrategy}
-              >
-                {tableContent}
-              </SortableContext>
-            </DndContext>
-          ) : (
-            tableContent
+        <div
+          ref={tableContainerRef}
+          className={cn(
+            'min-h-0 min-w-0',
+            isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
+            {
+              'max-h-[50vh]': compact && !isVirtualized,
+              'mb-5 rounded-lg border border-border/50 bg-card/30':
+                !compact && !cardsOnly,
+            }
           )}
+          role="region"
+          aria-label={`${title || 'Data'} table`}
+          style={isVirtualized ? { height: '60vh' } : undefined}
+        >
+          {/* Card layout: on mobile by default, and at all widths when view==='cards'. */}
+          {!compact && (
+            <div className={cn('p-3', cardsVisibility)}>
+              {!offerViewToggle && (
+                <div className="mb-2 flex justify-end">
+                  <MobileSortMenu table={table} />
+                </div>
+              )}
+              <MobileTableCards
+                table={table}
+                title={title}
+                activeFilterCount={activeFilterCount}
+                rowClassName={queryConfig.rowClassName}
+                isVirtualized={isVirtualized}
+                virtualizer={virtualizer}
+                expandable={expandable}
+                card={queryConfig.card}
+                columnIcons={queryConfig.columnIcons}
+                view={view}
+              />
+            </div>
+          )}
+          <div className={cn(compact ? undefined : tableVisibility)}>
+            {enableColumnReordering ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToHorizontalAxis]}
+              >
+                <SortableContext
+                  items={columnIds}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {tableContent}
+                </SortableContext>
+              </DndContext>
+            ) : (
+              tableContent
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }) as <TData extends RowData, TValue extends React.ReactNode>(
   props: DataTableContentProps<TData, TValue>

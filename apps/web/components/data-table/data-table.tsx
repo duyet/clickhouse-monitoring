@@ -36,6 +36,7 @@ import {
 import { TableDensityProvider } from '@/components/data-table/context/table-density-context'
 import { useColumnFilterState } from '@/components/data-table/filters/use-column-filter-state'
 import {
+  type TableFilterCondition,
   useAutoFitColumns,
   useColumnVisibility,
   useFilteredData,
@@ -168,8 +169,8 @@ export function DataTable<
   toolbarExtras,
   topRightToolbarExtras,
   queryConfig,
-  queryParams: deprecatedQueryParams,
-  apiParams,
+  queryParams: _deprecatedQueryParams,
+  apiParams: _apiParams,
   data,
   context,
   defaultPageSize = 100,
@@ -191,9 +192,6 @@ export function DataTable<
   expandable: expandableProp,
   showFilterBar = true,
 }: DataTableProps<TData>) {
-  // Support both old and new prop names for backward compatibility
-  const queryParams = apiParams ?? deprecatedQueryParams
-
   // Resolve expansion config: explicit prop wins over QueryConfig declaration
   const expandable = expandableProp ?? queryConfig.expandable
 
@@ -204,6 +202,11 @@ export function DataTable<
     enableColumnReordering: resolvedEnableColumnReordering,
   } = resolveTableBehavior({ queryConfig, enableColumnReorderingProp })
 
+  const [globalSearch, setGlobalSearch] = useState('')
+  const [advancedFilters, setAdvancedFilters] = useState<
+    TableFilterCondition[]
+  >([])
+
   // Determine which columns should be filterable (memoized)
   const configuredColumns = queryConfig.columns.map(normalizeColumnName)
 
@@ -212,7 +215,7 @@ export function DataTable<
     columnFilters,
     setColumnFilter,
     clearColumnFilter,
-    clearAllColumnFilters,
+    clearAllColumnFilters: _clearAllColumnFilters,
     activeFilterCount,
   } = useTableFilters({
     enableUrlSync: enableFilterUrlSync,
@@ -224,6 +227,8 @@ export function DataTable<
     data,
     enableColumnFilters,
     columnFilters,
+    globalSearch,
+    advancedFilters,
   })
 
   // Memoize filterableColumns to prevent filterContext recreation
@@ -510,16 +515,9 @@ export function DataTable<
     tableState.columnOrder,
     tableState.columnVisibility,
     tableState.rowSelection,
+    globalSearch,
+    advancedFilters,
   ])
-
-  // Virtual rows for datasets larger than the standard pagination range.
-  // Disabled when row expansion is on because expanded rows add out-of-band
-  // height the fixed-size virtualizer can't account for.
-  const rows = table.getRowModel().rows
-  const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
-    rows.length,
-    { disabled: Boolean(expandable) }
-  )
 
   // Card vs. table view. Only offered (with a toolbar toggle) when the config
   // opts in via `defaultView`; otherwise tables behave exactly as before.
@@ -532,6 +530,15 @@ export function DataTable<
   const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
   const baseView: 'table' | 'cards' | 'auto' = queryConfig.defaultView ?? 'auto'
   const view = userView ?? baseView
+
+  // Virtual rows for datasets larger than the standard pagination range.
+  // Disabled when row expansion is on because expanded rows add out-of-band
+  // height the fixed-size virtualizer can't account for.
+  const rows = table.getRowModel().rows
+  const { virtualizer, tableContainerRef, isVirtualized } = useVirtualRows(
+    rows.length,
+    { disabled: Boolean(expandable) || view === 'cards' }
+  )
 
   // Auto-fit columns functionality
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
@@ -590,22 +597,26 @@ export function DataTable<
             topRightToolbarExtras={topRightToolbarExtras}
             showSQL={showSQL}
             table={table}
-            queryParams={queryParams}
             isRefreshing={isRefreshing}
-            enableColumnFilters={enableColumnFilters}
-            activeFilterCount={activeFilterCount}
-            clearAllColumnFilters={clearAllColumnFilters}
             executedSql={executedSql}
             metadata={metadata}
             enableColumnReordering={resolvedEnableColumnReordering}
             onResetColumnOrder={handleResetColumnOrder}
             density={density}
             onDensityChange={setDensity}
+            globalSearch={globalSearch}
+            onGlobalSearchChange={setGlobalSearch}
+            advancedFilters={advancedFilters}
+            onAdvancedFiltersChange={setAdvancedFilters}
+            filterBarSlot={
+              !compact && showFilterBar && queryConfig.filterSchema ? (
+                <FilterBar queryConfig={queryConfig} />
+              ) : undefined
+            }
+            offerViewToggle={offerViewToggle}
+            view={view}
+            onViewChange={setUserView}
           />
-        )}
-
-        {!compact && showFilterBar && queryConfig.filterSchema && (
-          <FilterBar queryConfig={queryConfig} />
         )}
 
         <DataTableContent

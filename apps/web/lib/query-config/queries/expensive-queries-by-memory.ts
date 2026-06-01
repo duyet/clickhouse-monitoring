@@ -1,6 +1,7 @@
+import { HashIcon, UserIcon } from 'lucide-react'
+
 import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
-import { HashIcon, UserIcon } from 'lucide-react'
 import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'

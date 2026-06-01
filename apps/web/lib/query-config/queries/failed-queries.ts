@@ -1,6 +1,7 @@
+import { ClockIcon, TimerIcon, UserIcon } from 'lucide-react'
+
 import type { QueryConfig } from '@/types/query-config'
 
-import { ClockIcon, TimerIcon, UserIcon } from 'lucide-react'
 import { createExpandedPanel } from '@/components/data-table/cells/expanded-panel'
 import { QUERY_LOG } from '@/lib/table-notes'
 import { ColumnFormat } from '@/types/column-format'
