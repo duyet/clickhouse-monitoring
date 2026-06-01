@@ -2,7 +2,6 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { FilterBar } from '@/components/filters/filter-bar'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
 import {
@@ -35,7 +34,6 @@ function HistoryQueriesPageContent() {
       title="History Queries"
       defaultPageSize={100}
       searchParams={tableSearchParams}
-      headerContent={<FilterBar queryConfig={historyQueriesConfig} />}
     />
   )
 }

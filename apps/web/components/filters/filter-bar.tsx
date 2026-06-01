@@ -145,16 +145,16 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
         )
       })}
 
+      {hasPresets && (
+        <PresetsMenu presets={schema.presets ?? []} onApply={applyPreset} />
+      )}
+
       <AddFilterPopover
         schema={schema}
         activeKeys={activeKeys}
         configName={queryConfig.name}
         onAdd={setFilter}
       />
-
-      {hasPresets && (
-        <PresetsMenu presets={schema.presets ?? []} onApply={applyPreset} />
-      )}
 
       {activeFilters.length > 0 && (
         <Button

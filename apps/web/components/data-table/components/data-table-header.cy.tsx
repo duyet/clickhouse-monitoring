@@ -211,4 +211,57 @@ describe('<DataTableHeader />', () => {
     cy.contains('[role="menuitem"]', 'Request Info').click()
     cy.get('pre').should('contain', 'SELECT').and('contain', 'FROM')
   })
+
+  it('does not offer the synthetic action column in advanced filters', () => {
+    type ActionRow = {
+      action: string
+      query: string
+    }
+
+    const actionColumnHelper = createColumnHelper<ActionRow>()
+    const actionColumns = [
+      actionColumnHelper.accessor('action', {
+        header: 'action',
+        cell: () => 'Actions',
+      }),
+      actionColumnHelper.accessor('query', {
+        cell: (info) => info.getValue(),
+      }),
+    ]
+
+    const actionData: ActionRow[] = [{ action: 'open', query: 'SELECT 1' }]
+
+    function ActionTableHeader() {
+      const table = useReactTable({
+        data: actionData,
+        columns: actionColumns,
+        getCoreRowModel: getCoreRowModel(),
+      })
+
+      return (
+        <DataTableHeader
+          title="Action Table"
+          description="Action filter test"
+          queryConfig={{
+            name: 'action-table',
+            sql: 'SELECT 1',
+            columns: ['action', 'query'],
+          }}
+          table={table}
+          showSQL={false}
+          isRefreshing={false}
+          globalSearch=""
+          onGlobalSearchChange={() => {}}
+          advancedFilters={[]}
+          onAdvancedFiltersChange={() => {}}
+        />
+      )
+    }
+
+    cy.mount(<ActionTableHeader />)
+
+    cy.contains('button', 'Filters').click()
+    cy.get('[role="option"]').should('contain.text', 'query')
+    cy.get('[role="option"]').should('not.contain.text', 'action')
+  })
 })

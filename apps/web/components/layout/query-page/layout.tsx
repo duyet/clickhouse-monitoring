@@ -42,8 +42,6 @@ export interface QueryPageLayoutProps {
   title?: string
   /** Description for the table (defaults to queryConfig.description) */
   description?: string
-  /** Additional content to render above charts */
-  headerContent?: ReactNode
   /** Additional content to render after table */
   footerContent?: ReactNode
   /** Custom grid class for charts */
@@ -60,19 +58,12 @@ export interface QueryPageLayoutProps {
   defaultPageSize?: number
   /** Maximum height for the table card */
   maxTableHeight?: string
-  /**
-   * Render DataTable's schema-driven filter bar above the table. Defaults to
-   * `false` when `headerContent` is provided (assumed to host its own
-   * FilterBar) and `true` otherwise. Set explicitly to override.
-   */
-  showFilterBar?: boolean
 }
 
 export const QueryPageLayout = function QueryPageLayout({
   queryConfig,
   title,
   description,
-  headerContent,
   footerContent,
   chartsGridClass,
   hideTable = false,
@@ -81,12 +72,7 @@ export const QueryPageLayout = function QueryPageLayout({
   enableRowSelection = false,
   defaultPageSize,
   maxTableHeight,
-  showFilterBar,
 }: QueryPageLayoutProps) {
-  // Default: hide the auto-rendered filter bar when the page already
-  // supplies its own headerContent (typically a FilterBar wired to the
-  // same URL params). Avoids two controls mutating the same state.
-  const effectiveShowFilterBar = showFilterBar ?? !headerContent
   const { config, isLoading } = useFeaturePermissions()
   const relatedCharts = queryConfig.relatedCharts || []
   const { isCollapsed, toggleCollapsed, collapsedRows, toggleRow } =
@@ -137,58 +123,27 @@ export const QueryPageLayout = function QueryPageLayout({
         </div>
       )}
 
-      {/* Filter bar + Data Table — visually merged when headerContent present */}
-      {headerContent ? (
-        <div className="flex flex-col">
-          {headerContent}
-          {!hideTable && (
-            <Suspense fallback={<TableSkeleton />}>
-              <FadeIn
-                duration={300}
+      {/* Data Table — the schema-driven filter bar renders inline in its header */}
+      {!hideTable && (
+        <Suspense fallback={<TableSkeleton />}>
+          <FadeIn
+            duration={300}
+            className="flex min-w-0 flex-1 flex-col"
+            style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
+          >
+            {tableSlot ?? (
+              <TableClient
+                title={title || queryConfig.name}
+                description={description || queryConfig.description}
+                queryConfig={queryConfig}
+                searchParams={searchParams}
                 className="flex min-w-0 flex-1 flex-col"
-                style={
-                  maxTableHeight ? { maxHeight: maxTableHeight } : undefined
-                }
-              >
-                {tableSlot ?? (
-                  <TableClient
-                    title={title || queryConfig.name}
-                    description={description || queryConfig.description}
-                    queryConfig={queryConfig}
-                    searchParams={searchParams}
-                    className="flex min-w-0 flex-1 flex-col"
-                    enableRowSelection={enableRowSelection}
-                    defaultPageSize={defaultPageSize}
-                    showFilterBar={effectiveShowFilterBar}
-                  />
-                )}
-              </FadeIn>
-            </Suspense>
-          )}
-        </div>
-      ) : (
-        !hideTable && (
-          <Suspense fallback={<TableSkeleton />}>
-            <FadeIn
-              duration={300}
-              className="flex min-w-0 flex-1 flex-col"
-              style={maxTableHeight ? { maxHeight: maxTableHeight } : undefined}
-            >
-              {tableSlot ?? (
-                <TableClient
-                  title={title || queryConfig.name}
-                  description={description || queryConfig.description}
-                  queryConfig={queryConfig}
-                  searchParams={searchParams}
-                  className="flex min-w-0 flex-1 flex-col"
-                  enableRowSelection={enableRowSelection}
-                  defaultPageSize={defaultPageSize}
-                  showFilterBar={effectiveShowFilterBar}
-                />
-              )}
-            </FadeIn>
-          </Suspense>
-        )
+                enableRowSelection={enableRowSelection}
+                defaultPageSize={defaultPageSize}
+              />
+            )}
+          </FadeIn>
+        </Suspense>
       )}
 
       {/* Optional Footer Content */}
@@ -204,7 +159,6 @@ export interface CreateQueryPageOptions {
   queryConfig: QueryConfig
   title?: string
   description?: string
-  headerContent?: ReactNode
   footerContent?: ReactNode
   chartsGridClass?: string
   hideTable?: boolean

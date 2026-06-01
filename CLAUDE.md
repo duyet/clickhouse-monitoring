@@ -382,6 +382,7 @@ The `components/data-table/` directory contains a sophisticated table system:
 - **Pagination** and **filtering**
 - **Actions** for row-level operations
 - **SQL display** showing the underlying query
+- Synthetic utility column ids are `__expand`, `select`, and `action`; treat them as non-data columns when wiring client-side filter, search, sort, or card controls.
 
 #### Query Configuration
 
