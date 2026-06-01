@@ -609,7 +609,10 @@ export function DataTable<
             advancedFilters={advancedFilters}
             onAdvancedFiltersChange={setAdvancedFilters}
             filterBarSlot={
-              !compact && showFilterBar && queryConfig.filterSchema ? (
+              !compact &&
+              showFilterBar &&
+              queryConfig.filterSchema &&
+              data.length > 0 ? (
                 <FilterBar queryConfig={queryConfig} />
               ) : undefined
             }
