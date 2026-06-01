@@ -21,6 +21,7 @@ import type { ChartQueryParams } from '@/types/chart-data'
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
+import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import {
   buildExpandColumnDef,
@@ -194,6 +195,16 @@ export function DataTable<
 }: DataTableProps<TData>) {
   // Resolve expansion config: explicit prop wins over QueryConfig declaration
   const expandable = expandableProp ?? queryConfig.expandable
+
+  // Check if schema-driven filter bar has active URL filters (q param or field keys)
+  const searchParams = useSearchParams()
+  const hasActiveSchemaFilters = Boolean(
+    queryConfig.filterSchema &&
+      (searchParams.get('q') ||
+        queryConfig.filterSchema.fields.some((field) =>
+          searchParams.has(field.key)
+        ))
+  )
 
   const {
     enableColumnResizing: resolvedEnableColumnResizing,
@@ -612,7 +623,7 @@ export function DataTable<
               !compact &&
               showFilterBar &&
               queryConfig.filterSchema &&
-              data.length > 0 ? (
+              (data.length > 0 || hasActiveSchemaFilters) ? (
                 <FilterBar queryConfig={queryConfig} />
               ) : undefined
             }
