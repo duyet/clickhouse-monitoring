@@ -57,8 +57,6 @@ export interface TableHeaderRowProps {
   enableColumnReordering?: boolean
   /** Compact mode — reduces header padding to match dense body cells */
   compact?: boolean
-  /** Optional custom human-readable descriptions/tooltips for table columns */
-  columnDescriptions?: Record<string, string>
 }
 
 /**
@@ -352,8 +350,6 @@ export interface TableHeaderProps {
   enableColumnReordering?: boolean
   /** Compact mode — reduces header padding to match dense body cells */
   compact?: boolean
-  /** Optional custom human-readable descriptions/tooltips for table columns */
-  columnDescriptions?: Record<string, string>
 }
 
 /**

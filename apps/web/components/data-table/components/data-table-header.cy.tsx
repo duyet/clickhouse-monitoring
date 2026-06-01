@@ -53,9 +53,6 @@ describe('<DataTableHeader />', () => {
         table={table}
         showSQL
         isRefreshing={false}
-        enableColumnFilters={false}
-        activeFilterCount={0}
-        clearAllColumnFilters={() => {}}
         globalSearch=""
         onGlobalSearchChange={() => {}}
         advancedFilters={[]}

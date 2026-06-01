@@ -41,9 +41,9 @@ export function useFilteredData<TData>({
             const normalizedValue = rowObj[normalizedName]
 
             const valueToCheck =
-              originalValue !== undefined
+              originalValue !== undefined && originalValue !== null
                 ? String(originalValue)
-                : normalizedValue !== undefined
+                : normalizedValue !== undefined && normalizedValue !== null
                   ? String(normalizedValue)
                   : ''
 
@@ -62,6 +62,7 @@ export function useFilteredData<TData>({
         const rowObj = row as Record<string, unknown>
         return Object.values(rowObj).some((val) => {
           if (val === null || val === undefined) return false
+          if (typeof val === 'object' || typeof val === 'function') return false
           return String(val).toLowerCase().includes(searchLower)
         })
       })
@@ -77,9 +78,9 @@ export function useFilteredData<TData>({
           const normalizedValue = rowObj[normalizedName]
 
           const valStr =
-            originalValue !== undefined
+            originalValue !== undefined && originalValue !== null
               ? String(originalValue)
-              : normalizedValue !== undefined
+              : normalizedValue !== undefined && normalizedValue !== null
                 ? String(normalizedValue)
                 : ''
 

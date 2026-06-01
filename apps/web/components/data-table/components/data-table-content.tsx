@@ -27,6 +27,7 @@ import {
 } from '@/components/data-table/renderers'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHeader } from '@/components/ui/table'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 
@@ -259,7 +260,6 @@ export const DataTableContent = memo(function DataTableContent<
           onAutoFit={onAutoFit}
           enableColumnReordering={enableColumnReordering}
           compact={compact}
-          columnDescriptions={queryConfig.columnDescriptions}
         />
       </TableHeader>
       <TableBody>
@@ -279,75 +279,79 @@ export const DataTableContent = memo(function DataTableContent<
   )
 
   return (
-    <div className="relative">
-      {offerViewToggle && !compact && (
-        <div className="mb-2 flex items-center justify-end gap-2">
-          {view !== 'table' && (
-            <div className={cn(view === 'auto' ? 'sm:hidden block' : 'block')}>
-              <MobileSortMenu table={table} />
-            </div>
-          )}
-          <ViewToggle view={view} onViewChange={onViewChange} />
-        </div>
-      )}
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'min-h-0 min-w-0',
-          isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
-          {
-            'max-h-[50vh]': compact && !isVirtualized,
-            'mb-5 rounded-lg border border-border/50 bg-card/30':
-              !compact && !cardsOnly,
-          }
-        )}
-        role="region"
-        aria-label={`${title || 'Data'} table`}
-        style={isVirtualized ? { height: '60vh' } : undefined}
-      >
-        {/* Card layout: on mobile by default, and at all widths when view==='cards'. */}
-        {!compact && (
-          <div className={cn('p-3', cardsVisibility)}>
-            {!offerViewToggle && (
-              <div className="mb-2 flex justify-end">
+    <TooltipProvider>
+      <div className="relative">
+        {offerViewToggle && !compact && (
+          <div className="mb-2 flex items-center justify-end gap-2">
+            {view !== 'table' && (
+              <div
+                className={cn(view === 'auto' ? 'sm:hidden block' : 'block')}
+              >
                 <MobileSortMenu table={table} />
               </div>
             )}
-            <MobileTableCards
-              table={table}
-              title={title}
-              activeFilterCount={activeFilterCount}
-              rowClassName={queryConfig.rowClassName}
-              isVirtualized={isVirtualized}
-              virtualizer={virtualizer}
-              expandable={expandable}
-              card={queryConfig.card}
-              columnIcons={queryConfig.columnIcons}
-              view={view}
-            />
+            <ViewToggle view={view} onViewChange={onViewChange} />
           </div>
         )}
-        <div className={cn(compact ? undefined : tableVisibility)}>
-          {enableColumnReordering ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-              modifiers={[restrictToHorizontalAxis]}
-            >
-              <SortableContext
-                items={columnIds}
-                strategy={horizontalListSortingStrategy}
-              >
-                {tableContent}
-              </SortableContext>
-            </DndContext>
-          ) : (
-            tableContent
+        <div
+          ref={tableContainerRef}
+          className={cn(
+            'min-h-0 min-w-0',
+            isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
+            {
+              'max-h-[50vh]': compact && !isVirtualized,
+              'mb-5 rounded-lg border border-border/50 bg-card/30':
+                !compact && !cardsOnly,
+            }
           )}
+          role="region"
+          aria-label={`${title || 'Data'} table`}
+          style={isVirtualized ? { height: '60vh' } : undefined}
+        >
+          {/* Card layout: on mobile by default, and at all widths when view==='cards'. */}
+          {!compact && (
+            <div className={cn('p-3', cardsVisibility)}>
+              {!offerViewToggle && (
+                <div className="mb-2 flex justify-end">
+                  <MobileSortMenu table={table} />
+                </div>
+              )}
+              <MobileTableCards
+                table={table}
+                title={title}
+                activeFilterCount={activeFilterCount}
+                rowClassName={queryConfig.rowClassName}
+                isVirtualized={isVirtualized}
+                virtualizer={virtualizer}
+                expandable={expandable}
+                card={queryConfig.card}
+                columnIcons={queryConfig.columnIcons}
+                view={view}
+              />
+            </div>
+          )}
+          <div className={cn(compact ? undefined : tableVisibility)}>
+            {enableColumnReordering ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToHorizontalAxis]}
+              >
+                <SortableContext
+                  items={columnIds}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {tableContent}
+                </SortableContext>
+              </DndContext>
+            ) : (
+              tableContent
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }) as <TData extends RowData, TValue extends React.ReactNode>(
   props: DataTableContentProps<TData, TValue>

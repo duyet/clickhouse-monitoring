@@ -9,7 +9,7 @@ interface TableProps extends React.ComponentProps<'table'> {
   layout?: 'auto' | 'fixed'
 }
 
-function Table({ className, layout = 'auto', ...props }: TableProps) {
+function TableBase({ className, layout = 'auto', ...props }: TableProps) {
   return (
     <div
       data-slot="table-container"
@@ -211,7 +211,6 @@ function TableResizeHandle({
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-valuenow={0}
       className={cn(
         'absolute right-0 top-0 z-20 h-full w-2 -mr-1 cursor-col-resize select-none touch-none',
         'after:absolute after:right-1 after:top-0 after:h-full after:w-px',
@@ -224,17 +223,33 @@ function TableResizeHandle({
   )
 }
 
-// Attach sub-components to Table for Kumo-style barrel usage
-Table.Header = TableHeader
-Table.Body = TableBody
-Table.Row = TableRow
-Table.Head = TableHead
-Table.Cell = TableCell
-Table.Footer = TableFooter
-Table.CheckHead = TableCheckHead
-Table.CheckCell = TableCheckCell
-Table.ResizeHandle = TableResizeHandle
-Table.Caption = TableCaption
+// Typed compound component: callable Table function + static sub-components
+interface TableComponent
+  extends React.FC<React.ComponentProps<typeof TableBase>> {
+  Header: typeof TableHeader
+  Body: typeof TableBody
+  Row: typeof TableRow
+  Head: typeof TableHead
+  Cell: typeof TableCell
+  Footer: typeof TableFooter
+  CheckHead: typeof TableCheckHead
+  CheckCell: typeof TableCheckCell
+  ResizeHandle: typeof TableResizeHandle
+  Caption: typeof TableCaption
+}
+
+const Table = Object.assign(TableBase, {
+  Header: TableHeader,
+  Body: TableBody,
+  Row: TableRow,
+  Head: TableHead,
+  Cell: TableCell,
+  Footer: TableFooter,
+  CheckHead: TableCheckHead,
+  CheckCell: TableCheckCell,
+  ResizeHandle: TableResizeHandle,
+  Caption: TableCaption,
+}) as TableComponent
 
 export {
   Table,

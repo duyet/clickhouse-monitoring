@@ -598,11 +598,7 @@ export function DataTable<
             topRightToolbarExtras={topRightToolbarExtras}
             showSQL={showSQL}
             table={table}
-            queryParams={queryParams}
             isRefreshing={isRefreshing}
-            enableColumnFilters={enableColumnFilters}
-            activeFilterCount={activeFilterCount}
-            clearAllColumnFilters={clearAllColumnFilters}
             executedSql={executedSql}
             metadata={metadata}
             enableColumnReordering={resolvedEnableColumnReordering}
@@ -613,6 +609,7 @@ export function DataTable<
             onGlobalSearchChange={setGlobalSearch}
             advancedFilters={advancedFilters}
             onAdvancedFiltersChange={setAdvancedFilters}
+            hasSchemaFilters={!!queryConfig.filterSchema}
           />
         )}
 

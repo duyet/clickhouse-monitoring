@@ -13,8 +13,13 @@ interface HealthzResponse {
   hosts?: Array<{ status: 'up' | 'down' }>
 }
 
-const fetcher = (url: string): Promise<HealthzResponse> =>
-  fetch(url).then((r) => r.json() as Promise<HealthzResponse>)
+const fetcher = async (url: string): Promise<HealthzResponse> => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Healthz fetch failed: ${response.status}`)
+  }
+  return response.json() as Promise<HealthzResponse>
+}
 
 const ROUTE_TITLE_MAP: Record<string, string> = {
   '/': 'Overview',
