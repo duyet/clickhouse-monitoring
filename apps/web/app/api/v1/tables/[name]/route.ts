@@ -107,15 +107,15 @@ export async function GET(
 
   const clickhouseSettings = getTableClickHouseSettings(config, timezone)
 
-  // Execute the query - always pass the full config for version selection
+  // Execute the query — pass the resolved config so version selection uses
+  // the SQL with filters already applied (not the original template).
   const result = await fetchData({
     query: queryDef.query,
     query_params: queryDef.queryParams,
     hostId,
     format: 'JSONEachRow',
     clickhouse_settings: clickhouseSettings,
-    // Always pass queryConfig for version-aware SQL selection
-    queryConfig: config,
+    queryConfig: queryDef.queryConfig,
   })
 
   // Check if there was an error
