@@ -179,11 +179,11 @@ export const DataTableHeader = memo(function DataTableHeader<
   const [filterDrafts, setFilterDrafts] = useState<TableFilterCondition[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
-  // Get eligible columns for advanced filtering
-  const filterableColumns = table.getAllLeafColumns().filter((col) => {
-    const id = col.id
-    return id !== '__expand' && id !== 'select' && id !== 'action'
-  })
+  // Get eligible columns for advanced filtering, excluding synthetic
+  // utility columns (see CLAUDE.md: `__expand`, `select`, `action`).
+  const filterableColumns = table
+    .getAllLeafColumns()
+    .filter((col) => !['__expand', 'select', 'action'].includes(col.id))
 
   // Stable unique IDs for filter drafts (avoids Math.random collisions)
   const createFilterId = () =>

@@ -261,6 +261,8 @@ describe('<DataTableHeader />', () => {
     cy.mount(<ActionTableHeader />)
 
     cy.contains('button', 'Filters').click()
+    // Radix Select mounts its options lazily — open the column select first.
+    cy.get('button').contains('query').click()
     cy.get('[role="option"]').should('contain.text', 'query')
     cy.get('[role="option"]').should('not.contain.text', 'action')
   })
