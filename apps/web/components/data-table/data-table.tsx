@@ -201,7 +201,7 @@ export function DataTable<
   const hasActiveSchemaFilters = Boolean(
     queryConfig.filterSchema &&
       (searchParams.get('q') ||
-        queryConfig.filterSchema.fields.some((field) =>
+        queryConfig.filterSchema.fields?.some((field) =>
           searchParams.has(field.key)
         ))
   )
