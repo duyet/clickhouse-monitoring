@@ -2,7 +2,7 @@
  * Autonomous Health Sweep Cron Endpoint
  * GET /api/cron/health-sweep
  *
- * Invoked by the Cloudflare Cron Trigger (see apps/web/wrangler.toml) every
+ * Invoked by the Cloudflare Cron Trigger (see apps/dashboard/wrangler.toml) every
  * 5 minutes. OpenNext routes scheduled events to the worker fetch handler, so
  * the cron hits this GET route. Runs the health/anomaly sweep over all hosts
  * and dispatches webhook alerts for findings at/above the configured severity.

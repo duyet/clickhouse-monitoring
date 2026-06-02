@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "dashboard",
   "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
   "version": "0.2.0",
   "private": true,

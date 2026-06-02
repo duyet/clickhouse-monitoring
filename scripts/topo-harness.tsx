@@ -8,16 +8,16 @@
  *   bun run scripts/topo-harness.tsx > /tmp/topo.html
  */
 
-import type { KeeperInfoRow } from '../apps/web/components/cluster-topology/model'
+import type { KeeperInfoRow } from '../apps/dashboard/components/cluster-topology/model'
 
 import {
   chRow,
   keepers,
   localDuplicateClusters,
   overlapClusters,
-} from '../apps/web/components/cluster-topology/__tests__/fixtures'
-import { buildTopologyModel } from '../apps/web/components/cluster-topology/model'
-import { TopoCanvas } from '../apps/web/components/cluster-topology/topo-canvas'
+} from '../apps/dashboard/components/cluster-topology/__tests__/fixtures'
+import { buildTopologyModel } from '../apps/dashboard/components/cluster-topology/model'
+import { TopoCanvas } from '../apps/dashboard/components/cluster-topology/topo-canvas'
 import { createElement as h } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -154,7 +154,7 @@ const cards = scenarios
   })
   .join('\n')
 
-// Real OKLCH theme tokens (light root) from apps/web/app/globals.css.
+// Real OKLCH theme tokens (light root) from apps/dashboard/app/globals.css.
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   :root{
     --background:oklch(1 0 0); --foreground:oklch(0.145 0 0);

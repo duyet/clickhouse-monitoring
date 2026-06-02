@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   // Trace from the monorepo root so standalone output includes hoisted
-  // node_modules and workspace packages (apps/web -> ../..)
+  // node_modules and workspace packages (apps/dashboard -> ../..)
   outputFileTracingRoot: path.resolve(__dirname, '../..'),
 
   // Safety net: exclude non-production and development assets from tracing

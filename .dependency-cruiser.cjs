@@ -27,7 +27,7 @@ module.exports = {
       name: 'no-cross-app-imports',
       severity: 'error',
       comment: 'Apps must not import from other apps.',
-      from: { path: '^apps/web/' },
+      from: { path: '^apps/dashboard/' },
       to: { path: '^apps/mcp/' },
     },
     {
@@ -35,7 +35,7 @@ module.exports = {
       severity: 'error',
       comment: 'Apps must not import from other apps.',
       from: { path: '^apps/mcp/' },
-      to: { path: '^apps/web/' },
+      to: { path: '^apps/dashboard/' },
     },
 
     // ── Leaf packages must stay leaf-only ─────────────────────────────────
