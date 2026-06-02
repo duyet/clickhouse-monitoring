@@ -203,7 +203,7 @@ function DraggableTableHeader({
         </Button>
         <div className="min-w-0 flex-1">
           <div className="group flex min-w-0 items-center gap-1.5 justify-between">
-            <span className="min-w-0 flex-1 truncate select-none">
+            <span className="min-w-0 flex-1 truncate">
               {header.isPlaceholder
                 ? null
                 : flexRender(
@@ -314,7 +314,7 @@ export const TableHeaderRow = function TableHeaderRow({
             <div className="group flex min-w-0 items-center pr-1.5">
               <div className="min-w-0 flex-1">
                 <div className="group flex min-w-0 items-center gap-1.5 justify-between">
-                  <span className="min-w-0 flex-1 truncate select-none">
+                  <span className="min-w-0 flex-1 truncate">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

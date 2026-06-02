@@ -77,8 +77,8 @@ function HeaderContent({
   }
 
   return (
-    <span className="inline-flex flex-1 min-w-0 items-center gap-1 truncate text-muted-foreground">
-      {Icon && <Icon className="size-3 shrink-0" />}
+    <span className="inline-flex min-w-0 flex-1 items-center gap-1.5 text-foreground/80">
+      {Icon && <Icon className="size-3.5 shrink-0" />}
       <span className="truncate">{name}</span>
     </span>
   )
@@ -107,7 +107,7 @@ export function ColumnHeader<TData extends RowData>({
     <div className="flex flex-col gap-1">
       <div
         className={cn(
-          'flex w-full items-center gap-1 truncate text-xs font-medium uppercase tracking-wider select-none'
+          'flex w-full items-center gap-1 text-[13px] font-medium normal-case tracking-normal'
         )}
       >
         <button
@@ -118,7 +118,7 @@ export function ColumnHeader<TData extends RowData>({
             if (canSort) column.toggleSorting(sortState === 'asc')
           }}
           className={cn(
-            'flex flex-1 min-w-0 items-center gap-0.5 truncate text-left',
+            'flex min-w-0 flex-1 items-center gap-0.5 text-left',
             canSort && 'cursor-pointer hover:text-foreground'
           )}
         >
