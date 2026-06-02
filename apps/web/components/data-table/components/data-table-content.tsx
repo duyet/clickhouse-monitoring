@@ -251,8 +251,7 @@ export const DataTableContent = memo(function DataTableContent<
             isVirtualized ? 'flex-1 overflow-auto' : 'w-full overflow-x-auto',
             {
               'max-h-[50vh]': compact && !isVirtualized,
-              'mb-5 rounded-lg border border-border/50 bg-card/30':
-                !compact && !cardsOnly,
+              'mb-5 border border-border/50 bg-card/30': !compact && !cardsOnly,
             }
           )}
           role="region"

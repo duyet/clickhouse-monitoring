@@ -179,7 +179,7 @@ function DraggableTableHeader({
       style={style}
       colSpan={header.colSpan}
     >
-      <div className="group flex min-w-0 items-center pr-1.5">
+      <div className="group relative flex min-w-0 items-center pr-1.5">
         {/* Drag handle for column reordering - hidden by default, shown on hover */}
         <Button
           {...attributes}
@@ -188,7 +188,7 @@ function DraggableTableHeader({
           variant="ghost"
           size="icon-sm"
           className={cn(
-            'mr-1 hidden size-6 shrink-0 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
+            'absolute left-0 size-6 shrink-0 cursor-grab text-muted-foreground opacity-0 sm:inline-flex',
             'active:cursor-grabbing',
             'group-hover:opacity-40 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100',
             'transition',
@@ -201,7 +201,7 @@ function DraggableTableHeader({
         >
           <GripVertical data-icon className="size-3" />
         </Button>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pl-7">
           <div className="group flex min-w-0 items-center gap-1.5 justify-between">
             <span className="min-w-0 flex-1 truncate">
               {header.isPlaceholder
