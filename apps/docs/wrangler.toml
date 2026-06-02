@@ -14,3 +14,12 @@ directory = "./dist"
 [[routes]]
 pattern = "docs.chmonitor.dev"
 custom_domain = true
+
+# Preview environment for PR deployments. Routes are not inherited by named
+# environments, so the preview worker has no custom domain — it is reachable at
+# preview-chmonitor-docs.<account>.workers.dev.
+[env.preview]
+name = "preview-chmonitor-docs"
+
+[env.preview.assets]
+directory = "./dist"
