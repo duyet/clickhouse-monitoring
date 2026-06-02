@@ -57,15 +57,8 @@ enabled = true
 # Triggers to the worker fetch handler, which dispatches to the
 # GET /api/cron/health-sweep route. Guard it with the CRON_SECRET secret.
 # Docs: https://developers.cloudflare.com/workers/configuration/cron-triggers/
-#
-# TEMPORARILY DISABLED (crons = []): the account is at its 5-cron-trigger
-# limit because the pre-rename worker `clickhouse-monitor` still holds a slot.
-# Registering this cron made the `chmonitor-dash` deploy fail (CF error 10072),
-# which left dash.chmonitor.dev unattached. Once the old `clickhouse-monitor`
-# and `clickhouse-monitor-mcp` workers are decommissioned (freeing their
-# slots), restore: crons = ["*/5 * * * *"].
 [triggers]
-crons = []
+crons = ["*/5 * * * *"]
 
 # Resource limits — Paid plan only.
 # When this account upgrades to Workers Paid, uncomment to extend the CPU
