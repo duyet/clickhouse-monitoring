@@ -5,7 +5,7 @@ import type { MermaidErrorComponentProps } from 'streamdown'
 
 import { mermaid as mermaidPlugin } from '@streamdown/mermaid'
 import { useTheme } from 'next-themes'
-import { memo, useMemo } from 'react'
+import { type ComponentProps, memo, useMemo } from 'react'
 import { Streamdown } from 'streamdown'
 
 import '@/components/agents/markdown-code.css'
@@ -53,10 +53,9 @@ const MarkdownTextImpl: TextMessagePartComponent = ({ text }) => {
   // root element (set by next-themes). Passing both themes lets Shiki embed
   // dual-theme CSS vars; Streamdown then switches via the dark-class variant
   // already declared in globals.css (@custom-variant dark (&:is(.dark *))).
-  const shikiTheme = useMemo(
-    () => ['github-light', 'github-dark'] as [string, string],
-    []
-  )
+  const shikiTheme = useMemo<
+    NonNullable<ComponentProps<typeof Streamdown>['shikiTheme']>
+  >(() => ['github-light', 'github-dark'], [])
 
   return (
     <div className="markdown-content aui-md text-sm leading-6">
