@@ -136,7 +136,7 @@ const stub = () => new Response(null, { status: 404 });
 module.exports = { GET: stub, HEAD: stub, POST: stub, PUT: stub, DELETE: stub, PATCH: stub, OPTIONS: stub };
 `
 
-// Routes that live in a separate Cloudflare Worker (see apps/mcp-worker/wrangler.toml).
+// Routes that live in a separate Cloudflare Worker (see apps/mcp/wrangler.toml).
 // Workers Routes intercept these paths before the main worker is invoked, so
 // the route handlers we strip here are pure dead code in production. Without
 // this stub they pulled the @modelcontextprotocol/sdk + lib/mcp/tools transitive

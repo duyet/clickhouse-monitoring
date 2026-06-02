@@ -12,7 +12,7 @@ COPY package.json bun.lock ./
 COPY packages/ ./packages/
 # All workspace member manifests must be present for --frozen-lockfile install.
 COPY apps/web/package.json ./apps/web/package.json
-COPY apps/mcp-worker/package.json ./apps/mcp-worker/package.json
+COPY apps/mcp/package.json ./apps/mcp/package.json
 RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --ignore-scripts
 
