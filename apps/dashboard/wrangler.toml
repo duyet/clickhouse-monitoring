@@ -1,7 +1,7 @@
-# wrangler.toml configuration for clickhouse-monitor
+# wrangler.toml configuration for the chmonitor dashboard worker
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
 
-name = "clickhouse-monitor"
+name = "chmonitor-dash"
 main = ".open-next/worker.js"
 compatibility_date = "2026-05-28"
 
@@ -27,10 +27,21 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env", "g
 directory = ".open-next/assets"
 binding = "ASSETS"
 
+# Custom domains for the production dashboard.
+# dash.chmonitor.dev is the canonical host; cloud.chmonitor.dev is a legacy
+# alias that middleware.ts 301-redirects to dash.chmonitor.dev.
+[[routes]]
+pattern = "dash.chmonitor.dev"
+custom_domain = true
+
+[[routes]]
+pattern = "cloud.chmonitor.dev"
+custom_domain = true
+
 # Service binding for self-reference
 [[services]]
 binding = "WORKER_SELF_REFERENCE"
-service = "clickhouse-monitor"
+service = "chmonitor-dash"
 
 # R2 bucket for incremental cache
 [[r2_buckets]]
@@ -167,7 +178,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 #   wrangler secret put CLICKHOUSE_PASSWORD --env preview
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
-name = "clickhouse-monitor-preview"
+name = "preview-chmonitor-dash"
 
 # Custom domain for the preview worker.
 # On the first deploy that includes this route, Wrangler provisions the DNS
@@ -206,7 +217,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY29
 # Self-reference must point to the preview worker
 [[env.preview.services]]
 binding = "WORKER_SELF_REFERENCE"
-service = "clickhouse-monitor-preview"
+service = "preview-chmonitor-dash"
 
 # Durable Objects for cache queue (not inherited from top-level)
 [[env.preview.durable_objects.bindings]]

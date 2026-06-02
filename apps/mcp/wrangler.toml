@@ -24,7 +24,7 @@
 #   CHM_API_KEY_SECRET (any value works; clients must use a key signed with
 #   the same secret) and CLICKHOUSE_PASSWORD.
 
-name = "clickhouse-monitor-mcp"
+name = "chmonitor-mcp"
 main = "src/index.ts"
 compatibility_date = "2026-05-28"
 
@@ -45,15 +45,16 @@ compatibility_flags = [
 [observability]
 enabled = true
 
-# Workers Routes — more specific than main worker's chmonitor.dev/*, win first.
+# Workers Routes — more specific than the dashboard worker's
+# dash.chmonitor.dev/* custom domain, so they win first.
 # Trailing-slash and future sub-path variants (/api/mcp/, /api/mcp/session/…)
 # are captured with the `*` suffix.
 [[routes]]
-pattern = "chmonitor.dev/api/mcp*"
+pattern = "dash.chmonitor.dev/api/mcp*"
 zone_name = "chmonitor.dev"
 
 [[routes]]
-pattern = "chmonitor.dev/api/v1/mcp/info*"
+pattern = "dash.chmonitor.dev/api/v1/mcp/info*"
 zone_name = "chmonitor.dev"
 
 [vars]
@@ -69,7 +70,7 @@ NODE_ENV = "production"
 # Preview environment (mirrors main worker preview at preview.chmonitor.dev)
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
-name = "clickhouse-monitor-mcp-preview"
+name = "preview-chmonitor-mcp"
 
 [[env.preview.routes]]
 pattern = "preview.chmonitor.dev/api/mcp*"
