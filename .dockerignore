@@ -10,6 +10,10 @@ apps/dashboard/.next
 apps/dashboard/.open-next
 apps/dashboard/out
 
+# Standalone Astro apps ship as separate Cloudflare Workers — never in the image
+apps/landing
+apps/docs
+
 # Dependencies
 node_modules
 docs/node_modules

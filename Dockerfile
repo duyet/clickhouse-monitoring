@@ -36,9 +36,11 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the web app via turbo (root build delegates to the web workspace).
+# Build only the dashboard app via turbo. The standalone Astro apps
+# (apps/landing, apps/docs) are not workspace members and ship as separate
+# Cloudflare Workers, so they are never part of the Docker image.
 # wasm:build is skipped by next.config.ts when WASM files exist.
-RUN bun run build
+RUN bun run build --filter=dashboard
 
 # Production image, copy all the files and run next
 FROM base AS runner
