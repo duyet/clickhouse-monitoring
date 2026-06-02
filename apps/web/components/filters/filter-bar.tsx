@@ -10,6 +10,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AddFilterPopover } from '@/components/filters/add-filter-popover'
 import { FilterChip } from '@/components/filters/filter-chip'
 import { PresetsMenu } from '@/components/filters/presets-menu'
+import { QuickFilters } from '@/components/filters/quick-filters'
 import { Button } from '@/components/ui/button'
 import { DebouncedInput } from '@/components/ui/debounced-input'
 import {
@@ -95,6 +96,9 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
 
   const activeKeys = activeFilters.map((filter) => filter.key)
   const hasPresets = Boolean(schema.presets && schema.presets.length > 0)
+  const hasQuickFilters = Boolean(
+    schema.quickFilters && schema.quickFilters.length > 0
+  )
 
   const searchValue = searchParams.get('q') ?? ''
 
@@ -129,6 +133,15 @@ export function FilterBar({ queryConfig }: FilterBarProps) {
           </button>
         )}
       </div>
+
+      {/* Quick filters: always-visible inline controls */}
+      {hasQuickFilters && (
+        <QuickFilters
+          configs={schema.quickFilters ?? []}
+          activeFilters={activeFilters}
+          onSetFilter={setFilter}
+        />
+      )}
 
       {activeFilters.map((filter) => {
         const field = fieldByKey.get(filter.key)

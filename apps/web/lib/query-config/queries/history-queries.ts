@@ -251,6 +251,22 @@ export const historyQueryFilterSchema: FilterSchema = {
       filters: [{ key: 'query_kind', operator: 'in', value: 'Select' }],
     },
   ],
+  quickFilters: [
+    {
+      key: 'query_kind',
+      display: 'segmented',
+      label: 'Type',
+      icon: LayersIcon,
+      options: [
+        { label: 'Select', value: 'Select' },
+        { label: 'Insert', value: 'Insert' },
+        { label: 'Create', value: 'Create' },
+        { label: 'Alter', value: 'Alter' },
+        { label: 'Drop', value: 'Drop' },
+      ],
+      includeAll: true,
+    },
+  ],
 }
 
 export const historyQueriesConfig: QueryConfig = {
