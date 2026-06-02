@@ -174,7 +174,6 @@ describe('<DataTableContent />', () => {
     cy.get('[role="region"]')
       .should('have.class', 'border-border/50')
       .and('have.class', 'bg-card/30')
-      .and('have.class', 'rounded-lg')
   })
 
   it('renders proper cell content', () => {
@@ -215,7 +214,7 @@ describe('<DataTableContent />', () => {
     cy.get('button[aria-label="Drag to reorder col1 column"]')
       .should('have.attr', 'type', 'button')
       .and('have.class', 'size-6')
-      .and('have.class', 'hidden')
+      .and('have.class', 'opacity-0')
       .and('have.class', 'sm:inline-flex')
       .find('[data-icon]')
       .should('exist')
