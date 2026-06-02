@@ -19,6 +19,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "build:landing": "cd apps/landing && bun install --frozen-lockfile && bun run build",
+    "build:docs": "cd apps/docs && bun install --frozen-lockfile && bun run build",
     "start": "bun --filter dashboard start",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
