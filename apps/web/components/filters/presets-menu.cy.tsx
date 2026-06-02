@@ -36,4 +36,22 @@ describe('PresetsMenu', () => {
     // No menu items rendered, but the trigger should still exist.
     cy.get('[role="menuitem"]').should('not.exist')
   })
+
+  // Regression: a modal dropdown runs Radix `hideOthers()`, stamping
+  // `aria-hidden` across every sibling container on open. On a full page that
+  // recomputes the whole a11y/style tree — the "full page re-render" symptom.
+  // `modal={false}` must keep outside content untouched while the menu is open.
+  it('does not mark sibling content aria-hidden when opened', () => {
+    cy.mount(
+      <div>
+        <div data-testid="outside">Outside content</div>
+        <PresetsMenu presets={presets} onApply={cy.stub()} />
+      </div>
+    )
+
+    cy.contains('button', 'Presets').click()
+    cy.contains('Slow queries').should('be.visible')
+
+    cy.get('[data-testid="outside"]').should('not.have.attr', 'aria-hidden')
+  })
 })
