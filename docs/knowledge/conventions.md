@@ -46,10 +46,10 @@ related:
 Radix `DropdownMenu` defaults to `modal={true}`. A modal overlay runs
 `hideOthers()`, which stamps `aria-hidden`/`data-aria-hidden` onto **every
 top-level sibling** of the menu portal (sidebar, header, the whole table) on
-open and strips them on close. On a populated page that toggles the attribute
-on the root containers wrapping the entire UI, forcing a full-page
-accessibility/style recompute — perceived as a "full page re-render" each time
-the menu opens (e.g. the Presets menu, fixed in PR #1360).
+open and strips them on close. On a populated page, toggling this attribute on
+the root containers wrapping the entire UI forces a full-page accessibility/style
+recompute — perceived as a "full-page re-render" each time the menu opens (e.g.
+the Presets menu, fixed in PR #1360).
 
 - `DropdownMenu` defaults to `modal={true}` → set `modal={false}` for toolbar menus.
 - `Popover` already defaults to `modal={false}` → safe as-is.
