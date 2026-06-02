@@ -1,0 +1,55 @@
+name: Decommission old workers
+
+# One-shot manual cleanup after the chmonitor-* worker rename + domain cutover.
+#
+# Deletes the pre-rename workers, which are now orphaned (apex chmonitor.dev was
+# reassigned to chmonitor-landing, and the dashboard/mcp now deploy as
+# chmonitor-dash / chmonitor-mcp):
+#   - clickhouse-monitor      (old dashboard worker)
+#   - clickhouse-monitor-mcp  (old MCP worker)
+#
+# Why this is needed: the old workers still hold account-level cron-trigger
+# slots (the account caps at 5), which blocked the chmonitor-dash deploy with
+# Cloudflare error 10072, and the old MCP worker still answers the stale
+# chmonitor.dev/api/mcp* route (503). Deleting them frees the cron slots and
+# removes the stale route.
+#
+# Safe: bound D1 / R2 / KV are account-level resources referenced by id and are
+# shared with the renamed workers, so deleting the old *workers* does NOT delete
+# that data. Each renamed worker has its own Durable Object namespace.
+#
+# Run it:
+#   gh workflow run decommission-old-workers.yml -f confirm=DELETE
+#
+# After it succeeds, restore the dashboard health-sweep cron by setting
+# crons = ["*/5 * * * *"] in apps/dashboard/wrangler.toml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DELETE to confirm deleting the old workers'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  delete:
+    name: delete
+    if: ${{ inputs.confirm == 'DELETE' }}
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Delete clickhouse-monitor (old dashboard worker)
+        run: |
+          npx --yes --package=wrangler@4 wrangler delete \
+            --name clickhouse-monitor --force || echo "clickhouse-monitor already deleted"
+
+      - name: Delete clickhouse-monitor-mcp (old MCP worker)
+        run: |
+          npx --yes --package=wrangler@4 wrangler delete \
+            --name clickhouse-monitor-mcp --force || echo "clickhouse-monitor-mcp already deleted"
