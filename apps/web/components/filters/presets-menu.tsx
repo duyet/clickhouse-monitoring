@@ -20,7 +20,12 @@ interface PresetsMenuProps {
 /** Dropdown of one-click filter bundles. */
 export function PresetsMenu({ presets, onApply }: PresetsMenuProps) {
   return (
-    <DropdownMenu>
+    // `modal={false}` matches the sibling "Display options" dropdown. The
+    // default modal behavior runs Radix `hideOthers()`, which stamps
+    // `aria-hidden` onto every top-level container (sidebar, header, the whole
+    // table) on open and strips them on close — forcing a full-page a11y/style
+    // recompute that reads as a "full page re-render" each time Presets opens.
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5 px-3 rounded-lg">
           <SparklesIcon className="size-3.5" />
