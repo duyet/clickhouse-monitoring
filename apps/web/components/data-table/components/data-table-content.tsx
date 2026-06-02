@@ -234,16 +234,6 @@ export const DataTableContent = memo(function DataTableContent<
   return (
     <TooltipProvider>
       <div className="relative">
-        {offerViewToggle && !compact && view !== 'table' && (
-          <div
-            className={cn(
-              'mb-2 flex justify-end',
-              view === 'auto' && 'sm:hidden'
-            )}
-          >
-            <MobileSortMenu table={table} />
-          </div>
-        )}
         <div
           ref={tableContainerRef}
           className={cn(

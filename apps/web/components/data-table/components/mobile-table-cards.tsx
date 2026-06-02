@@ -35,6 +35,7 @@ import {
   EXPAND_COLUMN_ID,
   normalizeColumnName,
 } from '@/components/data-table/column-defs'
+import { useTableDensityContext } from '@/components/data-table/context/table-density-context'
 import { DefaultExpandedRow } from '@/components/data-table/row-expand/default-renderer'
 import { Button } from '@/components/ui/button'
 import {
@@ -274,19 +275,44 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
   const hasHeader =
     isExpandable || !!selectCell || badgeCells.length > 0 || !!actionCell
 
+  // Density-aware spacing for cards
+  const { density } = useTableDensityContext()
+  const densitySpacing = {
+    comfortable: {
+      outer: 'p-3',
+      headerMb: 'mb-2.5',
+      sectionMt: 'mt-2.5',
+      detailPy: 'py-2',
+    },
+    compact: {
+      outer: 'p-2.5',
+      headerMb: 'mb-2',
+      sectionMt: 'mt-2',
+      detailPy: 'py-1.5',
+    },
+    dense: {
+      outer: 'p-2',
+      headerMb: 'mb-1.5',
+      sectionMt: 'mt-1.5',
+      detailPy: 'py-1',
+    },
+  }[density]
+
   return (
     <article
       data-testid="mobile-table-card"
       data-expanded={isExpanded || undefined}
       className={cn(
-        'rounded-lg border border-border/60 bg-card/40 p-3',
+        `rounded-lg border border-border/60 bg-card/40 ${densitySpacing.outer}`,
         // An expanded card needs the full row so its detail panel has room.
         isExpanded && gridLayout && 'col-span-full',
         customClass
       )}
     >
       {hasHeader && (
-        <div className="mb-2.5 flex min-w-0 items-center gap-2">
+        <div
+          className={`${densitySpacing.headerMb} flex min-w-0 items-center gap-2`}
+        >
           {isExpandable && (
             <button
               type="button"
@@ -357,7 +383,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
       {metricEntries.length > 0 && (
         <div
           data-testid="mobile-table-card-metrics"
-          className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground"
+          className={`${densitySpacing.sectionMt} flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground`}
         >
           {metricEntries.map(({ name, cell }) => {
             const MetricIcon = columnIcons?.[name]
@@ -380,11 +406,11 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
       )}
 
       {detailCells.length > 0 && (
-        <dl className="mt-3 divide-y divide-border/50">
+        <dl className={`${densitySpacing.sectionMt} divide-y divide-border/50`}>
           {detailCells.map((cell) => (
             <div
               key={cell.id}
-              className="grid min-w-0 grid-cols-[7rem_minmax(0,1fr)] gap-2 py-2 first:pt-0 last:pb-0"
+              className={`grid min-w-0 grid-cols-[7rem_minmax(0,1fr)] gap-2 ${densitySpacing.detailPy} first:pt-0 last:pb-0`}
             >
               <dt className="min-w-0 truncate text-xs text-muted-foreground">
                 {formatColumnLabel(cell.column.id)}

@@ -597,7 +597,7 @@ export function DataTable<
   }
 
   return (
-    <TableDensityProvider value={{ cellClassName }}>
+    <TableDensityProvider value={{ cellClassName, density }}>
       <div className={cn('flex min-w-0 flex-col overflow-hidden', className)}>
         {!compact && (
           <DataTableHeader
