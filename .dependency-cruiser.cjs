@@ -28,13 +28,13 @@ module.exports = {
       severity: 'error',
       comment: 'Apps must not import from other apps.',
       from: { path: '^apps/web/' },
-      to: { path: '^apps/mcp-worker/' },
+      to: { path: '^apps/mcp/' },
     },
     {
       name: 'no-cross-app-imports-reverse',
       severity: 'error',
       comment: 'Apps must not import from other apps.',
-      from: { path: '^apps/mcp-worker/' },
+      from: { path: '^apps/mcp/' },
       to: { path: '^apps/web/' },
     },
 

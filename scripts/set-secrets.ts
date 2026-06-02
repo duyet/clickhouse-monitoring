@@ -15,13 +15,13 @@ import { fileURLToPath } from 'node:url'
 const ENV_FILE_PROD = join(process.cwd(), '.env.prod')
 const ENV_FILE_LOCAL = join(process.cwd(), '.env.local')
 
-// The MCP worker now lives at apps/mcp-worker/. Anchor its wrangler config to
+// The MCP worker now lives at apps/mcp/. Anchor its wrangler config to
 // this script's location so it resolves regardless of cwd.
 const MCP_WRANGLER_CONFIG = join(
   dirname(fileURLToPath(import.meta.url)),
   '..',
   'apps',
-  'mcp-worker',
+  'mcp',
   'wrangler.toml'
 )
 
@@ -144,7 +144,7 @@ async function setSecretsBulk(
 }
 
 // Subset of secrets the standalone MCP worker actually consumes — see
-// apps/mcp-worker/wrangler.toml and apps/mcp-worker/src/index.ts.
+// apps/mcp/wrangler.toml and apps/mcp/src/index.ts.
 const MCP_WORKER_SECRET_KEYS = [
   'CLICKHOUSE_PASSWORD',
   'CHM_API_KEY_SECRET',
@@ -206,9 +206,7 @@ async function main() {
     process.exit(1)
   }
 
-  console.log(
-    '\n🔌 Setting MCP worker secrets (apps/mcp-worker/wrangler.toml)...'
-  )
+  console.log('\n🔌 Setting MCP worker secrets (apps/mcp/wrangler.toml)...')
   const mcpResult = await setSecretsBulk(
     env,
     MCP_WORKER_SECRET_KEYS,
