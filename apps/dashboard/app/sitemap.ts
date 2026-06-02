@@ -7,7 +7,7 @@ import { docsNav } from './(docs)/docs/_lib/docs'
 /** Generate at build time — content is static. */
 export const dynamic = 'force-static'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://chmonitor.dev'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dash.chmonitor.dev'
 
 /** Pages that exist as routes but aren't in the sidebar menu. */
 const HIDDEN_PAGES = [

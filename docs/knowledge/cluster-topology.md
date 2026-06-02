@@ -184,7 +184,7 @@ only branch in `page.tsx`.
 
 ## Test invariants (do not break)
 
-`bun test apps/web/components/cluster-topology/__tests__/` — 39 pure tests, runnable without
+`bun test apps/dashboard/components/cluster-topology/__tests__/` — 39 pure tests, runnable without
 `node_modules`. They lock:
 - hull path shape per node count; **area-DESC z-order**; replication-edge rules.
 - **shared-node-between-centroids** (overlap lens) — relative x order; `fitContent` translates
