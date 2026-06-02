@@ -107,7 +107,41 @@ export function getColumnDefs<
     const { format: columnFormat, options: columnFormatOptions } =
       parseColumnFormat(column, config.columnFormats || {})
     const sortingFnName = config.sortingFns?.[name]
-    const sizing = config.columnSizing?.[name] ?? config.columnSizing?.[column]
+    let sizing = config.columnSizing?.[name] ?? config.columnSizing?.[column]
+
+    // Content-aware column sizing when no explicit size is configured.
+    // Estimates width from the longer of header label or sampled cell values.
+    // Chrome budget: ~64px (header chrome + cell padding) + 32px buffer = 96px.
+    if (!sizing || sizing.size === undefined) {
+      const SAMPLE_SIZE = 30
+      const CHAR_WIDTH = 7.2 // Approximate width of a character in px
+      const CHROME_BUDGET = 96 // Header chrome + cell padding
+      const MIN_WIDTH = 80
+      const MAX_WIDTH = 480
+
+      let maxChars = name.length
+      // Sample cell values for content width estimation
+      const sampleSize = Math.min(data.length, SAMPLE_SIZE)
+      if (sampleSize > 0) {
+        const step =
+          data.length > sampleSize ? Math.floor(data.length / sampleSize) : 1
+        for (let i = 0; i < data.length; i += step) {
+          const row = data[i] as Record<string, unknown>
+          const value = row[column]
+          if (value != null) {
+            const strValue = String(value)
+            maxChars = Math.max(maxChars, strValue.length)
+          }
+        }
+      }
+      const estimatedSize = Math.round(maxChars * CHAR_WIDTH + CHROME_BUDGET)
+      const clampedSize = Math.max(
+        MIN_WIDTH,
+        Math.min(MAX_WIDTH, estimatedSize)
+      )
+
+      sizing = { ...(sizing || {}), size: clampedSize }
+    }
 
     // Check if this column should have a filter
     const isFilterable = isColumnFilterable(
