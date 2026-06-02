@@ -1,0 +1,2 @@
+/docs/*  https://docs.chmonitor.dev/:splat  301
+/docs    https://docs.chmonitor.dev  301

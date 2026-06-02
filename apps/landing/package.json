@@ -1,0 +1,19 @@
+{
+  "name": "landing",
+  "description": "chmonitor marketing landing page",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "cf:deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.65.0"
+  }
+}
