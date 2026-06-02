@@ -5,9 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/sync-docs.mjs && astro dev",
+    "build": "node scripts/sync-docs.mjs && astro build",
     "preview": "astro preview",
+    "sync": "node scripts/sync-docs.mjs",
     "cf:deploy": "wrangler deploy"
   },
   "dependencies": {
