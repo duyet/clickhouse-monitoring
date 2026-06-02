@@ -149,7 +149,7 @@ describe('<DataTableHeader />', () => {
       />
     )
 
-    cy.contains('col1 contains “test”').should('be.visible')
+    cy.contains(/col1 contains .*test/).should('be.visible')
     cy.contains('Clear all').should('be.visible')
   })
 

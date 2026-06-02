@@ -100,12 +100,45 @@ export interface FilterPreset {
   filters: (FilterValue & { key: string })[]
 }
 
+/** Quick filter display type. */
+export type QuickFilterDisplay = 'segmented' | 'select' | 'radio'
+
+/**
+ * Quick filter: always-visible inline control for high-value filters.
+ * Renders before filter chips in the FilterBar.
+ */
+export interface QuickFilterConfig {
+  /** Field key from fields[] that this quick filter controls. */
+  key: string
+  /** How to render the inline control. */
+  display: QuickFilterDisplay
+  /** Override label (defaults to field.label). */
+  label?: string
+  /**
+   * For segmented/radio: options to show.
+   * Defaults to field.options (for select-type fields) or needs explicit options.
+   */
+  options?: { label: string; value: string }[]
+  /**
+   * For segmented: include an "All" option that clears the filter.
+   * When true, prepends { label: 'All', value: '' } to options.
+   */
+  includeAll?: boolean
+  /** Optional icon shown with the control. */
+  icon?: Icon
+}
+
 /** Declarative filter configuration attached to a `QueryConfig`. */
 export interface FilterSchema {
   /** Filterable fields rendered in the filter bar. */
   fields: FilterField[]
   /** Optional one-click filter bundles. */
   presets?: FilterPreset[]
+  /**
+   * Always-visible inline controls for high-value filters.
+   * Renders before filter chips in the FilterBar.
+   */
+  quickFilters?: QuickFilterConfig[]
 }
 
 /** A filter with a concrete operator + value, parsed from the URL. */
