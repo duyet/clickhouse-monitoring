@@ -3,8 +3,8 @@
  *
  * Split out of the main Next.js worker because @modelcontextprotocol/sdk +
  * lib/mcp/tools accounted for ~390 KB of the main bundle. Cloudflare Workers
- * Routes deliver chmonitor.dev/api/mcp* + /api/v1/mcp/info* to this worker
- * directly; the main worker never sees those paths in production.
+ * Routes deliver dash.chmonitor.dev/api/mcp* + /api/v1/mcp/info* to this
+ * worker directly; the dashboard worker never sees those paths in production.
  *
  * Bindings: shares ClickHouse env vars + CHM_API_KEY_SECRET secret. No
  * KV/D1/R2 — MCP tools only query ClickHouse over HTTP.

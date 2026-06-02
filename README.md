@@ -6,7 +6,7 @@
 A modern Next.js 15 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
 
 <p align="center">
-  <strong>Live:</strong> <a href="https://chmonitor.dev/?ref=github">chmonitor.dev</a> | <a href="#screenshots">Screenshots</a>
+  <strong>Live:</strong> <a href="https://dash.chmonitor.dev/?ref=github">dash.chmonitor.dev</a> | <a href="https://chmonitor.dev/?ref=github">chmonitor.dev</a> | <a href="#screenshots">Screenshots</a>
 </p>
 
 **Features:**

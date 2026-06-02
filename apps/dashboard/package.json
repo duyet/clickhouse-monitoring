@@ -25,7 +25,7 @@
     "migrate:dry-run": "bun lib/migration/migration-runner.ts migrate --dry-run",
     "cf:deploy": "bun ../../scripts/cloudflare-deploy.ts",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "cf:health": "curl -sSf https://chmonitor.dev/api/healthz | jq .",
+    "cf:health": "curl -sSf https://dash.chmonitor.dev/api/healthz | jq .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "cy:open": "start-server-and-test dev http://localhost:3000 \"cypress open\"",

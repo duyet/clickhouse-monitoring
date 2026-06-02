@@ -50,8 +50,9 @@ function formatCommand(cmd: string, args: string[]): string {
 const STEPS: Step[] = [
   ['📦', 'Building for Cloudflare', 'bun', ['run', 'cf:build']],
   ['🚀', 'Deploying main worker', 'wrangler', ['deploy', '--minify']],
-  // Deploy the MCP worker separately. Workers Routes on chmonitor.dev/api/mcp*
-  // are configured in apps/mcp/wrangler.toml; this command provisions them.
+  // Deploy the MCP worker separately. Workers Routes on
+  // dash.chmonitor.dev/api/mcp* are configured in apps/mcp/wrangler.toml;
+  // this command provisions them.
   [
     '🔌',
     'Deploying MCP worker',

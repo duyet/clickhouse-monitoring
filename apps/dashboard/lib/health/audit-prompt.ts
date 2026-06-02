@@ -103,7 +103,7 @@ export function buildAuditPrompt(
   const appBase =
     typeof window !== 'undefined'
       ? window.location.origin
-      : 'https://chmonitor.dev'
+      : 'https://dash.chmonitor.dev'
 
   const valueStr =
     value === null
