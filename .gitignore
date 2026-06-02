@@ -11,17 +11,17 @@
 
 # testing
 /coverage
-apps/web/coverage
+apps/dashboard/coverage
 .nyc_output
 /jest-reports
 /test-results
 
 # next.js
-apps/web/.next/
-apps/web/.next-prod/
-apps/web/out/
+apps/dashboard/.next/
+apps/dashboard/.next-prod/
+apps/dashboard/out/
 next.config.compiled.js
-apps/web/.next/next.config.compiled.js
+apps/dashboard/.next/next.config.compiled.js
 
 # production
 /build

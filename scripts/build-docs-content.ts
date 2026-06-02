@@ -7,7 +7,7 @@ const repoRoot = path.resolve(import.meta.dir, '..')
 const ROOT = path.join(repoRoot, 'docs/content')
 const OUT = path.join(
   repoRoot,
-  'apps/web/app/(docs)/docs/_lib/content.generated.ts'
+  'apps/dashboard/app/(docs)/docs/_lib/content.generated.ts'
 )
 
 async function walk(dir: string): Promise<string[]> {

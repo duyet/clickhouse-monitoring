@@ -29,7 +29,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const ENV_FILE_PROD = join(__dirname, '..', '.env.prod')
 const ENV_FILE_LOCAL = join(__dirname, '..', '.env.local')
 
-// The MCP worker now lives at apps/mcp/. cf:deploy runs with cwd=apps/web,
+// The MCP worker now lives at apps/mcp/. cf:deploy runs with cwd=apps/dashboard,
 // so pass an absolute --config path (wrangler resolves `main` relative to it).
 const MCP_WRANGLER_CONFIG = join(
   __dirname,

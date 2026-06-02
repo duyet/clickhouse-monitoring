@@ -330,22 +330,22 @@ jobs:
           NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.tag }}
           NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ github.event.repository.updated_at }}
           NEXT_PUBLIC_CI: "true"
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: bun run cf:build
 
       - name: Package release archives
         run: |
           TAG="${{ steps.meta.outputs.tag }}"
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
-            apps/web/.next/standalone \
-            apps/web/.next/static \
-            apps/web/public \
-            apps/web/package.json \
+            apps/dashboard/.next/standalone \
+            apps/dashboard/.next/static \
+            apps/dashboard/public \
+            apps/dashboard/package.json \
             bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
-            apps/web/.open-next \
-            apps/web/wrangler.toml \
-            apps/web/package.json \
+            apps/dashboard/.open-next \
+            apps/dashboard/wrangler.toml \
+            apps/dashboard/package.json \
             bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 

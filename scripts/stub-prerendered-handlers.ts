@@ -45,9 +45,9 @@ interface AppPathRoutesManifest {
 }
 
 const ROOT = process.cwd()
-// In a monorepo (lockfile at the repo root, app under e.g. `apps/web`),
+// In a monorepo (lockfile at the repo root, app under e.g. `apps/dashboard`),
 // `output: 'standalone'` nests the build under the app's path relative to the
-// monorepo root: `.next/standalone/apps/web/.next/server/app`. Detect that
+// monorepo root: `.next/standalone/apps/dashboard/.next/server/app`. Detect that
 // package sub-path the same way opennextjs/aws does (first lockfile walking up)
 // so this works in both single-package and monorepo layouts.
 function findMonorepoRoot(start: string): string {
@@ -65,7 +65,7 @@ function findMonorepoRoot(start: string): string {
   }
   return start
 }
-const PKG_PATH = path.relative(findMonorepoRoot(ROOT), ROOT) // '' or e.g. 'apps/web'
+const PKG_PATH = path.relative(findMonorepoRoot(ROOT), ROOT) // '' or e.g. 'apps/dashboard'
 // `output: 'standalone'` produces a self-contained copy under `.next/standalone`
 // that opennextjs-cloudflare uses as its source of truth. We have to stub there
 // (and also in `.next/server/app` for symmetry) — the plain copy alone is ignored.

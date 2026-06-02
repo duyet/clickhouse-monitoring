@@ -16,20 +16,8 @@
         "typescript": "^6.0.0",
       },
     },
-    "apps/mcp": {
-      "name": "mcp",
-      "version": "0.2.0",
-      "dependencies": {
-        "@chm/mcp-server": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.29.0",
-      },
-      "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260515.0",
-        "wrangler": "4.65.0",
-      },
-    },
-    "apps/web": {
-      "name": "web",
+    "apps/dashboard": {
+      "name": "dashboard",
       "version": "0.2.0",
       "dependencies": {
         "@ai-sdk/openai": "^3.0.65",
@@ -179,6 +167,18 @@
       },
       "optionalDependencies": {
         "@vercel/analytics": "^2.0.0",
+      },
+    },
+    "apps/mcp": {
+      "name": "mcp",
+      "version": "0.2.0",
+      "dependencies": {
+        "@chm/mcp-server": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "^4.20260515.0",
+        "wrangler": "4.65.0",
       },
     },
     "packages/clickhouse-client": {
@@ -2249,6 +2249,8 @@
 
     "dagre-d3-es": ["dagre-d3-es@7.0.14", "", { "dependencies": { "d3": "^7.9.0", "lodash-es": "^4.17.21" } }, "sha512-P4rFMVq9ESWqmOgK+dlXvOtLwYg0i7u0HBGJER0LZDJT2VHIPAMZ/riPxqJceWMStH5+E61QxFra9kIS3AqdMg=="],
 
+    "dashboard": ["dashboard@workspace:apps/dashboard"],
+
     "dashdash": ["dashdash@1.14.1", "", { "dependencies": { "assert-plus": "^1.0.0" } }, "sha512-jRFi8UDGo6j+odZiEpjazZaWqEal3w/basFjQHQEwVtZJGDpxbH1MeYluwCS8Xq5wmLJooDlMgvVarmWfGM44g=="],
 
     "data-uri-to-buffer": ["data-uri-to-buffer@4.0.1", "", {}, "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A=="],
@@ -3900,8 +3902,6 @@
     "watchpack": ["watchpack@2.5.1", "", { "dependencies": { "glob-to-regexp": "^0.4.1", "graceful-fs": "^4.1.2" } }, "sha512-Zn5uXdcFNIA1+1Ei5McRd+iRzfhENPCe7LeABkJtNulSxjma+l7ltNx55BWZkRlwRnpOgHqxnjyaDgJnNXnqzg=="],
 
     "watskeburt": ["watskeburt@5.0.3", "", { "bin": { "watskeburt": "dist/run-cli.js" } }, "sha512-g9CXukMjazlJJVQ3OHzXsnG25KFYgSgKMIyoJrD8ggr0DbS9UNF7OzIqWmmKKBMedkxj3T01uqEaGnn+y7QhMA=="],
-
-    "web": ["web@workspace:apps/web"],
 
     "web-namespaces": ["web-namespaces@2.0.1", "", {}, "sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ=="],
 

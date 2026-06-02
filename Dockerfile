@@ -11,7 +11,7 @@ RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock ./
 COPY packages/ ./packages/
 # All workspace member manifests must be present for --frozen-lockfile install.
-COPY apps/web/package.json ./apps/web/package.json
+COPY apps/dashboard/package.json ./apps/dashboard/package.json
 COPY apps/mcp/package.json ./apps/mcp/package.json
 RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --ignore-scripts
@@ -32,7 +32,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy dependencies from deps stage (avoid reinstalling).
 # Bun hoists all workspace deps to the root node_modules (with @chm/* symlinks),
-# so there is no apps/web/node_modules to copy — workspace resolution walks up.
+# so there is no apps/dashboard/node_modules to copy — workspace resolution walks up.
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -48,30 +48,30 @@ ENV NODE_ENV=production \
 
 RUN addgroup --system --gid 1001 app && \
     adduser --system --uid 1001 app && \
-    mkdir -p apps/web/.next && \
+    mkdir -p apps/dashboard/.next && \
     chown -R app:app apps
 
 # IMPORTANT: .next/standalone already contains all necessary production dependencies
 # DO NOT copy node_modules from deps stage - this causes 438MB+ duplication
 #
 # With outputFileTracingRoot inferred at the monorepo root, the standalone output
-# nests the server under apps/web/. Copying the whole standalone dir preserves that
-# nesting, so server.js lands at ./apps/web/server.js and static/public must sit
-# relative to it (./apps/web/.next/static and ./apps/web/public).
-COPY --from=builder --chown=app:app /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder --chown=app:app /app/apps/web/public ./apps/web/public
+# nests the server under apps/dashboard/. Copying the whole standalone dir preserves that
+# nesting, so server.js lands at ./apps/dashboard/server.js and static/public must sit
+# relative to it (./apps/dashboard/.next/static and ./apps/dashboard/public).
+COPY --from=builder --chown=app:app /app/apps/dashboard/.next/standalone ./
+COPY --from=builder --chown=app:app /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
+COPY --from=builder --chown=app:app /app/apps/dashboard/public ./apps/dashboard/public
 
 USER app
 
 EXPOSE 3000
 
 # Copy migration files for auto-migration at startup
-COPY --from=builder --chown=app:app /app/apps/web/lib/migration ./apps/web/lib/migration
-COPY --from=builder --chown=app:app /app/apps/web/lib/conversation-store/pg-migrations ./apps/web/lib/conversation-store/pg-migrations
+COPY --from=builder --chown=app:app /app/apps/dashboard/lib/migration ./apps/dashboard/lib/migration
+COPY --from=builder --chown=app:app /app/apps/dashboard/lib/conversation-store/pg-migrations ./apps/dashboard/lib/conversation-store/pg-migrations
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
-# With the monorepo tracing root, server.js is nested under apps/web/.
+# With the monorepo tracing root, server.js is nested under apps/dashboard/.
 # Auto-migration runs on first API request via autoMigrate() singleton
-CMD ["bun", "apps/web/server.js"]
+CMD ["bun", "apps/dashboard/server.js"]

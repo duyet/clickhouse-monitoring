@@ -166,7 +166,7 @@ describe('fetchData hostId parameter validation', () => {
 
   it('should verify fetchData function signature accepts hostId', () => {
     // fetchData lives in the @chm/clickhouse-client package (extracted from
-    // apps/web/lib/clickhouse in the monorepo refactor).
+    // apps/dashboard/lib/clickhouse in the monorepo refactor).
     const clickhouseFetchPath = path.join(
       projectRoot,
       '../../packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts'

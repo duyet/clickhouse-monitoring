@@ -5,15 +5,15 @@ dist
 build
 .open-next
 
-# apps/web build artifacts (explicit for monorepo layout)
-apps/web/.next
-apps/web/.open-next
-apps/web/out
+# apps/dashboard build artifacts (explicit for monorepo layout)
+apps/dashboard/.next
+apps/dashboard/.open-next
+apps/dashboard/out
 
 # Dependencies
 node_modules
 docs/node_modules
-apps/web/node_modules
+apps/dashboard/node_modules
 
 # CI/CD
 .git

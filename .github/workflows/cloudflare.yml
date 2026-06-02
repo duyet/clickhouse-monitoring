@@ -77,7 +77,7 @@ jobs:
       - name: Next.js Cache
         uses: actions/cache@v5
         with:
-          path: apps/web/.next/cache
+          path: apps/dashboard/.next/cache
           key: ${{ runner.os }}-nextjs-preview-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-preview-${{ hashFiles('**/bun.lock') }}-
@@ -96,7 +96,7 @@ jobs:
           NEXT_PUBLIC_CI: "true"
           NEXT_PUBLIC_AUTH_PROVIDER: "clerk"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_TEST }}
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           # Update wrangler.toml with the test public key for preview environment
           if [ -n "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
@@ -123,7 +123,7 @@ jobs:
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           set -euo pipefail
           # Set secrets directly to avoid executing PR-controlled scripts with privileged env
@@ -148,7 +148,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           npx --yes --package=wrangler@4 wrangler deploy --env preview --minify 2>&1 | tee /tmp/deploy-output.txt
           exit ${PIPESTATUS[0]}
@@ -318,9 +318,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            apps/web/.next/cache
-            apps/web/.next/static
-            apps/web/.next/server
+            apps/dashboard/.next/cache
+            apps/dashboard/.next/static
+            apps/dashboard/.next/server
           key: ${{ runner.os }}-nextjs-v1-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-v1-
@@ -328,7 +328,7 @@ jobs:
       - name: OpenNext Cache
         uses: actions/cache@v5
         with:
-          path: apps/web/.open-next
+          path: apps/dashboard/.open-next
           key: ${{ runner.os }}-opennext-v1-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-opennext-v1-
@@ -344,7 +344,7 @@ jobs:
           NEXT_PUBLIC_CI: "true"
           NEXT_PUBLIC_AUTH_PROVIDER: "clerk"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           echo "Building with metadata:"
           echo "  SHA: ${NEXT_PUBLIC_GIT_SHA}"
@@ -374,7 +374,7 @@ jobs:
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           set -euo pipefail
 
@@ -400,7 +400,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/web
+          workingDirectory: apps/dashboard
           command: deploy --minify
 
       - name: Set MCP worker secrets
@@ -425,7 +425,7 @@ jobs:
 
       - name: Extract deployment details
         id: deployment-details
-        working-directory: apps/web
+        working-directory: apps/dashboard
         run: |
           WORKER_NAME=$(grep '^name = ' wrangler.toml | head -n 1 | awk -F'"' '{print $2}')
           WORKER_URL="https://${WORKER_NAME}.duyet.workers.dev"
