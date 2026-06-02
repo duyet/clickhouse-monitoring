@@ -3,7 +3,7 @@ id: conventions
 title: Development Conventions
 type: workflow
 status: active
-updated: 2026-05-13
+updated: 2026-06-02
 tags:
   - conventions
   - patterns
@@ -38,6 +38,22 @@ related:
 - Pass custom classes via `className` prop at usage site
 - Create wrapper components in `components/` (not `components/ui/`) if needed
 - Use `cn()` utility to merge classes
+
+## Radix Overlays (DropdownMenu / Popover)
+
+**Use `modal={false}` for toolbar/filter dropdowns and popovers.**
+
+Radix `DropdownMenu` defaults to `modal={true}`. A modal overlay runs
+`hideOthers()`, which stamps `aria-hidden`/`data-aria-hidden` onto **every
+top-level sibling** of the menu portal (sidebar, header, the whole table) on
+open and strips them on close. On a populated page that toggles the attribute
+on the root containers wrapping the entire UI, forcing a full-page
+accessibility/style recompute — perceived as a "full page re-render" each time
+the menu opens (e.g. the Presets menu, fixed in PR #1360).
+
+- `DropdownMenu` defaults to `modal={true}` → set `modal={false}` for toolbar menus.
+- `Popover` already defaults to `modal={false}` → safe as-is.
+- Reserve modal overlays for genuine modal flows (confirm dialogs), not toolbars.
 
 ## className Composition
 
