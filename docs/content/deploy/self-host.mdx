@@ -1,0 +1,128 @@
+# Self-host
+
+Run the dashboard on your own infrastructure. The same build targets three
+runtimes — pick one. Every target reads the same `CLICKHOUSE_*` environment, so
+config carries over if you switch later.
+
+| Variable | Required | Description |
+|---|---|---|
+| `CLICKHOUSE_HOST` | Yes | ClickHouse URL(s), comma-separated for multi-host |
+| `CLICKHOUSE_USER` | Yes | Username(s), comma-separated |
+| `CLICKHOUSE_PASSWORD` | Yes | Password(s), comma-separated |
+| `CLICKHOUSE_NAME` | No | Friendly name(s) per host |
+| `CLICKHOUSE_MAX_EXECUTION_TIME` | No | Query timeout in seconds (default `60`) |
+
+The dashboard is stateless — it only reads ClickHouse system tables — so scaling
+out and restarting are always safe.
+
+## Cloudflare Workers
+
+Edge hosting. Builds with the OpenNext adapter and deploys to a Worker. Best
+when you want a globally cached, serverless front end with no servers to run.
+
+```bash
+# 1. Clone and install
+git clone https://github.com/duyet/clickhouse-monitoring.git
+cd clickhouse-monitoring
+bun install
+
+# 2. Put your ClickHouse credentials in .env.prod (or .env.local)
+cat <<'EOF' > .env.prod
+CLOUDFLARE_API_TOKEN=<token-with-workers-deploy-permission>
+CLICKHOUSE_HOST=https://clickhouse.example.com:8443
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=change-me
+EOF
+
+# 3. Push secrets to the Worker, then build + deploy + populate cache
+bun run cf:config
+bun run cf:deploy
+```
+
+`cf:deploy` runs `cf:build` → `wrangler deploy --minify` →
+`populateCache remote`. Without `CLOUDFLARE_API_TOKEN` it falls back to
+`wrangler login`. Full reference: [Cloudflare](/deploy/cloudflare).
+
+## Docker
+
+A single self-hosted container. Use the published image from GHCR — pin a
+release tag in production. Fastest path if you already run ClickHouse somewhere.
+
+```bash
+docker run -d --name chmonitor -p 3000:3000 \
+  -e CLICKHOUSE_HOST='https://clickhouse.example.com:8443' \
+  -e CLICKHOUSE_USER='default' \
+  -e CLICKHOUSE_PASSWORD='change-me' \
+  ghcr.io/duyet/chmonitor:latest
+
+# Open http://localhost:3000
+```
+
+To try it with a throwaway ClickHouse alongside the app, use the bundled Compose
+file instead:
+
+```bash
+git clone https://github.com/duyet/clickhouse-monitoring.git
+cd clickhouse-monitoring
+docker compose up -d        # starts ClickHouse + the dashboard
+```
+
+> If ClickHouse runs on the Docker **host**, `localhost` inside the container
+> points at the container — use `host.docker.internal` (add
+> `--add-host=host.docker.internal:host-gateway` on Linux). Full reference:
+> [Docker](/deploy/docker).
+
+## Kubernetes + Helm
+
+Cluster-managed deployment. The Helm chart is vendored in-repo at
+[`deploy/helm/chmonitor`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/helm/chmonitor)
+so it tracks the app it ships. It stores the password in a `Secret`, runs as the
+non-root `app` user, and wires liveness/readiness probes.
+
+```bash
+# 1. Get the chart
+git clone https://github.com/duyet/clickhouse-monitoring.git
+cd clickhouse-monitoring
+
+# 2. Install, passing your ClickHouse connection
+helm install my-chm ./deploy/helm/chmonitor \
+  --set clickhouse.host="https://clickhouse.example.com:8443" \
+  --set clickhouse.user="default" \
+  --set clickhouse.password="change-me"
+
+# 3. Reach it locally (service is <release>-chmonitor)
+kubectl port-forward svc/my-chm-chmonitor 3000:3000
+# Open http://localhost:3000
+```
+
+Upgrade or remove later:
+
+```bash
+helm upgrade my-chm ./deploy/helm/chmonitor -f my-values.yaml
+helm uninstall my-chm
+```
+
+For production, keep the password out of `--set` (use `clickhouse.existingSecret`
+or a secrets operator), enable an Ingress, and turn on the HPA via
+`autoscaling.enabled`. Raw kustomize manifests and full options:
+[Kubernetes](/deploy/k8s).
+
+import { Cards } from 'nextra/components'
+import { Triangle, Container, Blocks, CheckCircle2 } from 'lucide-react'
+
+<Cards>
+  <Cards.Card
+    icon={<Triangle />}
+    title="Cloudflare"
+    href="/deploy/cloudflare"
+    arrow
+  />
+  <Cards.Card icon={<Container />} title="Docker" href="/deploy/docker" arrow />
+  <Cards.Card icon={<Blocks />} title="Kubernetes" href="/deploy/k8s" arrow />
+  <Cards.Card
+    icon={<CheckCircle2 />}
+    title="Production Checklist"
+    href="/deploy/production-checklist"
+    arrow
+  />
+</Cards>
