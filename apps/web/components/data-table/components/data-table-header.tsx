@@ -712,11 +712,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                     key={filter.id}
                     className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 dark:bg-muted/40 border border-border/50 text-foreground/80 text-[11px] font-medium transition-colors"
                   >
-                    <span>
-                      {label} {OPERATOR_LABELS[filter.operator]} &ldquo;
-                      {filter.value}
-                      &rdquo;
-                    </span>
+                    <span>{`${label} ${OPERATOR_LABELS[filter.operator]} “${filter.value}”`}</span>
                     <button
                       type="button"
                       onClick={() => removeCommittedFilter(filter.id)}
