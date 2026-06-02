@@ -23,6 +23,7 @@ import { CardToolbar } from '@/components/cards/card-toolbar'
 import { CsvExportButton } from '@/components/data-table/buttons/csv-export-button'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
+import { MobileSortMenu } from '@/components/data-table/components/mobile-table-cards'
 import { Button } from '@/components/ui/button'
 import { DebouncedInput } from '@/components/ui/debounced-input'
 import {
@@ -318,6 +319,12 @@ export const DataTableHeader = memo(function DataTableHeader<
         <div className="flex flex-wrap items-center gap-2 bg-card/65 dark:bg-card/40 border border-border/60 p-2 rounded-xl shadow-xs">
           {filterBarSlot}
           <div className="flex flex-wrap items-center gap-2 ml-auto">
+            {/* Sort control for card view — moved from separate row into unified toolbar */}
+            {offerViewToggle && (view === 'cards' || view === 'auto') && (
+              <div className={view === 'auto' ? 'sm:hidden' : ''}>
+                <MobileSortMenu table={table} />
+              </div>
+            )}
             {offerViewToggle && (
               <ViewToggle view={view} onViewChange={onViewChange} />
             )}
