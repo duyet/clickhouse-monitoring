@@ -1,0 +1,16 @@
+# wrangler.toml for the chmonitor documentation worker.
+#
+# Static-assets-only Worker: Astro Starlight builds to ./dist, which is served
+# directly by Workers Assets (no `main` script).
+#
+# Deploy: cd apps/docs && bun run build && wrangler deploy
+
+name = "chmonitor-docs"
+compatibility_date = "2026-05-28"
+
+[assets]
+directory = "./dist"
+
+[[routes]]
+pattern = "docs.chmonitor.dev"
+custom_domain = true

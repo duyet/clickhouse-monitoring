@@ -90,10 +90,38 @@ async function getAgentApiClerkPrecheck(request: NextRequest) {
   return null
 }
 
+// cloud.chmonitor.dev is a legacy alias of the dashboard. Permanently redirect
+// it to the canonical dash.chmonitor.dev host, preserving path and query.
+function getLegacyHostRedirect(request: NextRequest) {
+  const host = request.headers.get('host')
+  if (host !== 'cloud.chmonitor.dev') {
+    return null
+  }
+
+  const url = request.nextUrl
+  return NextResponse.redirect(
+    `https://dash.chmonitor.dev${url.pathname}${url.search}`,
+    301
+  )
+}
+
 export default async function middleware(
   request: NextRequest,
   event: NextFetchEvent
 ) {
+  const legacyHostRedirect = getLegacyHostRedirect(request)
+  if (legacyHostRedirect) {
+    return legacyHostRedirect
+  }
+
+  // The auth logic below only applies to API + Clerk internal routes. The
+  // matcher also covers page routes (so the host redirect above can fire), so
+  // pass everything else straight through without invoking Clerk.
+  const { pathname } = request.nextUrl
+  if (!pathname.startsWith('/api/v1/') && !pathname.startsWith('/__clerk/')) {
+    return NextResponse.next()
+  }
+
   let authProvider: ReturnType<typeof getAuthProvider>
 
   try {
@@ -127,5 +155,12 @@ export default async function middleware(
 }
 
 export const config = {
-  matcher: ['/api/v1/:path*', '/__clerk/:path*'],
+  // /api/v1 + /__clerk drive auth; the broad page matcher (excluding Next.js
+  // internals and static files) lets the cloud.chmonitor.dev host redirect fire
+  // on any path. Non-API page requests short-circuit to NextResponse.next().
+  matcher: [
+    '/api/v1/:path*',
+    '/__clerk/:path*',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.[\\w]+$).*)',
+  ],
 }

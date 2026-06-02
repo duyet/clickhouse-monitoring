@@ -1,0 +1,21 @@
+# wrangler.toml for the chmonitor marketing landing worker.
+#
+# Static-assets-only Worker: Astro builds to ./dist, which is served directly
+# by Workers Assets (no `main` script). public/_redirects (copied into dist)
+# sends /docs* to docs.chmonitor.dev.
+#
+# Deploy: cd apps/landing && bun run build && wrangler deploy
+#
+# Note: the chmonitor.dev apex is a custom domain. It currently lives on the
+# legacy worker; the live cutover detaches it there before the first deploy
+# here claims it (custom domains are exclusive).
+
+name = "chmonitor-landing"
+compatibility_date = "2026-05-28"
+
+[assets]
+directory = "./dist"
+
+[[routes]]
+pattern = "chmonitor.dev"
+custom_domain = true
