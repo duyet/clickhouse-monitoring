@@ -18,7 +18,7 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { QueryConfig } from '@/types/query-config'
 import type { TableFilterCondition } from '../hooks/use-filtered-data'
 
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { CardToolbar } from '@/components/cards/card-toolbar'
 import { CsvExportButton } from '@/components/data-table/buttons/csv-export-button'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
@@ -180,26 +180,41 @@ export const DataTableHeader = memo(function DataTableHeader<
   const [filterDrafts, setFilterDrafts] = useState<TableFilterCondition[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
-  // Get eligible columns for advanced filtering, excluding synthetic
-  // utility columns (see CLAUDE.md: `__expand`, `select`, `action`).
-  const filterableColumns = table
-    .getAllLeafColumns()
-    .filter((col) => !['__expand', 'select', 'action'].includes(col.id))
-
   // Stable unique IDs for filter drafts (avoids Math.random collisions)
   const createFilterId = () =>
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
-  // Resolve a human-readable label for a column
-  const getColumnLabel = (col: {
-    id: string
-    columnDef: { header?: unknown }
-  }) => {
-    const header = col.columnDef.header
-    return typeof header === 'string' ? header : col.id
+  // Memoize filterable columns with their labels to avoid recomputing on every render.
+  // This stabilizes the SelectItem arrays and reduces popover open cost.
+  const filterableColumns = useMemo(() => {
+    const cols = table
+      .getAllLeafColumns()
+      .filter((col) => !['__expand', 'select', 'action'].includes(col.id))
+    // Pre-compute labels once
+    return cols.map((col) => {
+      const header = col.columnDef.header
+      const label = typeof header === 'string' ? header : col.id
+      return { column: col, label }
+    })
+  }, [table])
+
+  // Resolve a human-readable label for a column (uses memoized label)
+  const getColumnLabel = (colId: string) => {
+    const found = filterableColumns.find((item) => item.column.id === colId)
+    return found?.label || colId
   }
+
+  // Memoize operator options to avoid recreating SelectItems on every render
+  const operatorOptions = useMemo(
+    () =>
+      Object.entries(OPERATOR_LABELS).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    []
+  )
 
   // Open popover: sync draft state with committed state
   const handleOpenFilters = (open: boolean) => {
@@ -211,7 +226,7 @@ export const DataTableHeader = memo(function DataTableHeader<
           : [
               {
                 id: createFilterId(),
-                columnId: filterableColumns[0]?.id || '',
+                columnId: filterableColumns[0]?.column.id || '',
                 operator: 'contains',
                 value: '',
               },
@@ -225,7 +240,7 @@ export const DataTableHeader = memo(function DataTableHeader<
       ...prev,
       {
         id: createFilterId(),
-        columnId: filterableColumns[0]?.id || '',
+        columnId: filterableColumns[0]?.column.id || '',
         operator: 'contains',
         value: '',
       },
@@ -249,7 +264,7 @@ export const DataTableHeader = memo(function DataTableHeader<
         : [
             {
               id: createFilterId(),
-              columnId: filterableColumns[0]?.id || '',
+              columnId: filterableColumns[0]?.column.id || '',
               operator: 'contains',
               value: '',
             },
@@ -395,7 +410,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                         onSelect={(e) => e.preventDefault()}
                         className="text-xs"
                       >
-                        {getColumnLabel(column)}
+                        {getColumnLabel(column.id)}
                       </DropdownMenuCheckboxItem>
                     ))}
                 </div>
@@ -486,13 +501,13 @@ export const DataTableHeader = memo(function DataTableHeader<
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {filterableColumns.map((col) => (
+                          {filterableColumns.map(({ column: col, label }) => (
                             <SelectItem
                               key={col.id}
                               value={col.id}
                               className="text-xs"
                             >
-                              {getColumnLabel(col)}
+                              {label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -511,17 +526,11 @@ export const DataTableHeader = memo(function DataTableHeader<
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(OPERATOR_LABELS).map(
-                            ([op, label]) => (
-                              <SelectItem
-                                key={op}
-                                value={op}
-                                className="text-xs"
-                              >
-                                {label}
-                              </SelectItem>
-                            )
-                          )}
+                          {operatorOptions.map(({ value: op, label }) => (
+                            <SelectItem key={op} value={op} className="text-xs">
+                              {label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
 
@@ -654,7 +663,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                         onSelect={(e) => e.preventDefault()}
                         className="text-xs"
                       >
-                        {getColumnLabel(column)}
+                        {getColumnLabel(column.id)}
                       </DropdownMenuCheckboxItem>
                     ))}
                 </div>
@@ -697,10 +706,7 @@ export const DataTableHeader = memo(function DataTableHeader<
               )}
 
               {advancedFilters.map((filter) => {
-                const col = filterableColumns.find(
-                  (c) => c.id === filter.columnId
-                )
-                const label = col ? getColumnLabel(col) : filter.columnId
+                const label = getColumnLabel(filter.columnId)
                 return (
                   <div
                     key={filter.id}
