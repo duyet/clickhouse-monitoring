@@ -126,6 +126,33 @@ wrangler secret put CLICKHOUSE_PASSWORD
 bun run cf:health
 ```
 
+## Edge Routing & Host Redirects (4-worker topology)
+
+Production runs four workers on the `chmonitor.dev` zone:
+
+| Worker | Host / route |
+|--------|--------------|
+| `chmonitor-landing` | `chmonitor.dev` (apex marketing) |
+| `chmonitor-dash` | `dash.chmonitor.dev` + `cloud.chmonitor.dev` (custom domains) |
+| `chmonitor-mcp` | `dash.chmonitor.dev/api/mcp*` + `/api/v1/mcp/info*` (Workers Routes) |
+| `chmonitor-docs` | `docs.chmonitor.dev` |
+
+A specific Workers **Route** (`.../api/mcp*`) wins over a whole-hostname
+**Custom Domain** (`dash.chmonitor.dev`) — sub-path routes are more specific —
+so the MCP worker intercepts `/api/mcp` even though the dashboard owns the host.
+
+**`cloud.chmonitor.dev` → `dash.chmonitor.dev` 301** is a Cloudflare edge
+**Redirect Rule**, NOT Next.js middleware. `middleware.ts` cannot redirect the
+prerendered static root: OpenNext serves `/` as an asset without invoking the
+worker, so the host-redirect code never runs. A zone Redirect Rule fires at the
+edge *before* the worker, covering every path uniformly. Provision/refresh it
+(idempotent) with a `CLOUDFLARE_API_TOKEN` that has Zone › Config Rules › Edit:
+
+```bash
+bun run cf:redirect-rule            # apply
+bun run cf:redirect-rule --dry-run  # preview the ruleset payload
+```
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -134,3 +161,5 @@ bun run cf:health
 | `__name is not defined` (CF) | `wrangler.toml` has `keep_names = false` |
 | Build lock error | Remove `.next/lock` and retry |
 | Secrets not updating | See [secret-rotation.md](secret-rotation.md) — redeploy after updating |
+| `/api/mcp` → 503 "MCP API key auth is not configured" | `CHM_API_KEY_SECRET` empty on `chmonitor-mcp`. Worker secrets don't survive a rename. Set the GitHub secret (`bun run gh:sync-secrets`) and redeploy; CI pushes it to both workers. |
+| `cloud.chmonitor.dev` returns 200 instead of 301 | Edge Redirect Rule missing — run `bun run cf:redirect-rule`. Middleware can't fix this (prerendered root skips the worker). |

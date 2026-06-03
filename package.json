@@ -47,6 +47,7 @@
     "cf:migrate-conversations": "bun --filter dashboard cf:migrate-conversations",
     "cf:migrate-conversations:local": "bun --filter dashboard cf:migrate-conversations:local",
     "cf:health": "bun --filter dashboard cf:health",
+    "cf:redirect-rule": "bun scripts/cloudflare-redirect-rule.ts",
     "gh:sync-secrets": "bun --filter dashboard gh:sync-secrets",
     "migrate": "bun --filter dashboard migrate",
     "migrate:status": "bun --filter dashboard migrate:status",
