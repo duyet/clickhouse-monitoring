@@ -8,12 +8,27 @@ import {
 import type { ReactNode } from 'react'
 
 import appCss from '../styles.css?url'
+import { QueryProvider } from '@/lib/query/provider'
+import { ThemeProvider } from '@/lib/theme/theme-provider'
 
-// Root route renders the full HTML document shell. In current TanStack Start
-// the shell lives in the route `component` (the older `shellComponent` split
-// is gone). <HeadContent/> injects head tags; <Scripts/> injects the client
-// runtime + hydration scripts.
+// Typed global `?host=` search param, declared on the ROOT so every route
+// inherits it and useHostId can read it via useSearch({ strict: false }).
+// Mirrors the Next app's host parsing (Number() coerce, fall back to 0).
+interface RootSearch {
+  host: number
+}
+
+function validateSearch(search: Record<string, unknown>): RootSearch {
+  const raw = search.host
+  const parsed = Number(raw)
+  return {
+    host:
+      raw === undefined || raw === null || Number.isNaN(parsed) ? 0 : parsed,
+  }
+}
+
 export const Route = createRootRoute({
+  validateSearch,
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -33,14 +48,18 @@ function RootComponent() {
   )
 }
 
+// Root renders the full HTML document (the SPA shell in SPA mode). Providers
+// mount client-side: ThemeProvider > QueryProvider (TanStack Query).
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
-        {children}
+      <body className="bg-background font-sans antialiased">
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
