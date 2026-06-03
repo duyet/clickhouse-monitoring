@@ -12,10 +12,12 @@ interface PageHeaderProps {
 /**
  * PageHeader — shared page-level heading block.
  *
- * Renders a flex row with:
+ * On phones the title block and the actions stack vertically so the
+ * description gets the full width (instead of being squeezed into a narrow
+ * column that wraps one word per line) and the action buttons never overflow
+ * off-screen. From `sm:` up they sit on one row with actions right-aligned.
  * - `title` at `text-xl font-semibold tracking-tight sm:text-2xl`
  * - optional `description` as `text-sm text-muted-foreground` below the title
- * - optional `actions` slot right-aligned via `ml-auto`
  */
 export function PageHeader({
   title,
@@ -24,8 +26,13 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-4', className)}>
-      <div className="min-w-0 flex-1">
+    <div
+      className={cn(
+        'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4',
+        className
+      )}
+    >
+      <div className="min-w-0 sm:flex-1">
         <div className="text-xl font-semibold tracking-tight sm:text-2xl">
           {title}
         </div>

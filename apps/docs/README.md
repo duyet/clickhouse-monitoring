@@ -31,8 +31,29 @@ Or from the repo root: `bun run build:docs`.
 ## Content
 
 The full documentation content lives in `docs/content/**` (the dashboard's
-self-hosted `/docs` route also reads from there). A `prebuild` sync script
-copies and adapts those MDX files into `src/content/docs/` for Starlight.
+self-hosted `/docs` route also reads from there). The `scripts/sync-docs.mjs`
+prebuild step copies and adapts those MDX files into `src/content/docs/` for
+Starlight (this generated directory is gitignored).
+
+> Edit docs under `docs/content/**`, **not** `src/content/docs/**` — the latter
+> is regenerated on every build and overwritten.
+
+## Theme & customization
+
+Configured in [`astro.config.mjs`](./astro.config.mjs):
+
+- **Logo & favicon** — `src/assets/logo.svg` (copied from the dashboard's brand
+  mark), surfaced in the header and as `public/favicon.svg`.
+- **Sidebar** — hand-curated groups (Getting Started, Deployment, Advanced,
+  Reference, …) with external links back to **chmonitor.dev** (home) and
+  **dash.chmonitor.dev** (live dashboard). The previous `autogenerate: '.'`
+  tree was replaced because root `index` + `*.mdx` overview pages collided with
+  their same-named directories.
+- **Styling** — `src/styles/custom.css` applies a shadcn / Vercel-docs
+  aesthetic: the [Geist](https://vercel.com/font) + Geist Mono typefaces
+  (self-hosted via `@fontsource-variable/*`), a monochrome zinc palette, and
+  crisp 1px borders. Only Starlight CSS custom properties are overridden, so the
+  theme survives Starlight upgrades.
 
 ## Deploy
 
