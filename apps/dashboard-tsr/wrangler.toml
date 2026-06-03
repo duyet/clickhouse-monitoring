@@ -1,0 +1,20 @@
+# wrangler.toml — chmonitor TanStack Start dashboard worker (substrate spike).
+#
+# `main` resolves the built-in TanStack Start server entry from node_modules;
+# the @cloudflare/vite-plugin produces the worker bundle + client asset
+# manifest at build time, so no explicit [assets] block is required.
+#
+# NOTE: no real ClickHouse hosts/credentials are committed here (public repo).
+# Runtime vars/secrets are injected per environment at deploy time.
+
+name = "chmonitor-dash-tsr"
+main = "@tanstack/react-start/server-entry"
+compatibility_date = "2026-05-28"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Preview environment for PR deployments (mirrors repo `preview-chmonitor-*`).
+[env.preview]
+name = "preview-chmonitor-dash-tsr"
