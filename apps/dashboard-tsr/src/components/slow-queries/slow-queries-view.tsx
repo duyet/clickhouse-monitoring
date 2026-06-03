@@ -3,7 +3,6 @@ import { ChevronDown, Gauge, RefreshCw, Timer } from 'lucide-react'
 import type { SlowQueryRow } from '@/components/slow-queries/slow-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/layout'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
@@ -19,9 +18,10 @@ import {
   getCardErrorTitle,
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
+import { useTableData } from '@/lib/query/use-table-data'
 import { slowQueriesConfig } from '@/lib/query-config/queries/slow-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 /** Refresh the slow-queries list every 60s — `query_log` is append-only. */

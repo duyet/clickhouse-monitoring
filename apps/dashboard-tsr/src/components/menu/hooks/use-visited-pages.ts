@@ -4,8 +4,8 @@
  * Used to hide "New" badges after a user visits a page
  */
 
-import { usePathname } from '@/lib/next-compat'
 import { useEffect, useState } from 'react'
+import { usePathname } from '@/lib/next-compat'
 
 const COOKIE_NAME = 'visited_pages'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year

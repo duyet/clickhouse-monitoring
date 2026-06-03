@@ -11,8 +11,8 @@ import {
   TONE_COLOR,
   tableTone,
 } from './lib'
-import { REFRESH_INTERVAL } from '@/lib/swr/config'
 import { useChartData } from '@/lib/query/use-chart-data'
+import { REFRESH_INTERVAL } from '@/lib/swr/config'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 

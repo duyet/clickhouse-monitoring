@@ -4,7 +4,6 @@ import type { CompletedQueryRow } from '@/components/running-queries/completed-q
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
-import { useSearchParams } from '@/lib/next-compat'
 import { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/layout'
 import { HeaderButton } from '@/components/query-tables/header-button'
@@ -25,9 +24,10 @@ import {
   parseFiltersFromParams,
   serializeActiveFilters,
 } from '@/lib/filters/url-state'
+import { useSearchParams } from '@/lib/next-compat'
+import { useTableData } from '@/lib/query/use-table-data'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 /**

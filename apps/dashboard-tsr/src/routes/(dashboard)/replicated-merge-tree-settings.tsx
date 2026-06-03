@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -21,7 +22,8 @@ function ReplicatedMergeTreeSettingsPage() {
   )
 }
 
-
-export const Route = createFileRoute('/(dashboard)/replicated-merge-tree-settings')({
+export const Route = createFileRoute(
+  '/(dashboard)/replicated-merge-tree-settings'
+)({
   component: ReplicatedMergeTreeSettingsPage,
 })

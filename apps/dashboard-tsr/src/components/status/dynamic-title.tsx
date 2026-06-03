@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { usePathname, useSearchParams } from '@/lib/next-compat'
 import { useEffect } from 'react'
+import { usePathname, useSearchParams } from '@/lib/next-compat'
 
 const BASE_TITLE = 'chmonitor'
 const WARNING_PREFIX = '⚠️ '

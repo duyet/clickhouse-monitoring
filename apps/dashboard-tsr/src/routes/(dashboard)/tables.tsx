@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useRouter } from '@/lib/next-compat'
+
 import { useEffect } from 'react'
 import { PageSkeleton } from '@/components/skeletons'
+import { useRouter } from '@/lib/next-compat'
 
 function TablesPage() {
   const router = useRouter()
@@ -12,7 +13,6 @@ function TablesPage() {
 
   return <PageSkeleton />
 }
-
 
 export const Route = createFileRoute('/(dashboard)/tables')({
   component: TablesPage,

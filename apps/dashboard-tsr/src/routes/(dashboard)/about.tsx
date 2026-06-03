@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { BookOpen, ExternalLink, Server, Shield, Zap } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
 import packageInfo from '@/package.json'
 
 import { Badge } from '@/components/ui/badge'
@@ -235,7 +235,6 @@ function AboutPage() {
     </div>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/about')({
   component: AboutPage,

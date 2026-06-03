@@ -2,8 +2,8 @@ import { DiskCard, type DiskRow } from './disk-card'
 import { ChartError } from '@/components/charts/chart-error'
 import { Skeleton } from '@/components/skeletons'
 import { EmptyState } from '@/components/ui/empty-state'
-import { useHostId } from '@/lib/swr'
 import { useTableData } from '@/lib/query/use-table-data'
+import { useHostId } from '@/lib/swr'
 
 const GRID_CLASS =
   'grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3'

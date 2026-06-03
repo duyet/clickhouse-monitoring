@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSearchParams } from '@/lib/next-compat'
+
 import { Suspense } from 'react'
 import { ReadonlyTablesWarning } from '@/components/clusters/readonly-tables-warning'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { AppLink as Link } from '@/components/ui/app-link'
+import { useSearchParams } from '@/lib/next-compat'
 import { clustersReplicasStatusConfig } from '@/lib/query-config/system/replicas-status'
 import { useHostId } from '@/lib/swr'
 
@@ -54,7 +55,6 @@ function ClusterReplicasStatusPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/clusters/replicas-status')({
   component: ClusterReplicasStatusPage,

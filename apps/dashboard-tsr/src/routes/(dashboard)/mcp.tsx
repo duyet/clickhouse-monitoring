@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { Globe, Lock, Zap } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { McpEndpointUrl } from '@/components/mcp/mcp-endpoint-url'
 import { McpExamplePrompts } from '@/components/mcp/mcp-example-prompts'
@@ -108,7 +108,6 @@ function McpPage() {
     </div>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/mcp')({
   component: McpPage,

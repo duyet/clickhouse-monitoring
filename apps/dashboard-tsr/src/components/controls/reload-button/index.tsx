@@ -2,9 +2,7 @@ import { ReloadIcon } from '@radix-ui/react-icons'
 
 import { useReloadCountdown } from './use-reload-countdown'
 import { useReloadIntervals } from './use-reload-intervals'
-import { useRouter } from '@/lib/next-compat'
 import { useTransition } from 'react'
-import { useAppContext } from '@/lib/context/app-context'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,7 +12,9 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAppContext } from '@/lib/context/app-context'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
+import { useRouter } from '@/lib/next-compat'
 import { cn } from '@/lib/utils'
 
 export interface ReloadButtonProps {

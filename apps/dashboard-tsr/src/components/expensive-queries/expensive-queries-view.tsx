@@ -18,9 +18,9 @@ import {
   getCardErrorTitle,
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
+import { useTableData } from '@/lib/query/use-table-data'
 import { expensiveQueriesConfig } from '@/lib/query-config/queries/expensive-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 // LoadingState is replaced by QueryPageSkeleton from @/components/query-tables/query-page-skeleton

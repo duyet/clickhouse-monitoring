@@ -17,9 +17,9 @@ import {
   formatReadableQuantity,
   formatReadableSize,
 } from '@/lib/format-readable'
+import { useChartData } from '@/lib/query/use-chart-data'
 import { useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
-import { useChartData } from '@/lib/query/use-chart-data'
 import { cn } from '@/lib/utils'
 
 // ───────────────────────── chart data shapes ─────────────────────────

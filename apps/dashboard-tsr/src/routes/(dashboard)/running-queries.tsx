@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { RunningQueriesView } from '@/components/running-queries'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -17,7 +18,6 @@ function RunningQueriesPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/running-queries')({
   component: RunningQueriesPage,

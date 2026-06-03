@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useRouter, useSearchParams } from '@/lib/next-compat'
+
 import { Suspense, useEffect } from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
+import { useRouter, useSearchParams } from '@/lib/next-compat'
 
 /**
  * Legacy route. ZooKeeper monitoring moved under the dedicated "Keeper" menu
@@ -28,7 +29,6 @@ function ZookeeperPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/zookeeper')({
   component: ZookeeperPage,

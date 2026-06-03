@@ -1,1 +1,9 @@
-{"name":"dashboard-tsr","version":"0.0.1","description":"ClickHouse Monitoring Dashboard — real-time insights into ClickHouse clusters via system tables.","repository":{"type":"git","url":"https://github.com/duyet/clickhouse-monitoring"}}
+{
+  "name": "dashboard-tsr",
+  "version": "0.0.1",
+  "description": "ClickHouse Monitoring Dashboard — real-time insights into ClickHouse clusters via system tables.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/duyet/clickhouse-monitoring"
+  }
+}

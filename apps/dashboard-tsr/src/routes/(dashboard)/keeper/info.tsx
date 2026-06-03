@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { KeeperNodeCards } from '@/components/keeper/keeper-node-cards'
 import { PageLayout } from '@/components/layout/query-page'
@@ -22,7 +23,6 @@ function KeeperInfoPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/keeper/info')({
   component: KeeperInfoPage,

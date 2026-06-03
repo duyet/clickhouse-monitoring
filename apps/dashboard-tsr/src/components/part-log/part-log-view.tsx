@@ -18,8 +18,8 @@ import {
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { arrayToCsv, downloadCsv } from '@/lib/csv'
-import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/query/use-table-data'
+import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
 /** Auto-refresh cadence for the part_log table (ms). */

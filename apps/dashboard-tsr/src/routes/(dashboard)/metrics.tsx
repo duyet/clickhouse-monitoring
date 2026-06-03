@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { createPage } from '@/lib/create-page'
 import { metricsConfig } from '@/lib/query-config/more/metrics'
 
@@ -6,7 +7,6 @@ const MetricsPage = createPage({
   queryConfig: metricsConfig,
   title: 'Metrics',
 })
-
 
 export const Route = createFileRoute('/(dashboard)/metrics')({
   component: MetricsPage,

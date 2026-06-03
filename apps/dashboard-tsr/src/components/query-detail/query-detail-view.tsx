@@ -19,8 +19,8 @@ import { AppLink as Link } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatReadableSize } from '@/lib/format-readable'
-import { useHostId } from '@/lib/swr/use-host'
 import { useTableData } from '@/lib/query/use-table-data'
+import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
 // ──────────────────────────── types ────────────────────────────

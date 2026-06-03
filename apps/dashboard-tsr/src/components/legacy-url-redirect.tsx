@@ -1,5 +1,5 @@
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useEffect } from 'react'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 
 /**
  * Detects and redirects from legacy URL format:

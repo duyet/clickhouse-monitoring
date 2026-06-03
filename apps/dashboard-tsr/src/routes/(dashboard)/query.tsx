@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSearchParams } from '@/lib/next-compat'
+
 import { Suspense } from 'react'
 import { QueryDetailView } from '@/components/query-detail/query-detail-view'
 import { TableSkeleton } from '@/components/skeletons'
+import { useSearchParams } from '@/lib/next-compat'
 
 function QueryDetailContent() {
   const searchParams = useSearchParams()
@@ -26,7 +27,6 @@ function QueryDetailPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/query')({
   component: QueryDetailPage,

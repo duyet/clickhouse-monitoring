@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { QueryPageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -15,7 +16,6 @@ function MutationsPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/mutations')({
   component: MutationsPage,

@@ -1,4 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -6,8 +5,8 @@ import {
   InfoCircledIcon,
 } from '@radix-ui/react-icons'
 import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { Suspense, useState } from 'react'
 import { ExplainResult } from '@/components/explain/explain-result'
 import { ErrorAlert } from '@/components/feedback'
@@ -19,6 +18,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 

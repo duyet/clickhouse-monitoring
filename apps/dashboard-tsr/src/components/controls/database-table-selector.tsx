@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 
 import type { ApiResponse } from '@/lib/api/types'
 
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'

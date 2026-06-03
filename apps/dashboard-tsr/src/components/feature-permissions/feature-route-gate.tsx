@@ -3,10 +3,10 @@ import { menuItemsConfig } from '@/menu'
 import type { ReactNode } from 'react'
 
 import { FeatureUnavailable } from './feature-unavailable'
-import { usePathname } from '@/lib/next-compat'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { findMenuPermissionForPath } from '@/lib/feature-permissions/menu'
 import { resolveFeatureState } from '@/lib/feature-permissions/shared'
+import { usePathname } from '@/lib/next-compat'
 
 export function FeatureRouteGate({ children }: { children: ReactNode }) {
   const pathname = usePathname()

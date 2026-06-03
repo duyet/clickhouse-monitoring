@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSearchParams } from '@/lib/next-compat'
+
 import { Suspense } from 'react'
 import { DatabaseTableSelector } from '@/components/controls/database-table-selector'
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { AppLink as Link } from '@/components/ui/app-link'
+import { useSearchParams } from '@/lib/next-compat'
 import { partInfoConfig } from '@/lib/query-config/tables/part-info'
 import { useHostId } from '@/lib/swr'
 
@@ -62,7 +63,6 @@ function PartInfoPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/part-info')({
   component: PartInfoPage,

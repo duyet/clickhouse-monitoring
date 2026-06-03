@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -20,7 +21,6 @@ function KeeperConnectionLogPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/keeper/connection-log')({
   component: KeeperConnectionLogPage,

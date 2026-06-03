@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { getChartComponent, hasChart } from '@/components/charts/registry'
@@ -110,7 +111,6 @@ function DashboardPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/dashboard')({
   component: DashboardPage,

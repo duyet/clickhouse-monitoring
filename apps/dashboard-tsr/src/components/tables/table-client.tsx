@@ -25,9 +25,9 @@ import {
   isVersionOlder,
   shouldShowRetryButton,
 } from '@/lib/card-error-utils'
+import { useTableData } from '@/lib/query/use-table-data'
 import { useHostId } from '@/lib/swr/use-host'
 import { useHostStatus } from '@/lib/swr/use-host-status'
-import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 import { getSqlForDisplay } from '@/types/query-config'
 

@@ -1,11 +1,11 @@
 import { ChevronRightIcon } from 'lucide-react'
 import { menuItemsConfig } from '@/menu'
 
-import { usePathname } from '@/lib/next-compat'
 import { HostPrefixedLink } from '@/components/menu/link-with-context'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 import { getBreadcrumbPath } from '@/lib/menu/breadcrumb'
+import { usePathname } from '@/lib/next-compat'
 import { cn } from '@/lib/utils'
 
 interface BreadcrumbProps {

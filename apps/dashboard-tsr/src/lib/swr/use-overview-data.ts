@@ -82,7 +82,9 @@ export function useOverviewData(
   const queryClient = useQueryClient()
 
   const queryKey =
-    hostId !== null ? [`/api/v1/overview?hostId=${hostId}`] : ['overview-disabled']
+    hostId !== null
+      ? [`/api/v1/overview?hostId=${hostId}`]
+      : ['overview-disabled']
 
   const { data, error, isLoading, isFetching } = useQuery<OverviewData>({
     queryKey,

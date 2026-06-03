@@ -39,10 +39,12 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
   const depsUrl = `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&direction=all`
 
   // Fetch all dependencies using unified query
-  const { data: depsData, isLoading } = useQuery<ApiResponse<DependencyEdge[]>>({
-    queryKey: [depsUrl],
-    queryFn: () => fetcher<DependencyEdge[]>(depsUrl),
-  })
+  const { data: depsData, isLoading } = useQuery<ApiResponse<DependencyEdge[]>>(
+    {
+      queryKey: [depsUrl],
+      queryFn: () => fetcher<DependencyEdge[]>(depsUrl),
+    }
+  )
 
   const graphData = depsData?.data || []
 

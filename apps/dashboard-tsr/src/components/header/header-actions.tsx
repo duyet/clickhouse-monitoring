@@ -1,6 +1,5 @@
 import { Moon, Sun } from 'lucide-react'
 
-import { usePathname } from '@/lib/next-compat'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
@@ -13,6 +12,7 @@ import { IconButton } from '@/components/ui/icon-button'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
+import { usePathname } from '@/lib/next-compat'
 
 interface HeaderActionsProps {
   menuComponent?: React.ReactNode

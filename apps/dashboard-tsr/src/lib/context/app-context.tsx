@@ -7,7 +7,6 @@ import {
   use,
   useState,
 } from 'react'
-
 import { usePathname } from '@/lib/next-compat'
 
 export interface ContextValue {

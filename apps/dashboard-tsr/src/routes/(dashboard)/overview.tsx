@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import type { OverviewChartConfig } from './-charts-config'
 
 import { OVERVIEW_TABS } from './-charts-config'
-import { useSearchParams } from '@/lib/next-compat'
 import { lazy, Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
@@ -10,6 +10,7 @@ import { OverviewCharts } from '@/components/overview-charts/overview-charts-cli
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
 import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 

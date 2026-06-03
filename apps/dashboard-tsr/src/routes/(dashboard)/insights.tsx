@@ -1,4 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {
   ActivityIcon,
   AlertTriangleIcon,
@@ -19,6 +18,7 @@ import {
   UnplugIcon,
   ZapIcon,
 } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
 
 import type { CardToolbarMetadata } from '@/components/cards/card-toolbar'
 import type { ChartDataPoint } from '@/types/chart-data'
@@ -34,8 +34,8 @@ import {
   useDateRange,
 } from '@/components/date-range'
 import { ChartSkeleton } from '@/components/skeletons/chart'
-import { useHostId } from '@/lib/swr'
 import { useChartData } from '@/lib/query/use-chart-data'
+import { useHostId } from '@/lib/swr'
 import { formatDuration } from '@/lib/utils'
 
 function formatDay(day: string | Date): string {
@@ -932,7 +932,6 @@ function ChartsSection({ hostId }: { readonly hostId: number }) {
     </div>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/insights')({
   component: InsightsPage,

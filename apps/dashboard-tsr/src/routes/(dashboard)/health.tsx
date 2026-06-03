@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { HealthGrid } from '@/components/health/health-grid'
 import { HealthSettingsDialog } from '@/components/health/health-settings-dialog'
@@ -25,7 +26,6 @@ function HealthPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/health')({
   component: HealthPage,

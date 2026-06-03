@@ -1,6 +1,6 @@
-import type { ComponentProps } from 'react'
-
 import { useQueryClient } from '@tanstack/react-query'
+
+import type { ComponentProps } from 'react'
 
 import { AppLink as Link } from '@/components/ui/app-link'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'

@@ -3,7 +3,6 @@ import { GlobeIcon, PlusIcon } from 'lucide-react'
 import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 
 import { StatusIndicator } from './shared'
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useState } from 'react'
 import { ConnectionManagerDialog } from '@/components/connections'
 import {
@@ -14,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostStatus } from '@/lib/swr/use-host-status'
 import { buildUrl } from '@/lib/url/url-builder'
 import { getHost } from '@/lib/utils'

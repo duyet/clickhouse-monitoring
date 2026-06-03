@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSearchParams } from '@/lib/next-compat'
+
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -7,6 +7,7 @@ import {
   parseFiltersFromParams,
   serializeActiveFilters,
 } from '@/lib/filters/url-state'
+import { useSearchParams } from '@/lib/next-compat'
 import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
 
 function HistoryQueriesPageContent() {
@@ -44,7 +45,6 @@ function HistoryQueriesPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/history-queries')({
   component: HistoryQueriesPage,

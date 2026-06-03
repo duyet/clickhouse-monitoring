@@ -1,5 +1,5 @@
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useCallback, useMemo, useRef } from 'react'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 
 export type ExplorerTab =
   | 'data'

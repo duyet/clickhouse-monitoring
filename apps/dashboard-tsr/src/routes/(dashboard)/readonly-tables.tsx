@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { ChartSkeleton } from '@/components/skeletons'
@@ -17,7 +18,6 @@ function ReadonlyTablesPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/readonly-tables')({
   component: ReadonlyTablesPage,

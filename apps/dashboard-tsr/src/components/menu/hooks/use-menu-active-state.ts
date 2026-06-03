@@ -6,8 +6,8 @@
 
 import type { MenuItem } from '../types'
 
-import { usePathname } from '@/lib/next-compat'
 import { isMenuItemActive } from '@/lib/menu/breadcrumb'
+import { usePathname } from '@/lib/next-compat'
 
 /**
  * Check if a menu item or any of its children are active

@@ -6,7 +6,6 @@ import {
   LogoStatusIndicator,
   LogoStatusIndicatorSkeleton,
 } from './logo-status-indicator'
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { useHosts } from '@/lib/swr/use-hosts'
 import { buildUrl } from '@/lib/url/url-builder'

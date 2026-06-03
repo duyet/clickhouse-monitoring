@@ -2,7 +2,6 @@ import { RefreshCw } from 'lucide-react'
 
 import { useRefreshTimer } from './hooks'
 import { useState } from 'react'
-import { useAppContext } from '@/lib/context/app-context'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAppContext } from '@/lib/context/app-context'
 import { formatReadableSecondDuration } from '@/lib/format-readable'
 import { cn } from '@/lib/utils'
 

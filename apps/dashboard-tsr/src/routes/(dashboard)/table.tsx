@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useRouter, useSearchParams } from '@/lib/next-compat'
+
 import { Suspense, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useRouter, useSearchParams } from '@/lib/next-compat'
 
 function TableRedirect() {
   const router = useRouter()
@@ -46,7 +47,6 @@ function TablePage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/table')({
   component: TablePage,

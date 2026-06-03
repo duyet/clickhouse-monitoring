@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSearchParams } from '@/lib/next-compat'
+
 import { Suspense } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
 import { ChartSkeleton } from '@/components/skeletons'
+import { useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 
 interface DynamicChartProps {
@@ -85,7 +86,6 @@ function ChartsPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/charts')({
   component: ChartsPage,

@@ -1,7 +1,6 @@
 import { Search, Settings, Table, TextSearch } from 'lucide-react'
 import { menuItemsConfig } from '@/menu'
 
-import { useRouter, useSearchParams } from '@/lib/next-compat'
 import * as React from 'react'
 import { useState } from 'react'
 import {
@@ -16,6 +15,7 @@ import {
 import { IconButton } from '@/components/ui/icon-button'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
+import { useRouter, useSearchParams } from '@/lib/next-compat'
 import { buildUrl } from '@/lib/url/url-builder'
 
 const UUID_PATTERN =
