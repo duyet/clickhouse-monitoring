@@ -25,6 +25,8 @@ const SRC_DIR = resolve(REPO_ROOT, 'docs/content')
 const DEST_DIR = resolve(__dirname, '../src/content/docs')
 const RAW_BASE =
   'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
+const EDIT_BASE =
+  'https://github.com/duyet/clickhouse-monitoring/edit/main'
 
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true })
@@ -163,8 +165,13 @@ async function convertFile(srcFileAbs) {
   content = rewriteImages(content, srcFileAbs)
   const { title, body } = extractTitle(content, fallback)
 
+  // Point the "Edit page" link at the real source file under docs/content/**
+  // (the synced src/content/docs copy is gitignored, so Starlight's default
+  // path-based edit link would 404).
+  const editUrl = `${EDIT_BASE}/${posix.normalize(relative(REPO_ROOT, srcFileAbs))}`
+
   const imports = starlightImport(body)
-  const frontmatter = `---\ntitle: ${JSON.stringify(title)}\n---\n\n`
+  const frontmatter = `---\ntitle: ${JSON.stringify(title)}\neditUrl: ${JSON.stringify(editUrl)}\n---\n\n`
   return `${frontmatter}${imports ? `${imports}\n` : ''}${body.trim()}\n`
 }
 
