@@ -47,6 +47,33 @@ export const Route = createFileRoute('/api/v1/explorer/projections')({
           )
         }
 
+        // Validate required params up front so missing database/table returns
+        // 400 (ValidationError) instead of a downstream 500 query_error.
+        if (!searchParams.get('database')) {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: database',
+              },
+            },
+            { status: 400 }
+          )
+        }
+        if (!searchParams.get('table')) {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: table',
+              },
+            },
+            { status: 400 }
+          )
+        }
+
         debug('[GET /api/v1/explorer/projections]', { hostId })
 
         const searchParamsObj: Record<string, string> = {}

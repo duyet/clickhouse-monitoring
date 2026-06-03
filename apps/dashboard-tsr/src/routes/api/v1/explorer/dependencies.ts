@@ -66,8 +66,60 @@ export const Route = createFileRoute('/api/v1/explorer/dependencies')({
         const { searchParams } = new URL(request.url)
         const routeContext: RouteContext = { route: ROUTE, method: 'GET' }
 
+        const hostIdRaw = searchParams.get('hostId')
+        if (hostIdRaw === null || hostIdRaw === '') {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: hostId',
+              },
+            },
+            { status: 400 }
+          )
+        }
         const hostId = getHostIdFromParams(searchParams, routeContext)
         const direction = searchParams.get('direction') || 'downstream'
+
+        // Validate required params up front so missing database/table returns
+        // 400 (ValidationError) instead of a downstream 500 query_error.
+        // Table-scoped directions need both database + table; database-scoped
+        // directions need only database.
+        const database = searchParams.get('database')
+        if (!database) {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: database',
+              },
+            },
+            { status: 400 }
+          )
+        }
+        const tableScopedDirections = new Set([
+          'upstream',
+          'downstream',
+          'dictionary',
+          'table',
+        ])
+        const needsTable =
+          tableScopedDirections.has(direction) ||
+          (direction !== 'database' && direction !== 'all')
+        if (needsTable && !searchParams.get('table')) {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: table',
+              },
+            },
+            { status: 400 }
+          )
+        }
 
         debug(`[GET ${ROUTE}]`, { hostId, direction })
 
