@@ -18,6 +18,8 @@
  *   --from-env            read values from process.env (CI) instead of .env files
  *   --env <name>          wrangler environment (e.g. preview); omit for production
  *   --target dashboard|mcp|both   which worker(s) to configure (default: both)
+ *   --strict              fail (don't skip) if a target worker doesn't exist yet
+ *                         — CI sets secrets before deploy, so a skip is unsafe
  */
 
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -89,14 +91,21 @@ interface Args {
   fromEnv: boolean
   env: string | null
   target: Target
+  strict: boolean
 }
 
 function parseArgs(): Args {
   const argv = process.argv.slice(2)
-  const args: Args = { fromEnv: false, env: null, target: 'both' }
+  const args: Args = {
+    fromEnv: false,
+    env: null,
+    target: 'both',
+    strict: false,
+  }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--from-env') args.fromEnv = true
+    else if (a === '--strict') args.strict = true
     else if (a === '--env') args.env = argv[++i] ?? null
     else if (a === '--target') {
       const t = argv[++i]
@@ -270,15 +279,17 @@ async function main() {
       args.env
     )
     if (!result.ok) {
-      if (result.missingWorker) {
-        // Benign bootstrap: worker not deployed yet. cf:deploy sets secrets
-        // AFTER deploying, so this only fires on a premature manual run.
+      if (result.missingWorker && !args.strict) {
+        // Benign bootstrap for local cf:deploy (deploy → secrets order): the
+        // worker may not exist on a premature standalone `cf:config`.
         console.warn(
           `\n⚠️  ${job.label} not deployed yet — secrets skipped. ` +
             'Deploy it first, then re-run.'
         )
         continue
       }
+      // --strict (CI): a missing worker MUST fail. CI sets secrets BEFORE the
+      // deploy step, so a silent skip would ship a worker with no secrets.
       console.error(`\n❌ Failed to set ${job.label} secrets`)
       process.exit(1)
     }

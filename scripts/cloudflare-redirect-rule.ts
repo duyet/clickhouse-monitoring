@@ -136,6 +136,9 @@ async function cf<T>(
 
 interface RedirectRule {
   id?: string
+  version?: string
+  last_updated?: string
+  ref?: string
   action: string
   action_parameters?: unknown
   expression: string
@@ -161,9 +164,11 @@ const desiredRule: RedirectRule = {
   enabled: true,
 }
 
-// Strip server-managed fields so a re-PUT of existing rules is accepted.
+// Strip server-managed fields (id/version/last_updated) so re-PUTing the
+// zone's existing rules is accepted — Cloudflare returns these read-only on
+// GET but rejects them in the update payload.
 function sanitize(rule: RedirectRule): RedirectRule {
-  const { id: _id, ...rest } = rule
+  const { id: _id, version: _v, last_updated: _lu, ...rest } = rule
   return rest
 }
 

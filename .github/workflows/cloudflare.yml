@@ -131,7 +131,7 @@ jobs:
           # which secrets each worker needs (--from-env reads the values above).
           # Safe to run here because the preview job excludes forks (head.repo ==
           # this repo), so only push-access contributors can alter the script.
-          bun ../../scripts/set-secrets.ts --from-env --target dashboard --env preview
+          bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard --env preview
 
       - name: Deploy preview to Cloudflare Workers
         id: deploy
@@ -155,7 +155,7 @@ jobs:
         working-directory: apps/mcp
         run: |
           set -euo pipefail
-          bun ../../scripts/set-secrets.ts --from-env --target mcp --env preview
+          bun ../../scripts/set-secrets.ts --from-env --strict --target mcp --env preview
 
       - name: Deploy MCP worker preview
         if: steps.deploy.outcome == 'success'
@@ -371,7 +371,7 @@ jobs:
           set -euo pipefail
           # Single source of truth for the dashboard secret inventory (includes
           # CHM_API_KEY_SECRET, which the inline list previously omitted).
-          bun ../../scripts/set-secrets.ts --from-env --target dashboard
+          bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard
 
       - name: Deploy to Cloudflare Workers
         id: deploy
@@ -393,7 +393,7 @@ jobs:
         working-directory: apps/mcp
         run: |
           set -euo pipefail
-          bun ../../scripts/set-secrets.ts --from-env --target mcp
+          bun ../../scripts/set-secrets.ts --from-env --strict --target mcp
 
       - name: Deploy MCP worker
         env:
