@@ -1,18 +1,18 @@
 #!/usr/bin/env bun
 
 /**
- * Patch the generated wrangler.json with routes and env sections.
+ * Patch the generated wrangler.json with routes, vars, and worker name.
  *
  * @cloudflare/vite-plugin generates dist/server/wrangler.json during build,
- * but strips [env.*] sections and [[routes]]. This script injects them back
- * so `wrangler deploy --env <name>` works correctly.
+ * but strips [[routes]] and [vars]. Additionally, Wrangler REJECTS env
+ * sections in "redirected" (tool-generated) configs, so we can't use --env.
+ * Instead, this script patches the top-level config directly for each target.
  *
- * IMPORTANT: If wrangler.toml routes/vars/env sections change, update the
- * objects below to match.
+ * IMPORTANT: If wrangler.toml routes/vars change, update the objects below.
  *
  * Usage:
- *   bun scripts/patch-wrangler-env.ts              # production routes + vars
- *   bun scripts/patch-wrangler-env.ts --env preview # env.preview only
+ *   bun scripts/patch-wrangler-env.ts              # patch production values
+ *   bun scripts/patch-wrangler-env.ts --env preview # patch preview values
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -34,33 +34,39 @@ if (!existsSync(JSON_PATH)) {
 }
 
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
-let patched = 0
 
-// --- Production routes and vars (keep in sync with wrangler.toml) ---
-const PROD_ROUTES = [{ pattern: 'dash-tsr.chmonitor.dev', custom_domain: true }]
-
-const PROD_VARS = {
+// --- Shared vars (keep in sync with wrangler.toml) ---
+const SHARED_VARS = {
   CLICKHOUSE_HOST:
     'https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net',
   CLICKHOUSE_USER: 'duyet,monitoring',
   CLICKHOUSE_NAME: 'duet-ubuntu,duyet-agent',
   CLICKHOUSE_MAX_EXECUTION_TIME: '60',
   CLOUDFLARE_WORKERS: '1',
-  LLM_MODEL: 'anyrouter:@preset/chmonitor',
   OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
   NEXT_PUBLIC_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
 }
 
-// --- Preview env (keep in sync with wrangler.toml [env.preview]) ---
-const PREVIEW_ENV = {
+// --- Production config (keep in sync with wrangler.toml top-level) ---
+const PROD_CONFIG = {
+  name: 'chmonitor-dash-tsr',
+  routes: [{ pattern: 'dash-tsr.chmonitor.dev', custom_domain: true }],
+  vars: {
+    ...SHARED_VARS,
+    LLM_MODEL: 'anyrouter:@preset/chmonitor',
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
+  },
+}
+
+// --- Preview config (keep in sync with wrangler.toml [env.preview]) ---
+const PREVIEW_CONFIG = {
   name: 'preview-chmonitor-dash-tsr',
   routes: [{ pattern: 'preview.dash-tsr.chmonitor.dev', custom_domain: true }],
   vars: {
-    ...PROD_VARS,
+    ...SHARED_VARS,
     LLM_MODEL: 'anyrouter:z-ai/glm-4.7-flash',
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       'pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ',
@@ -68,25 +74,18 @@ const PREVIEW_ENV = {
 }
 
 // --- Apply patches ---
-if (envName === 'preview') {
-  if (!generated.env) generated.env = {}
-  generated.env.preview = PREVIEW_ENV
-  patched++
-  console.log('✅ Patched env.preview into generated wrangler.json')
-} else if (!envName) {
-  // Production: patch top-level routes and vars
-  generated.routes = PROD_ROUTES
-  generated.vars = PROD_VARS
-  patched += 2
-  console.log('✅ Patched top-level routes into generated wrangler.json')
-  console.log('✅ Patched top-level vars into generated wrangler.json')
+const config = envName === 'preview' ? PREVIEW_CONFIG : PROD_CONFIG
 
-  // Also patch env sections if they exist in the config above
-  if (!generated.env) generated.env = {}
-  generated.env.preview = PREVIEW_ENV
-  patched++
-  console.log('✅ Patched env.preview into generated wrangler.json')
-}
+generated.name = config.name
+generated.routes = config.routes
+generated.vars = config.vars
+
+// Remove any env sections — Wrangler rejects them in redirected configs
+delete generated.env
 
 writeFileSync(JSON_PATH, JSON.stringify(generated, null, 2))
-console.log(`\n📝 Patched ${patched} section(s) into generated wrangler.json`)
+
+console.log(`✅ Patched wrangler.json for ${envName || 'production'}`)
+console.log(`   name: ${config.name}`)
+console.log(`   routes: ${config.routes.map((r) => r.pattern).join(', ')}`)
+console.log(`   vars: ${Object.keys(config.vars).length} keys`)
