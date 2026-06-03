@@ -3,7 +3,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export { Skeleton }
 
-export function ChartSkeleton() {
+export function ChartSkeleton({
+  title,
+  type: _type,
+  className,
+}: {
+  title?: string
+  type?: string
+  className?: string
+} = {}) {
   return (
     <Card>
       <CardHeader>
