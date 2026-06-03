@@ -1,0 +1,36 @@
+import type { ClickHouseConfig } from '@chm/clickhouse-client'
+
+// Shared ClickHouse host-config resolver for server routes. Builds
+// ClickHouseConfig[] from the comma-separated env lists (the Cloudflare binding
+// or process.env), mirroring @chm/clickhouse-client getClickHouseConfigs() but
+// sourcing from the passed bindings. Extracted to one place (was duplicated in
+// every CH route — flagged in review).
+export function splitByComma(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+export function getClickHouseConfigsFromEnv(
+  bindings: Record<string, string | undefined>
+): ClickHouseConfig[] {
+  const hosts = splitByComma(bindings.CLICKHOUSE_HOST)
+  const users = splitByComma(bindings.CLICKHOUSE_USER)
+  const passwords = splitByComma(bindings.CLICKHOUSE_PASSWORD)
+  const customLabels = splitByComma(bindings.CLICKHOUSE_NAME)
+
+  return hosts.map((host, index) => {
+    // A single credential pair serves many hosts; otherwise index by position.
+    let user: string
+    let password: string
+    if (users.length === 1 && passwords.length === 1) {
+      user = users[0]
+      password = passwords[0]
+    } else {
+      user = users[index] || 'default'
+      password = passwords[index] || ''
+    }
+    return { id: index, host, user, password, customName: customLabels[index] }
+  })
+}

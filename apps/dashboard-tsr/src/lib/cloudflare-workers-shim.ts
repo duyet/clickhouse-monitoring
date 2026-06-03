@@ -14,4 +14,8 @@
 // NOTE: only `env` is shimmed. Any new `cloudflare:workers` import a future
 // route adds (WorkerEntrypoint, DurableObject, …) must be re-exported here for
 // the Node target, or it will break the node build.
-export const env: Record<string, string | undefined> = process.env
+// Guard `process` — it may be undefined if this module is ever evaluated in a
+// browser/client context (the Node target only aliases this server-side, but
+// defensive against accidental client bundling).
+export const env: Record<string, string | undefined> =
+  typeof process !== 'undefined' && process.env ? process.env : {}

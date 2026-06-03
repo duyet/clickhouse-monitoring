@@ -4,44 +4,9 @@ import type { ClickHouseConfig } from '@chm/clickhouse-client'
 
 import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
+import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'
 
 const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */\n'
-
-function splitByComma(value: string | undefined): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
-function getClickHouseConfigsFromEnv(): ClickHouseConfig[] {
-  const bindings = env as Record<string, string | undefined>
-
-  const hosts = splitByComma(bindings.CLICKHOUSE_HOST)
-  const users = splitByComma(bindings.CLICKHOUSE_USER)
-  const passwords = splitByComma(bindings.CLICKHOUSE_PASSWORD)
-  const customLabels = splitByComma(bindings.CLICKHOUSE_NAME)
-
-  return hosts.map((host, index) => {
-    let user: string
-    let password: string
-    if (users.length === 1 && passwords.length === 1) {
-      user = users[0]
-      password = passwords[0]
-    } else {
-      user = users[index] || 'default'
-      password = passwords[index] || ''
-    }
-
-    return {
-      id: index,
-      host,
-      user,
-      password,
-      customName: customLabels[index],
-    }
-  })
-}
 
 export const Route = createFileRoute('/api/v1/host-status')({
   server: {
@@ -65,7 +30,9 @@ export const Route = createFileRoute('/api/v1/host-status')({
           )
         }
 
-        const configs = getClickHouseConfigsFromEnv()
+        const configs = getClickHouseConfigsFromEnv(
+          env as Record<string, string | undefined>
+        )
 
         if (hostId >= configs.length) {
           return Response.json(

@@ -1,29 +1,32 @@
 import type { ReactNode } from 'react'
 
 import { ClerkProvider } from '@clerk/tanstack-react-start'
-import { CLERK_PUBLISHABLE_KEY, isClerkEnabled } from '@/lib/clerk/clerk-client'
+import {
+  CLERK_PUBLISHABLE_KEY,
+  isClerkClientEnabled,
+} from '@/lib/clerk/clerk-client'
 
 // Port of apps/dashboard/components/clerk/clerk-auth-provider.tsx.
 //
-// Conditionally mounts Clerk's <ClerkProvider> ONLY when isClerkEnabled() is
+// Conditionally mounts Clerk's <ClerkProvider> ONLY when isClerkClientEnabled() is
 // true. When disabled, children render untouched and <ClerkProvider> is never
 // instantiated - so non-Clerk builds never reach into Clerk's runtime, and any
 // Clerk hook (useUser/useClerk), which MUST be gated behind the same
-// isClerkEnabled() flag at its call site, is never invoked outside a provider.
+// isClerkClientEnabled() flag at its call site, is never invoked outside a provider.
 //
-// isClerkEnabled() is a build-time constant (both inputs are import.meta.env),
+// isClerkClientEnabled() is a build-time constant (both inputs are import.meta.env),
 // so a non-Clerk build tree-shakes this down to `return children`.
 //
 // NOTE: this is the ONLY place that should import @clerk/tanstack-react-start
 // unconditionally. Every other Clerk hook/component import must sit behind a
-// lazy require/dynamic import guarded by isClerkEnabled() (mirroring the Next
+// lazy require/dynamic import guarded by isClerkClientEnabled() (mirroring the Next
 // app's nav-user.tsx / agent-thread-page.tsx pattern).
 interface ClerkAuthProviderProps {
   children: ReactNode
 }
 
 export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
-  if (!isClerkEnabled()) {
+  if (!isClerkClientEnabled()) {
     return children
   }
 
