@@ -18,15 +18,19 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@clickhouse/client-web": "^1.18.5",
     "@tanstack/react-router": "^1.170.11",
     "@tanstack/react-start": "^1.168.19",
     "clsx": "^2.1.1",
+    "lru-cache": "^11.5.0",
     "react": "^19",
     "react-dom": "^19",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@clickhouse/client": "^1.18.5",
     "@cloudflare/vite-plugin": "^1.39.2",
     "@cloudflare/workers-types": "^4.20260603.1",
     "@tailwindcss/vite": "^4.3.0",
