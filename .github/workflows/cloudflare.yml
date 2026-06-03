@@ -311,6 +311,14 @@ jobs:
       - name: Build for Cloudflare
         run: bun run build
 
+      - name: Patch wrangler config with env sections
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            bun scripts/patch-wrangler-env.ts --env preview
+          else
+            bun scripts/patch-wrangler-env.ts
+          fi
+
       - name: Set secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
