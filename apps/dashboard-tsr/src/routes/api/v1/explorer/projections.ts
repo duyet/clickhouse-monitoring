@@ -1,0 +1,117 @@
+/**
+ * Explorer projections endpoint
+ * GET /api/v1/explorer/projections?hostId=0&database=default&table=users
+ */
+
+import { createFileRoute } from '@tanstack/react-router'
+
+import { env } from 'cloudflare:workers'
+import { debug, error } from '@chm/logger'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { executeTableConfig } from '@/lib/api/query-executor'
+import { getTableQuery } from '@/lib/api/table-registry'
+import { ApiErrorType } from '@/lib/api/types'
+
+export const Route = createFileRoute('/api/v1/explorer/projections')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        bridgeClickHouseEnv(env as Record<string, string | undefined>)
+
+        const { searchParams } = new URL(request.url)
+
+        const hostIdRaw = searchParams.get('hostId')
+        if (hostIdRaw === null || hostIdRaw === '') {
+          return Response.json(
+            {
+              success: false,
+              error: { type: ApiErrorType.ValidationError, message: 'Missing required parameter: hostId' },
+            },
+            { status: 400 }
+          )
+        }
+        const hostId = Number(hostIdRaw)
+        if (!Number.isFinite(hostId)) {
+          return Response.json(
+            {
+              success: false,
+              error: { type: ApiErrorType.ValidationError, message: `Invalid hostId: ${hostIdRaw}` },
+            },
+            { status: 400 }
+          )
+        }
+
+        debug('[GET /api/v1/explorer/projections]', { hostId })
+
+        const searchParamsObj: Record<string, string> = {}
+        searchParams.forEach((value, key) => {
+          if (key !== 'hostId') searchParamsObj[key] = value
+        })
+
+        const queryDef = getTableQuery('explorer-projections', { hostId, searchParams: searchParamsObj })
+
+        if (!queryDef) {
+          error('[GET /api/v1/explorer/projections] Failed to build query')
+          return Response.json(
+            {
+              success: false,
+              error: { type: ApiErrorType.QueryError, message: 'Failed to build query for explorer-projections' },
+            },
+            { status: 500 }
+          )
+        }
+
+        const { result, executedSql: _sql } = await executeTableConfig(
+          queryDef.queryConfig,
+          hostId,
+          queryDef.queryParams,
+          { bindings: env as Record<string, string | undefined> }
+        )
+
+        if (result.error) {
+          error('[GET /api/v1/explorer/projections] Query error:', result.error)
+          const statusMap: Record<string, number> = {
+            [ApiErrorType.ValidationError]: 400,
+            [ApiErrorType.PermissionError]: 403,
+            [ApiErrorType.TableNotFound]: 404,
+            [ApiErrorType.NetworkError]: 503,
+            [ApiErrorType.QueryError]: 500,
+            [ApiErrorType.SslError]: 503,
+            [ApiErrorType.TimeoutError]: 504,
+          }
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: result.error.type,
+                message: result.error.message,
+                details: result.error.details,
+              },
+            },
+            { status: statusMap[result.error.type] ?? 500 }
+          )
+        }
+
+        return Response.json(
+          {
+            success: true,
+            data: result.data,
+            metadata: {
+              queryId: String(result.metadata.queryId ?? ''),
+              duration: Number(result.metadata.duration ?? 0),
+              rows: Number(result.metadata.rows ?? 0),
+              host: String(result.metadata.host ?? ''),
+            },
+          },
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+            },
+          }
+        )
+      },
+    },
+  },
+})
