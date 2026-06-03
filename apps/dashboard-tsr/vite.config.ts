@@ -8,6 +8,107 @@ import { defineConfig, type PluginOption } from 'vite'
 
 const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SSR stub for browser-only render libraries (#1393 worker size limit).
+//
+// The Cloudflare Worker is deployed with `no_bundle: true`, so `wrangler deploy`
+// uploads EVERY file in `dist/server/assets/*.js` against the free-plan 3 MiB
+// limit — including the lazy/dynamic-import chunks that only render in the
+// browser. mermaid (+cytoscape, katex, the langium/vscode-langserver parser, all
+// diagram renderers) and codemirror are always mounted behind React.lazy /
+// <ClientOnly> / Suspense, so they NEVER execute during SSR or prerender. Replace
+// them with an empty stub in the worker (`ssr`) environment only; the client
+// build keeps the real implementations, so runtime behaviour is unchanged.
+//
+// Matching by bare-specifier prefix covers package entries AND subpaths
+// (`@codemirror/view`, `mermaid/dist/...`). Internal relative chunks of these
+// packages disappear automatically once their bare entry resolves to the stub.
+const SSR_STUB_PREFIXES = [
+  'mermaid',
+  'cytoscape',
+  '@mermaid-js/',
+  'katex',
+  'dagre',
+  '@dagrejs/dagre',
+  '@codemirror/',
+  'codemirror',
+]
+
+// rolldown does not honour `syntheticNamedExports` from a resolveId result, so
+// the stub must declare every named export an app source file imports from a
+// stubbed package (transitive node_modules importers use default/namespace
+// imports and don't need this). These are the only `@codemirror/*` named
+// imports in the codebase — see src/components/explorer/sql-editor.tsx.
+const SSR_STUB_NAMED_EXPORTS = [
+  'autocompletion',
+  'completionKeymap',
+  'defaultKeymap',
+  'history',
+  'historyKeymap',
+  'sql',
+  'bracketMatching',
+  'defaultHighlightStyle',
+  'syntaxHighlighting',
+  'searchKeymap',
+  'Compartment',
+  'EditorState',
+  'Transaction',
+  'placeholder',
+  'EditorView',
+  'keymap',
+]
+
+const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
+
+function isStubbedSpecifier(id: string): boolean {
+  return SSR_STUB_PREFIXES.some(
+    (p) =>
+      id === p ||
+      id.startsWith(`${p}/`) ||
+      (p.endsWith('/') && id.startsWith(p))
+  )
+}
+
+function ssrClientOnlyStub(): PluginOption {
+  // Virtual module: a Proxy default export (covers default/namespace imports of
+  // mermaid/katex/cytoscape) plus explicit named aliases for the codemirror
+  // symbols. The Proxy is never invoked — these modules only execute inside
+  // browser effects / lazy chunks that the worker never reaches.
+  const namedExports = SSR_STUB_NAMED_EXPORTS.map(
+    (n) => `export const ${n} = stub`
+  ).join('\n')
+  const code = `const noop = () => undefined
+const stub = new Proxy(noop, {
+  get(_t, p) {
+    if (p === '__esModule') return true
+    if (p === 'default') return stub
+    if (typeof p === 'symbol') return undefined
+    return stub
+  },
+  apply() { return undefined },
+  construct() { return {} },
+})
+export default stub
+${namedExports}
+`
+  return {
+    name: 'chm:ssr-client-only-stub',
+    enforce: 'pre',
+    resolveId(id) {
+      // `this.environment` is the per-environment build context (Vite 6+/8).
+      // Only stub in the worker/SSR environment, never the browser client build.
+      if (this.environment?.name === 'client') return null
+      if (isStubbedSpecifier(id)) return SSR_STUB_VIRTUAL_ID
+      return null
+    },
+    load(id) {
+      if (id === SSR_STUB_VIRTUAL_ID) return code
+      return null
+    },
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Dual build target from ONE source (#1409):
 //  - default / BUILD_TARGET=cloudflare: @cloudflare/vite-plugin → workerd bundle
 //    (the proven, merged CF path; deployed by `wrangler deploy`).
@@ -133,5 +234,5 @@ export default defineConfig({
       'zod',
     ],
   },
-  plugins: [tailwindcss(), ...runtimePlugins],
+  plugins: [ssrClientOnlyStub(), tailwindcss(), ...runtimePlugins],
 })
