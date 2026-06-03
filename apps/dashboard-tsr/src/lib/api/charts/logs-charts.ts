@@ -58,7 +58,8 @@ export const logsCharts: Record<string, ChartQueryBuilder> = {
         GROUP BY event_time
         ORDER BY event_time
       `,
-      // crash_log is always available, not optional
+      optional: true,
+      tableCheck: 'system.crash_log',
     }
   },
 

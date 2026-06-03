@@ -10,7 +10,7 @@
 name = "chmonitor-dash-tsr"
 main = "@tanstack/react-start/server-entry"
 compatibility_date = "2026-05-28"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 
 [observability]
 enabled = true
