@@ -1,9 +1,13 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+import remarkGfm from 'remark-gfm'
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://docs.chmonitor.dev',
+  markdown: {
+    remarkPlugins: [remarkGfm],
+  },
   integrations: [
     starlight({
       title: 'chmonitor',

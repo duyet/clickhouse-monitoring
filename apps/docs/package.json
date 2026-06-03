@@ -15,7 +15,8 @@
     "@astrojs/starlight": "^0.39.3",
     "@fontsource-variable/geist": "^5.2.9",
     "@fontsource-variable/geist-mono": "^5.2.8",
-    "astro": "^6.1.10"
+    "astro": "^6.1.10",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "wrangler": "4.65.0"
