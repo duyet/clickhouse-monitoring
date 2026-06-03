@@ -14,8 +14,6 @@ import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, log } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
-const _ROUTE_CONTEXT = { route: '/api/v1/actions', method: 'POST' }
-
 // --- Inline ActionSchema (not yet ported to TSR lib/api/schemas) ---
 
 const KillQueryActionSchema = z.object({
