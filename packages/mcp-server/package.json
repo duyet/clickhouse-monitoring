@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server.ts",
+    "./http": "./src/http.ts",
     "./auth": "./src/auth/index.ts",
     "./data": "./src/data/mcp-tools-data.ts"
   },

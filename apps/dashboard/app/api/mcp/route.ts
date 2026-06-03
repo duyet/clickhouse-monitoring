@@ -1,43 +1,15 @@
-import { getBearerToken, verifyApiKey } from '@chm/mcp-server/auth'
-import { createMcpServer } from '@chm/mcp-server/server'
-import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
+import { handleMcp } from '@chm/mcp-server/http'
 
 export const dynamic = 'force-dynamic'
 
-async function handleMcpRequest(req: Request) {
-  const authHeader = req.headers.get('authorization')
-  const bearerToken = getBearerToken(authHeader)
-  const apiKeyHeader = req.headers.get('x-api-key')
-  const token = bearerToken ?? apiKeyHeader
-  const apiKeySecret = process.env.CHM_API_KEY_SECRET
-  const authRequired =
-    process.env.NODE_ENV === 'production' || Boolean(apiKeySecret)
-
-  if (authRequired && !apiKeySecret) {
-    return new Response('MCP API key auth is not configured', { status: 503 })
-  }
-
-  if (authRequired) {
-    if (!token) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const result = await verifyApiKey(token)
-    if (!result.valid) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-  }
-
-  const server = createMcpServer()
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  })
-
-  await server.connect(transport)
-
-  return transport.handleRequest(req)
+// Transport/auth/CORS live in @chm/mcp-server/http, shared with the standalone
+// Cloudflare MCP Worker. Wrap explicitly (not `export const POST = handleMcp`)
+// because Next passes a route-context object as the second arg, which is not
+// handleMcp's options shape.
+function handler(req: Request): Promise<Response> {
+  return handleMcp(req)
 }
 
-export const POST = handleMcpRequest
-export const GET = handleMcpRequest
-export const DELETE = handleMcpRequest
+export const POST = handler
+export const GET = handler
+export const DELETE = handler
