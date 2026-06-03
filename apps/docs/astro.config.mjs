@@ -75,11 +75,11 @@ export default defineConfig({
         },
         {
           label: 'Advanced',
-          autogenerate: { directory: 'advanced' },
+          items: [{ autogenerate: { directory: 'advanced' } }],
         },
         {
           label: 'Reference',
-          autogenerate: { directory: 'reference' },
+          items: [{ autogenerate: { directory: 'reference' } }],
         },
         {
           label: 'More',
