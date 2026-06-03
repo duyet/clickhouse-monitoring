@@ -81,6 +81,23 @@ describe('mcp http — clerk + composed auth', () => {
       expect(clerkCalled).toBe(false)
     })
 
+    it('never relays an x-api-key credential to Clerk', async () => {
+      clearEnv()
+      process.env.CHM_API_KEY_SECRET = API_SECRET
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      let clerkCalled = false
+      globalThis.fetch = (async () => {
+        clerkCalled = true
+        return Response.json({ subject: 'user_1' })
+      }) as typeof fetch
+      // A bad x-api-key must be rejected, NOT forwarded to Clerk as an OAuth token
+      const res = await defaultAuthenticator(
+        mcpReq({ 'x-api-key': 'chm_bogus' })
+      )
+      expect(res?.status).toBe(401)
+      expect(clerkCalled).toBe(false)
+    })
+
     it('401s a bad token and includes WWW-Authenticate discovery when Clerk is on', async () => {
       clearEnv()
       process.env.CLERK_SECRET_KEY = 'sk_test_x'
@@ -104,8 +121,10 @@ describe('mcp http — clerk + composed auth', () => {
   })
 
   describe('handleProtectedResourceMetadata', () => {
-    it('serves metadata pointing at the Clerk issuer when configured', async () => {
+    it('serves metadata for the MCP endpoint pointing at the Clerk issuer', async () => {
       clearEnv()
+      // discoverable requires BOTH a verifier (secret) and an issuer (pub key)
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = PUBLISHABLE_KEY
       const res = handleProtectedResourceMetadata(
         new Request(
@@ -118,14 +137,18 @@ describe('mcp http — clerk + composed auth', () => {
         resource: string
         authorization_servers: string[]
       }
-      expect(body.resource).toBe('https://dash.chmonitor.dev')
+      // resource is the MCP endpoint, not the bare origin (RFC 9728 match)
+      expect(body.resource).toBe('https://dash.chmonitor.dev/api/mcp')
       expect(body.authorization_servers).toEqual([
         'https://clerk.chmonitor.dev',
       ])
     })
 
-    it('404s when Clerk OAuth is not configured', () => {
+    it('404s when Clerk OAuth is not discoverable (issuer but no verifier)', () => {
       clearEnv()
+      // publishable key present but no CLERK_SECRET_KEY → cannot verify tokens,
+      // so we must NOT advertise a login flow
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = PUBLISHABLE_KEY
       const res = handleProtectedResourceMetadata(
         new Request('https://x.dev/.well-known/oauth-protected-resource')
       )

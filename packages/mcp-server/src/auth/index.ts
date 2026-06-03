@@ -12,7 +12,10 @@ export {
 } from './clerk-oauth'
 export {
   buildProtectedResourceMetadata,
+  clerkOAuthDiscoverable,
   getClerkIssuer,
+  handleProtectedResourceMetadata,
+  MCP_ENDPOINT_PATH,
   MCP_OAUTH_SCOPES,
   PROTECTED_RESOURCE_METADATA_PATH,
   type ProtectedResourceMetadata,

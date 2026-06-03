@@ -8,6 +8,7 @@ const ENV_KEYS = [
   'CLERK_OAUTH_ISSUER',
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
   'CLERK_PUBLISHABLE_KEY',
+  'CLERK_SECRET_KEY',
 ] as const
 const saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]))
 
@@ -50,6 +51,8 @@ describe('oauth-metadata', () => {
   describe('buildProtectedResourceMetadata', () => {
     it('builds RFC 9728 metadata pointing at the Clerk issuer', () => {
       delete process.env.CLERK_OAUTH_ISSUER
+      // discoverable requires a verifier (secret) plus an issuer (pub key)
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = publishableKey(
         'clerk.chmonitor.dev'
       )

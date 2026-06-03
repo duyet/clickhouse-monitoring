@@ -20,10 +20,11 @@ import { apiKeyAuthEnabled, verifyApiKey } from './auth/api-key'
 import { getBearerToken } from './auth/bearer-token'
 import { clerkOAuthEnabled, verifyClerkOAuthToken } from './auth/clerk-oauth'
 import {
-  buildProtectedResourceMetadata,
+  clerkOAuthDiscoverable,
   PROTECTED_RESOURCE_METADATA_PATH,
   wwwAuthenticateHeader,
 } from './auth/oauth-metadata'
+import { withCors } from './cors'
 import {
   MCP_TOOLS,
   type McpResource,
@@ -33,31 +34,12 @@ import {
 import { createMcpServer } from './server'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 
-// Minimal CORS for cross-origin MCP clients (browser-based playgrounds, web MCP
-// UIs). `*` is safe because payloads are auth-gated by bearer token, not cookies.
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, content-type, x-api-key',
-  'Access-Control-Max-Age': '86400',
-} as const
-
-export function withCors(res: Response): Response {
-  const headers = new Headers(res.headers)
-  for (const [key, value] of Object.entries(CORS_HEADERS)) {
-    headers.set(key, value)
-  }
-  return new Response(res.body, {
-    status: res.status,
-    statusText: res.statusText,
-    headers,
-  })
-}
-
-/** CORS preflight response. Callers should answer OPTIONS with this before auth. */
-export function corsPreflight(): Response {
-  return withCors(new Response(null, { status: 204 }))
-}
+// SDK-free metadata handler, re-exported here for the Worker's single import.
+export { handleProtectedResourceMetadata } from './auth/oauth-metadata'
+// CORS helpers live in ./cors (SDK-free) so lightweight routes can reuse them
+// without pulling the MCP SDK into their bundle. Re-export for the Worker, which
+// imports everything from this one module.
+export { corsPreflight, withCors } from './cors'
 
 /**
  * Workers Route patterns are exact-match; proxies and address-bar normalization
@@ -77,7 +59,10 @@ export function normalizePath(pathname: string): string {
  */
 function unauthorized(req?: Request): Response {
   const headers = new Headers()
-  if (req && clerkOAuthEnabled()) {
+  // Only advertise discovery when it will actually work end to end (verifier +
+  // issuer), so we never point a client at a metadata URL that would 404 or at a
+  // login flow whose tokens we cannot verify.
+  if (req && clerkOAuthDiscoverable()) {
     const metadataUrl = new URL(
       PROTECTED_RESOURCE_METADATA_PATH,
       new URL(req.url).origin
@@ -87,12 +72,17 @@ function unauthorized(req?: Request): Response {
   return withCors(new Response('Unauthorized', { status: 401, headers }))
 }
 
-/** Bearer token from the Authorization header, falling back to x-api-key. */
-function getRequestToken(req: Request): string | null {
-  return (
-    getBearerToken(req.headers.get('authorization')) ??
-    req.headers.get('x-api-key')
-  )
+/**
+ * Tokens split by source. The Authorization bearer is the only credential we are
+ * willing to forward to Clerk's REST verifier — a server-issued API key sent via
+ * x-api-key must NEVER be relayed to a third party as if it were an OAuth token.
+ */
+function getRequestTokens(req: Request): {
+  bearer: string | null
+  apiKey: string | null
+} {
+  const bearer = getBearerToken(req.headers.get('authorization'))
+  return { bearer, apiKey: bearer ?? req.headers.get('x-api-key') }
 }
 
 /**
@@ -110,9 +100,9 @@ export type Authenticator = (req: Request) => Promise<Response | null>
  */
 export const apiKeyAuthenticator: Authenticator = async (req) => {
   if (!apiKeyAuthEnabled()) return null
-  const token = getRequestToken(req)
-  if (!token) return unauthorized(req)
-  const result = await verifyApiKey(token)
+  const { apiKey } = getRequestTokens(req)
+  if (!apiKey) return unauthorized(req)
+  const result = await verifyApiKey(apiKey)
   return result.valid ? null : unauthorized(req)
 }
 
@@ -126,7 +116,9 @@ export const apiKeyAuthenticator: Authenticator = async (req) => {
  *   validates against ANY configured scheme. This lets API keys (CLI/headless)
  *   and Clerk OAuth (humans via MCP clients) coexist on the same endpoint.
  * - API key is checked first (local HMAC, no network); Clerk is a REST call, so
- *   it runs only if the API-key check did not already accept the token.
+ *   it runs only if the API-key check did not already accept the credential.
+ * - Only the Authorization bearer is forwarded to Clerk. An x-api-key is treated
+ *   strictly as an API key and is never relayed to Clerk as an OAuth token.
  *
  * Clerk verification is a plain fetch (see verifyClerkOAuthToken), so this same
  * authenticator works in the Worker and the in-process route — no @clerk/nextjs.
@@ -136,15 +128,15 @@ export const defaultAuthenticator: Authenticator = async (req) => {
   const clerkOn = clerkOAuthEnabled()
   if (!apiKeyOn && !clerkOn) return null // open
 
-  const token = getRequestToken(req)
-  if (!token) return unauthorized(req)
+  const { bearer, apiKey } = getRequestTokens(req)
+  if (!bearer && !apiKey) return unauthorized(req)
 
-  if (apiKeyOn) {
-    const result = await verifyApiKey(token)
+  if (apiKeyOn && apiKey) {
+    const result = await verifyApiKey(apiKey)
     if (result.valid) return null
   }
-  if (clerkOn) {
-    const result = await verifyClerkOAuthToken(token)
+  if (clerkOn && bearer) {
+    const result = await verifyClerkOAuthToken(bearer)
     if (result.valid) return null
   }
   return unauthorized(req)
@@ -256,19 +248,4 @@ export async function handleMcpInfo(
   } catch {
     return withCors(new Response('Internal Server Error', { status: 500 }))
   }
-}
-
-/**
- * Serve GET /.well-known/oauth-protected-resource (RFC 9728). Public by design —
- * OAuth discovery metadata must be readable before the client has a token.
- * Returns 404 when Clerk OAuth is not configured (the resource is then not
- * OAuth-protected and clients should fall back to whatever auth is set).
- */
-export function handleProtectedResourceMetadata(req: Request): Response {
-  const origin = new URL(req.url).origin
-  const metadata = buildProtectedResourceMetadata(origin)
-  if (!metadata) {
-    return withCors(new Response('Not Found', { status: 404 }))
-  }
-  return withCors(Response.json(metadata))
 }
