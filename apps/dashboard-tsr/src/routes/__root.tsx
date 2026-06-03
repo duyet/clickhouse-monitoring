@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from 'react'
 
 import appCss from '../styles.css?url'
+import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -57,9 +58,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body className="bg-background font-sans antialiased">
-        <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </ThemeProvider>
+        <ClerkAuthProvider>
+          <ThemeProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ThemeProvider>
+        </ClerkAuthProvider>
         <Scripts />
       </body>
     </html>
