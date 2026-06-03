@@ -73,6 +73,28 @@ export async function verifyClerkOAuthToken(
     const data = (await res.json()) as {
       subject?: string
       scopes?: string[]
+      // Clerk can return 2xx for a structurally-valid but UNUSABLE token
+      // (introspection-style): inactive, revoked, or already expired. Treating
+      // every 2xx as valid would authenticate such tokens — an auth bypass.
+      active?: boolean
+      revoked?: boolean
+      expired?: boolean
+    }
+    if (
+      data.active === false ||
+      data.revoked === true ||
+      data.expired === true
+    ) {
+      return {
+        valid: false,
+        reason: 'clerk token inactive, revoked, or expired',
+      }
+    }
+    // A usable token always identifies a subject; its absence means the response
+    // does not describe a live token we can attribute, so reject rather than
+    // grant anonymous-but-authenticated access.
+    if (!data.subject) {
+      return { valid: false, reason: 'clerk verify returned no subject' }
     }
     return { valid: true, subject: data.subject, scopes: data.scopes }
   } catch {

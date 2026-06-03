@@ -98,6 +98,50 @@ describe('mcp http — clerk + composed auth', () => {
       expect(clerkCalled).toBe(false)
     })
 
+    it('accepts a valid x-api-key even when an invalid Authorization bearer is present', async () => {
+      clearEnv()
+      process.env.CHM_API_KEY_SECRET = API_SECRET
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      let clerkCalled = false
+      globalThis.fetch = (async () => {
+        clerkCalled = true
+        return new Response('no', { status: 401 })
+      }) as typeof fetch
+      const key = await issueApiKey('cli')
+      // Mixed headers: a bad bearer must NOT mask a valid x-api-key. Composed
+      // auth accepts any configured scheme, so the valid key wins and the bad
+      // bearer (not an API key) never needs to reach Clerk.
+      const res = await defaultAuthenticator(
+        mcpReq({ authorization: 'Bearer not-a-key', 'x-api-key': key })
+      )
+      expect(res).toBeNull()
+      expect(clerkCalled).toBe(false)
+    })
+
+    it('rejects a Clerk token the verifier reports inactive (2xx but active:false)', async () => {
+      clearEnv()
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      // Clerk can answer 2xx for an inactive/revoked/expired token; that must
+      // not authenticate.
+      globalThis.fetch = (async () =>
+        Response.json({ subject: 'user_1', active: false })) as typeof fetch
+      const res = await defaultAuthenticator(
+        mcpReq({ authorization: 'Bearer revoked-tok' })
+      )
+      expect(res?.status).toBe(401)
+    })
+
+    it('rejects a Clerk 2xx response that carries no subject', async () => {
+      clearEnv()
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      globalThis.fetch = (async () =>
+        Response.json({ scopes: ['email'] })) as typeof fetch
+      const res = await defaultAuthenticator(
+        mcpReq({ authorization: 'Bearer subjectless' })
+      )
+      expect(res?.status).toBe(401)
+    })
+
     it('401s a bad token and includes WWW-Authenticate discovery when Clerk is on', async () => {
       clearEnv()
       process.env.CLERK_SECRET_KEY = 'sk_test_x'

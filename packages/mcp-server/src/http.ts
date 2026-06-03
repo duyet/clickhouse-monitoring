@@ -82,7 +82,26 @@ function getRequestTokens(req: Request): {
   apiKey: string | null
 } {
   const bearer = getBearerToken(req.headers.get('authorization'))
-  return { bearer, apiKey: bearer ?? req.headers.get('x-api-key') }
+  // Keep the credentials distinct. An earlier version folded x-api-key into the
+  // bearer (`bearer ?? x-api-key`), which masked a real x-api-key whenever an
+  // Authorization header was also present — so `Bearer bad` + valid `x-api-key`
+  // was wrongly rejected. Returning them separately lets the authenticator try
+  // each against the right verifier.
+  return { bearer, apiKey: req.headers.get('x-api-key') }
+}
+
+/**
+ * An API key may be presented either via `x-api-key` or, by CLI convention, as
+ * `Authorization: Bearer <key>`. Accept it from either source — both are local
+ * HMAC checks (no network), so trying both is cheap and order-independent.
+ */
+async function anyApiKeyValid(
+  ...candidates: (string | null)[]
+): Promise<boolean> {
+  for (const candidate of candidates) {
+    if (candidate && (await verifyApiKey(candidate)).valid) return true
+  }
+  return false
 }
 
 /**
@@ -100,10 +119,8 @@ export type Authenticator = (req: Request) => Promise<Response | null>
  */
 export const apiKeyAuthenticator: Authenticator = async (req) => {
   if (!apiKeyAuthEnabled()) return null
-  const { apiKey } = getRequestTokens(req)
-  if (!apiKey) return unauthorized(req)
-  const result = await verifyApiKey(apiKey)
-  return result.valid ? null : unauthorized(req)
+  const { bearer, apiKey } = getRequestTokens(req)
+  return (await anyApiKeyValid(apiKey, bearer)) ? null : unauthorized(req)
 }
 
 /**
@@ -131,10 +148,10 @@ export const defaultAuthenticator: Authenticator = async (req) => {
   const { bearer, apiKey } = getRequestTokens(req)
   if (!bearer && !apiKey) return unauthorized(req)
 
-  if (apiKeyOn && apiKey) {
-    const result = await verifyApiKey(apiKey)
-    if (result.valid) return null
-  }
+  // API key may arrive via x-api-key or the Authorization bearer; accept either.
+  if (apiKeyOn && (await anyApiKeyValid(apiKey, bearer))) return null
+  // Only the Authorization bearer is ever forwarded to Clerk — an x-api-key is a
+  // server-issued credential and must never be relayed to a third party.
   if (clerkOn && bearer) {
     const result = await verifyClerkOAuthToken(bearer)
     if (result.valid) return null
