@@ -128,7 +128,10 @@ export const Route = createFileRoute('/api/v1/notifications')({
           }
 
           const totalCount = notifications.length
-          const body: NotificationsResponse = { notifications, totalCount }
+          const body = {
+            success: true,
+            data: { notifications, totalCount } satisfies NotificationsResponse,
+          }
 
           return new Response(JSON.stringify(body), {
             status: 200,
