@@ -211,7 +211,8 @@ async function setSecretsBulk(
     tmpdir(),
     `wrangler-secrets-${process.pid}-${label}.txt`
   )
-  writeFileSync(tempFile, lines.join('\n'))
+  // 0o600: the temp file holds plaintext secrets — owner-only read/write.
+  writeFileSync(tempFile, lines.join('\n'), { mode: 0o600 })
   try {
     const args = ['secret', 'bulk', tempFile, '--config', configPath]
     if (envName) args.push('--env', envName)
