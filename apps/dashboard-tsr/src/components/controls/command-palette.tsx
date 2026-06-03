@@ -1,0 +1,236 @@
+import { Search, Settings, Table, TextSearch } from 'lucide-react'
+import { menuItemsConfig } from '@/menu'
+
+import * as React from 'react'
+import { useState } from 'react'
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command'
+import { IconButton } from '@/components/ui/icon-button'
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
+import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
+import { useRouter, useSearchParams } from '@/lib/next-compat'
+import { buildUrl } from '@/lib/url/url-builder'
+
+const UUID_PATTERN =
+  /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
+const UUID_PREFIX_PATTERN = /^[a-f0-9-]{8,}/i
+const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/i
+
+interface CommandPaletteProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onOpenSettings?: () => void
+}
+
+export const CommandPalette = function CommandPalette({
+  open: controlledOpen,
+  onOpenChange,
+  onOpenSettings,
+}: CommandPaletteProps = {}) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const { config } = useFeaturePermissions()
+  const menuItems = filterMenuItemsByPermissions(menuItemsConfig, config)
+
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Cmd+K or Ctrl+K to open
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
+        setOpen(!open)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open, setOpen])
+
+  const hostId = searchParams.get('host') || '0'
+
+  const navigate = (href: string) => {
+    setOpen(false)
+    setInputValue('')
+    const url = buildUrl(href, { host: hostId })
+    router.push(url)
+  }
+
+  const isQueryId =
+    UUID_PATTERN.test(inputValue.trim()) ||
+    UUID_PREFIX_PATTERN.test(inputValue.trim())
+  const isTableName = TABLE_PATTERN.test(inputValue.trim())
+  const showQuickNav = isQueryId || isTableName
+
+  const handleGoToQuery = () => {
+    setOpen(false)
+    setInputValue('')
+    const url = buildUrl('/query', {
+      host: hostId,
+      query_id: inputValue.trim(),
+    })
+    router.push(url)
+  }
+
+  const handleOpenInExplorer = () => {
+    setOpen(false)
+    setInputValue('')
+    const [database, table] = inputValue.trim().split('.')
+    const url = buildUrl('/explorer', {
+      host: hostId,
+      database,
+      table,
+    })
+    router.push(url)
+  }
+
+  const handleOpenSettings = () => {
+    setOpen(false)
+    onOpenSettings?.()
+  }
+
+  return (
+    <>
+      {/* Search icon button for small screens */}
+      <IconButton
+        icon={<Search className="size-4" />}
+        onClick={() => setOpen(true)}
+        tooltip="Search"
+        className="md:hidden"
+      />
+
+      {/* Search trigger - hidden on mobile */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="relative hidden h-8 w-30 items-center gap-2 rounded-md border bg-muted/30 px-2.5 text-xs transition-[border-color,box-shadow,background-color] hover:bg-muted/50 hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30 md:inline-flex md:w-40"
+        aria-label="Search pages and commands"
+        aria-describedby="search-shortcut"
+      >
+        <Search
+          aria-hidden="true"
+          className="size-3.5 text-muted-foreground/60"
+        />
+        <span className="text-muted-foreground/60">Search…</span>
+        <kbd
+          id="search-shortcut"
+          className="ml-auto rounded border bg-muted px-1.5 text-[10px] font-medium"
+        >
+          ⌘K
+        </kbd>
+      </button>
+
+      <CommandDialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value)
+          if (!value) setInputValue('')
+        }}
+        aria-label="Command palette"
+      >
+        <CommandInput
+          placeholder="Type a command or search..."
+          aria-label="Search commands"
+          value={inputValue}
+          onValueChange={setInputValue}
+        />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+
+          {showQuickNav && (
+            <>
+              <CommandGroup heading="Quick Navigation">
+                {isQueryId && (
+                  <CommandItem
+                    onSelect={handleGoToQuery}
+                    value={`query-id-${inputValue}`}
+                  >
+                    <TextSearch className="mr-2 size-4" />
+                    <span>Go to query: </span>
+                    <span className="ml-1 font-mono text-xs text-muted-foreground truncate">
+                      {inputValue.trim()}
+                    </span>
+                  </CommandItem>
+                )}
+                {isTableName && (
+                  <CommandItem
+                    onSelect={handleOpenInExplorer}
+                    value={`explorer-${inputValue}`}
+                  >
+                    <Table className="mr-2 size-4" />
+                    <span>Open in explorer: </span>
+                    <span className="ml-1 font-mono text-xs text-muted-foreground">
+                      {inputValue.trim()}
+                    </span>
+                  </CommandItem>
+                )}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
+
+          {menuItems.map((group) => (
+            <CommandGroup key={group.title} heading={group.title}>
+              {group.items ? (
+                group.items.map((item) => (
+                  <CommandItem
+                    key={item.href}
+                    onSelect={() => navigate(item.href)}
+                    value={[group.title, item.title, item.description]
+                      .filter(Boolean)
+                      .join(' ')}
+                    className="flex-col items-start gap-0.5"
+                  >
+                    <div className="flex w-full items-center gap-2">
+                      {item.icon && <item.icon className="size-4 shrink-0" />}
+                      <span className="font-medium">{item.title}</span>
+                    </div>
+                    {item.description && (
+                      <span className="text-muted-foreground w-full truncate pl-6 text-xs">
+                        {item.description}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))
+              ) : (
+                <CommandItem
+                  key={group.href}
+                  onSelect={() => navigate(group.href)}
+                  value={group.title}
+                >
+                  {group.icon && <group.icon className="mr-2 size-4" />}
+                  <span>{group.title}</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
+          ))}
+
+          {onOpenSettings && (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading="Actions">
+                <CommandItem onSelect={handleOpenSettings} value="Settings">
+                  <Settings className="mr-2 size-4" />
+                  <span>Settings</span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    ⌘,
+                  </span>
+                </CommandItem>
+              </CommandGroup>
+            </>
+          )}
+        </CommandList>
+      </CommandDialog>
+    </>
+  )
+}

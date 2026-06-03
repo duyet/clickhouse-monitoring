@@ -1,0 +1,24 @@
+import { createFileRoute } from '@tanstack/react-router'
+
+import { Suspense } from 'react'
+import { PageLayout } from '@/components/layout/query-page'
+import { ChartSkeleton } from '@/components/skeletons'
+import { threadAnalysisConfig } from '@/lib/query-config/queries/thread-analysis'
+
+function ThreadAnalysisContent() {
+  return (
+    <PageLayout queryConfig={threadAnalysisConfig} title="Thread Analysis" />
+  )
+}
+
+function ThreadAnalysisPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <ThreadAnalysisContent />
+    </Suspense>
+  )
+}
+
+export const Route = createFileRoute('/(dashboard)/queries/thread-analysis')({
+  component: ThreadAnalysisPage,
+})

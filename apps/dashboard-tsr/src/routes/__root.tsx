@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 
 import appCss from '../styles.css?url'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
+import { AppProvider } from '@/lib/context/app-context'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -60,7 +61,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <body className="bg-background font-sans antialiased">
         <ClerkAuthProvider>
           <ThemeProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <AppProvider>{children}</AppProvider>
+            </QueryProvider>
           </ThemeProvider>
         </ClerkAuthProvider>
         <Scripts />

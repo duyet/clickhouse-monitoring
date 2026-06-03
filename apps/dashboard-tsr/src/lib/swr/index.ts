@@ -21,3 +21,4 @@ export {
 export { type FetchError, throwIfNotOk } from './fetch-error'
 export { useActions } from './use-actions'
 export { useHostId } from './use-host'
+export { usePeerDB } from './use-peerdb-data'
