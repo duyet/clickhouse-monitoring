@@ -33,7 +33,7 @@ export const CLERK_PUBLISHABLE_KEY: string | undefined = import.meta.env
  *
  * @returns true if auth provider is clerk and the publishable key is valid
  */
-export function isClerkEnabled(): boolean {
+export function isClerkClientEnabled(): boolean {
   try {
     if (getClientAuthProvider() !== 'clerk') return false
   } catch (err) {
