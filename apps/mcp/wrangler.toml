@@ -16,6 +16,11 @@
 # Secrets to set (or run `bun run cf:config`):
 #   wrangler secret put CHM_API_KEY_SECRET --config wrangler-mcp.toml
 #   wrangler secret put CLICKHOUSE_PASSWORD --config wrangler-mcp.toml
+#   # Optional — enables Clerk OAuth verification for MCP clients. When set, a
+#   # valid Clerk OAuth access token is accepted in addition to (not instead of)
+#   # CHM_API_KEY_SECRET keys. The Clerk login/consent flow is hosted by Clerk;
+#   # this worker only verifies the bearer token via Clerk's REST API.
+#   wrangler secret put CLERK_SECRET_KEY --config wrangler-mcp.toml
 #
 # Local development:
 #   `wrangler dev --config wrangler-mcp.toml` inherits NODE_ENV=production

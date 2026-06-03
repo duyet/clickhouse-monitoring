@@ -1,0 +1,135 @@
+import { issueApiKey } from '../auth/api-key'
+import { defaultAuthenticator, handleProtectedResourceMetadata } from '../http'
+import { afterEach, describe, expect, it } from 'bun:test'
+
+const API_SECRET = 'test-secret-key-for-unit-tests-at-least-32-chars'
+const PUBLISHABLE_KEY = `pk_test_${btoa('clerk.chmonitor.dev$')}`
+
+const ENV = [
+  'CHM_API_KEY_SECRET',
+  'CLERK_SECRET_KEY',
+  'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
+  'CLERK_OAUTH_ISSUER',
+] as const
+const saved = Object.fromEntries(ENV.map((k) => [k, process.env[k]]))
+const originalFetch = globalThis.fetch
+
+function clearEnv() {
+  for (const k of ENV) delete process.env[k]
+}
+
+function mcpReq(headers: Record<string, string> = {}): Request {
+  return new Request('https://example.com/api/mcp', { method: 'POST', headers })
+}
+
+function mockClerkVerify(valid: boolean) {
+  globalThis.fetch = (async () =>
+    valid
+      ? Response.json({ subject: 'user_1', scopes: ['email'] })
+      : new Response('no', { status: 401 })) as typeof fetch
+}
+
+describe('mcp http — clerk + composed auth', () => {
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    for (const k of ENV) {
+      if (saved[k] !== undefined) process.env[k] = saved[k]
+      else delete process.env[k]
+    }
+  })
+
+  describe('defaultAuthenticator', () => {
+    it('is open when neither API key nor Clerk is configured', async () => {
+      clearEnv()
+      expect(await defaultAuthenticator(mcpReq())).toBeNull()
+    })
+
+    it('accepts a valid API key', async () => {
+      clearEnv()
+      process.env.CHM_API_KEY_SECRET = API_SECRET
+      const key = await issueApiKey('cli')
+      expect(
+        await defaultAuthenticator(mcpReq({ authorization: `Bearer ${key}` }))
+      ).toBeNull()
+    })
+
+    it('accepts a valid Clerk OAuth token via REST verify', async () => {
+      clearEnv()
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      mockClerkVerify(true)
+      expect(
+        await defaultAuthenticator(
+          mcpReq({ authorization: 'Bearer clerk-tok' })
+        )
+      ).toBeNull()
+    })
+
+    it('accepts EITHER scheme when both are configured (API key path, no Clerk call)', async () => {
+      clearEnv()
+      process.env.CHM_API_KEY_SECRET = API_SECRET
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      let clerkCalled = false
+      globalThis.fetch = (async () => {
+        clerkCalled = true
+        return new Response('no', { status: 401 })
+      }) as typeof fetch
+      const key = await issueApiKey('cli')
+      expect(
+        await defaultAuthenticator(mcpReq({ authorization: `Bearer ${key}` }))
+      ).toBeNull()
+      // API key validated locally first → Clerk REST is never hit
+      expect(clerkCalled).toBe(false)
+    })
+
+    it('401s a bad token and includes WWW-Authenticate discovery when Clerk is on', async () => {
+      clearEnv()
+      process.env.CLERK_SECRET_KEY = 'sk_test_x'
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = PUBLISHABLE_KEY
+      mockClerkVerify(false)
+      const res = await defaultAuthenticator(
+        mcpReq({ authorization: 'Bearer bad' })
+      )
+      expect(res?.status).toBe(401)
+      const wwwAuth = res?.headers.get('WWW-Authenticate')
+      expect(wwwAuth).toContain('resource_metadata=')
+      expect(wwwAuth).toContain('/.well-known/oauth-protected-resource')
+    })
+
+    it('401s with no token when a scheme is configured', async () => {
+      clearEnv()
+      process.env.CHM_API_KEY_SECRET = API_SECRET
+      const res = await defaultAuthenticator(mcpReq())
+      expect(res?.status).toBe(401)
+    })
+  })
+
+  describe('handleProtectedResourceMetadata', () => {
+    it('serves metadata pointing at the Clerk issuer when configured', async () => {
+      clearEnv()
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = PUBLISHABLE_KEY
+      const res = handleProtectedResourceMetadata(
+        new Request(
+          'https://dash.chmonitor.dev/.well-known/oauth-protected-resource'
+        )
+      )
+      expect(res.status).toBe(200)
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
+      const body = (await res.json()) as {
+        resource: string
+        authorization_servers: string[]
+      }
+      expect(body.resource).toBe('https://dash.chmonitor.dev')
+      expect(body.authorization_servers).toEqual([
+        'https://clerk.chmonitor.dev',
+      ])
+    })
+
+    it('404s when Clerk OAuth is not configured', () => {
+      clearEnv()
+      const res = handleProtectedResourceMetadata(
+        new Request('https://x.dev/.well-known/oauth-protected-resource')
+      )
+      expect(res.status).toBe(404)
+    })
+  })
+})

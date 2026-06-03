@@ -18,6 +18,12 @@
 import pkg from '../package.json'
 import { apiKeyAuthEnabled, verifyApiKey } from './auth/api-key'
 import { getBearerToken } from './auth/bearer-token'
+import { clerkOAuthEnabled, verifyClerkOAuthToken } from './auth/clerk-oauth'
+import {
+  buildProtectedResourceMetadata,
+  PROTECTED_RESOURCE_METADATA_PATH,
+  wwwAuthenticateHeader,
+} from './auth/oauth-metadata'
 import {
   MCP_TOOLS,
   type McpResource,
@@ -64,40 +70,88 @@ export function normalizePath(pathname: string): string {
   return pathname
 }
 
-function unauthorized(): Response {
-  return withCors(new Response('Unauthorized', { status: 401 }))
+/**
+ * 401 response. When Clerk OAuth is enabled, attach the RFC 9728
+ * WWW-Authenticate header pointing at our resource metadata so MCP clients can
+ * discover the authorization server and start the login/consent flow.
+ */
+function unauthorized(req?: Request): Response {
+  const headers = new Headers()
+  if (req && clerkOAuthEnabled()) {
+    const metadataUrl = new URL(
+      PROTECTED_RESOURCE_METADATA_PATH,
+      new URL(req.url).origin
+    ).toString()
+    headers.set('WWW-Authenticate', wwwAuthenticateHeader(metadataUrl))
+  }
+  return withCors(new Response('Unauthorized', { status: 401, headers }))
+}
+
+/** Bearer token from the Authorization header, falling back to x-api-key. */
+function getRequestToken(req: Request): string | null {
+  return (
+    getBearerToken(req.headers.get('authorization')) ??
+    req.headers.get('x-api-key')
+  )
 }
 
 /**
- * Resolves a bearer/x-api-key token to a Response (auth failed) or null (allowed).
- * Returning a Response — not throwing — lets callers compose multiple
- * authenticators (try Clerk, then API key) by short-circuiting on the first
- * non-null result.
+ * Resolves a request to a Response (auth failed) or null (allowed).
+ * Returning a Response — not throwing — lets callers compose authenticators by
+ * short-circuiting on the first non-null result.
  */
 export type Authenticator = (req: Request) => Promise<Response | null>
 
 /**
- * Default authenticator: HMAC API key.
+ * HMAC API-key authenticator.
  *
- * When CHM_API_KEY_SECRET is unset, apiKeyAuthEnabled() is false and this returns
- * null — i.e. NO auth configured means anonymous AI clients are allowed through.
- * This is the "open" case: a self-hosted operator who did not configure auth gets
- * an open MCP endpoint, by their own choice. Deployments that want a closed
- * endpoint set CHM_API_KEY_SECRET (or layer Clerk on top via a custom
- * Authenticator).
+ * When CHM_API_KEY_SECRET is unset this returns null (allow) — see
+ * defaultAuthenticator for the full "open when nothing configured" rationale.
  */
 export const apiKeyAuthenticator: Authenticator = async (req) => {
   if (!apiKeyAuthEnabled()) return null
-  const token =
-    getBearerToken(req.headers.get('authorization')) ??
-    req.headers.get('x-api-key')
-  if (!token) return unauthorized()
+  const token = getRequestToken(req)
+  if (!token) return unauthorized(req)
   const result = await verifyApiKey(token)
-  return result.valid ? null : unauthorized()
+  return result.valid ? null : unauthorized(req)
+}
+
+/**
+ * Default MCP authenticator — precedence: (API key | Clerk OAuth) → open.
+ *
+ * - If NEITHER CHM_API_KEY_SECRET nor CLERK_SECRET_KEY is set, the endpoint is
+ *   OPEN: a self-hosted operator who configured no auth gets anonymous access by
+ *   their own choice. Close it by configuring either scheme.
+ * - If EITHER is configured, a token is required and is accepted when it
+ *   validates against ANY configured scheme. This lets API keys (CLI/headless)
+ *   and Clerk OAuth (humans via MCP clients) coexist on the same endpoint.
+ * - API key is checked first (local HMAC, no network); Clerk is a REST call, so
+ *   it runs only if the API-key check did not already accept the token.
+ *
+ * Clerk verification is a plain fetch (see verifyClerkOAuthToken), so this same
+ * authenticator works in the Worker and the in-process route — no @clerk/nextjs.
+ */
+export const defaultAuthenticator: Authenticator = async (req) => {
+  const apiKeyOn = apiKeyAuthEnabled()
+  const clerkOn = clerkOAuthEnabled()
+  if (!apiKeyOn && !clerkOn) return null // open
+
+  const token = getRequestToken(req)
+  if (!token) return unauthorized(req)
+
+  if (apiKeyOn) {
+    const result = await verifyApiKey(token)
+    if (result.valid) return null
+  }
+  if (clerkOn) {
+    const result = await verifyClerkOAuthToken(token)
+    if (result.valid) return null
+  }
+  return unauthorized(req)
 }
 
 interface HandleMcpOptions {
-  /** Override the auth check. Defaults to the API-key authenticator. */
+  /** Override the auth check. Defaults to defaultAuthenticator. */
   authenticate?: Authenticator
 }
 
@@ -110,7 +164,7 @@ interface HandleMcpOptions {
  */
 export async function handleMcp(
   req: Request,
-  { authenticate = apiKeyAuthenticator }: HandleMcpOptions = {}
+  { authenticate = defaultAuthenticator }: HandleMcpOptions = {}
 ): Promise<Response> {
   try {
     // withCors even on the auth failure: a custom authenticator may return a
@@ -193,7 +247,7 @@ export function buildServerInfo(): McpServerInfoResponse {
  */
 export async function handleMcpInfo(
   req: Request,
-  { authenticate = apiKeyAuthenticator }: HandleMcpOptions = {}
+  { authenticate = defaultAuthenticator }: HandleMcpOptions = {}
 ): Promise<Response> {
   try {
     const fail = await authenticate(req)
@@ -202,4 +256,19 @@ export async function handleMcpInfo(
   } catch {
     return withCors(new Response('Internal Server Error', { status: 500 }))
   }
+}
+
+/**
+ * Serve GET /.well-known/oauth-protected-resource (RFC 9728). Public by design —
+ * OAuth discovery metadata must be readable before the client has a token.
+ * Returns 404 when Clerk OAuth is not configured (the resource is then not
+ * OAuth-protected and clients should fall back to whatever auth is set).
+ */
+export function handleProtectedResourceMetadata(req: Request): Response {
+  const origin = new URL(req.url).origin
+  const metadata = buildProtectedResourceMetadata(origin)
+  if (!metadata) {
+    return withCors(new Response('Not Found', { status: 404 }))
+  }
+  return withCors(Response.json(metadata))
 }

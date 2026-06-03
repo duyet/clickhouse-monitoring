@@ -10,14 +10,16 @@
  * the in-process Next.js route (apps/dashboard/app/api/mcp/route.ts) share one
  * implementation and cannot drift.
  *
- * Bindings: shares ClickHouse env vars + CHM_API_KEY_SECRET secret. No
- * KV/D1/R2 — MCP tools only query ClickHouse over HTTP.
+ * Bindings: shares ClickHouse env vars + CHM_API_KEY_SECRET secret, plus the
+ * optional CLERK_SECRET_KEY for Clerk OAuth token verification. No KV/D1/R2 —
+ * MCP tools only query ClickHouse over HTTP.
  */
 
 import {
   corsPreflight,
   handleMcp,
   handleMcpInfo,
+  handleProtectedResourceMetadata,
   normalizePath,
   withCors,
 } from '@chm/mcp-server/http'
@@ -36,6 +38,15 @@ export default {
           return withCors(new Response('Method Not Allowed', { status: 405 }))
         }
         return await handleMcpInfo(request)
+      }
+      // OAuth discovery (RFC 9728). In production dash.chmonitor.dev/.well-known/*
+      // is served by the dashboard worker; this keeps the MCP worker
+      // self-contained when deployed on its own domain.
+      if (pathname === '/.well-known/oauth-protected-resource') {
+        if (request.method !== 'GET') {
+          return withCors(new Response('Method Not Allowed', { status: 405 }))
+        }
+        return handleProtectedResourceMetadata(request)
       }
 
       return withCors(new Response('Not Found', { status: 404 }))
