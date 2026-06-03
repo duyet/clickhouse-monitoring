@@ -1,0 +1,338 @@
+/**
+ * Query Monitoring Charts
+ * Charts for tracking query performance, counts, and memory usage
+ */
+
+import type { ChartQueryBuilder } from './types'
+
+import { applyInterval, buildTimeFilter, fillStep, nowOrToday } from './types'
+
+export const queryCharts: Record<string, ChartQueryBuilder> = {
+  'query-count-today': () => ({
+    query: `
+      SELECT COUNT() AS count
+      FROM merge('system', '^query_log')
+      WHERE type = 'QueryFinish'
+        AND toDate(event_time) = today()
+    `,
+  }),
+
+  'query-count': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    WITH event_count AS (
+      SELECT ${applyInterval(interval, 'event_time')},
+             COUNT() AS query_count
+      FROM merge('system', '^query_log')
+      WHERE type = 'QueryFinish'
+            ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY event_time
+      ORDER BY event_time WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+    ),
+    query_kind AS (
+      SELECT ${applyInterval(interval, 'event_time')},
+               query_kind,
+               COUNT() AS count
+        FROM merge('system', '^query_log')
+        WHERE type = 'QueryFinish'
+              ${timeFilter ? `AND ${timeFilter}` : ''}
+        GROUP BY 1, 2
+        ORDER BY 3 DESC
+    ),
+    breakdown AS (
+      SELECT event_time,
+             groupArray((query_kind, count)) AS breakdown
+      FROM query_kind
+      GROUP BY 1
+    )
+    SELECT event_time,
+           query_count,
+           breakdown.breakdown AS breakdown
+    FROM event_count
+    LEFT JOIN breakdown USING event_time
+    ORDER BY 1
+  `,
+    }
+  },
+
+  'query-count-by-user': ({
+    interval = 'toStartOfDay',
+    lastHours = 24 * 14,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           user,
+           COUNT(*) AS count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+          AND user != ''
+    GROUP BY 1, 2
+    ORDER BY
+      1 ASC,
+      3 DESC
+  `,
+    }
+  },
+
+  'query-duration': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           AVG(query_duration_ms) AS query_duration_ms,
+           ROUND(query_duration_ms / 1000, 2) AS query_duration_s
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY event_time
+    ORDER BY event_time ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+    }
+  },
+
+  'query-memory': ({ interval = 'toStartOfDay', lastHours = 24 * 14 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           AVG(memory_usage) AS memory_usage,
+           formatReadableSize(memory_usage) AS readable_memory_usage
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY event_time
+    ORDER BY event_time ASC
+  `,
+    }
+  },
+
+  'query-type': ({ lastHours = 24 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT type,
+           COUNT() AS query_count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1
+  `,
+    }
+  },
+
+  'query-cache': () => ({
+    query: `
+    SELECT
+      sumIf(result_size, stale = 0) AS total_result_size,
+      sumIf(result_size, stale = 1) AS total_staled_result_size,
+      formatReadableSize(total_result_size) AS readable_total_result_size,
+      formatReadableSize(total_staled_result_size) AS readable_total_staled_result_size
+    FROM system.query_cache
+  `,
+  }),
+
+  // v24.1+: Query cache usage stats from query_log
+  'query-cache-usage': ({ lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT
+      query_cache_usage,
+      COUNT() AS query_count,
+      round(100 * query_count / sum(query_count) OVER (), 2) AS percentage
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY query_cache_usage
+    ORDER BY query_count DESC
+  `,
+      // Fallback for pre-24.1 versions
+      variants: [
+        {
+          versions: { maxVersion: '24.1' },
+          query: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
+          description: 'query_cache_usage column not available before v24.1',
+        },
+      ],
+    }
+  },
+
+  'top-query-fingerprints': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    WITH top_hashes AS (
+      SELECT normalized_query_hash, count() AS total
+      FROM merge('system', '^query_log')
+      WHERE type = 'QueryFinish'
+            ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY normalized_query_hash
+      ORDER BY total DESC
+      LIMIT 10
+    )
+    SELECT
+        ${applyInterval(interval, 'q.event_time', 'event_time')},
+        q.normalized_query_hash AS hash,
+        substring(any(q.query), 1, 80) AS query_preview,
+        count() AS count
+    FROM merge('system', '^query_log') AS q
+    INNER JOIN top_hashes AS t ON q.normalized_query_hash = t.normalized_query_hash
+    WHERE q.type = 'QueryFinish'
+          ${timeFilter ? `AND ${buildTimeFilter(lastHours, 'q.event_time')}` : ''}
+    GROUP BY 1, 2
+    ORDER BY 1 ASC, 4 DESC
+  `,
+    }
+  },
+
+  'failed-query-count': ({
+    interval = 'toStartOfMinute',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    WITH event_count AS (
+      SELECT ${applyInterval(interval, 'event_time')},
+             COUNT() AS query_count
+      FROM merge('system', '^query_log')
+      WHERE
+            type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+            ${timeFilter ? `AND ${timeFilter}` : ''}
+      GROUP BY 1
+      ORDER BY 1
+    ),
+    query_type AS (
+        SELECT ${applyInterval(interval, 'event_time')},
+               type AS query_type,
+               COUNT() AS count
+        FROM merge('system', '^query_log')
+        WHERE
+              type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+              ${timeFilter ? `AND ${timeFilter}` : ''}
+        GROUP BY 1, 2
+        ORDER BY 3 DESC
+    ),
+    breakdown AS (
+      SELECT event_time,
+             groupArray((query_type, count)) AS breakdown
+      FROM query_type
+      GROUP BY 1
+    )
+    SELECT event_time,
+           query_count,
+           breakdown.breakdown AS breakdown
+    FROM event_count
+    LEFT JOIN breakdown USING event_time
+    ORDER BY 1
+  `,
+    }
+  },
+
+  'cancelled-queries': ({ interval = 'toStartOfHour', lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           exception_code,
+           COUNT() AS count
+    FROM merge('system', '^query_log')
+    WHERE type IN ('ExceptionBeforeStart', 'ExceptionWhileProcessing')
+          AND exception_code IN (394, 159)
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1, 2
+    ORDER BY 1 ASC
+  `,
+    }
+  },
+
+  'failed-query-count-by-user': ({
+    interval = 'toStartOfDay',
+    lastHours = 24 * 14,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           user,
+           countDistinct(query_id) AS count
+    FROM merge('system', '^query_log')
+    WHERE
+          type IN ['ExceptionBeforeStart', 'ExceptionWhileProcessing']
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY 1, 2
+    ORDER BY
+      1 ASC,
+      3 DESC
+  `,
+    }
+  },
+
+  'query-duration-percentiles': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+  SELECT ${applyInterval(interval, 'event_time')},
+         round(quantile(0.50)(query_duration_ms) / 1000, 3) AS p50_s,
+         round(quantile(0.95)(query_duration_ms) / 1000, 3) AS p95_s,
+         round(quantile(0.99)(query_duration_ms) / 1000, 3) AS p99_s
+  FROM merge('system', '^query_log')
+  WHERE type = 'QueryFinish'
+        ${timeFilter ? `AND ${timeFilter}` : ''}
+  GROUP BY event_time
+  ORDER BY event_time ASC
+  WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+`,
+    }
+  },
+
+  'slow-query-occurrences': ({
+    interval = 'toStartOfHour',
+    lastHours = 24 * 7,
+  }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           COUNT() AS count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          AND query_duration_ms >= 5000
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY event_time
+    ORDER BY event_time ASC
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
+    }
+  },
+
+  'query-count-heatmap': ({ lastHours = 24 * 7 }) => {
+    const timeFilter = buildTimeFilter(lastHours)
+    return {
+      query: `
+    SELECT
+        toDayOfWeek(event_time) AS day_of_week,
+        toHour(event_time) AS hour_of_day,
+        count() AS query_count,
+        formatReadableQuantity(count()) AS readable_count
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+      ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY day_of_week, hour_of_day
+    ORDER BY day_of_week, hour_of_day
+  `,
+    }
+  },
+}

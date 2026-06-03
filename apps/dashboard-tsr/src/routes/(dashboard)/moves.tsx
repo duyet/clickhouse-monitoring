@@ -1,0 +1,22 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { Suspense } from 'react'
+import { PageLayout } from '@/components/layout/query-page'
+import { ChartSkeleton } from '@/components/skeletons'
+import { movesConfig } from '@/lib/query-config/tables/moves'
+
+function MovesPageContent() {
+  return <PageLayout queryConfig={movesConfig} title="Moves" />
+}
+
+function MovesPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <MovesPageContent />
+    </Suspense>
+  )
+}
+
+
+export const Route = createFileRoute('/(dashboard)/moves')({
+  component: MovesPage,
+})

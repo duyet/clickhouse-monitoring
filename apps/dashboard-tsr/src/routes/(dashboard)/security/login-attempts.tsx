@@ -1,0 +1,22 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { Suspense } from 'react'
+import { PageLayout } from '@/components/layout/query-page'
+import { ChartSkeleton } from '@/components/skeletons'
+import { loginAttemptsConfig } from '@/lib/query-config/security/login-attempts'
+
+function LoginAttemptsContent() {
+  return <PageLayout queryConfig={loginAttemptsConfig} title="Login Attempts" />
+}
+
+function LoginAttemptsPage() {
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      <LoginAttemptsContent />
+    </Suspense>
+  )
+}
+
+
+export const Route = createFileRoute('/(dashboard)/security/login-attempts')({
+  component: LoginAttemptsPage,
+})

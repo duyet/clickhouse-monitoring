@@ -1,5 +1,3 @@
-'use client'
-
 import type { DateRangeConfig, DateRangeValue } from './date-range-types'
 
 import { useState } from 'react'

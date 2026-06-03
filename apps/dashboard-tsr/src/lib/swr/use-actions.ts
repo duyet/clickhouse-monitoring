@@ -1,5 +1,3 @@
-'use client'
-
 import { apiFetch } from './api-fetch'
 import { useHostId } from './use-host'
 import { useCallback } from 'react'
