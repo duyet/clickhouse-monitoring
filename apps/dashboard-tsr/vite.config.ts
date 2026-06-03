@@ -23,11 +23,20 @@ const isNode = process.env.BUILD_TARGET === 'node'
 //  - Node: nitro() goes AFTER tanstackStart() (per TanStack hosting docs); no
 //    cloudflare() plugin.
 // tailwindcss() (Tailwind v4) is order-independent; kept first by convention.
+// Static prerender: emit per-route static HTML at build (fast first paint,
+// served via Cloudflare Workers Assets / Docker static files), with a SPA
+// fallback shell for any non-crawled route. Dynamic data still loads
+// client-side via TanStack Query against the API routes — "fast like SSR".
+const startConfig = {
+  prerender: { enabled: true, crawlLinks: true },
+  spa: { enabled: true },
+}
+
 const runtimePlugins: PluginOption[] = isNode
-  ? [tanstackStart(), nitro({ preset: 'node-server' }), viteReact()]
+  ? [tanstackStart(startConfig), nitro({ preset: 'node-server' }), viteReact()]
   : [
       cloudflare({ viteEnvironment: { name: 'ssr' } }),
-      tanstackStart(),
+      tanstackStart(startConfig),
       viteReact(),
     ]
 

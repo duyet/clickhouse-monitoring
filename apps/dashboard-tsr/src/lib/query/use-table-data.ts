@@ -1,0 +1,116 @@
+import { useQuery } from '@tanstack/react-query'
+
+import type { ApiResponseMetadata } from '@/lib/api/types'
+import type { StaleError } from './use-chart-data'
+
+import { useMemo, useRef } from 'react'
+import { apiFetch } from '@/lib/swr/api-fetch'
+import { throwIfNotOk } from '@/lib/swr/fetch-error'
+
+interface TableDataResponse<T = unknown> {
+  data: T[]
+  metadata: ApiResponseMetadata & {
+    rows_before_limit_at_least?: number
+    exception?: string
+  }
+}
+
+interface TableQueryParams {
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  page?: number
+  limit?: number
+  [key: string]: string | number | boolean | undefined
+}
+
+export function useTableData<T = unknown>(
+  queryConfigName: string,
+  hostId?: number,
+  searchParams?: TableQueryParams,
+  refreshInterval?: number,
+  timezone?: string
+) {
+  const params = new URLSearchParams()
+  if (hostId !== undefined) params.append('hostId', String(hostId))
+  if (searchParams) {
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value))
+      }
+    })
+  }
+  if (timezone) params.append('timezone', timezone)
+
+  const queryString = params.toString()
+  const url = `/api/v1/tables/${queryConfigName}${queryString ? `?${queryString}` : ''}`
+
+  const queryKey = [
+    '/api/v1/tables',
+    queryConfigName,
+    hostId,
+    JSON.stringify(searchParams ?? {}),
+    timezone,
+  ] as const
+
+  const resolvedRefetchInterval =
+    refreshInterval && refreshInterval > 0
+      ? () =>
+          typeof document !== 'undefined' && document.hidden
+            ? false
+            : refreshInterval
+      : false
+
+  const { data, error, isPending, isFetching, refetch } = useQuery<
+    TableDataResponse<T>,
+    Error
+  >({
+    queryKey,
+    queryFn: async () => {
+      const response = await apiFetch(url)
+      await throwIfNotOk(response, 'Failed to fetch table data')
+      return response.json() as Promise<TableDataResponse<T>>
+    },
+    staleTime: 3_000,
+    refetchInterval: resolvedRefetchInterval,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+  })
+
+  const dataArray = data?.data ?? []
+  const hasData = dataArray.length > 0
+  const isLoading = isPending && isFetching
+  const isValidating = isFetching
+
+  const staleErrorTimestampRef = useRef<number>(0)
+
+  const staleError = useMemo<StaleError | undefined>(() => {
+    if (!error || !hasData || isLoading) {
+      staleErrorTimestampRef.current = 0
+      return undefined
+    }
+    if (staleErrorTimestampRef.current === 0) {
+      staleErrorTimestampRef.current = Date.now()
+    }
+    return {
+      ...error,
+      name: error.name,
+      message: error.message,
+      timestamp: staleErrorTimestampRef.current,
+      type: (error as Error & { type?: string }).type,
+      details: (error as Error & { details?: StaleError['details'] }).details,
+    }
+  }, [error, hasData, isLoading])
+
+  return {
+    data: dataArray,
+    metadata: data?.metadata,
+    error: error ?? undefined,
+    isLoading,
+    isValidating,
+    refresh: () => refetch().then(() => undefined),
+    hasData,
+    staleError,
+  }
+}
