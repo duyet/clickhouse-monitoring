@@ -23,10 +23,10 @@ export const featureFlags = {
    * isolation.
    *
    * @default false (unset)
-   * @env NEXT_PUBLIC_FEATURE_CONVERSATION_DB
+   * @env VITE_FEATURE_CONVERSATION_DB (was NEXT_PUBLIC_FEATURE_CONVERSATION_DB)
    */
   conversationDb: (): boolean => {
-    if (process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_DB !== 'true') {
+    if (import.meta.env.VITE_FEATURE_CONVERSATION_DB !== 'true') {
       return false
     }
 

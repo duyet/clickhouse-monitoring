@@ -27,6 +27,8 @@
       "@chm/mcp-server/data": [
         "../../packages/mcp-server/src/data/mcp-tools-data.ts"
       ],
+      "@chm/mcp-server/auth": ["../../packages/mcp-server/src/auth/index.ts"],
+      "@chm/platform": ["./src/lib/platform-native.ts"],
       "@modelcontextprotocol/sdk/server/mcp.js": [
         "./node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.d.ts"
       ],
@@ -47,5 +49,23 @@
       ]
     }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".output",
+    ".wrangler",
+    ".turbo",
+    "coverage",
+    "cypress",
+    "cypress.config.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.cy.ts",
+    "**/*.cy.tsx",
+    "**/__tests__/**",
+    "**/__mocks__/**"
+  ]
 }
