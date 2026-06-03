@@ -27,10 +27,16 @@
   /* Opt an element out of the browser's scroll-anchoring heuristic. Used on
      lazily-mounted chart slots so inserting a chart above the viewport during a
      fast scroll-to-bottom doesn't yank the scroll position around ("flaking").
-     Pairs with reserved slot heights so there is no shift to anchor against. */
+     Pairs with reserved slot heights so there is no shift to anchor against.
+
+     NOTE: `content-visibility: auto` is intentionally NOT set here. It is
+     applied inline by LazyChartWrapper only while a slot is still off-screen and
+     unloaded. Once a chart has mounted we must NOT keep content-visibility on it
+     — the browser would skip rendering it whenever it scrolls out of view and
+     repaint (re-running entrance animations) on scroll-back, which looks like
+     the chart "reloading". See lazy-chart-wrapper.tsx. */
   .overflow-anchor-none {
     overflow-anchor: none;
-    content-visibility: auto;
   }
 }
 
