@@ -26,11 +26,11 @@ export default defineConfig({
           href: 'https://github.com/duyet/clickhouse-monitoring',
         },
       ],
-      // Edit links point back to the source-of-truth content in the repo.
-      editLink: {
-        baseUrl:
-          'https://github.com/duyet/clickhouse-monitoring/edit/main/docs/content/',
-      },
+      // Edit links are injected per-page as a frontmatter `editUrl` by
+      // scripts/sync-docs.mjs, pointing at the real source under
+      // `docs/content/**`. A global `editLink.baseUrl` can't be used here:
+      // Starlight would append the *generated* `src/content/docs/...` path
+      // (gitignored), producing broken 404 edit links.
       lastUpdated: true,
       // Explicit, hand-curated sidebar. Autogenerating from `.` produced an
       // unreliable tree (the root index + `*.mdx` overview pages collided with
