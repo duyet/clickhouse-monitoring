@@ -5,64 +5,17 @@
  *
  * Returns information about the MCP server, its tools, and resources.
  * Used by the agents sidebar to display available tools.
+ *
+ * Auth: gated by middleware.ts for all /api/v1/* when apiKeyAuthEnabled(). The
+ * standalone Worker has no middleware, so it uses handleMcpInfo (inline auth)
+ * instead — same posture, different layer. The payload itself is shared via
+ * buildServerInfo() so the two deployments never drift.
  */
 
-import { MCP_TOOLS } from '@chm/mcp-server/data'
-import { NextResponse } from 'next/server'
-
-interface McpResourceInfo {
-  name: string
-  uri: string
-  description: string
-}
-
-interface McpServerInfo {
-  name: string
-  version: string
-  description: string
-  tools: {
-    name: string
-    description: string
-    category: 'schema' | 'query' | 'system'
-    params: Array<{
-      name: string
-      type: string
-      required: boolean
-      default?: string | number
-      description: string
-    }>
-  }[]
-  resources: McpResourceInfo[]
-}
+import { buildServerInfo, withCors } from '@chm/mcp-server/http'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  const info: McpServerInfo = {
-    name: 'clickhouse-monitor',
-    version: '1.0.0',
-    description: 'ClickHouse monitoring and query tools',
-    tools: MCP_TOOLS.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      category: tool.category,
-      params: tool.params,
-    })),
-    resources: [
-      {
-        name: 'system-tables',
-        uri: 'clickhouse://system-tables',
-        description:
-          'Reference of key ClickHouse system tables used for monitoring',
-      },
-      {
-        name: 'query-examples',
-        uri: 'clickhouse://query-examples',
-        description:
-          'Example SQL queries for common ClickHouse monitoring tasks',
-      },
-    ],
-  }
-
-  return NextResponse.json(info)
+export function GET() {
+  return withCors(Response.json(buildServerInfo()))
 }
