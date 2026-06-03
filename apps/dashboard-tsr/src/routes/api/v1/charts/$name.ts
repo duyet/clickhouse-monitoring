@@ -1,0 +1,252 @@
+/**
+ * Chart-specific data endpoint
+ * GET /api/v1/charts/$name?hostId=0&interval=toStartOfTenMinutes&lastHours=24
+ *
+ * Thin wrapper using query-executor + chart-registry. The executor handles
+ * CH version selection, table availability, and query execution.
+ */
+import { createFileRoute } from '@tanstack/react-router'
+
+import { env } from 'cloudflare:workers'
+import { error } from '@chm/logger'
+import {
+  getAvailableCharts,
+  getChartQuery,
+  hasChart,
+} from '@/lib/api/chart-registry'
+import {
+  executeChartQuery,
+  executeMultiChartQuery,
+  isValidInterval,
+} from '@/lib/api/query-executor'
+
+export const Route = createFileRoute('/api/v1/charts/$name')({
+  server: {
+    handlers: {
+      GET: async ({ request, params }) => {
+        const { name } = params
+        const bindings = env as Record<string, string | undefined>
+        const { searchParams } = new URL(request.url)
+
+        // Validate hostId
+        const hostIdStr = searchParams.get('hostId') ?? '0'
+        const hostId = Number(hostIdStr)
+        if (!Number.isFinite(hostId)) {
+          return Response.json(
+            {
+              success: false,
+              error: { type: 'validation', message: 'Invalid hostId' },
+            },
+            { status: 400 }
+          )
+        }
+
+        // Check if chart exists
+        if (!hasChart(name)) {
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: 'table_not_found',
+                message: `Chart not found: ${name}`,
+                details: { availableCharts: getAvailableCharts().join(', ') },
+              },
+            },
+            { status: 404 }
+          )
+        }
+
+        // Parse query parameters
+        const intervalParam = searchParams.get('interval')
+        const interval =
+          intervalParam && isValidInterval(intervalParam)
+            ? intervalParam
+            : undefined
+
+        const lastHoursParam = searchParams.get('lastHours')
+        const lastHoursParsed = lastHoursParam
+          ? Number(lastHoursParam)
+          : undefined
+        const lastHours =
+          lastHoursParsed !== undefined &&
+          Number.isFinite(lastHoursParsed) &&
+          lastHoursParsed > 0
+            ? lastHoursParsed
+            : undefined
+
+        const paramStr = searchParams.get('params')
+        let chartParams: Record<string, unknown> | undefined
+        if (paramStr) {
+          try {
+            const parsed: unknown = JSON.parse(paramStr)
+            if (
+              parsed !== null &&
+              typeof parsed === 'object' &&
+              !Array.isArray(parsed)
+            ) {
+              chartParams = parsed as Record<string, unknown>
+            }
+          } catch {
+            // Ignore invalid params JSON
+          }
+        }
+
+        // Validate timezone
+        const timezoneParam = searchParams.get('timezone') || undefined
+        let timezone: string | undefined
+        if (timezoneParam) {
+          try {
+            new Intl.DateTimeFormat('en-US', {
+              timeZone: timezoneParam,
+            }).format(new Date())
+            timezone = timezoneParam
+          } catch {
+            // Invalid timezone, ignore
+          }
+        }
+
+        // Get chart query definition
+        const queryDef = getChartQuery(name, {
+          interval,
+          lastHours,
+          params: chartParams,
+        })
+
+        if (!queryDef) {
+          error(`[GET /api/v1/charts/${name}] Failed to build query`)
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: 'query_error',
+                message: `Failed to build query for chart: ${name}`,
+              },
+            },
+            { status: 500 }
+          )
+        }
+
+        try {
+          // Multi-query chart (summary charts)
+          if ('queries' in queryDef) {
+            const { results } = await executeMultiChartQuery(
+              queryDef.queries.map((q) => ({ key: q.key, query: q.query })),
+              hostId,
+              { bindings, timezone }
+            )
+
+            const combinedEntries: string[] = []
+            let firstError: { type: string; message: string } | undefined
+            for (const r of results) {
+              combinedEntries.push(
+                `${JSON.stringify(r.key)}:${r.dataJson ?? 'null'}`
+              )
+              if (r.error && !firstError) {
+                firstError = { type: 'query_error', message: r.error.message }
+              }
+            }
+
+            const metadata = {
+              queryId: '',
+              duration: 0,
+              rows: 0,
+              host: String(hostId),
+              sql: queryDef.queries
+                .map((q, i) => `-- Query ${i + 1}: ${q.key}\n${q.query.trim()}`)
+                .join('\n\n'),
+              timezone,
+            }
+
+            const errorJson = firstError
+              ? `,"error":${JSON.stringify(firstError)}`
+              : ''
+            const body = `{"success":${String(!firstError)},"data":{${combinedEntries.join(',')}},"metadata":${JSON.stringify(metadata)}${errorJson}}`
+
+            return new Response(body, {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+
+          // Single-query chart
+          const result = await executeChartQuery(
+            name,
+            queryDef.sql ?? queryDef.query,
+            hostId,
+            queryDef.queryParams,
+            {
+              bindings,
+              timezone,
+              optional: queryDef.optional,
+              tableCheck: queryDef.tableCheck,
+            }
+          )
+
+          if (result.error) {
+            return Response.json(
+              {
+                success: false,
+                error: {
+                  type: 'query_error',
+                  message: result.error.message,
+                  details: result.error.details,
+                },
+              },
+              { status: 500 }
+            )
+          }
+
+          // Build API URL for metadata
+          const apiQueryParams = new URLSearchParams()
+          apiQueryParams.set('hostId', String(hostId))
+          if (interval) apiQueryParams.set('interval', interval)
+          if (lastHours !== undefined)
+            apiQueryParams.set('lastHours', String(lastHours))
+          if (chartParams)
+            apiQueryParams.set('params', JSON.stringify(chartParams))
+          if (timezone) apiQueryParams.set('timezone', timezone)
+
+          const responseMetadata = {
+            queryId: String(result.metadata.queryId || ''),
+            duration: Number(result.metadata.duration || 0),
+            rows: Number(result.metadata.rows || 0),
+            host: String(hostId),
+            sql: result.executedSql.trim(),
+            clickhouseVersion: result.clickhouseVersion,
+            api: `/api/v1/charts/${name}?${apiQueryParams.toString()}`,
+            timezone,
+          }
+
+          const body = `{"success":true,"data":${result.dataJson ?? '[]'},"metadata":${JSON.stringify(responseMetadata)}}`
+
+          const cacheControl =
+            queryDef.cachePolicy === 'realtime'
+              ? 'public, s-maxage=10, stale-while-revalidate=30'
+              : queryDef.cachePolicy === 'historical'
+                ? 'public, s-maxage=120, stale-while-revalidate=300'
+                : 'public, s-maxage=30, stale-while-revalidate=60'
+
+          return new Response(body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': cacheControl,
+            },
+          })
+        } catch (err) {
+          error(`[GET /api/v1/charts/${name}] Unhandled exception:`, err)
+          return Response.json(
+            {
+              success: false,
+              error: {
+                type: 'query_error',
+                message: err instanceof Error ? err.message : 'Unknown error',
+              },
+            },
+            { status: 500 }
+          )
+        }
+      },
+    },
+  },
+})
