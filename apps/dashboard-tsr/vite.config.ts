@@ -80,12 +80,17 @@ export default defineConfig({
       '@chm/clickhouse-client/constants': r(
         '../../packages/clickhouse-client/src/clickhouse/constants.ts'
       ),
+      '@chm/clickhouse-client/table-existence-cache': r(
+        '../../packages/clickhouse-client/src/table-existence-cache.ts'
+      ),
       // Generic entry (must be after sub-paths)
       '@chm/clickhouse-client': r(
         '../../packages/clickhouse-client/src/index.ts'
       ),
       '@chm/types': r('../../packages/types/src/index.ts'),
-      '@chm/mcp-server/data': r('../../packages/mcp-server/src/data/mcp-tools-data.ts'),
+      '@chm/mcp-server/data': r(
+        '../../packages/mcp-server/src/data/mcp-tools-data.ts'
+      ),
       // The node @clickhouse/client (node:os/node:stream/TCP) is a dead static
       // import in clickhouse-client.ts (routes force web:true). Alias it to an
       // empty stub so it resolves in the bundle on BOTH targets.

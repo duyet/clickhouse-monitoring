@@ -18,9 +18,14 @@
       "@chm/clickhouse-client/constants": [
         "../../packages/clickhouse-client/src/clickhouse/constants.ts"
       ],
+      "@chm/clickhouse-client/table-existence-cache": [
+        "../../packages/clickhouse-client/src/table-existence-cache.ts"
+      ],
       "@chm/types": ["../../packages/types/src/index.ts"],
       "@chm/types/*": ["../../packages/types/src/*"],
-      "@chm/mcp-server/data": ["../../packages/mcp-server/src/data/mcp-tools-data.ts"],
+      "@chm/mcp-server/data": [
+        "../../packages/mcp-server/src/data/mcp-tools-data.ts"
+      ],
       "@clickhouse/client": ["./node_modules/@clickhouse/client"],
       "@clickhouse/client-web": [
         "./node_modules/@clickhouse/client-web/dist/index.d.ts"
