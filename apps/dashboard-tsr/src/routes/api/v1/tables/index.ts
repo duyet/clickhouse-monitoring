@@ -25,7 +25,7 @@ interface TableRow {
   total_rows: string
 }
 
-export const Route = createFileRoute('/api/v1/tables')({
+export const Route = createFileRoute('/api/v1/tables/')({
   server: {
     handlers: {
       GET: async ({ request }) => {
