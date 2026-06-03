@@ -1,16 +1,18 @@
 #!/usr/bin/env bun
 
 /**
- * Patch the generated wrangler.json with routes and env sections from wrangler.toml.
+ * Patch the generated wrangler.json with routes and env sections.
  *
  * @cloudflare/vite-plugin generates dist/server/wrangler.json during build,
- * but strips [env.*] sections and [[routes]] (routes, vars, etc). This script
- * reads the original wrangler.toml, extracts configs, and injects them into
- * the generated JSON so `wrangler deploy --env <name>` works correctly.
+ * but strips [env.*] sections and [[routes]]. This script injects them back
+ * so `wrangler deploy --env <name>` works correctly.
+ *
+ * IMPORTANT: If wrangler.toml routes/vars/env sections change, update the
+ * objects below to match.
  *
  * Usage:
- *   bun scripts/patch-wrangler-env.ts              # patch production routes + all envs
- *   bun scripts/patch-wrangler-env.ts --env preview # patch only env.preview
+ *   bun scripts/patch-wrangler-env.ts              # production routes + vars
+ *   bun scripts/patch-wrangler-env.ts --env preview # env.preview only
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -20,11 +22,9 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
 
-// Parse --env flag
 const envFlag = process.argv.find((a) => a === '--env')
 const envName = envFlag ? process.argv[process.argv.indexOf(envFlag) + 1] : null
 
-const TOML_PATH = join(ROOT, 'wrangler.toml')
 const JSON_PATH = join(ROOT, 'dist', 'server', 'wrangler.json')
 
 if (!existsSync(JSON_PATH)) {
@@ -33,44 +33,60 @@ if (!existsSync(JSON_PATH)) {
   process.exit(1)
 }
 
-const { parse } = await import('smol-toml')
-const toml = parse(readFileSync(TOML_PATH, 'utf-8'))
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
-
 let patched = 0
 
-// Patch top-level routes (production custom domains)
-if (toml.routes && !envName) {
-  generated.routes = toml.routes
-  patched++
-  console.log(`✅ Patched top-level routes into generated wrangler.json`)
+// --- Production routes and vars (keep in sync with wrangler.toml) ---
+const PROD_ROUTES = [{ pattern: 'dash-tsr.chmonitor.dev', custom_domain: true }]
+
+const PROD_VARS = {
+  CLICKHOUSE_HOST:
+    'https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net',
+  CLICKHOUSE_USER: 'duyet,monitoring',
+  CLICKHOUSE_NAME: 'duet-ubuntu,duyet-agent',
+  CLICKHOUSE_MAX_EXECUTION_TIME: '60',
+  CLOUDFLARE_WORKERS: '1',
+  LLM_MODEL: 'anyrouter:@preset/chmonitor',
+  OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
+  OPENROUTER_APP_NAME: 'chmonitor',
+  CHM_AUTH_PROVIDER: 'clerk',
+  NEXT_PUBLIC_AUTH_PROVIDER: 'clerk',
+  CHM_FEATURE_AGENT_ACCESS: 'authenticated',
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
 }
 
-// Patch top-level vars (production vars)
-if (toml.vars && !envName) {
-  generated.vars = toml.vars
-  patched++
-  console.log(`✅ Patched top-level vars into generated wrangler.json`)
+// --- Preview env (keep in sync with wrangler.toml [env.preview]) ---
+const PREVIEW_ENV = {
+  name: 'preview-chmonitor-dash-tsr',
+  routes: [{ pattern: 'preview.dash-tsr.chmonitor.dev', custom_domain: true }],
+  vars: {
+    ...PROD_VARS,
+    LLM_MODEL: 'anyrouter:z-ai/glm-4.7-flash',
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+      'pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ',
+  },
 }
 
-// Patch env sections
-const tomlEnvs = (toml.env || {}) as Record<string, unknown>
-const envNames = envName ? [envName] : Object.keys(tomlEnvs)
-
-if (!generated.env) generated.env = {}
-
-for (const name of envNames) {
-  const envConfig = tomlEnvs[name]
-  if (!envConfig || typeof envConfig !== 'object') {
-    console.warn(`⚠️  env.${name} not found in wrangler.toml, skipping.`)
-    continue
-  }
-
-  generated.env[name] = envConfig
+// --- Apply patches ---
+if (envName === 'preview') {
+  if (!generated.env) generated.env = {}
+  generated.env.preview = PREVIEW_ENV
   patched++
-  console.log(`✅ Patched env.${name} into generated wrangler.json`)
+  console.log('✅ Patched env.preview into generated wrangler.json')
+} else if (!envName) {
+  // Production: patch top-level routes and vars
+  generated.routes = PROD_ROUTES
+  generated.vars = PROD_VARS
+  patched += 2
+  console.log('✅ Patched top-level routes into generated wrangler.json')
+  console.log('✅ Patched top-level vars into generated wrangler.json')
+
+  // Also patch env sections if they exist in the config above
+  if (!generated.env) generated.env = {}
+  generated.env.preview = PREVIEW_ENV
+  patched++
+  console.log('✅ Patched env.preview into generated wrangler.json')
 }
 
 writeFileSync(JSON_PATH, JSON.stringify(generated, null, 2))
-
 console.log(`\n📝 Patched ${patched} section(s) into generated wrangler.json`)
