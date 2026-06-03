@@ -65,8 +65,10 @@ export const Route = createFileRoute('/api/v1/tables/$name')({
           )
         }
 
-        // Build query params from URL search params
-        const queryParams: Record<string, unknown> = {}
+        // Build query params: config defaults first, then URL params override
+        const queryParams: Record<string, unknown> = {
+          ...(config.defaultParams ?? {}),
+        }
         for (const [key, value] of searchParams.entries()) {
           if (key === 'hostId') continue
           queryParams[key] = value

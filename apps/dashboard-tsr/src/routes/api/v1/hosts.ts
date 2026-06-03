@@ -68,7 +68,7 @@ export const Route = createFileRoute('/api/v1/hosts')({
           )
         }
 
-        return Response.json(hosts)
+        return Response.json({ success: true, data: hosts })
       },
     },
   },

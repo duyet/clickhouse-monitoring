@@ -10,6 +10,7 @@ import type { ReactNode } from 'react'
 import appCss from '../styles.css?url'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { AppProvider } from '@/lib/context/app-context'
+import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -62,7 +63,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <ClerkAuthProvider>
           <ThemeProvider>
             <QueryProvider>
-              <AppProvider>{children}</AppProvider>
+              <AppProvider>
+                <FeaturePermissionsProvider>
+                  {children}
+                </FeaturePermissionsProvider>
+              </AppProvider>
             </QueryProvider>
           </ThemeProvider>
         </ClerkAuthProvider>
