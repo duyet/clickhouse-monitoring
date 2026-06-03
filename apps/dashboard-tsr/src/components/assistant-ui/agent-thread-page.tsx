@@ -61,7 +61,12 @@ function AgentThreadPageError() {
 export function AgentThreadPage() {
   const isMobile = useIsMobile()
   const [conversationsOpen, setConversationsOpen] = useState(false)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
+  // Open by default so the 320px settings sidebar reserves its space on the
+  // first paint (desktop). Starting closed and opening in a post-mount effect
+  // animated the column from 0 → 320px on load, shifting the chat content
+  // (~0.12 CLS). The effect below still closes it on mobile (which renders a
+  // Drawer instead of the inline column, so no reflow there).
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(true)
   useEffect(() => {
     setRightSidebarOpen(!isMobile)
   }, [isMobile])

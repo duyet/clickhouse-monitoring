@@ -40,6 +40,7 @@ export function TableSkeleton({ rows = 8 }: { rows?: number }) {
 // foundation kept ChartSkeleton/TableSkeleton inline with the shimmer variant).
 export { ExplorerSkeleton } from './explorer'
 export {
+  AgentsPageSkeleton,
   ChartsOnlyPageSkeleton,
   PageSkeleton,
   TableOnlyPageSkeleton,

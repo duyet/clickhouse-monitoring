@@ -95,6 +95,11 @@ ${namedExports}
     name: 'chm:ssr-client-only-stub',
     enforce: 'pre',
     resolveId(id) {
+      // The stub exists ONLY to keep the Cloudflare Worker under the free-plan
+      // 3 MiB limit (#1393). The Node/Docker target has no size limit and its
+      // prerender needs the REAL libs — e.g. computeDagrePositions (PeerGraph)
+      // calls dagre during SSR — so never stub when BUILD_TARGET=node.
+      if (isNode) return null
       // `this.environment` is the per-environment build context (Vite 6+/8).
       // Only stub in the worker/SSR environment, never the browser client build.
       if (this.environment?.name === 'client') return null
