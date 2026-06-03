@@ -17,6 +17,17 @@ const levelColors: Record<string, string> = {
   Trace: 'bg-gray-400',
 }
 
+// Static fallback palette for unknown levels. Listed as full class literals so
+// Tailwind's content scanner emits them — a `bg-chart-${n}` template would be
+// constructed at runtime and stripped from the production build.
+const fallbackColors = [
+  'bg-chart-1',
+  'bg-chart-2',
+  'bg-chart-3',
+  'bg-chart-4',
+  'bg-chart-5',
+]
+
 export const ChartLogLevelDistribution = createCustomChart({
   chartName: 'log-level-distribution',
   defaultTitle: 'Log Level Distribution',
@@ -31,7 +42,7 @@ export const ChartLogLevelDistribution = createCustomChart({
         items={data.map((d, index) => ({
           label: d.level,
           value: d.count,
-          colorClass: levelColors[d.level] ?? `bg-chart-${(index % 5) + 1}`,
+          colorClass: levelColors[d.level] ?? fallbackColors[index % 5],
         }))}
         emptyMessage="No log level data available"
       />

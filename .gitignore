@@ -35,7 +35,9 @@ logs/
 !apps/dashboard-tsr/src/**/logs/
 !apps/dashboard-tsr/src/**/logs/**
 !apps/dashboard/components/charts/logs/
+!apps/dashboard/components/charts/logs/**
 !apps/dashboard/lib/query-config/logs/
+!apps/dashboard/lib/query-config/logs/**
 
 # rust build artifacts
 rust/target/

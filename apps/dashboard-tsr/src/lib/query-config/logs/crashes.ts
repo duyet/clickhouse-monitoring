@@ -15,10 +15,8 @@ export const crashLogConfig: QueryConfig = {
       thread_id,
       query_id,
       arrayStringConcat(trace, '\\n') as trace_summary,
-      arrayStringConcat(trace_full, '\\n') as trace_full,
       version,
-      revision,
-      build_id
+      revision
     FROM system.crash_log
     ORDER BY event_time DESC
     LIMIT 100
