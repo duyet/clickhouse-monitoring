@@ -71,6 +71,9 @@ export default defineConfig({
       '@chm/clickhouse-client/runtime/cloudflare-workers': r(
         '../../packages/clickhouse-client/src/runtime/cloudflare-workers.ts'
       ),
+      '@chm/clickhouse-client/clickhouse-version': r(
+        '../../packages/clickhouse-client/src/clickhouse-version.ts'
+      ),
       // The node @clickhouse/client (node:os/node:stream/TCP) is a dead static
       // import in clickhouse-client.ts (routes force web:true). Alias it to an
       // empty stub so it resolves in the bundle on BOTH targets.

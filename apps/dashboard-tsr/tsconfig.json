@@ -12,6 +12,9 @@
       "@chm/clickhouse-client/runtime/cloudflare-workers": [
         "../../packages/clickhouse-client/src/runtime/cloudflare-workers.ts"
       ],
+      "@chm/clickhouse-client/clickhouse-version": [
+        "../../packages/clickhouse-client/src/clickhouse-version.ts"
+      ],
       "@clickhouse/client": ["./node_modules/@clickhouse/client"],
       "@clickhouse/client-web": [
         "./node_modules/@clickhouse/client-web/dist/index.d.ts"
