@@ -4,7 +4,9 @@ import {
   Outlet,
   Scripts,
 } from '@tanstack/react-router'
+
 import type { ReactNode } from 'react'
+
 import appCss from '../styles.css?url'
 
 // Root route renders the full HTML document shell. In current TanStack Start

@@ -1,4 +1,5 @@
 import { createRouter as createTanstackRouter } from '@tanstack/react-router'
+
 import { routeTree } from './routeTree.gen'
 
 // Shared router factory consumed by both the server and client entries that
