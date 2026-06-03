@@ -14,10 +14,10 @@
  * @module lib/api/data/dashboard-query-validator
  */
 
+import { getCachedDashboardQueries } from './cache-manager'
 import { fetchData } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
 import { DASHBOARD_CHARTS_TABLE } from '@/lib/app-tables'
-import { getCachedDashboardQueries } from './cache-manager'
 
 /** Dashboard table name for query validation */
 export const DASHBOARD_QUERIES_TABLE = DASHBOARD_CHARTS_TABLE

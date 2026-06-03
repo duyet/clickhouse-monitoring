@@ -15,6 +15,38 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 [observability]
 enabled = true
 
-# Preview environment for PR deployments (mirrors repo `preview-chmonitor-*`).
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview environment for PR deployments
+# Deployed by GitHub Actions on pull requests (see .github/workflows/cloudflare.yml)
+# and reachable at https://preview.dash-tsr.chmonitor.dev.
+# Inherits most top-level settings; vars require explicit declaration.
+#
+# One-time setup required:
+#   wrangler secret put CLICKHOUSE_PASSWORD --env preview
+# ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
 name = "preview-chmonitor-dash-tsr"
+
+# Custom domain for the preview worker.
+[[env.preview.routes]]
+pattern = "preview.dash-tsr.chmonitor.dev"
+custom_domain = true
+
+# Vars must be explicitly set per environment (not inherited from top-level)
+[env.preview.vars]
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_USER = "duyet,monitoring"
+CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
+LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
+OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_APP_NAME = "chmonitor"
+
+# Auth provider for preview deployment
+CHM_AUTH_PROVIDER = "clerk"
+NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
+CHM_FEATURE_AGENT_ACCESS = "authenticated"
+
+# Clerk test key for preview environment
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"

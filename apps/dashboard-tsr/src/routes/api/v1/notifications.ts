@@ -8,8 +8,6 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
-import type { ClickHouseConfig } from '@chm/clickhouse-client'
-
 import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
 import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'

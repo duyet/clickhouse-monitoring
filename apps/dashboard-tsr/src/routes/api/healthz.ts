@@ -1,7 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import type { ClickHouseConfig } from '@chm/clickhouse-client'
-
 import { env } from 'cloudflare:workers'
 // Public client factory. We pass `web: true` so it always uses
 // @clickhouse/client-web (fetch-based) and never touches the node

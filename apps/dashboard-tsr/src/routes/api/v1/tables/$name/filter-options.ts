@@ -16,9 +16,9 @@ import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { error } from '@chm/logger'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const ROUTE_CONTEXT = {
   route: '/api/v1/tables/$name/filter-options',
@@ -38,7 +38,7 @@ export const Route = createFileRoute('/api/v1/tables/$name/filter-options')({
 
         const { name } = params
         const { searchParams } = new URL(request.url)
-        const routeContext = { ...ROUTE_CONTEXT, tableName: name }
+        const _routeContext = { ...ROUTE_CONTEXT, tableName: name }
 
         const rawHostId = searchParams.get('hostId') ?? '0'
         const hostId = Number.parseInt(rawHostId, 10)

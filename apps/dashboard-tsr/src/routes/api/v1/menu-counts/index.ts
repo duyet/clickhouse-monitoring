@@ -25,12 +25,12 @@ import {
   getMenuCountQuery,
 } from '@/lib/api/menu-count-registry'
 import { HostIdSchema } from '@/lib/api/schemas'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import {
   CacheControl,
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const ROUTE_CONTEXT = { route: '/api/v1/menu-counts', method: 'GET' }
 

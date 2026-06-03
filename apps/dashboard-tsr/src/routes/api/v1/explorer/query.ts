@@ -8,7 +8,6 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-
 import type { DataFormat } from '@clickhouse/client'
 
 import { env } from 'cloudflare:workers'

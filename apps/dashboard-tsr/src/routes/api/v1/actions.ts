@@ -6,15 +6,15 @@
  * Ported from apps/dashboard/app/api/v1/actions/route.ts.
  */
 
+import { z } from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { z } from 'zod'
 import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, log } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
-const ROUTE_CONTEXT = { route: '/api/v1/actions', method: 'POST' }
+const _ROUTE_CONTEXT = { route: '/api/v1/actions', method: 'POST' }
 
 // --- Inline ActionSchema (not yet ported to TSR lib/api/schemas) ---
 
@@ -182,7 +182,8 @@ export const Route = createFileRoute('/api/v1/actions')({
           return Response.json(
             {
               success: false,
-              message: 'Invalid parameter: hostId must be a non-negative integer',
+              message:
+                'Invalid parameter: hostId must be a non-negative integer',
             },
             { status: 400 }
           )

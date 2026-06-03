@@ -57,7 +57,7 @@ function makeErrorResponse(
   type: ApiErrorType,
   message: string,
   status: number,
-  context?: { route?: string; method?: string }
+  _context?: { route?: string; method?: string }
 ): Response {
   return Response.json(
     {

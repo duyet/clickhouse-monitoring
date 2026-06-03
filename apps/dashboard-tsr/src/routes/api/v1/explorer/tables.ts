@@ -40,7 +40,10 @@ export const Route = createFileRoute('/api/v1/explorer/tables')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: 'Missing required parameter: hostId' },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: hostId',
+              },
             },
             { status: 400 }
           )
@@ -50,7 +53,10 @@ export const Route = createFileRoute('/api/v1/explorer/tables')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: `Invalid hostId: ${hostIdRaw}` },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: `Invalid hostId: ${hostIdRaw}`,
+              },
             },
             { status: 400 }
           )
@@ -63,14 +69,20 @@ export const Route = createFileRoute('/api/v1/explorer/tables')({
           if (key !== 'hostId') searchParamsObj[key] = value
         })
 
-        const queryDef = getTableQuery('explorer-tables', { hostId, searchParams: searchParamsObj })
+        const queryDef = getTableQuery('explorer-tables', {
+          hostId,
+          searchParams: searchParamsObj,
+        })
 
         if (!queryDef) {
           error('[GET /api/v1/explorer/tables] Failed to build query')
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.QueryError, message: 'Failed to build query for tables' },
+              error: {
+                type: ApiErrorType.QueryError,
+                message: 'Failed to build query for tables',
+              },
             },
             { status: 500 }
           )

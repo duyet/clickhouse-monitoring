@@ -187,6 +187,7 @@ jobs:
               '| App | Preview URL |',
               '|-----|-------------|',
               '| **Dashboard** | https://preview.dash.chmonitor.dev |',
+              '| **Dashboard (TSR)** | https://preview.dash-tsr.chmonitor.dev |',
               '| **MCP** | https://preview.dash.chmonitor.dev/api/mcp |',
               '| **Landing** | https://preview.chmonitor.dev |',
               '| **Docs** | https://preview.docs.chmonitor.dev |',
@@ -257,6 +258,165 @@ jobs:
             ].join('\n');
 
             // Always create a new comment to preserve deployment history
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Fail job if build or deploy failed
+        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
+        run: exit 1
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Preview TSR: deploys the TanStack Start dashboard for pull requests to
+  # https://preview.dash-tsr.chmonitor.dev. Runs in parallel with the
+  # Next.js preview job. Own lockfile (not in root workspaces).
+  # ──────────────────────────────────────────────────────────────────────────
+  preview-tsr:
+    name: preview-tsr
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+
+    defaults:
+      run:
+        working-directory: apps/dashboard-tsr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('apps/dashboard-tsr/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-tsr-v1-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build for Cloudflare
+        id: build
+        continue-on-error: true
+        run: bun run build 2>&1 | tee /tmp/tsr-build-output.txt
+          ; exit ${PIPESTATUS[0]}
+
+      - name: Set preview secrets
+        if: steps.build.outcome == 'success'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_BASE: ${{ secrets.OPENROUTER_API_BASE }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          NVIDIA_API_BASE: ${{ secrets.NVIDIA_API_BASE }}
+          ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
+          ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
+          CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
+          CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+          CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
+          CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
+          NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
+        run: |
+          set -euo pipefail
+          bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard-tsr --env preview
+
+      - name: Deploy preview to Cloudflare Workers
+        id: deploy
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes --package=wrangler@4 wrangler deploy --env preview --minify 2>&1 | tee /tmp/tsr-deploy-output.txt
+          exit ${PIPESTATUS[0]}
+
+      - name: Comment preview URL on PR
+        if: steps.deploy.outcome == 'success'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.slice(0, 7);
+            const body = [
+              '### ☁️ Cloudflare Preview Deployment (TSR)',
+              '',
+              '| App | Preview URL |',
+              '|-----|-------------|',
+              '| **Dashboard (TSR)** | https://preview.dash-tsr.chmonitor.dev |',
+              '',
+              `| **Commit** | \`${sha}\` |`,
+              '',
+              '> TanStack Start preview — automatically updated on every push to this PR.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Comment failure on PR
+        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const sha = '${{ github.event.pull_request.head.sha }}'.slice(0, 7);
+            const buildOutcome = '${{ steps.build.outcome }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let failedStep, logContent;
+            if (buildOutcome === 'failure') {
+              failedStep = 'Build (`bun run build`)';
+              logContent = fs.existsSync('/tmp/tsr-build-output.txt')
+                ? fs.readFileSync('/tmp/tsr-build-output.txt', 'utf8')
+                : 'No build output captured.';
+            } else {
+              failedStep = 'Deploy (`wrangler deploy --env preview`)';
+              logContent = fs.existsSync('/tmp/tsr-deploy-output.txt')
+                ? fs.readFileSync('/tmp/tsr-deploy-output.txt', 'utf8')
+                : 'No deploy output captured.';
+            }
+
+            const lines = logContent.split('\n');
+            const truncated = lines.length > 200;
+            const tail = lines.slice(-200).join('\n');
+
+            const body = [
+              '### ☁️ Cloudflare Preview Deployment (TSR) — Failed',
+              '',
+              `| **Failed step** | ${failedStep} |`,
+              `| **Commit** | \`${sha}\` |`,
+              `| **Workflow run** | [View logs](${runUrl}) |`,
+              '',
+              '<details>',
+              '<summary>Error log (click to expand)</summary>',
+              '',
+              truncated ? `> Showing last 200 of ${lines.length} lines\n` : '',
+              '```',
+              tail,
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

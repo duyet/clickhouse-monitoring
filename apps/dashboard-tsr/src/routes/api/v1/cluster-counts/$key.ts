@@ -25,12 +25,12 @@ import {
 } from '@/lib/api/cluster-count-registry'
 import { createErrorResponse } from '@/lib/api/error-handler'
 import { HostIdSchema, MenuCountKeySchema } from '@/lib/api/schemas'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import {
   CacheControl,
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const ROUTE_CONTEXT = { route: '/api/v1/cluster-counts/$key', method: 'GET' }
 
@@ -38,7 +38,10 @@ interface ClusterCountResponse {
   readonly count: number | null
 }
 
-async function handler(request: Request, params: { key: string }): Promise<Response> {
+async function handler(
+  request: Request,
+  params: { key: string }
+): Promise<Response> {
   const requestId = generateRequestId()
 
   try {
