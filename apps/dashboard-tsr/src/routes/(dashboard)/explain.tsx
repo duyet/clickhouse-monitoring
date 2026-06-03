@@ -206,7 +206,7 @@ function PlanSettingsPanel({
           ))}
 
           <p className="text-muted-foreground text-xs">
-            ClickHouse >= v25.9: accurate index output requires{' '}
+            ClickHouse &gt;= v25.9: accurate index output requires{' '}
             <code className="bg-muted rounded px-1 text-[11px]">
               SETTINGS use_query_condition_cache = 0,
               use_skip_indexes_on_data_read = 0
@@ -394,7 +394,6 @@ function ExplainPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/explain')({
   component: ExplainPage,

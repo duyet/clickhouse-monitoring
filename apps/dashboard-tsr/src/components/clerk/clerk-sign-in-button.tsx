@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { SignInButton } from '@clerk/nextjs'
+import { SignInButton } from '@clerk/tanstack-react-start'
 
 /**
  * Thin wrapper over Clerk's modal `SignInButton`.

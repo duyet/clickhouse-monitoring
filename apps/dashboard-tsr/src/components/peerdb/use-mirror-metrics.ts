@@ -42,7 +42,6 @@ export function useMirrorMetrics(
     {
       body: { flowJobName: name, includeFlowInfo: true },
       refreshInterval: 60_000,
-      swrConfig: { shouldRetryOnError: false },
     }
   )
   const graph = usePeerDB<GraphResponse>(
@@ -50,7 +49,6 @@ export function useMirrorMetrics(
     {
       body: { flowJobName: name, aggregateType: '1min' },
       refreshInterval: 60_000,
-      swrConfig: { shouldRetryOnError: false },
     }
   )
   // Batches fetched explicitly — real PeerDB does not embed them in status,
@@ -60,7 +58,6 @@ export function useMirrorMetrics(
     {
       body: { flowJobName: name, page: 0, numPerPage: 24 },
       refreshInterval: 60_000,
-      swrConfig: { shouldRetryOnError: false },
     }
   )
 

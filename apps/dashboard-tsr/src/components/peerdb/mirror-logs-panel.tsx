@@ -31,7 +31,6 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
   const countsReq = usePeerDB<ListMirrorLogsResponse>('/mirrors/logs', {
     body: { flowJobName, page: 0, numPerPage: 100 },
     refreshInterval: 60_000,
-    swrConfig: { shouldRetryOnError: false },
   })
   const listReq = usePeerDB<ListMirrorLogsResponse>('/mirrors/logs', {
     body: {
@@ -41,7 +40,6 @@ export function MirrorLogsPanel({ flowJobName }: { flowJobName: string }) {
       ...(level === 'all' ? {} : { level }),
     },
     refreshInterval: 60_000,
-    swrConfig: { shouldRetryOnError: false },
   })
 
   const counts = (() => {

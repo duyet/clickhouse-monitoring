@@ -139,13 +139,7 @@ export function TopologyView({
       'cluster-live-metrics',
       hostId,
       undefined,
-      LIVE_INTERVAL,
-      {
-        dedupingInterval: LIVE_INTERVAL - 1000,
-        keepPreviousData: true,
-        revalidateOnFocus: false,
-        shouldRetryOnError: false,
-      }
+      LIVE_INTERVAL
     )
 
   // ── physical/implicit clusters (all-replicated, all-sharded, default) are

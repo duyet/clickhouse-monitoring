@@ -1,14 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
-import dynamicModule from 'next/dynamic'
-import { Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { ExplorerSkeleton } from '@/components/skeletons'
 
-const ExplorerLayout = dynamicModule(
-  () =>
-    import('@/components/explorer/explorer-layout').then(
-      (m) => m.ExplorerLayout
-    ),
-  { ssr: false, loading: () => <ExplorerSkeleton /> }
+// Lazy-load the explorer layout — large chunk, excluded from the static
+// prerender so the HTML stays small; loads client-side after hydration.
+const ExplorerLayout = lazy(() =>
+  import('@/components/explorer/explorer-layout').then((m) => ({
+    default: m.ExplorerLayout,
+  }))
 )
 
 function ExplorerPage() {
@@ -20,7 +19,6 @@ function ExplorerPage() {
     </Suspense>
   )
 }
-
 
 export const Route = createFileRoute('/(dashboard)/explorer')({
   component: ExplorerPage,

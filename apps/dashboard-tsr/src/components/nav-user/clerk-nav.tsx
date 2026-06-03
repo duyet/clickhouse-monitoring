@@ -7,7 +7,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 
-import { SignInButton, useClerk, useUser } from '@clerk/nextjs'
+import { SignInButton, useClerk, useUser } from '@clerk/tanstack-react-start'
 import { useState } from 'react'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'

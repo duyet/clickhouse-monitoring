@@ -73,6 +73,7 @@ export function usePeerDB<T = unknown>(
     enabled: Boolean(key),
     refetchOnReconnect: true,
     staleTime: 3000,
+    retry: false,
     refetchInterval:
       refreshInterval && refreshInterval > 0
         ? visibilityAwareInterval(refreshInterval)

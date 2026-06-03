@@ -7,8 +7,6 @@ export type {
   ApiRequest,
   ApiResponse,
   ApiResponseMetadata,
-  ChartDataRequest,
-  TableDataRequest,
 } from './types'
 
 export { transformClickHouseData } from './transform-data'

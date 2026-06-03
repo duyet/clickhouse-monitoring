@@ -40,16 +40,11 @@ export async function revalidateByPattern(
 ) {
   await queryClient.invalidateQueries({
     predicate: (query) => {
+      // TanStack Query keys are always arrays (readonly unknown[]).
       const key = query.queryKey
-      if (typeof key === 'string') {
-        return key.includes(pattern)
-      }
-      if (Array.isArray(key)) {
-        return key.some(
-          (part) => typeof part === 'string' && part.includes(pattern)
-        )
-      }
-      return false
+      return key.some(
+        (part) => typeof part === 'string' && part.includes(pattern)
+      )
     },
   })
 }

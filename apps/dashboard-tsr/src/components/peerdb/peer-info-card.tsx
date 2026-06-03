@@ -27,7 +27,7 @@ function formatValue(v: unknown): string {
 export function PeerInfoCard({ name, type, peerRole }: PeerInfoCardProps) {
   const { data } = usePeerDB<PeerInfoResponse>(
     name ? `/peers/info/${encodeURIComponent(name)}` : null,
-    { refreshInterval: 120_000, swrConfig: { shouldRetryOnError: false } }
+    { refreshInterval: 120_000 }
   )
 
   const resolvedType = normalizeDbType(type ?? data?.peer?.type)
