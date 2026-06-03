@@ -270,14 +270,15 @@ jobs:
         run: exit 1
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Preview TSR: deploys the TanStack Start dashboard for pull requests to
-  # https://preview.dash-tsr.chmonitor.dev. Runs in parallel with the
-  # Next.js preview job. Own lockfile (not in root workspaces).
+  # Dashboard TSR: TanStack Start dashboard (own lockfile, not in root workspaces).
+  # Production: https://dash-tsr.chmonitor.dev (on merge to main).
+  # Preview:    https://preview.dash-tsr.chmonitor.dev (on PRs).
+  # Mirrors the landing/docs pattern — single job, conditional deploy target.
   # ──────────────────────────────────────────────────────────────────────────
-  preview-tsr:
-    name: preview-tsr
+  dashboard-tsr:
+    name: dashboard-tsr
     if: >-
-      github.event_name == 'pull_request' &&
+      github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
@@ -308,13 +309,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build for Cloudflare
-        id: build
-        continue-on-error: true
-        run: bun run build 2>&1 | tee /tmp/tsr-build-output.txt
-          ; exit ${PIPESTATUS[0]}
+        run: bun run build
 
-      - name: Set preview secrets
-        if: steps.build.outcome == 'success'
+      - name: Set secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -327,6 +324,7 @@ jobs:
           NVIDIA_API_BASE: ${{ secrets.NVIDIA_API_BASE }}
           ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
           ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
@@ -334,21 +332,28 @@ jobs:
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
         run: |
           set -euo pipefail
-          bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard-tsr --env preview
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard-tsr --env preview
+          else
+            bun ../../scripts/set-secrets.ts --from-env --strict --target dashboard-tsr
+          fi
 
-      - name: Deploy preview to Cloudflare Workers
-        id: deploy
-        if: steps.build.outcome == 'success'
-        continue-on-error: true
+      - name: Deploy preview
+        if: github.event_name == 'pull_request'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          npx --yes --package=wrangler@4 wrangler deploy --env preview --minify 2>&1 | tee /tmp/tsr-deploy-output.txt
-          exit ${PIPESTATUS[0]}
+        run: bunx wrangler deploy --env preview --minify
+
+      - name: Deploy production
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler deploy --minify
 
       - name: Comment preview URL on PR
-        if: steps.deploy.outcome == 'success'
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v9
         with:
           script: |
@@ -372,61 +377,17 @@ jobs:
               body,
             });
 
-      - name: Comment failure on PR
-        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const fs = require('fs');
-            const sha = '${{ github.event.pull_request.head.sha }}'.slice(0, 7);
-            const buildOutcome = '${{ steps.build.outcome }}';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-
-            let failedStep, logContent;
-            if (buildOutcome === 'failure') {
-              failedStep = 'Build (`bun run build`)';
-              logContent = fs.existsSync('/tmp/tsr-build-output.txt')
-                ? fs.readFileSync('/tmp/tsr-build-output.txt', 'utf8')
-                : 'No build output captured.';
-            } else {
-              failedStep = 'Deploy (`wrangler deploy --env preview`)';
-              logContent = fs.existsSync('/tmp/tsr-deploy-output.txt')
-                ? fs.readFileSync('/tmp/tsr-deploy-output.txt', 'utf8')
-                : 'No deploy output captured.';
-            }
-
-            const lines = logContent.split('\n');
-            const truncated = lines.length > 200;
-            const tail = lines.slice(-200).join('\n');
-
-            const body = [
-              '### ☁️ Cloudflare Preview Deployment (TSR) — Failed',
-              '',
-              `| **Failed step** | ${failedStep} |`,
-              `| **Commit** | \`${sha}\` |`,
-              `| **Workflow run** | [View logs](${runUrl}) |`,
-              '',
-              '<details>',
-              '<summary>Error log (click to expand)</summary>',
-              '',
-              truncated ? `> Showing last 200 of ${lines.length} lines\n` : '',
-              '```',
-              tail,
-              '```',
-              '',
-              '</details>',
-            ].join('\n');
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body,
-            });
-
-      - name: Fail job if build or deploy failed
-        if: always() && (steps.build.outcome == 'failure' || steps.deploy.outcome == 'failure')
-        run: exit 1
+      - name: Deployment summary
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "### 🚀 TSR Dashboard Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | https://dash-tsr.chmonitor.dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ TSR dashboard deployed successfully!" >> $GITHUB_STEP_SUMMARY
 
   # ──────────────────────────────────────────────────────────────────────────
   # Production: deploy on merge to main, releases, or manual trigger

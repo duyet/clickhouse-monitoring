@@ -1,4 +1,4 @@
-# wrangler.toml — chmonitor TanStack Start dashboard worker (substrate spike).
+# wrangler.toml — chmonitor TanStack Start dashboard worker.
 #
 # `main` resolves the built-in TanStack Start server entry from node_modules;
 # the @cloudflare/vite-plugin produces the worker bundle + client asset
@@ -14,6 +14,29 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 
 [observability]
 enabled = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production: custom domain for the TanStack Start dashboard.
+# Deployed alongside the existing Next.js dashboard (dash.chmonitor.dev).
+# Will replace it once the migration is complete (#1392).
+# ─────────────────────────────────────────────────────────────────────────────
+[[routes]]
+pattern = "dash-tsr.chmonitor.dev"
+custom_domain = true
+
+[vars]
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_USER = "duyet,monitoring"
+CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
+LLM_MODEL = "anyrouter:@preset/chmonitor"
+OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_APP_NAME = "chmonitor"
+CHM_AUTH_PROVIDER = "clerk"
+NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
+CHM_FEATURE_AGENT_ACCESS = "authenticated"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
