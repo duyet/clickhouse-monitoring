@@ -20,11 +20,20 @@ directory = "./dist"
 pattern = "chmonitor.dev"
 custom_domain = true
 
-# Preview environment for PR deployments. Routes are not inherited by named
-# environments, so the preview worker has no custom domain — it is reachable at
-# preview-chmonitor-landing.<account>.workers.dev.
+# Preview environment for PR deployments. Mirrors production topology: landing
+# prod is the chmonitor.dev apex, so its preview is the preview.chmonitor.dev
+# apex-preview. Routes are not inherited by named environments, so the custom
+# domain must be declared explicitly here. On the first deploy Wrangler
+# provisions DNS + TLS automatically (chmonitor.dev zone must be in the same
+# account). preview.chmonitor.dev was previously held by preview-chmonitor-dash;
+# that binding is detached during cutover before landing claims it (custom
+# domains are exclusive).
 [env.preview]
 name = "preview-chmonitor-landing"
 
 [env.preview.assets]
 directory = "./dist"
+
+[[env.preview.routes]]
+pattern = "preview.chmonitor.dev"
+custom_domain = true

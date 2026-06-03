@@ -15,11 +15,17 @@ directory = "./dist"
 pattern = "docs.chmonitor.dev"
 custom_domain = true
 
-# Preview environment for PR deployments. Routes are not inherited by named
-# environments, so the preview worker has no custom domain — it is reachable at
-# preview-chmonitor-docs.<account>.workers.dev.
+# Preview environment for PR deployments. Mirrors production topology: docs prod
+# is docs.chmonitor.dev, so its preview is preview.docs.chmonitor.dev. Routes are
+# not inherited by named environments, so the custom domain must be declared
+# explicitly here. On the first deploy Wrangler provisions DNS + TLS
+# automatically (chmonitor.dev zone must be in the same account).
 [env.preview]
 name = "preview-chmonitor-docs"
 
 [env.preview.assets]
 directory = "./dist"
+
+[[env.preview.routes]]
+pattern = "preview.docs.chmonitor.dev"
+custom_domain = true
