@@ -31,6 +31,14 @@ interface LazyChartWrapperProps {
  * `contain-intrinsic-size`) and opts out of browser scroll anchoring
  * (`overflow-anchor: none`). Together these stop the layout shift / scroll-jump
  * "flaking" that happened when charts mounted above the viewport during a scroll.
+ *
+ * No re-loading on scroll-back: `content-visibility: auto` is applied ONLY while
+ * the slot is still off-screen and unloaded (it lets the browser skip layout for
+ * the placeholder). It is dropped the moment the chart becomes visible. Keeping
+ * it on a mounted chart would make the browser skip its rendering whenever it
+ * scrolls out of view and repaint it (re-running the FadeIn / chart entrance
+ * animation) on scroll-back — which users perceive as the chart "reloading" or
+ * flashing a loading state again. Once loaded, a chart must stay painted.
  */
 export const LazyChartWrapper = function LazyChartWrapper({
   children,
@@ -70,7 +78,11 @@ export const LazyChartWrapper = function LazyChartWrapper({
       style={{
         // Reserve height so the slot never collapses, even outside a
         // fixed-height grid, and so off-screen slots can skip rendering work.
+        // All three are dropped once the chart is visible: a mounted chart must
+        // render normally and stay painted, otherwise scrolling it out of view
+        // and back re-skips/repaints it and it looks like it reloads.
         minHeight: isVisible ? undefined : minHeightValue,
+        contentVisibility: isVisible ? undefined : 'auto',
         containIntrinsicSize: isVisible ? undefined : `auto ${minHeightValue}`,
       }}
     >
