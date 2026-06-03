@@ -58,6 +58,11 @@ const SECRET_KEYS = [
   // Clerk (server-side secret keys — publishable keys are public)
   'CLERK_SECRET_KEY',
   'CLERK_SECRET_KEY_TEST',
+  // HMAC secret for issuing/verifying MCP API keys. CI (cloudflare.yml) pushes
+  // this to BOTH the dashboard and the standalone MCP worker; if it is unset
+  // here the MCP worker boots with an empty secret and 503s every /api/mcp
+  // request ("MCP API key auth is not configured"). Must match across workers.
+  'CHM_API_KEY_SECRET',
   // Misc runtime
   'NEXT_QUERY_CACHE_TTL',
 ] as const
