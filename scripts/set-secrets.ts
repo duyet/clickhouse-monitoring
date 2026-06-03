@@ -75,8 +75,14 @@ const DASHBOARD_SECRET_KEYS = [
 ] as const
 
 // Subset the standalone MCP worker consumes — see apps/mcp/wrangler.toml and
-// apps/mcp/src/index.ts.
-const MCP_SECRET_KEYS = ['CLICKHOUSE_PASSWORD', 'CHM_API_KEY_SECRET'] as const
+// apps/mcp/src/index.ts. CLERK_SECRET_KEY is optional (Clerk OAuth verification)
+// and is skipped automatically when unset; without it the dashboard could
+// advertise Clerk OAuth while the worker rejects every Clerk token.
+const MCP_SECRET_KEYS = [
+  'CLICKHOUSE_PASSWORD',
+  'CHM_API_KEY_SECRET',
+  'CLERK_SECRET_KEY',
+] as const
 
 // Defaults applied when a key is absent (mirrors the `|| 'UTC'` etc. that the
 // workflow used to inline).
