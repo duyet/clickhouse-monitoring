@@ -80,6 +80,17 @@ generated.name = config.name
 generated.routes = config.routes
 generated.vars = config.vars
 
+// Serve prerendered routes WITHOUT a trailing-slash redirect. The prerender emits
+// dir-style output (dist/client/overview/index.html); CF Workers Assets' default
+// `auto-trailing-slash` 308-redirects /overview -> /overview/, adding ~55 ms TTFB on
+// every page. `drop-trailing-slash` serves /overview/index.html at /overview directly
+// (matching the router's trailingSlash:'never'); /overview/ -> /overview. The
+// @cloudflare/vite-plugin only sets `assets.directory`, so html_handling is added here.
+generated.assets = {
+  ...(generated.assets ?? {}),
+  html_handling: 'drop-trailing-slash',
+}
+
 // Remove any env sections — Wrangler rejects them in redirected configs
 delete generated.env
 
