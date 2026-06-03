@@ -155,6 +155,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+          # Enables Clerk OAuth verification on the preview MCP worker. set-secrets.ts
+          # reads CLERK_SECRET_KEY_TEST first for --env preview (resolveValue). Without
+          # it the worker has the issuer (pubkey in wrangler.toml) but no verifier, so
+          # /api/mcp emits a bare 401 and Clerk bearer tokens are rejected.
+          CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
         working-directory: apps/mcp
         run: |
           set -euo pipefail
@@ -398,6 +403,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+          # Enables Clerk OAuth verification on the production MCP worker
+          # (chmonitor-mcp). MCP_SECRET_KEYS lists CLERK_SECRET_KEY, but without it
+          # in this env block set-secrets.ts reads an empty value and skips it, so
+          # dash.chmonitor.dev/api/mcp would reject every Clerk OAuth token.
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         working-directory: apps/mcp
         run: |
           set -euo pipefail
