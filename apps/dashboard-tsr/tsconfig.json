@@ -15,12 +15,19 @@
       "@chm/clickhouse-client/clickhouse-version": [
         "../../packages/clickhouse-client/src/clickhouse-version.ts"
       ],
+      "@chm/types": ["../../packages/types/src/index.ts"],
+      "@chm/types/*": ["../../packages/types/src/*"],
       "@clickhouse/client": ["./node_modules/@clickhouse/client"],
       "@clickhouse/client-web": [
         "./node_modules/@clickhouse/client-web/dist/index.d.ts"
       ],
       "zod": ["./node_modules/zod"],
-      "lru-cache": ["./node_modules/lru-cache"]
+      "lru-cache": ["./node_modules/lru-cache"],
+      "lucide-react": ["./node_modules/lucide-react"],
+      "@radix-ui/react-icons": ["./node_modules/@radix-ui/react-icons"],
+      "@radix-ui/react-icons/dist/types": [
+        "./node_modules/@radix-ui/react-icons/dist/types"
+      ]
     }
   },
   "include": ["src", "vite.config.ts"]

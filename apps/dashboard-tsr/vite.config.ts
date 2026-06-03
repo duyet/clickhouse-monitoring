@@ -57,6 +57,8 @@ export default defineConfig({
       'zod',
       'react',
       'react-dom',
+      'lucide-react',
+      '@radix-ui/react-icons',
     ],
     alias: {
       '@': r('./src'),
@@ -74,6 +76,7 @@ export default defineConfig({
       '@chm/clickhouse-client/clickhouse-version': r(
         '../../packages/clickhouse-client/src/clickhouse-version.ts'
       ),
+      '@chm/types': r('../../packages/types/src/index.ts'),
       // The node @clickhouse/client (node:os/node:stream/TCP) is a dead static
       // import in clickhouse-client.ts (routes force web:true). Alias it to an
       // empty stub so it resolves in the bundle on BOTH targets.
@@ -92,6 +95,7 @@ export default defineConfig({
       '@chm/sql-builder',
       '@chm/logger',
       '@chm/clickhouse-client',
+      '@chm/types',
       '@clickhouse/client-web',
       'lru-cache',
       'zod',

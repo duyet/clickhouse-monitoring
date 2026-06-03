@@ -1,8 +1,112 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
-// shadcn/ui class-merge helper (clsx + tailwind-merge), matching the Next app's
-// lib/utils.ts so ported components keep working unchanged.
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function uniq<T>(arr: T[]) {
+  return Array.from(new Set(arr))
+}
+
+export function dedent(str: string) {
+  str = str.replace(/^\n/, '').replace(/\n\s*$/, '')
+  const match = str.match(/^[ \t]*(?=\S)/gm)
+  if (!match) return str
+  const indent = Math.min(...match.map((x) => x.length))
+  const re = new RegExp(`^[ \\t]{${indent}}`, 'gm')
+  return indent > 0 ? str.replace(re, '') : str
+}
+
+export function getHost(url?: string) {
+  if (!url) return ''
+  const { host } = new URL(url)
+  return host
+}
+
+export function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  if (bytes < 0) return '-'
+  if (!Number.isFinite(bytes) || Number.isNaN(bytes)) return '-'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const safeIndex = Math.min(i, sizes.length - 1)
+  return `${(bytes / k ** safeIndex).toFixed(1)} ${sizes[safeIndex]}`
+}
+
+export function formatPercentage(value: number): string {
+  return `${value.toFixed(1)}%`
+}
+
+export function formatCount(count: number): string {
+  if (!Number.isFinite(count) || Number.isNaN(count)) return '-'
+  if (count < 0) return '-'
+  if (count < 1000) return count.toString()
+  const units = ['', 'K', 'M', 'B', 'T']
+  const unitIndex = Math.floor(Math.log(count) / Math.log(1000))
+  const safeUnitIndex = Math.min(unitIndex, units.length - 1)
+  return `${(count / 1000 ** safeUnitIndex).toFixed(1)}${units[safeUnitIndex]}`
+}
+
+export function formatDuration(ms: number): string {
+  if (!Number.isFinite(ms) || Number.isNaN(ms)) return '-'
+  if (ms < 0) return '-'
+  if (ms < 1000) return `${Number(ms.toFixed(2))}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
+  return `${(ms / 3600000).toFixed(1)}h`
+}
+
+export const chartTickFormatters = {
+  bytes: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatBytes(Number(value)),
+  percentage: (value: string | number | null | undefined) =>
+    value === null || value === undefined
+      ? '-'
+      : formatPercentage(Number(value)),
+  count: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatCount(Number(value)),
+  duration: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : formatDuration(Number(value)),
+  default: (value: string | number | null | undefined) =>
+    value === null || value === undefined ? '-' : value.toString(),
+}
+
+export function createDateTickFormatter(
+  lastHours: number,
+  timezone?: string
+): (value: string) => string {
+  return (value: string) => {
+    if (!value) return ''
+    try {
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return value
+      if (lastHours <= 24) {
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: timezone,
+        })
+      }
+      if (lastHours <= 24 * 7) {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: timezone,
+        })
+      }
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: timezone,
+      })
+    } catch {
+      return value
+    }
+  }
 }
