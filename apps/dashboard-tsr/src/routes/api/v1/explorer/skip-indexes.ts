@@ -7,8 +7,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
 import { debug, error } from '@chm/logger'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { executeTableConfig } from '@/lib/api/query-executor'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { getTableQuery } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 
@@ -25,7 +25,10 @@ export const Route = createFileRoute('/api/v1/explorer/skip-indexes')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: 'Missing required parameter: hostId' },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: hostId',
+              },
             },
             { status: 400 }
           )
@@ -35,7 +38,10 @@ export const Route = createFileRoute('/api/v1/explorer/skip-indexes')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: `Invalid hostId: ${hostIdRaw}` },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: `Invalid hostId: ${hostIdRaw}`,
+              },
             },
             { status: 400 }
           )
@@ -48,14 +54,20 @@ export const Route = createFileRoute('/api/v1/explorer/skip-indexes')({
           if (key !== 'hostId') searchParamsObj[key] = value
         })
 
-        const queryDef = getTableQuery('explorer-skip-indexes', { hostId, searchParams: searchParamsObj })
+        const queryDef = getTableQuery('explorer-skip-indexes', {
+          hostId,
+          searchParams: searchParamsObj,
+        })
 
         if (!queryDef) {
           error('[GET /api/v1/explorer/skip-indexes] Failed to build query')
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.QueryError, message: 'Failed to build query for explorer-skip-indexes' },
+              error: {
+                type: ApiErrorType.QueryError,
+                message: 'Failed to build query for explorer-skip-indexes',
+              },
             },
             { status: 500 }
           )
@@ -69,7 +81,10 @@ export const Route = createFileRoute('/api/v1/explorer/skip-indexes')({
         )
 
         if (result.error) {
-          error('[GET /api/v1/explorer/skip-indexes] Query error:', result.error)
+          error(
+            '[GET /api/v1/explorer/skip-indexes] Query error:',
+            result.error
+          )
           const statusMap: Record<string, number> = {
             [ApiErrorType.ValidationError]: 400,
             [ApiErrorType.PermissionError]: 403,

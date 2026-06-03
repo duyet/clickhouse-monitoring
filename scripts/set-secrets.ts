@@ -17,7 +17,7 @@
  * Flags:
  *   --from-env            read values from process.env (CI) instead of .env files
  *   --env <name>          wrangler environment (e.g. preview); omit for production
- *   --target dashboard|mcp|both   which worker(s) to configure (default: both)
+ *   --target dashboard|dashboard-tsr|mcp|both   which worker(s) to configure (default: both)
  *   --strict              fail (don't skip) if a target worker doesn't exist yet
  *                         — CI sets secrets before deploy, so a skip is unsafe
  */
@@ -47,6 +47,13 @@ const MCP_WRANGLER_CONFIG = join(
   '..',
   'apps',
   'mcp',
+  'wrangler.toml'
+)
+const DASH_TSR_WRANGLER_CONFIG = join(
+  __dirname,
+  '..',
+  'apps',
+  'dashboard-tsr',
   'wrangler.toml'
 )
 
@@ -84,6 +91,10 @@ const MCP_SECRET_KEYS = [
   'CLERK_SECRET_KEY',
 ] as const
 
+// TanStack Start dashboard worker secrets — mirrors the main dashboard since
+// dashboard-tsr has the same capabilities (ClickHouse queries, Clerk auth, MCP route).
+const DASH_TSR_SECRET_KEYS = DASHBOARD_SECRET_KEYS
+
 // Defaults applied when a key is absent (mirrors the `|| 'UTC'` etc. that the
 // workflow used to inline).
 const DEFAULTS: Record<string, string> = {
@@ -91,7 +102,7 @@ const DEFAULTS: Record<string, string> = {
   NEXT_QUERY_CACHE_TTL: '3600',
 }
 
-type Target = 'dashboard' | 'mcp' | 'both'
+type Target = 'dashboard' | 'dashboard-tsr' | 'mcp' | 'both'
 
 interface Args {
   fromEnv: boolean
@@ -115,9 +126,17 @@ function parseArgs(): Args {
     else if (a === '--env') args.env = argv[++i] ?? null
     else if (a === '--target') {
       const t = argv[++i]
-      if (t === 'dashboard' || t === 'mcp' || t === 'both') args.target = t
+      if (
+        t === 'dashboard' ||
+        t === 'dashboard-tsr' ||
+        t === 'mcp' ||
+        t === 'both'
+      )
+        args.target = t
       else {
-        console.error(`❌ --target must be dashboard|mcp|both (got "${t}")`)
+        console.error(
+          `❌ --target must be dashboard|dashboard-tsr|mcp|both (got "${t}")`
+        )
         process.exit(1)
       }
     }
@@ -273,6 +292,13 @@ async function main() {
       label: 'MCP worker',
       config: MCP_WRANGLER_CONFIG,
       keys: MCP_SECRET_KEYS,
+    })
+  }
+  if (args.target === 'dashboard-tsr' || args.target === 'both') {
+    jobs.push({
+      label: 'dashboard-tsr worker',
+      config: DASH_TSR_WRANGLER_CONFIG,
+      keys: DASH_TSR_SECRET_KEYS,
     })
   }
 

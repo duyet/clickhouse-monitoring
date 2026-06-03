@@ -21,7 +21,8 @@ const MAX_CELL_VALUE_LENGTH = 10_000
 function truncateLargeValues<T>(data: T): T {
   if (!Array.isArray(data)) return data
   return data.map((row) => {
-    if (typeof row !== 'object' || row === null || Array.isArray(row)) return row
+    if (typeof row !== 'object' || row === null || Array.isArray(row))
+      return row
     const truncated: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(row as Record<string, unknown>)) {
       if (typeof value === 'string' && value.length > MAX_CELL_VALUE_LENGTH) {
@@ -63,7 +64,10 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: 'Missing required parameter: hostId' },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: 'Missing required parameter: hostId',
+              },
             },
             { status: 400 }
           )
@@ -73,7 +77,10 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
           return Response.json(
             {
               success: false,
-              error: { type: ApiErrorType.ValidationError, message: `Invalid hostId: ${hostIdRaw}` },
+              error: {
+                type: ApiErrorType.ValidationError,
+                message: `Invalid hostId: ${hostIdRaw}`,
+              },
             },
             { status: 400 }
           )
@@ -84,7 +91,13 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
         const limit = searchParams.get('limit') ?? '100'
         const offset = searchParams.get('offset') ?? '0'
 
-        debug('[GET /api/v1/explorer/preview]', { hostId, database, table, limit, offset })
+        debug('[GET /api/v1/explorer/preview]', {
+          hostId,
+          database,
+          table,
+          limit,
+          offset,
+        })
 
         if (!database || !VALID_IDENTIFIER.test(database)) {
           return Response.json(
@@ -115,13 +128,18 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
         }
 
         const parsedLimit = parseInt(limit, 10)
-        if (Number.isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 10000) {
+        if (
+          Number.isNaN(parsedLimit) ||
+          parsedLimit < 1 ||
+          parsedLimit > 10000
+        ) {
           return Response.json(
             {
               success: false,
               error: {
                 type: ApiErrorType.ValidationError,
-                message: 'Invalid limit parameter (must be between 1 and 10000)',
+                message:
+                  'Invalid limit parameter (must be between 1 and 10000)',
                 details: { limit },
               },
             },
@@ -130,13 +148,18 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
         }
 
         const parsedOffset = parseInt(offset, 10)
-        if (Number.isNaN(parsedOffset) || parsedOffset < 0 || parsedOffset > 10000) {
+        if (
+          Number.isNaN(parsedOffset) ||
+          parsedOffset < 0 ||
+          parsedOffset > 10000
+        ) {
           return Response.json(
             {
               success: false,
               error: {
                 type: ApiErrorType.ValidationError,
-                message: 'Invalid offset parameter (must be a non-negative integer and <= 10000)',
+                message:
+                  'Invalid offset parameter (must be a non-negative integer and <= 10000)',
                 details: { offset },
               },
             },
@@ -151,7 +174,12 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
 
         const result = await fetchData({
           query,
-          query_params: { database, table, limit: parsedLimit, offset: parsedOffset },
+          query_params: {
+            database,
+            table,
+            limit: parsedLimit,
+            offset: parsedOffset,
+          },
           hostId,
           format: 'JSONEachRow',
         })

@@ -18,8 +18,8 @@
  *   inlined below (response shapes and validation logic are identical).
  */
 
-import type { DataFormat } from '@clickhouse/client'
 import { createFileRoute } from '@tanstack/react-router'
+import type { DataFormat } from '@clickhouse/client'
 
 import type { FetchDataError } from '@chm/clickhouse-client'
 import type { ApiError, ApiRequest, ApiResponse } from '@/lib/api/types'
@@ -28,10 +28,10 @@ import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { validateSqlQuery } from '@chm/sql-builder'
+import { validateDashboardQuery } from '@/lib/api/data/dashboard-query-validator'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
-import { validateDashboardQuery } from '@/lib/api/data/dashboard-query-validator'
 
 const ROUTE_CONTEXT = { route: '/api/v1/data' } as const
 

@@ -15,11 +15,6 @@ import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
-const ROUTE_CONTEXT = {
-  route: '/api/v1/tables',
-  method: 'GET',
-}
-
 const DEFAULT_LIMIT = 500
 const MAX_LIMIT = 1000
 
@@ -104,7 +99,8 @@ export const Route = createFileRoute('/api/v1/tables')({
             status: 200,
             headers: {
               'Content-Type': 'application/json',
-              'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+              'Cache-Control':
+                'public, s-maxage=60, stale-while-revalidate=300',
             },
           }
         )

@@ -7,9 +7,9 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import type { ApiResponse } from '@/lib/api/types'
 
+import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
-import { env } from 'cloudflare:workers'
 import { getHostIdFromParams, type RouteContext } from '@/lib/api/error-handler'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { getTableQuery } from '@/lib/api/table-registry'

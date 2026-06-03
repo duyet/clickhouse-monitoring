@@ -12,6 +12,7 @@
  * path), so it now reports availability for every menu-referenced table.
  */
 import { createFileRoute } from '@tanstack/react-router'
+import { menuItemsConfig } from '@/menu'
 
 import type { MenuItem } from '@/components/menu/types'
 
@@ -19,14 +20,13 @@ import { env } from 'cloudflare:workers'
 import { checkTableExists } from '@chm/clickhouse-client/table-existence-cache'
 import { debug, error, generateRequestId } from '@chm/logger'
 import { createErrorResponse } from '@/lib/api/error-handler'
+import { HostIdSchema } from '@/lib/api/schemas'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import {
   CacheControl,
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
-import { HostIdSchema } from '@/lib/api/schemas'
 import { ApiErrorType } from '@/lib/api/types'
-import { menuItemsConfig } from '@/menu'
 
 const ROUTE_CONTEXT = { route: '/api/v1/table-availability', method: 'GET' }
 

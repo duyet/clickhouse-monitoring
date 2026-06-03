@@ -161,7 +161,9 @@ export const Route = createFileRoute('/api/v1/findings')({
           const hostId = Number.parseInt(searchParams.get('host') ?? '0', 10)
           if (!Number.isInteger(hostId) || hostId < 0) {
             return Response.json(
-              { error: 'Invalid host parameter: must be a non-negative integer' },
+              {
+                error: 'Invalid host parameter: must be a non-negative integer',
+              },
               { status: 400, headers: { 'X-Request-ID': requestId } }
             )
           }

@@ -141,7 +141,10 @@ export const Route = createFileRoute('/api/v1/peerdb-status')({
         const host = sanitizeHost(config.baseUrl)
 
         try {
-          const version = await peerdbFetch<VersionResponse>(config, '/v1/version')
+          const version = await peerdbFetch<VersionResponse>(
+            config,
+            '/v1/version'
+          )
           const payload: PeerDBStatusPayload = {
             configured: true,
             host,
@@ -154,7 +157,8 @@ export const Route = createFileRoute('/api/v1/peerdb-status')({
           )
         } catch (err) {
           const status = err instanceof PeerDBError ? err.status : 0
-          const state = status === 401 || status === 403 ? 'auth' : 'unreachable'
+          const state =
+            status === 401 || status === 403 ? 'auth' : 'unreachable'
           const payload: PeerDBStatusPayload = {
             configured: true,
             host,

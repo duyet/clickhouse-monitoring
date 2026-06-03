@@ -20,12 +20,12 @@ import {
   hasMenuCountKey,
 } from '@/lib/api/menu-count-registry'
 import { HostIdSchema, MenuCountKeySchema } from '@/lib/api/schemas'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import {
   CacheControl,
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const ROUTE_CONTEXT = { route: '/api/v1/menu-counts/$key', method: 'GET' }
 
@@ -33,7 +33,10 @@ interface MenuCountResponse {
   readonly count: number | null
 }
 
-async function handler(request: Request, params: { key: string }): Promise<Response> {
+async function handler(
+  request: Request,
+  params: { key: string }
+): Promise<Response> {
   const requestId = generateRequestId()
 
   try {

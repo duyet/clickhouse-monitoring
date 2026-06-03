@@ -8,7 +8,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
 import { error } from '@chm/logger'
-import { executeTableConfig, isValidInterval } from '@/lib/api/query-executor'
+import { executeTableConfig } from '@/lib/api/query-executor'
 import {
   getAvailableTables,
   getTableConfig,
