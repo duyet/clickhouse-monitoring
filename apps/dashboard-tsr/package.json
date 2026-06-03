@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
+    "build:node": "BUILD_TARGET=node vite build",
+    "start:node": "node .output/server/index.mjs",
     "preview": "vite preview",
     "deploy": "bun run build && wrangler deploy",
     "cf:deploy": "bun run build && wrangler deploy",
@@ -38,6 +40,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
+    "nitro": "^3.0.260522-beta",
     "typescript": "^6",
     "vite": "^8.0.16",
     "wrangler": "^4.97.0"
