@@ -17,6 +17,11 @@
  */
 
 const DEFAULT_CLERK_API_URL = 'https://api.clerk.com'
+// Cap the verify round-trip. Cloudflare Workers bound subrequests (~30s), but
+// Node/Docker fetch has no default timeout — a hung Clerk API would otherwise
+// block every bearer-bearing MCP request indefinitely (a DoS vector). 5s is well
+// above Clerk's normal latency while still failing fast.
+const DEFAULT_VERIFY_TIMEOUT_MS = 5000
 
 export interface ClerkOAuthResult {
   valid: boolean
@@ -37,6 +42,8 @@ interface VerifyOptions {
   secretKey?: string
   /** Override the Clerk API base (defaults to CLERK_API_URL or api.clerk.com). */
   apiUrl?: string
+  /** Verify-request timeout in ms (defaults to DEFAULT_VERIFY_TIMEOUT_MS). */
+  timeoutMs?: number
 }
 
 export async function verifyClerkOAuthToken(
@@ -59,9 +66,11 @@ export async function verifyClerkOAuthToken(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ access_token: token }),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_VERIFY_TIMEOUT_MS),
     })
   } catch {
-    return { valid: false, reason: 'clerk verify request failed' }
+    // Includes the AbortError thrown when the timeout fires — fail closed.
+    return { valid: false, reason: 'clerk verify request failed or timed out' }
   }
 
   if (!res.ok) {
