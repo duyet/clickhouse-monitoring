@@ -1,0 +1,9 @@
+node_modules
+dist
+.output
+.vite
+.wrangler
+.turbo
+src/routeTree.gen.ts
+worker-configuration.d.ts
+*.tsbuildinfo
