@@ -171,7 +171,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
 # Deployed by GitHub Actions on pull requests (see .github/workflows/cloudflare.yml)
-# and reachable at https://preview.chmonitor.dev.
+# and reachable at https://preview.dash.chmonitor.dev.
 # Inherits most top-level settings; vars require explicit declaration.
 #
 # One-time setup required:
@@ -181,11 +181,12 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 name = "preview-chmonitor-dash"
 
 # Custom domain for the preview worker.
-# On the first deploy that includes this route, Wrangler provisions the DNS
-# record and TLS certificate for preview.chmonitor.dev automatically (the
-# chmonitor.dev zone must live in the same Cloudflare account).
+# Mirrors production topology: dashboard prod is dash.chmonitor.dev, so its
+# preview is preview.dash.chmonitor.dev. On the first deploy that includes this
+# route, Wrangler provisions the DNS record and TLS certificate automatically
+# (the chmonitor.dev zone must live in the same Cloudflare account).
 [[env.preview.routes]]
-pattern = "preview.chmonitor.dev"
+pattern = "preview.dash.chmonitor.dev"
 custom_domain = true
 
 # Vars must be explicitly set per environment (not inherited from top-level)

@@ -141,6 +141,25 @@ A specific Workers **Route** (`.../api/mcp*`) wins over a whole-hostname
 **Custom Domain** (`dash.chmonitor.dev`) — sub-path routes are more specific —
 so the MCP worker intercepts `/api/mcp` even though the dashboard owns the host.
 
+### Preview topology (PR deployments)
+
+Each PR deploys a parallel set of `preview-chmonitor-*` workers (`--env preview`)
+under `preview.*` subdomains that mirror production exactly:
+
+| Worker (preview) | Host / route |
+|------------------|--------------|
+| `preview-chmonitor-landing` | `preview.chmonitor.dev` (apex-preview) |
+| `preview-chmonitor-dash` | `preview.dash.chmonitor.dev` (custom domain) |
+| `preview-chmonitor-mcp` | `preview.dash.chmonitor.dev/api/mcp*` + `/api/v1/mcp/info*` (Workers Routes) |
+| `preview-chmonitor-docs` | `preview.docs.chmonitor.dev` |
+
+Wrangler auto-provisions DNS + TLS for a `custom_domain` route on first deploy,
+**but custom domains are exclusive** — a hostname can attach to only one worker.
+`preview.chmonitor.dev` originally lived on `preview-chmonitor-dash`; the cutover
+to the per-app topology above detaches it there first (it cannot be auto-stolen),
+then `preview-chmonitor-landing` claims it. The two new subdomains
+(`preview.dash`, `preview.docs`) have no prior holder, so they provision cleanly.
+
 **`cloud.chmonitor.dev` → `dash.chmonitor.dev` 301** is a Cloudflare edge
 **Redirect Rule**, NOT Next.js middleware. `middleware.ts` cannot redirect the
 prerendered static root: OpenNext serves `/` as an asset without invoking the

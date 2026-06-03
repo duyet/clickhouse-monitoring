@@ -67,17 +67,17 @@ CLOUDFLARE_WORKERS = "1"
 NODE_ENV = "production"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Preview environment (mirrors main worker preview at preview.chmonitor.dev)
+# Preview environment (mirrors the dashboard preview at preview.dash.chmonitor.dev)
 # ─────────────────────────────────────────────────────────────────────────────
 [env.preview]
 name = "preview-chmonitor-mcp"
 
 [[env.preview.routes]]
-pattern = "preview.chmonitor.dev/api/mcp*"
+pattern = "preview.dash.chmonitor.dev/api/mcp*"
 zone_name = "chmonitor.dev"
 
 [[env.preview.routes]]
-pattern = "preview.chmonitor.dev/api/v1/mcp/info*"
+pattern = "preview.dash.chmonitor.dev/api/v1/mcp/info*"
 zone_name = "chmonitor.dev"
 
 [env.preview.vars]
