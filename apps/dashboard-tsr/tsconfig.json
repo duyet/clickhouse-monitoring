@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types", "vite/client"],
+    "types": ["node", "@cloudflare/workers-types", "vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@chm/sql-builder": ["../../packages/sql-builder/src/index.ts"],
+      "@chm/logger": ["../../packages/logger/src/index.ts"]
     }
   },
   "include": ["src", "vite.config.ts"]
