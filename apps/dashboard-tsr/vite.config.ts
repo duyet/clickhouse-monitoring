@@ -19,6 +19,17 @@ export default defineConfig({
     fs: { allow: ['../..'] },
   },
   resolve: {
+    // The @chm/* source packages live at ../../packages and are transpiled into
+    // the worker (ssr.noExternal). Their npm deps live in THIS app's isolated
+    // node_modules (own-lockfile), which is not on the packages' upward resolve
+    // path — dedupe forces these bare specifiers to resolve from the app root.
+    dedupe: [
+      '@clickhouse/client-web',
+      'lru-cache',
+      'zod',
+      'react',
+      'react-dom',
+    ],
     alias: {
       '@': r('./src'),
       // Shared workspace packages resolved from SOURCE — own-lockfile isolation
@@ -26,10 +37,34 @@ export default defineConfig({
       // (below) bundles them into the worker rather than externalizing.
       '@chm/sql-builder': r('../../packages/sql-builder/src/index.ts'),
       '@chm/logger': r('../../packages/logger/src/index.ts'),
+      '@chm/clickhouse-client': r(
+        '../../packages/clickhouse-client/src/index.ts'
+      ),
+      '@chm/clickhouse-client/runtime/cloudflare-workers': r(
+        '../../packages/clickhouse-client/src/runtime/cloudflare-workers.ts'
+      ),
+      // The node @clickhouse/client (node:os/node:stream/TCP) is a static value
+      // import in clickhouse-client.ts, used only on the web:false branch which
+      // never runs (we force web:true). Because @chm/clickhouse-client is
+      // noExternal, Rolldown walks that import — alias it to an empty stub so it
+      // resolves in the worker instead of leaving an unresolvable bare specifier.
+      '@clickhouse/client': r('./src/lib/empty.ts'),
     },
   },
   ssr: {
-    noExternal: ['@chm/sql-builder', '@chm/logger'],
+    // Transpile + bundle the @chm source packages and their bundleable leaf
+    // deps into the worker.
+    noExternal: [
+      '@chm/sql-builder',
+      '@chm/logger',
+      '@chm/clickhouse-client',
+      '@clickhouse/client-web',
+      'lru-cache',
+      'zod',
+    ],
+    // The node @clickhouse/client is kept out of the worker via the empty-stub
+    // resolve.alias above. (ssr.external is rejected by @cloudflare/vite-plugin
+    // for Worker environments, so the alias is the only mechanism.)
   },
   plugins: [
     tailwindcss(),
