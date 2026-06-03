@@ -88,8 +88,20 @@ export default defineConfig({
         '../../packages/clickhouse-client/src/index.ts'
       ),
       '@chm/types': r('../../packages/types/src/index.ts'),
+      // MCP subpaths — http.ts re-exports cors/server/data via relative imports
+      // that resolve from the package source, so aliasing the entrypoints is enough.
+      '@chm/mcp-server/http': r('../../packages/mcp-server/src/http.ts'),
       '@chm/mcp-server/data': r(
         '../../packages/mcp-server/src/data/mcp-tools-data.ts'
+      ),
+      // The MCP SDK ships an exact `./server` export that shadows `./server/*`
+      // subpaths in rolldown's exports resolution, so point the two used deep
+      // imports straight at their dist ESM files (the `./*` wildcard target).
+      '@modelcontextprotocol/sdk/server/mcp.js': r(
+        './node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js'
+      ),
+      '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js': r(
+        './node_modules/@modelcontextprotocol/sdk/dist/esm/server/webStandardStreamableHttp.js'
       ),
       // The node @clickhouse/client (node:os/node:stream/TCP) is a dead static
       // import in clickhouse-client.ts (routes force web:true). Alias it to an
@@ -110,7 +122,9 @@ export default defineConfig({
       '@chm/logger',
       '@chm/clickhouse-client',
       '@chm/types',
+      '@chm/mcp-server',
       '@clickhouse/client-web',
+      '@modelcontextprotocol/sdk',
       'lru-cache',
       'zod',
     ],

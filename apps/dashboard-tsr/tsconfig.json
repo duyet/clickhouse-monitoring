@@ -23,9 +23,17 @@
       ],
       "@chm/types": ["../../packages/types/src/index.ts"],
       "@chm/types/*": ["../../packages/types/src/*"],
+      "@chm/mcp-server/http": ["../../packages/mcp-server/src/http.ts"],
       "@chm/mcp-server/data": [
         "../../packages/mcp-server/src/data/mcp-tools-data.ts"
       ],
+      "@modelcontextprotocol/sdk/server/mcp.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.d.ts"
+      ],
+      "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/server/webStandardStreamableHttp.d.ts"
+      ],
+      "zod/v3": ["./node_modules/zod/v3/index.d.ts"],
       "@clickhouse/client": ["./node_modules/@clickhouse/client"],
       "@clickhouse/client-web": [
         "./node_modules/@clickhouse/client-web/dist/index.d.ts"
