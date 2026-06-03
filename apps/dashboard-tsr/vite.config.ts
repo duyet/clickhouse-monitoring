@@ -65,16 +65,24 @@ export default defineConfig({
       // Shared workspace packages resolved from SOURCE — own-lockfile isolation
       // means no `workspace:*` protocol. Vite transpiles them; ssr.noExternal
       // (below) bundles them into the server build rather than externalizing.
+      //
+      // IMPORTANT: sub-path aliases MUST precede the generic alias so rolldown
+      // resolves them correctly (it matches first entry, not longest prefix).
       '@chm/sql-builder': r('../../packages/sql-builder/src/index.ts'),
       '@chm/logger': r('../../packages/logger/src/index.ts'),
-      '@chm/clickhouse-client': r(
-        '../../packages/clickhouse-client/src/index.ts'
-      ),
+      // Specific sub-paths FIRST (before the generic @chm/clickhouse-client)
       '@chm/clickhouse-client/runtime/cloudflare-workers': r(
         '../../packages/clickhouse-client/src/runtime/cloudflare-workers.ts'
       ),
       '@chm/clickhouse-client/clickhouse-version': r(
         '../../packages/clickhouse-client/src/clickhouse-version.ts'
+      ),
+      '@chm/clickhouse-client/constants': r(
+        '../../packages/clickhouse-client/src/clickhouse/constants.ts'
+      ),
+      // Generic entry (must be after sub-paths)
+      '@chm/clickhouse-client': r(
+        '../../packages/clickhouse-client/src/index.ts'
       ),
       '@chm/types': r('../../packages/types/src/index.ts'),
       // The node @clickhouse/client (node:os/node:stream/TCP) is a dead static

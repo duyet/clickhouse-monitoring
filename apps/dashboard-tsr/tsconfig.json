@@ -15,6 +15,9 @@
       "@chm/clickhouse-client/clickhouse-version": [
         "../../packages/clickhouse-client/src/clickhouse-version.ts"
       ],
+      "@chm/clickhouse-client/constants": [
+        "../../packages/clickhouse-client/src/clickhouse/constants.ts"
+      ],
       "@chm/types": ["../../packages/types/src/index.ts"],
       "@chm/types/*": ["../../packages/types/src/*"],
       "@clickhouse/client": ["./node_modules/@clickhouse/client"],

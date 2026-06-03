@@ -5,7 +5,7 @@ import type {
 } from '@/components/date-range'
 import type { AreaChartProps, BarChartProps } from '@/types/charts'
 
-interface BaseChartFactoryConfig {
+export interface BaseChartFactoryConfig {
   chartName: string
   defaultTitle?: string
   defaultInterval?: ClickHouseInterval
