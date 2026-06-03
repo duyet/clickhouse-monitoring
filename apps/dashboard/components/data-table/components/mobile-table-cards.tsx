@@ -311,7 +311,7 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
     >
       {hasHeader && (
         <div
-          className={`${densitySpacing.headerMb} flex min-w-0 items-center gap-2`}
+          className={`${densitySpacing.headerMb} flex min-w-0 items-start gap-2`}
         >
           {isExpandable && (
             <button
@@ -335,11 +335,18 @@ const MobileTableCard = function MobileTableCard<TData extends RowData>({
             </div>
           )}
 
-          {badgeCells.map((cell) => (
-            <div key={cell.id} className="min-w-0 [&_*]:max-w-full">
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {badgeCells.length > 0 && (
+            // Wrap badges in their own min-w-0 flex group so multiple badges
+            // (or one long one like `ExceptionWhileProcessing`) wrap onto a new
+            // line instead of collapsing and overflowing onto each other.
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+              {badgeCells.map((cell) => (
+                <div key={cell.id} className="max-w-full [&_*]:max-w-full">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
 
           {actionCell && (
             <div className="-mr-1 ml-auto shrink-0">
@@ -475,7 +482,8 @@ export const MobileTableCards = function MobileTableCards<
 
   // Multi-column card grid — active in both explicit 'cards' view and 'auto'
   // mode. The virtualized path always stacks (separate code branch).
-  // Phones get 2 cols via grid-cols-2 base; desktop gets 3 at xl.
+  // Phones stack to a single column so each card is wide enough for its badges
+  // and label/value rows; tablets get 2 cols at sm and desktop 3 at xl.
   const gridLayout = view === 'cards' || view === 'auto'
 
   if (!rows.length) {
@@ -537,7 +545,7 @@ export const MobileTableCards = function MobileTableCards<
         <div
           className={
             gridLayout
-              ? 'grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+              ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
               : 'flex flex-col gap-3'
           }
         >
