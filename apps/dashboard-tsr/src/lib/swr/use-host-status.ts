@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { apiFetch } from './api-fetch'
 
@@ -34,12 +34,12 @@ interface UseHostStatusOptions {
 }
 
 /**
- * SWR hook to fetch host status (version, uptime, hostname).
+ * TanStack Query hook to fetch host status (version, uptime, hostname).
  * Uses a unified API endpoint for better caching efficiency.
  *
  * @param hostId - The host ID to fetch status for
- * @param options - SWR configuration options
- * @returns {Object} SWR state with data, error, isLoading, and online state
+ * @param options - Query configuration options
+ * @returns {Object} Query state with data, error, isLoading, and online state
  *
  * @example
  * ```typescript
@@ -57,11 +57,12 @@ export function useHostStatus(
   // no server-side host entry and the proxy endpoint handles connectivity.
   const isBrowserConnection = hostId !== null && hostId < 0
 
-  const { data, error, isLoading } = useSWR<HostStatus>(
-    hostId !== null && !isBrowserConnection
-      ? `/api/v1/host-status?hostId=${hostId}`
-      : null,
-    async (url: string) => {
+  const queryKey = [`/api/v1/host-status?hostId=${hostId}`]
+
+  const { data, error, isLoading } = useQuery<HostStatus>({
+    queryKey,
+    queryFn: async () => {
+      const url = `/api/v1/host-status?hostId=${hostId}`
       const res = await apiFetch(url)
       if (!res.ok) {
         throw new Error(`Failed to fetch host status: ${res.statusText}`)
@@ -76,13 +77,12 @@ export function useHostStatus(
         hostname: json.data.hostname,
       }
     },
-    {
-      dedupingInterval: 10000,
-      refreshInterval,
-      revalidateOnFocus,
-      revalidateOnReconnect: true,
-    }
-  )
+    enabled: hostId !== null && !isBrowserConnection,
+    staleTime: 10000,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: revalidateOnFocus,
+    refetchOnReconnect: true,
+  })
 
   return {
     data: data ?? null,

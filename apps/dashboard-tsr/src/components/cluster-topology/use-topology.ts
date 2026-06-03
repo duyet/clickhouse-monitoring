@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { TopologyData } from './model'
 
@@ -41,25 +41,25 @@ export function useTopology(hostId: number) {
     [hostId, timezone]
   )
 
-  const { data, error, isLoading, mutate } = useSWR<TopologyResponse, Error>(
-    key,
-    async () => {
+  const queryClient = useQueryClient()
+
+  const { data, error, isLoading } = useQuery<TopologyResponse, Error>({
+    queryKey: key,
+    queryFn: async () => {
       const res = await apiFetch(url)
       await throwIfNotOk(res, 'Failed to fetch cluster topology')
       return res.json() as Promise<TopologyResponse>
     },
-    {
-      dedupingInterval: STRUCTURE_DEDUPE,
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-      refreshInterval: visibilityAwareInterval(STRUCTURE_INTERVAL),
-    }
-  )
+    staleTime: STRUCTURE_DEDUPE,
+    placeholderData: (prev) => prev,
+    refetchOnWindowFocus: false,
+    refetchInterval: visibilityAwareInterval(STRUCTURE_INTERVAL),
+  })
 
   return {
     topology: data?.data ?? null,
     error,
     isLoading,
-    refresh: () => mutate(),
+    refresh: () => queryClient.invalidateQueries({ queryKey: key }),
   }
 }

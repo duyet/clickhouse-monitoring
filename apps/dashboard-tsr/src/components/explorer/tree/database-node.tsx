@@ -1,5 +1,5 @@
 import { DatabaseIcon } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { TableNode } from './table-node'
 import { TreeNode } from './tree-node'
@@ -64,12 +64,13 @@ export const DatabaseNode = function DatabaseNode({
     }
   }, [isExpanded, shouldFetch])
 
-  const { data: response, isLoading } = useSWR<ApiResponse<Table[]>>(
-    shouldFetch
-      ? `/api/v1/explorer/tables?hostId=${hostId}&database=${encodeURIComponent(database)}`
-      : null,
-    fetcher
-  )
+  const url = `/api/v1/explorer/tables?hostId=${hostId}&database=${encodeURIComponent(database)}`
+
+  const { data: response, isLoading } = useQuery<ApiResponse<Table[]>>({
+    queryKey: [url],
+    queryFn: () => fetcher(url),
+    enabled: shouldFetch,
+  })
 
   const tables = response?.data
 

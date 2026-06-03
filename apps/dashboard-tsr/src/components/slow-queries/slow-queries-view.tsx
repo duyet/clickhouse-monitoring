@@ -21,7 +21,7 @@ import {
 } from '@/lib/card-error-utils'
 import { slowQueriesConfig } from '@/lib/query-config/queries/slow-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/swr/use-table-data'
+import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 /** Refresh the slow-queries list every 60s — `query_log` is append-only. */

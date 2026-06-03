@@ -9,7 +9,7 @@ import {
   ShieldAlert,
   X,
 } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
   flexRender,
@@ -226,14 +226,14 @@ function validateSelectOnly(sql: string): string | null {
  */
 function useAutoCompleteSchema(hostId: number) {
   // Fetch all databases
-  const { data: dbResponse } = useSWR<ApiResponse<{ name: string }[]>>(
-    `/api/v1/explorer/databases?hostId=${hostId}`,
-    async (url: string) => {
-      const res = await apiFetch(url)
+  const { data: dbResponse } = useQuery<ApiResponse<{ name: string }[]>>({
+    queryKey: [`/api/v1/explorer/databases?hostId=${hostId}`],
+    queryFn: async () => {
+      const res = await apiFetch(`/api/v1/explorer/databases?hostId=${hostId}`)
       return res.json() as Promise<ApiResponse<{ name: string }[]>>
     },
-    { revalidateOnFocus: false }
-  )
+    refetchOnWindowFocus: false,
+  })
 
   return (() => {
     const schema: Record<string, string[]> = {}
@@ -250,6 +250,7 @@ function useAutoCompleteSchema(hostId: number) {
 
 export function QueryTab() {
   const hostId = useHostId()
+  const queryClient = useQueryClient()
   const {
     database,
     table: tableName,
@@ -262,7 +263,7 @@ export function QueryTab() {
   const [validationError, setValidationError] = useState<string | null>(null)
   // Track if LIMIT was auto-added so we can show an indicator
   const [limitAdded, setLimitAdded] = useState(false)
-  // The query to execute (set on Run, drives the SWR key)
+  // The query to execute (set on Run, drives the query key)
   const [executedQuery, setExecutedQuery] = useState<string | null>(null)
   const initialized = useRef(false)
   // AbortController for cancelling in-flight requests
@@ -304,7 +305,7 @@ export function QueryTab() {
     }
   }, [database, tableName, customQuery])
 
-  // Build the SWR URL only when we have an executed query
+  // Build the query URL only when we have an executed query
   const swrKey = (() => {
     if (!executedQuery) return null
     const params = new URLSearchParams()
@@ -314,7 +315,7 @@ export function QueryTab() {
     return `/api/v1/explorer/query?${params.toString()}`
   })()
 
-  // SWR fetcher with AbortController support
+  // Fetcher with AbortController support
   const swrFetcher = async (url: string) => {
     // Cancel previous request if still running
     if (abortControllerRef.current) {
@@ -329,12 +330,18 @@ export function QueryTab() {
     data: response,
     error,
     isLoading,
-    isValidating,
-    mutate,
-  } = useSWR<ApiResponse<RowData[]>>(swrKey, swrFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    isFetching,
+  } = useQuery<ApiResponse<RowData[]>>({
+    queryKey: [swrKey],
+    queryFn: () => swrFetcher(swrKey as string),
+    enabled: Boolean(swrKey),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
+
+  const mutate = (_data?: unknown, _revalidate?: boolean) => {
+    queryClient.removeQueries({ queryKey: [swrKey] })
+  }
 
   const rows = response?.data || []
   const metadata = response?.metadata
@@ -387,7 +394,7 @@ export function QueryTab() {
 
     setExecutedQuery(finalSql)
     // Defer URL update to next frame so setExecutedQuery commits first,
-    // preventing router.push re-render from racing with the SWR key
+    // preventing router.push re-render from racing with the query key
     requestAnimationFrame(() => setCustomQuery(finalSql))
   }
 
@@ -396,7 +403,7 @@ export function QueryTab() {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
-    // Clear the SWR cache to stop loading state
+    // Clear the query cache to stop loading state
     mutate(undefined, false)
   }
 
@@ -513,7 +520,7 @@ export function QueryTab() {
       {metadata && !error && (
         <MetadataBar
           metadata={metadata}
-          isValidating={isValidating}
+          isValidating={isFetching}
           limitAdded={limitAdded}
         />
       )}
@@ -523,7 +530,7 @@ export function QueryTab() {
         <div
           className={cn(
             'overflow-x-auto rounded-md border transition-opacity',
-            isValidating && 'opacity-60'
+            isFetching && 'opacity-60'
           )}
         >
           <Table

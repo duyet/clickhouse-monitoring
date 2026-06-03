@@ -1,4 +1,4 @@
-import { mutate } from 'swr'
+import type { QueryClient } from '@tanstack/react-query'
 
 /**
  * Helper to check if a cache key matches a path prefix.
@@ -18,25 +18,29 @@ function keyMatchesPath(key: unknown, pathPrefix: string): boolean {
   return false
 }
 
-export async function revalidateAllData() {
-  await mutate(() => true, undefined, { revalidate: true })
+export async function revalidateAllData(queryClient: QueryClient) {
+  await queryClient.invalidateQueries()
 }
 
-export async function revalidateCharts() {
-  await mutate((key) => keyMatchesPath(key, '/api/v1/charts'), undefined, {
-    revalidate: true,
+export async function revalidateCharts(queryClient: QueryClient) {
+  await queryClient.invalidateQueries({
+    predicate: (query) => keyMatchesPath(query.queryKey, '/api/v1/charts'),
   })
 }
 
-export async function revalidateTables() {
-  await mutate((key) => keyMatchesPath(key, '/api/v1/tables'), undefined, {
-    revalidate: true,
+export async function revalidateTables(queryClient: QueryClient) {
+  await queryClient.invalidateQueries({
+    predicate: (query) => keyMatchesPath(query.queryKey, '/api/v1/tables'),
   })
 }
 
-export async function revalidateByPattern(pattern: string) {
-  await mutate(
-    (key) => {
+export async function revalidateByPattern(
+  queryClient: QueryClient,
+  pattern: string
+) {
+  await queryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = query.queryKey
       if (typeof key === 'string') {
         return key.includes(pattern)
       }
@@ -47,7 +51,5 @@ export async function revalidateByPattern(pattern: string) {
       }
       return false
     },
-    undefined,
-    { revalidate: true }
-  )
+  })
 }

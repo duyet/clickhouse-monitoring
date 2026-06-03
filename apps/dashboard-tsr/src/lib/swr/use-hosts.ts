@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { HostInfo } from '@chm/types/host-info'
 
@@ -12,10 +12,10 @@ interface HostsResponse {
 }
 
 /**
- * SWR hook to fetch the list of configured ClickHouse hosts.
+ * TanStack Query hook to fetch the list of configured ClickHouse hosts.
  * Provides automatic caching and deduplication.
  *
- * @returns {Object} SWR state with hosts array, error, isLoading
+ * @returns {Object} Query state with hosts array, error, isLoading
  *
  * @example
  * ```typescript
@@ -44,16 +44,14 @@ export function useHosts() {
     }
   }, [])
 
-  const { data, error, isLoading } = useSWR<HostInfo[]>(
-    '/api/v1/hosts',
-    fetcher,
-    {
-      // Hosts list changes rarely, so cache for 5 minutes
-      dedupingInterval: 300000,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  )
+  const { data, error, isLoading } = useQuery<HostInfo[]>({
+    queryKey: ['/api/v1/hosts'],
+    queryFn: fetcher,
+    // Hosts list changes rarely, so cache for 5 minutes
+    staleTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  })
 
   return {
     hosts: data ?? [],

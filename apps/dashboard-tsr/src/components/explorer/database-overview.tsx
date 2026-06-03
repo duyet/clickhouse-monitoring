@@ -1,5 +1,5 @@
 import { DatabaseIcon, SquareTerminal } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
@@ -39,10 +39,10 @@ export function DatabaseOverview({ database }: DatabaseOverviewProps) {
   const depsUrl = `/api/v1/explorer/dependencies?hostId=${hostId}&database=${encodeURIComponent(database)}&direction=all`
 
   // Fetch all dependencies using unified query
-  const { data: depsData, isLoading } = useSWR<ApiResponse<DependencyEdge[]>>(
-    depsUrl,
-    fetcher<DependencyEdge[]>
-  )
+  const { data: depsData, isLoading } = useQuery<ApiResponse<DependencyEdge[]>>({
+    queryKey: [depsUrl],
+    queryFn: () => fetcher<DependencyEdge[]>(depsUrl),
+  })
 
   const graphData = depsData?.data || []
 

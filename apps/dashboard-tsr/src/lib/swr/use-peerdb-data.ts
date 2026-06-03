@@ -1,4 +1,4 @@
-import useSWR, { type SWRConfiguration } from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { ApiResponse } from '@/lib/api/types'
 
@@ -23,10 +23,9 @@ export function usePeerDB<T = unknown>(
   options?: {
     body?: unknown
     refreshInterval?: number
-    swrConfig?: SWRConfiguration
   }
 ) {
-  const { body, refreshInterval, swrConfig } = options ?? {}
+  const { body, refreshInterval } = options ?? {}
   const hasBody = body !== undefined
   const method = hasBody ? 'POST' : 'GET'
   const bodyKey = hasBody ? JSON.stringify(body) : ''
@@ -66,21 +65,22 @@ export function usePeerDB<T = unknown>(
     }
   }, [normalizedPath, method, bodyKey, hasBody])
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<T, Error>(
-    key,
-    fetcher,
-    {
-      revalidateIfStale: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 3000,
-      focusThrottleInterval: 5000,
-      refreshInterval:
-        refreshInterval && refreshInterval > 0
-          ? visibilityAwareInterval(refreshInterval)
-          : 0,
-      ...swrConfig,
-    }
-  )
+  const queryClient = useQueryClient()
 
-  return { data, error, isLoading, isValidating, refresh: mutate }
+  const { data, error, isLoading, isFetching, refetch } = useQuery<T, Error>({
+    queryKey: key ?? ['peerdb', 'disabled'],
+    queryFn: fetcher,
+    enabled: Boolean(key),
+    refetchOnReconnect: true,
+    staleTime: 3000,
+    refetchInterval:
+      refreshInterval && refreshInterval > 0
+        ? visibilityAwareInterval(refreshInterval)
+        : false,
+  })
+
+  const mutate = () =>
+    queryClient.invalidateQueries({ queryKey: key ?? ['peerdb', 'disabled'] })
+
+  return { data, error, isLoading, isValidating: isFetching, refresh: mutate }
 }

@@ -1,5 +1,5 @@
 import { Check, Copy } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { useState } from 'react'
@@ -81,16 +81,20 @@ export function DdlTab() {
   const { database, table } = useExplorerState()
   const [copied, setCopied] = useState(false)
 
+  const url =
+    database && table
+      ? `/api/v1/explorer/ddl?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      : null
+
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR<ApiResponse<DdlRow[]>>(
-    database && table
-      ? `/api/v1/explorer/ddl?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
-      : null,
-    fetcher
-  )
+  } = useQuery<ApiResponse<DdlRow[]>>({
+    queryKey: [url],
+    queryFn: () => fetcher(url!),
+    enabled: Boolean(database && table),
+  })
 
   const ddl = response?.data?.[0]?.create_table_query
 

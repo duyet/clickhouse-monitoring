@@ -8,7 +8,7 @@
  * as they indicate potential issues like readonly tables or replication lag.
  */
 
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from './api-fetch'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
@@ -45,12 +45,12 @@ export function useClusterCount(
   hostId: number,
   cluster: string | undefined
 ): ClusterCountResult {
-  const { data, error, isLoading, mutate } = useSWR<ClusterCountResponse>(
-    // Only fetch if both countKey and cluster are provided
-    countKey && cluster
-      ? [`/api/v1/cluster-counts`, countKey, hostId, cluster]
-      : null,
-    async () => {
+  const queryClient = useQueryClient()
+  const queryKey = [`/api/v1/cluster-counts`, countKey, hostId, cluster]
+
+  const { data, error, isLoading } = useQuery<ClusterCountResponse>({
+    queryKey,
+    queryFn: async () => {
       const res = await apiFetch(
         `/api/v1/cluster-counts/${countKey}?hostId=${hostId}&cluster=${encodeURIComponent(cluster!)}`
       )
@@ -59,20 +59,18 @@ export function useClusterCount(
       }
       return res.json()
     },
-    {
-      refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
-      dedupingInterval: 15_000, // 15 seconds deduping
-      revalidateOnFocus: true, // Revalidate on focus for critical metrics
-      revalidateOnReconnect: true, // Revalidate on reconnect
-      shouldRetryOnError: true, // Retry on error for critical data
-      errorRetryCount: 2, // Limit retries
-    }
-  )
+    enabled: Boolean(countKey && cluster),
+    refetchInterval: REFRESH_INTERVAL.MEDIUM_30S,
+    staleTime: 15_000, // 15 seconds deduping
+    refetchOnWindowFocus: true, // Revalidate on focus for critical metrics
+    refetchOnReconnect: true, // Revalidate on reconnect
+    retry: 2, // Retry on error for critical data, limit retries
+  })
 
   return {
     count: data?.data?.count ?? null,
     isLoading,
-    error,
-    refresh: () => mutate(),
+    error: error ?? undefined,
+    refresh: () => queryClient.invalidateQueries({ queryKey }),
   }
 }

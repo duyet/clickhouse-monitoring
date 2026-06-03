@@ -27,7 +27,7 @@ import {
 } from '@/lib/filters/url-state'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/swr/use-table-data'
+import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 /**

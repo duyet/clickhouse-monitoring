@@ -5,7 +5,7 @@
  * Includes retry logic with exponential backoff for transient errors.
  */
 
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
   McpResource,
@@ -16,7 +16,6 @@ import type {
 } from '@chm/mcp-server/data'
 
 import { apiFetch } from './api-fetch'
-import { swrConfig } from '@/lib/swr/config'
 
 /**
  * API response tool type - subset of McpTool without exampleResponse
@@ -81,25 +80,24 @@ async function fetchMcpServerInfo(): Promise<ApiMcpServerInfo> {
  * ```
  */
 export function useMcpServerInfo(): McpServerInfoResult {
-  const { data, isLoading, error, mutate } = useSWR<ApiMcpServerInfo>(
-    '/api/v1/mcp/info',
-    fetchMcpServerInfo,
-    {
-      ...swrConfig.once,
-      dedupingInterval: 300_000, // Cache for 5 minutes
-      shouldRetryOnError: true,
-      errorRetryCount: 3,
-    }
-  )
+  const queryClient = useQueryClient()
+  const queryKey = ['/api/v1/mcp/info']
+  const { data, isLoading, error } = useQuery<ApiMcpServerInfo>({
+    queryKey,
+    queryFn: fetchMcpServerInfo,
+    refetchInterval: false,
+    staleTime: 300_000, // Cache for 5 minutes
+    retry: 3,
+  })
 
   const retry = () => {
-    mutate()
+    queryClient.invalidateQueries({ queryKey })
   }
 
   return {
     data,
     isLoading,
-    error,
+    error: error ?? undefined,
     retry,
   }
 }

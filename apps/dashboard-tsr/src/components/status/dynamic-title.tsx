@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { usePathname, useSearchParams } from '@/lib/next-compat'
 import { useEffect } from 'react'
@@ -123,10 +123,12 @@ export function DynamicTitle() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const { data } = useSWR<HealthzResponse>('/api/healthz', fetcher, {
-    refreshInterval: 60_000,
-    revalidateOnFocus: false,
-    errorRetryCount: 2,
+  const { data } = useQuery<HealthzResponse>({
+    queryKey: ['/api/healthz'],
+    queryFn: () => fetcher('/api/healthz'),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 2,
   })
 
   useEffect(() => {

@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatReadableSize } from '@/lib/format-readable'
 import { useHostId } from '@/lib/swr/use-host'
-import { useTableData } from '@/lib/swr/use-table-data'
+import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 
 // ──────────────────────────── types ────────────────────────────

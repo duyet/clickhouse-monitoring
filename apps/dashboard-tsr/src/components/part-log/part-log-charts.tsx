@@ -12,7 +12,7 @@ import {
   tableTone,
 } from './lib'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { useChartData } from '@/lib/query/use-chart-data'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 

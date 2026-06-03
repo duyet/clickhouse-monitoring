@@ -1,5 +1,5 @@
 import { Database, Filter, Key, Layers, Settings } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,40 +69,49 @@ export function IndexesTab() {
   const { database, table } = useExplorerState()
 
   // Fetch indexes data
+  const indexesKey =
+    database && table
+      ? `/api/v1/explorer/indexes?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      : null
   const {
     data: indexesResponse,
     error: indexesError,
     isLoading: indexesLoading,
-  } = useSWR<ApiResponse<IndexesData[]>>(
-    database && table
-      ? `/api/v1/explorer/indexes?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
-      : null,
-    fetcher<IndexesData[]>
-  )
+  } = useQuery<ApiResponse<IndexesData[]>>({
+    queryKey: [indexesKey],
+    queryFn: () => fetcher<IndexesData[]>(indexesKey!),
+    enabled: Boolean(indexesKey),
+  })
 
   // Fetch skip indexes data
+  const skipIndexesKey =
+    database && table
+      ? `/api/v1/explorer/skip-indexes?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      : null
   const {
     data: skipIndexesResponse,
     error: skipIndexesError,
     isLoading: skipIndexesLoading,
-  } = useSWR<ApiResponse<SkipIndexData[]>>(
-    database && table
-      ? `/api/v1/explorer/skip-indexes?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
-      : null,
-    fetcher<SkipIndexData[]>
-  )
+  } = useQuery<ApiResponse<SkipIndexData[]>>({
+    queryKey: [skipIndexesKey],
+    queryFn: () => fetcher<SkipIndexData[]>(skipIndexesKey!),
+    enabled: Boolean(skipIndexesKey),
+  })
 
   // Fetch projections data
+  const projectionsKey =
+    database && table
+      ? `/api/v1/explorer/projections?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      : null
   const {
     data: projectionsResponse,
     error: projectionsError,
     isLoading: projectionsLoading,
-  } = useSWR<ApiResponse<ProjectionData[]>>(
-    database && table
-      ? `/api/v1/explorer/projections?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
-      : null,
-    fetcher<ProjectionData[]>
-  )
+  } = useQuery<ApiResponse<ProjectionData[]>>({
+    queryKey: [projectionsKey],
+    queryFn: () => fetcher<ProjectionData[]>(projectionsKey!),
+    enabled: Boolean(projectionsKey),
+  })
 
   const indexData = indexesResponse?.data?.[0]
   const skipIndexes = skipIndexesResponse?.data || []

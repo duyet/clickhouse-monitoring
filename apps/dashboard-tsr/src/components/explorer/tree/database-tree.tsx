@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { useTreeState } from '../hooks/use-tree-state'
@@ -36,14 +36,15 @@ export function DatabaseTree() {
   const { isDatabaseExpanded, isTableExpanded, toggleDatabase, toggleTable } =
     useTreeState(database, table)
 
+  const queryKey = `/api/v1/explorer/databases?hostId=${hostId}`
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR<ApiResponse<Database[]>>(
-    `/api/v1/explorer/databases?hostId=${hostId}`,
-    fetcher
-  )
+  } = useQuery<ApiResponse<Database[]>>({
+    queryKey: [queryKey],
+    queryFn: () => fetcher(queryKey),
+  })
 
   const databases = response?.data
 

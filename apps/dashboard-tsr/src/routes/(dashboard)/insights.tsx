@@ -35,7 +35,7 @@ import {
 } from '@/components/date-range'
 import { ChartSkeleton } from '@/components/skeletons/chart'
 import { useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { useChartData } from '@/lib/query/use-chart-data'
 import { formatDuration } from '@/lib/utils'
 
 function formatDay(day: string | Date): string {

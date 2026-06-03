@@ -35,3 +35,15 @@ export function TableSkeleton({ rows = 8 }: { rows?: number }) {
     </div>
   )
 }
+
+// Additional page-scoped skeletons re-exported from their sub-files (the
+// foundation kept ChartSkeleton/TableSkeleton inline with the shimmer variant).
+export { ExplorerSkeleton } from './explorer'
+export {
+  ChartsOnlyPageSkeleton,
+  PageSkeleton,
+  TableOnlyPageSkeleton,
+} from './page'
+export { SidebarSkeleton } from './sidebar'
+export { TabsSkeleton } from './tabs'
+export { ListSkeleton, MultiLineSkeleton, SingleLineSkeleton } from './ui'

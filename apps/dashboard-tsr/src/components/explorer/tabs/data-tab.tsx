@@ -1,5 +1,5 @@
 import { AlertCircle, Loader2, RefreshCw, ShieldAlert } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
   flexRender,
@@ -115,22 +115,30 @@ export function DataTab() {
   const { database, table: tableName } = useExplorerState()
   const [limit, setLimit] = useState<number>(100)
   const [offset, setOffset] = useState<number>(0)
+  const queryClient = useQueryClient()
+
+  const queryKey = [
+    database && tableName
+      ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(tableName)}&limit=${limit}&offset=${offset}`
+      : null,
+  ]
 
   const {
     data: response,
     error,
     isLoading,
-    isValidating,
-    mutate,
-  } = useSWR<ApiResponse<RowData[]>>(
-    database && tableName
-      ? `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(tableName)}&limit=${limit}&offset=${offset}`
-      : null,
-    fetcher,
-    {
-      keepPreviousData: true,
-    }
-  )
+    isFetching,
+  } = useQuery<ApiResponse<RowData[]>>({
+    queryKey,
+    queryFn: () =>
+      fetcher(
+        `/api/v1/explorer/preview?hostId=${hostId}&database=${encodeURIComponent(database!)}&table=${encodeURIComponent(tableName!)}&limit=${limit}&offset=${offset}`
+      ),
+    enabled: Boolean(database && tableName),
+    placeholderData: (prev) => prev,
+  })
+
+  const mutate = () => queryClient.invalidateQueries({ queryKey })
 
   const rows = response?.data || []
 
@@ -206,7 +214,7 @@ export function DataTab() {
     )
   }
 
-  if (rows.length === 0 && !isValidating) {
+  if (rows.length === 0 && !isFetching) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
         No data available for {database}.{tableName}
@@ -216,7 +224,7 @@ export function DataTab() {
 
   const currentPage = Math.floor(offset / limit) + 1
   const hasNextPage = rows.length === limit
-  const isPaginating = isValidating && !!response
+  const isPaginating = isFetching && !!response
 
   return (
     <div className="flex flex-col gap-4">

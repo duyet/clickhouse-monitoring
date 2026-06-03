@@ -3,7 +3,7 @@ import { ChartError } from '@/components/charts/chart-error'
 import { Skeleton } from '@/components/skeletons'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useHostId } from '@/lib/swr'
-import { useTableData } from '@/lib/swr/use-table-data'
+import { useTableData } from '@/lib/query/use-table-data'
 
 const GRID_CLASS =
   'grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3'

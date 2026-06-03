@@ -11,7 +11,7 @@ import { deriveChartSummary } from './derive-chart-summary'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { useChartData } from '@/lib/query/use-chart-data'
 import { cn } from '@/lib/utils'
 
 export interface ChartChipProps {

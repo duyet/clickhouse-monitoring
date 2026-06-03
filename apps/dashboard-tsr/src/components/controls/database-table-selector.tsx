@@ -1,5 +1,5 @@
 import { Database, Table2 } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { ApiResponse } from '@/lib/api/types'
 
@@ -55,19 +55,24 @@ export function DatabaseTableSelector({
   const table = searchParams.get('table')
 
   // Fetch databases
-  const { data: databasesResponse, isLoading: isLoadingDatabases } = useSWR<
+  const { data: databasesResponse, isLoading: isLoadingDatabases } = useQuery<
     ApiResponse<DatabaseItem[]>
-  >(`/api/v1/explorer/databases?hostId=${hostId}`, fetcher)
+  >({
+    queryKey: [`/api/v1/explorer/databases?hostId=${hostId}`],
+    queryFn: () => fetcher(`/api/v1/explorer/databases?hostId=${hostId}`),
+  })
 
   // Fetch tables (only when database is selected)
-  const { data: tablesResponse, isLoading: isLoadingTables } = useSWR<
+  const tablesKey = database
+    ? `/api/v1/explorer/tables?hostId=${hostId}&database=${encodeURIComponent(database)}`
+    : null
+  const { data: tablesResponse, isLoading: isLoadingTables } = useQuery<
     ApiResponse<TableItem[]>
-  >(
-    database
-      ? `/api/v1/explorer/tables?hostId=${hostId}&database=${encodeURIComponent(database)}`
-      : null,
-    fetcher
-  )
+  >({
+    queryKey: [tablesKey],
+    queryFn: () => fetcher(tablesKey!),
+    enabled: Boolean(tablesKey),
+  })
 
   const databases = databasesResponse?.data ?? []
   const tables = tablesResponse?.data ?? []

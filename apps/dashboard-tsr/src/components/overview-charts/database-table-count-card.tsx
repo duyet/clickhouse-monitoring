@@ -2,7 +2,7 @@ import { Database } from 'lucide-react'
 
 import { KpiCard } from './kpi-card'
 import { REFRESH_INTERVAL, useHostId } from '@/lib/swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
+import { useChartData } from '@/lib/query/use-chart-data'
 import { buildUrl } from '@/lib/url/url-builder'
 
 // ============================================================================

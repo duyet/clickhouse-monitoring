@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { ApiResponse } from '@/lib/api/types'
 import type { PeerDBStatusPayload } from '@/lib/peerdb/types'
@@ -34,8 +34,10 @@ async function fetchStatus(url: string): Promise<PeerDBStatusPayload> {
  * consume malformed data.
  */
 export function usePeerDBStatus(refreshInterval = 60_000) {
-  return useSWR<PeerDBStatusPayload>(STATUS_URL, fetchStatus, {
-    refreshInterval,
-    shouldRetryOnError: false,
+  return useQuery<PeerDBStatusPayload>({
+    queryKey: [STATUS_URL],
+    queryFn: () => fetchStatus(STATUS_URL),
+    refetchInterval: refreshInterval,
+    retry: false,
   })
 }

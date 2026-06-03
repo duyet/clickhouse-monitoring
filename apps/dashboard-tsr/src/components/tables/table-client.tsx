@@ -27,7 +27,7 @@ import {
 } from '@/lib/card-error-utils'
 import { useHostId } from '@/lib/swr/use-host'
 import { useHostStatus } from '@/lib/swr/use-host-status'
-import { useTableData } from '@/lib/swr/use-table-data'
+import { useTableData } from '@/lib/query/use-table-data'
 import { cn } from '@/lib/utils'
 import { getSqlForDisplay } from '@/types/query-config'
 

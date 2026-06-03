@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
@@ -67,7 +67,11 @@ export function DependenciesTab() {
     data: response,
     error,
     isLoading,
-  } = useSWR<ApiResponse<DependencyEdge[]>>(apiUrl, fetcher<DependencyEdge[]>)
+  } = useQuery<ApiResponse<DependencyEdge[]>>({
+    queryKey: [apiUrl],
+    queryFn: () => fetcher<DependencyEdge[]>(apiUrl!),
+    enabled: Boolean(apiUrl),
+  })
 
   const dependencies = response?.data || []
 

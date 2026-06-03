@@ -12,7 +12,7 @@
  * - ClickHouse version and uptime
  */
 
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from './api-fetch'
 import { useHostId } from './use-host'
@@ -79,40 +79,44 @@ export function useOverviewData(
 ): UseOverviewDataResult {
   const { refreshInterval = 15000 } = options
   const hostId = useHostId()
+  const queryClient = useQueryClient()
 
-  const fetcher = async (url: string) => {
-    const response = await apiFetch(url)
-    if (!response.ok) {
-      const errorData = (await response
-        .json()
-        .catch(() => ({}))) as OverviewApiResponse
-      throw new Error(
-        errorData.error || `Failed to fetch overview: ${response.statusText}`
-      )
-    }
-    const json: OverviewApiResponse = await response.json()
-    if (!json.success || !json.data) {
-      throw new Error(json.error || 'No data returned')
-    }
-    return json.data
-  }
+  const queryKey =
+    hostId !== null ? [`/api/v1/overview?hostId=${hostId}`] : ['overview-disabled']
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<OverviewData>(
-    hostId !== null ? `/api/v1/overview?hostId=${hostId}` : null,
-    fetcher,
-    {
-      refreshInterval,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000,
-    }
-  )
+  const { data, error, isLoading, isFetching } = useQuery<OverviewData>({
+    queryKey,
+    queryFn: async () => {
+      const url = `/api/v1/overview?hostId=${hostId}`
+      const response = await apiFetch(url)
+      if (!response.ok) {
+        const errorData = (await response
+          .json()
+          .catch(() => ({}))) as OverviewApiResponse
+        throw new Error(
+          errorData.error || `Failed to fetch overview: ${response.statusText}`
+        )
+      }
+      const json: OverviewApiResponse = await response.json()
+      if (!json.success || !json.data) {
+        throw new Error(json.error || 'No data returned')
+      }
+      return json.data
+    },
+    enabled: hostId !== null,
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    staleTime: 5000,
+  })
+
+  const mutate = () => queryClient.invalidateQueries({ queryKey })
 
   return {
     data: data ?? null,
-    error,
+    error: error ?? undefined,
     isLoading,
-    isValidating,
+    isValidating: isFetching,
     mutate,
   }
 }

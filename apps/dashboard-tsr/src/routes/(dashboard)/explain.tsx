@@ -5,7 +5,7 @@ import {
   ExternalLinkIcon,
   InfoCircledIcon,
 } from '@radix-ui/react-icons'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { Suspense, useState } from 'react'
@@ -206,7 +206,7 @@ function PlanSettingsPanel({
           ))}
 
           <p className="text-muted-foreground text-xs">
-            ClickHouse &gt;= v25.9: accurate index output requires{' '}
+            ClickHouse >= v25.9: accurate index output requires{' '}
             <code className="bg-muted rounded px-1 text-[11px]">
               SETTINGS use_query_condition_cache = 0,
               use_skip_indexes_on_data_read = 0
@@ -277,7 +277,11 @@ function ExplainContent() {
     return `/api/v1/explain?${params.toString()}`
   })()
 
-  const { data, error, isLoading } = useSWR<ApiResponse>(apiUrl, fetcher)
+  const { data, error, isLoading } = useQuery<ApiResponse>({
+    queryKey: [apiUrl],
+    queryFn: () => fetcher(apiUrl!),
+    enabled: Boolean(apiUrl),
+  })
 
   // EXPLAIN PLAN (mode '') and PIPELINE return indent-nested text that renders
   // as a tree. AST/SYNTAX/ESTIMATE are flat or non-hierarchical, and the JSON

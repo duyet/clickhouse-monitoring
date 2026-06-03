@@ -9,7 +9,7 @@ import {
   SquareTerminal,
   TableIcon,
 } from 'lucide-react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { useExplorerState } from './hooks/use-explorer-state'
 import { Button } from '@/components/ui/button'
@@ -89,14 +89,15 @@ const fetcher = async (url: string): Promise<ApiResponse<Database[]>> => {
 export function ExplorerEmptyState() {
   const hostId = useHostId()
   const { setDatabase, setTab } = useExplorerState()
+  const queryKey = [`/api/v1/explorer/databases?hostId=${hostId}`]
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR<ApiResponse<Database[]>>(
-    `/api/v1/explorer/databases?hostId=${hostId}`,
-    fetcher
-  )
+  } = useQuery<ApiResponse<Database[]>>({
+    queryKey,
+    queryFn: () => fetcher(`/api/v1/explorer/databases?hostId=${hostId}`),
+  })
 
   const databases = response?.data
 

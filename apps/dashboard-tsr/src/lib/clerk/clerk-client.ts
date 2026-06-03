@@ -43,3 +43,6 @@ export function isClerkClientEnabled(): boolean {
 
   return Boolean(CLERK_PUBLISHABLE_KEY?.startsWith('pk_'))
 }
+
+/** Alias used by ported components. */
+export const isClerkEnabled = isClerkClientEnabled

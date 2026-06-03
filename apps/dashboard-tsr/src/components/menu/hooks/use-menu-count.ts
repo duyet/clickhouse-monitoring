@@ -1,18 +1,18 @@
 /**
  * Menu Count Hooks
  *
- * Fetches menu item counts via SWR with lazy loading and caching.
+ * Fetches menu item counts via TanStack Query with lazy loading and caching.
  *
  * The sidebar renders up to ~18 count badges. Rather than firing one request
  * per badge, all badges share a single batched request to
- * `/api/v1/menu-counts?hostId=<n>` (deduped by SWR via a shared key). Each
+ * `/api/v1/menu-counts?hostId=<n>` (deduped by TanStack Query via a shared key). Each
  * badge then selects its own value from the returned map.
  *
  * Uses a 2-minute refresh interval to minimize API load while keeping counts
  * fresh.
  */
 
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
@@ -32,12 +32,12 @@ interface MenuCountsResponse {
 /**
  * Fetches the full map of menu counts for a host in a single request.
  *
- * All callers share the same SWR key (`['/api/v1/menu-counts', hostId]`), so
- * SWR dedupes the N badge invocations into ONE network request per host.
+ * All callers share the same query key (`['/api/v1/menu-counts', hostId]`), so
+ * TanStack Query dedupes the N badge invocations into ONE network request per host.
  *
  * Features:
  * - 2-minute refresh interval (non-critical data)
- * - 1-minute deduping to prevent duplicate requests
+ * - 1-minute stale time to prevent duplicate requests
  * - No revalidation on focus/reconnect (reduces API load)
  * - Silent failure - returns an empty map on error
  *
@@ -48,28 +48,26 @@ export function useMenuCounts(hostId: number): {
   isLoading: boolean
   error?: Error
 } {
-  const { data, error, isLoading } = useSWR<MenuCountsResponse>(
-    ['/api/v1/menu-counts', hostId],
-    async () => {
+  const { data, error, isLoading } = useQuery<MenuCountsResponse>({
+    queryKey: ['/api/v1/menu-counts', hostId],
+    queryFn: async () => {
       const res = await apiFetch(`/api/v1/menu-counts?hostId=${hostId}`)
       if (!res.ok) {
         throw new Error('Failed to fetch menu counts')
       }
       return res.json()
     },
-    {
-      refreshInterval: REFRESH_INTERVAL.SLOW_2M,
-      dedupingInterval: 60_000, // 1 minute deduping
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false, // Don't retry on error (non-critical)
-    }
-  )
+    refetchInterval: REFRESH_INTERVAL.SLOW_2M,
+    staleTime: 60_000, // 1 minute deduping
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false, // Don't retry on error (non-critical)
+  })
 
   return {
     counts: data?.data?.counts ?? {},
     isLoading,
-    error,
+    error: error ?? undefined,
   }
 }
 

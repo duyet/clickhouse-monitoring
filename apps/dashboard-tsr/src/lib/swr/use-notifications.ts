@@ -13,7 +13,7 @@
  * - Provides dismiss functionality
  */
 
-import useSWR from 'swr'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Notification } from '@/lib/notifications/dismissed-notifications'
 
@@ -67,24 +67,25 @@ interface NotificationsResponse {
  * @param hostId - The current host ID
  */
 export function useNotifications(hostId: number): NotificationsResult {
-  const { data, error, isLoading, mutate } = useSWR<NotificationsResponse>(
-    `/api/v1/notifications?hostId=${hostId}`,
-    async (url) => {
-      const res = await apiFetch(url)
+  const queryClient = useQueryClient()
+  const queryKey = [`/api/v1/notifications?hostId=${hostId}`]
+  const { data, error, isLoading } = useQuery<NotificationsResponse>({
+    queryKey,
+    queryFn: async () => {
+      const res = await apiFetch(`/api/v1/notifications?hostId=${hostId}`)
       if (!res.ok) {
         throw new Error('Failed to fetch notifications')
       }
       return res.json()
     },
-    {
-      refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
-      dedupingInterval: 15_000, // 15 seconds deduping
-      revalidateOnFocus: true, // Revalidate on focus for critical metrics
-      revalidateOnReconnect: true, // Revalidate on reconnect
-      shouldRetryOnError: true, // Retry on error for critical data
-      errorRetryCount: 2, // Limit retries
-    }
-  )
+    refetchInterval: REFRESH_INTERVAL.MEDIUM_30S,
+    staleTime: 15_000, // 15 seconds deduping
+    refetchOnWindowFocus: true, // Revalidate on focus for critical metrics
+    refetchOnReconnect: true, // Revalidate on reconnect
+    retry: 2, // Retry on error for critical data, limit retries
+  })
+
+  const mutate = () => queryClient.invalidateQueries({ queryKey })
 
   // In-memory store of health-check alerts emitted via CustomEvent
   const [healthAlerts, setHealthAlerts] = useState<Notification[]>([])
@@ -156,7 +157,7 @@ export function useNotifications(hostId: number): NotificationsResult {
     notifications,
     totalCount,
     isLoading,
-    error,
+    error: error ?? undefined,
     refresh: () => mutate(),
     dismiss,
     dismissAll,

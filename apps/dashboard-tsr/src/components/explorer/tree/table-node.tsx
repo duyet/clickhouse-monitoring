@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import { ColumnNode } from './column-node'
 import { TreeNode } from './tree-node'
@@ -77,7 +77,7 @@ function formatRowCount(rows: number): string {
 function RowCountBadge({ totalRows }: { totalRows: number }) {
   const [isHovered, setIsHovered] = useState(false)
   const formatted = formatRowCount(totalRows)
-  const suffix = totalRows === 1 ? '\u00A0row' : '\u00A0rows'
+  const suffix = totalRows === 1 ? ' row' : ' rows'
 
   return (
     <span
@@ -116,12 +116,18 @@ export const TableNode = function TableNode({
   const [shouldFetch, setShouldFetch] = useState(false)
   const engineConfig = getEngineIconConfig(engine)
 
-  const { data: response, isLoading } = useSWR<ApiResponse<Column[]>>(
-    shouldFetch
-      ? `/api/v1/explorer/columns?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
-      : null,
-    fetcher
-  )
+  const queryKey = [
+    `/api/v1/explorer/columns?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`,
+  ]
+
+  const { data: response, isLoading } = useQuery<ApiResponse<Column[]>>({
+    queryKey,
+    queryFn: () =>
+      fetcher(
+        `/api/v1/explorer/columns?hostId=${hostId}&database=${encodeURIComponent(database)}&table=${encodeURIComponent(table)}`
+      ),
+    enabled: shouldFetch,
+  })
 
   const columns = response?.data
 
