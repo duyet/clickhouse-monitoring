@@ -146,7 +146,9 @@ so the MCP worker intercepts `/api/mcp` even though the dashboard owns the host.
 prerendered static root: OpenNext serves `/` as an asset without invoking the
 worker, so the host-redirect code never runs. A zone Redirect Rule fires at the
 edge *before* the worker, covering every path uniformly. Provision/refresh it
-(idempotent) with a `CLOUDFLARE_API_TOKEN` that has Zone › Config Rules › Edit:
+(idempotent) with a `CLOUDFLARE_API_TOKEN` scoped to **Zone › Single Redirect ›
+Edit** (manages the rule) **and Zone › Zone › Read** (the script resolves the
+zone id first, so a token missing read still fails):
 
 ```bash
 bun run cf:redirect-rule            # apply

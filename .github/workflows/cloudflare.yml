@@ -120,26 +120,18 @@ jobs:
           ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
           ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
           CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
+          CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
         working-directory: apps/dashboard
         run: |
           set -euo pipefail
-          # Set secrets directly to avoid executing PR-controlled scripts with privileged env
-          printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD --env preview
-          printf '%s' "$LLM_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_KEY --env preview
-          printf '%s' "$LLM_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_BASE --env preview
-          printf '%s' "$OPENROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_KEY --env preview
-          printf '%s' "$OPENROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_BASE --env preview
-          printf '%s' "$NVIDIA_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_KEY --env preview
-          printf '%s' "$NVIDIA_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_BASE --env preview
-          printf '%s' "$ANYROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_KEY --env preview
-          printf '%s' "$ANYROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_BASE --env preview
-          printf '%s' "$CLERK_SECRET_KEY_TEST" | npx --yes --package=wrangler@4 wrangler secret put CLERK_SECRET_KEY --env preview
-          printf '%s' "$CLICKHOUSE_TZ" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_TZ --env preview
-          printf '%s' "$CLICKHOUSE_EXCLUDE_USER_DEFAULT" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_EXCLUDE_USER_DEFAULT --env preview
-          printf '%s' "$NEXT_QUERY_CACHE_TTL" | npx --yes --package=wrangler@4 wrangler secret put NEXT_QUERY_CACHE_TTL --env preview
+          # Centralized inventory: scripts/set-secrets.ts is the single source of
+          # which secrets each worker needs (--from-env reads the values above).
+          # Safe to run here because the preview job excludes forks (head.repo ==
+          # this repo), so only push-access contributors can alter the script.
+          bun ../../scripts/set-secrets.ts --from-env --target dashboard --env preview
 
       - name: Deploy preview to Cloudflare Workers
         id: deploy
@@ -163,8 +155,7 @@ jobs:
         working-directory: apps/mcp
         run: |
           set -euo pipefail
-          printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD --env preview
-          printf '%s' "$CHM_API_KEY_SECRET" | npx --yes --package=wrangler@4 wrangler secret put CHM_API_KEY_SECRET --env preview
+          bun ../../scripts/set-secrets.ts --from-env --target mcp --env preview
 
       - name: Deploy MCP worker preview
         if: steps.deploy.outcome == 'success'
@@ -360,7 +351,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Pass secrets required by wrangler secret put
+          # Values read by scripts/set-secrets.ts via --from-env
           CLICKHOUSE_PASSWORD: ${{ secrets.CLICKHOUSE_PASSWORD }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
@@ -371,26 +362,16 @@ jobs:
           ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
           ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}
         working-directory: apps/dashboard
         run: |
           set -euo pipefail
-
-          printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD
-          printf '%s' "$LLM_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_KEY
-          printf '%s' "$LLM_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put LLM_API_BASE
-          printf '%s' "$OPENROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_KEY
-          printf '%s' "$OPENROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put OPENROUTER_API_BASE
-          printf '%s' "$NVIDIA_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_KEY
-          printf '%s' "$NVIDIA_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put NVIDIA_API_BASE
-          printf '%s' "$ANYROUTER_API_KEY" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_KEY
-          printf '%s' "$ANYROUTER_API_BASE" | npx --yes --package=wrangler@4 wrangler secret put ANYROUTER_API_BASE
-          printf '%s' "$CLERK_SECRET_KEY" | npx --yes --package=wrangler@4 wrangler secret put CLERK_SECRET_KEY
-          printf '%s' "$CLICKHOUSE_TZ" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_TZ
-          printf '%s' "$CLICKHOUSE_EXCLUDE_USER_DEFAULT" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_EXCLUDE_USER_DEFAULT
-          printf '%s' "$NEXT_QUERY_CACHE_TTL" | npx --yes --package=wrangler@4 wrangler secret put NEXT_QUERY_CACHE_TTL
+          # Single source of truth for the dashboard secret inventory (includes
+          # CHM_API_KEY_SECRET, which the inline list previously omitted).
+          bun ../../scripts/set-secrets.ts --from-env --target dashboard
 
       - name: Deploy to Cloudflare Workers
         id: deploy
@@ -412,8 +393,7 @@ jobs:
         working-directory: apps/mcp
         run: |
           set -euo pipefail
-          printf '%s' "$CLICKHOUSE_PASSWORD" | npx --yes --package=wrangler@4 wrangler secret put CLICKHOUSE_PASSWORD
-          printf '%s' "$CHM_API_KEY_SECRET" | npx --yes --package=wrangler@4 wrangler secret put CHM_API_KEY_SECRET
+          bun ../../scripts/set-secrets.ts --from-env --target mcp
 
       - name: Deploy MCP worker
         env:

@@ -17,8 +17,8 @@
  * and preserves any other dynamic-redirect rules already on the zone.
  *
  * Auth: needs CLOUDFLARE_API_TOKEN with permissions
- *   Zone > Config Rules > Edit  (a.k.a. "Dynamic Redirect" / Rulesets edit)
- *   Zone > Zone > Read
+ *   Zone > Single Redirect > Edit  (manages the dynamic_redirect ruleset)
+ *   Zone > Zone > Read             (resolve the zone id before the PUT)
  * Sourced from the environment or, failing that, .env.prod / .env.local
  * (same resolution as scripts/cloudflare-deploy.ts).
  *
@@ -32,8 +32,16 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const ENV_FILE_PROD = join(__dirname, '..', 'apps', 'dashboard', '.env.prod')
-const ENV_FILE_LOCAL = join(__dirname, '..', 'apps', 'dashboard', '.env.local')
+const REPO_ROOT = join(__dirname, '..')
+const DASHBOARD = join(REPO_ROOT, 'apps', 'dashboard')
+// Search order: repo-root files (as the deploy/env-sync scripts use) first,
+// then the dashboard app dir where this repo actually keeps its env files.
+const ENV_FILE_CANDIDATES = [
+  join(REPO_ROOT, '.env.prod'),
+  join(REPO_ROOT, '.env.local'),
+  join(DASHBOARD, '.env.prod'),
+  join(DASHBOARD, '.env.local'),
+]
 
 // --- Config -----------------------------------------------------------------
 
@@ -47,12 +55,20 @@ const DRY_RUN = process.argv.includes('--dry-run')
 
 // --- Env --------------------------------------------------------------------
 
+function stripQuotes(value: string): string {
+  if (
+    value.length >= 2 &&
+    ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'")))
+  ) {
+    return value.slice(1, -1)
+  }
+  return value
+}
+
+// First file that exists wins. Returns {} if none are present.
 function loadEnvFile(): Record<string, string> {
-  const file = existsSync(ENV_FILE_PROD)
-    ? ENV_FILE_PROD
-    : existsSync(ENV_FILE_LOCAL)
-      ? ENV_FILE_LOCAL
-      : null
+  const file = ENV_FILE_CANDIDATES.find((f) => existsSync(f))
   if (!file) return {}
 
   const vars: Record<string, string> = {}
@@ -60,7 +76,8 @@ function loadEnvFile(): Record<string, string> {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('#')) continue
     const match = trimmed.match(/^([^=]+)=(.*)$/)
-    if (match) vars[match[1]] = match[2]
+    // Strip surrounding quotes so `CLOUDFLARE_API_TOKEN="..."` authenticates.
+    if (match) vars[match[1].trim()] = stripQuotes(match[2].trim())
   }
   return vars
 }
@@ -71,8 +88,9 @@ function resolveToken(): string {
   const token = loadEnvFile().CLOUDFLARE_API_TOKEN
   if (!token || token === '') {
     console.error(
-      '❌ CLOUDFLARE_API_TOKEN not set (env, apps/dashboard/.env.prod, or .env.local).\n' +
-        '   Needs Zone > Config Rules > Edit + Zone > Zone > Read on ' +
+      '❌ CLOUDFLARE_API_TOKEN not set (env, .env.prod, or .env.local —\n' +
+        '   repo root or apps/dashboard/).\n' +
+        '   Needs Zone > Single Redirect > Edit + Zone > Zone > Read on ' +
         ZONE_NAME +
         '.'
     )
@@ -107,7 +125,11 @@ async function cf<T>(
     const detail = (json.errors ?? [])
       .map((e) => `[${e.code}] ${e.message}`)
       .join('; ')
-    throw new Error(`CF API ${path} failed (${res.status}): ${detail}`)
+    const err = new Error(`CF API ${path} failed (${res.status}): ${detail}`)
+    // Expose the status so callers can distinguish "ruleset does not exist
+    // yet" (404, benign) from auth/transient failures that must abort.
+    ;(err as Error & { status?: number }).status = res.status
+    throw err
   }
   return json.result
 }
@@ -168,7 +190,13 @@ async function main() {
       `/zones/${zone.id}/rulesets/phases/${PHASE}/entrypoint`
     )
     existing = ruleset.rules ?? []
-  } catch {
+  } catch (err) {
+    // A 404 means the zone has no dynamic-redirect entrypoint yet — expected
+    // on first run; the PUT below upserts it. Any other status (401/403 auth,
+    // 5xx transient) must abort, otherwise we'd silently overwrite the phase
+    // with only our rule and drop pre-existing redirects.
+    const status = (err as Error & { status?: number }).status
+    if (status !== 404) throw err
     console.log('   no existing dynamic-redirect ruleset (will create one)')
   }
 
