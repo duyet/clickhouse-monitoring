@@ -24,19 +24,25 @@ import {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    const pathname = normalizePath(new URL(request.url).pathname)
+    try {
+      const pathname = normalizePath(new URL(request.url).pathname)
 
-    // CORS preflight: respond before auth so browsers can complete the dance.
-    if (request.method === 'OPTIONS') return corsPreflight()
+      // CORS preflight: respond before auth so browsers can complete the dance.
+      if (request.method === 'OPTIONS') return corsPreflight()
 
-    if (pathname === '/api/mcp') return handleMcp(request)
-    if (pathname === '/api/v1/mcp/info') {
-      if (request.method !== 'GET') {
-        return withCors(new Response('Method Not Allowed', { status: 405 }))
+      if (pathname === '/api/mcp') return await handleMcp(request)
+      if (pathname === '/api/v1/mcp/info') {
+        if (request.method !== 'GET') {
+          return withCors(new Response('Method Not Allowed', { status: 405 }))
+        }
+        return await handleMcpInfo(request)
       }
-      return handleMcpInfo(request)
-    }
 
-    return withCors(new Response('Not Found', { status: 404 }))
+      return withCors(new Response('Not Found', { status: 404 }))
+    } catch {
+      // handleMcp/handleMcpInfo already catch internally; this guards the router
+      // itself (URL parsing) so the Worker never returns a CORS-less 1101.
+      return withCors(new Response('Internal Server Error', { status: 500 }))
+    }
   },
 }

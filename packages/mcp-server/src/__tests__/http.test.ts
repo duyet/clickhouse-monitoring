@@ -88,6 +88,18 @@ describe('mcp http', () => {
         authenticate: async () => sentinel,
       })
       expect(res.status).toBe(403)
+      // a custom authenticator's bare Response is CORS-wrapped on the way out
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    })
+
+    it('returns a CORS-wrapped 500 when the authenticator throws', async () => {
+      const res = await handleMcp(req(), {
+        authenticate: async () => {
+          throw new Error('boom')
+        },
+      })
+      expect(res.status).toBe(500)
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
     })
 
     it('honors a custom authenticator that allows through', async () => {

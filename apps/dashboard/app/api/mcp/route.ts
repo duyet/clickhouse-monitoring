@@ -1,4 +1,4 @@
-import { handleMcp } from '@chm/mcp-server/http'
+import { corsPreflight, handleMcp } from '@chm/mcp-server/http'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,3 +13,9 @@ function handler(req: Request): Promise<Response> {
 export const POST = handler
 export const GET = handler
 export const DELETE = handler
+
+// Answer CORS preflight so cross-origin MCP clients work against the in-process
+// route too (parity with the Worker, which handles OPTIONS in its router).
+export function OPTIONS(): Response {
+  return corsPreflight()
+}

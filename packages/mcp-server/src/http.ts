@@ -112,16 +112,24 @@ export async function handleMcp(
   req: Request,
   { authenticate = apiKeyAuthenticator }: HandleMcpOptions = {}
 ): Promise<Response> {
-  const fail = await authenticate(req)
-  if (fail) return fail
+  try {
+    // withCors even on the auth failure: a custom authenticator may return a
+    // bare Response, and browser MCP clients need the CORS headers to read it.
+    const fail = await authenticate(req)
+    if (fail) return withCors(fail)
 
-  const server = createMcpServer()
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  })
-  await server.connect(transport)
-  const res = await transport.handleRequest(req)
-  return withCors(res)
+    const server = createMcpServer()
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+    })
+    await server.connect(transport)
+    const res = await transport.handleRequest(req)
+    return withCors(res)
+  } catch {
+    // Never let an unhandled rejection escape as a CORS-less 500 (the Worker
+    // would surface a raw 1101). Keep the error shape consistent across runtimes.
+    return withCors(new Response('Internal Server Error', { status: 500 }))
+  }
 }
 
 /**
@@ -187,7 +195,11 @@ export async function handleMcpInfo(
   req: Request,
   { authenticate = apiKeyAuthenticator }: HandleMcpOptions = {}
 ): Promise<Response> {
-  const fail = await authenticate(req)
-  if (fail) return fail
-  return withCors(Response.json(buildServerInfo()))
+  try {
+    const fail = await authenticate(req)
+    if (fail) return withCors(fail)
+    return withCors(Response.json(buildServerInfo()))
+  } catch {
+    return withCors(new Response('Internal Server Error', { status: 500 }))
+  }
 }
