@@ -187,7 +187,6 @@ jobs:
               '| App | Preview URL |',
               '|-----|-------------|',
               '| **Dashboard** | https://preview.dash.chmonitor.dev |',
-              '| **Dashboard (TSR)** | https://preview.dash-tsr.chmonitor.dev |',
               '| **MCP** | https://preview.dash.chmonitor.dev/api/mcp |',
               '| **Landing** | https://preview.chmonitor.dev |',
               '| **Docs** | https://preview.docs.chmonitor.dev |',
