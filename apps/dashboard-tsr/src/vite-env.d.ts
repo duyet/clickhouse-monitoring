@@ -6,6 +6,7 @@
 interface ImportMetaEnv {
   readonly VITE_AUTH_PROVIDER?: string
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string
+  readonly VITE_FEATURE_CONVERSATION_DB?: string
 }
 
 interface ImportMeta {

@@ -88,12 +88,16 @@ export default defineConfig({
         '../../packages/clickhouse-client/src/index.ts'
       ),
       '@chm/types': r('../../packages/types/src/index.ts'),
+      // Native platform bindings — replaces @chm/platform's @opennextjs/cloudflare
+      // adapter with a `cloudflare:workers` env reader (see src/lib/platform-native.ts).
+      '@chm/platform': r('./src/lib/platform-native.ts'),
       // MCP subpaths — http.ts re-exports cors/server/data via relative imports
       // that resolve from the package source, so aliasing the entrypoints is enough.
       '@chm/mcp-server/http': r('../../packages/mcp-server/src/http.ts'),
       '@chm/mcp-server/data': r(
         '../../packages/mcp-server/src/data/mcp-tools-data.ts'
       ),
+      '@chm/mcp-server/auth': r('../../packages/mcp-server/src/auth/index.ts'),
       // The MCP SDK ships an exact `./server` export that shadows `./server/*`
       // subpaths in rolldown's exports resolution, so point the two used deep
       // imports straight at their dist ESM files (the `./*` wildcard target).

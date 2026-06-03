@@ -1,13 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 import { DocsMarkdown } from './_components/docs-markdown'
-import {
-  type DocsHeading,
-  type DocsPage,
-  docsHref,
-  docsNav,
-  getDocsPage,
-} from './_lib/docs'
+import { type DocsHeading, docsHref, docsNav, getDocsPage } from './_lib/docs'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/(docs)/docs/$')({
