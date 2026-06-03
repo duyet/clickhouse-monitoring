@@ -3,6 +3,7 @@
 import type { JSX } from 'react'
 
 import { lazy, Suspense } from 'react'
+import { AgentsPageSkeleton } from '@/components/skeletons'
 
 /**
  * Client entry point for the `/agents` route. The assistant-ui runtime, the
@@ -16,8 +17,10 @@ const AgentThreadPage = lazy(() =>
 )
 
 export function AgentsPageClient(): JSX.Element {
+  // The skeleton reserves the same footprint as AgentThreadPage (composer +
+  // 320px sidebar) so nothing shifts when the lazy chunk mounts (CLS fix).
   return (
-    <Suspense fallback={<div className="bg-background h-full" />}>
+    <Suspense fallback={<AgentsPageSkeleton />}>
       <AgentThreadPage />
     </Suspense>
   )

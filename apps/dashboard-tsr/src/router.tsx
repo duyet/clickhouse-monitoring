@@ -11,6 +11,11 @@ export function getRouter() {
   return createTanstackRouter({
     routeTree,
     scrollRestoration: true,
+    // No trailing-slash redirect (the old Next app served `/overview` directly).
+    // Default behaviour 301/308-redirects `/overview` → `/overview/`, adding
+    // ~55-60 ms TTFB to every page load; `'never'` strips it so routes resolve
+    // without the round-trip.
+    trailingSlash: 'never',
   })
 }
 

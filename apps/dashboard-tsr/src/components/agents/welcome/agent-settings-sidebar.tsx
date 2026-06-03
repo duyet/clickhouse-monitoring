@@ -20,7 +20,7 @@ import {
 
 import type { Skill } from '@/components/agents/welcome/skills-data'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AgentMcpPanel } from '@/components/agents/welcome/agent-mcp-panel'
 import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker'
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
@@ -67,6 +67,18 @@ export function AgentSettingsSidebar({
   const [skillDetail, setSkillDetail] = useState<Skill | null>(null)
   const [libraryOpen, setLibraryOpen] = useState(false)
   const hostId = useHostId()
+
+  // The parent opens this sidebar via a post-mount effect (`!isMobile`), so the
+  // very first commit on desktop transitions `open` false → true. Animating the
+  // width (`w-0` → `w-[320px]`) on that initial open reflows the chat column on
+  // every frame → ~0.12 CLS. Enable the width transition only AFTER first paint
+  // so the load-time open snaps to full width (space reserved instantly); later
+  // user toggles still animate.
+  const [animateOpen, setAnimateOpen] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimateOpen(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const sections = (
     <>
@@ -236,7 +248,8 @@ export function AgentSettingsSidebar({
   return (
     <aside
       className={cn(
-        'bg-card border-border shrink-0 overflow-x-hidden overflow-y-auto border-l transition-all duration-200',
+        'bg-card border-border shrink-0 overflow-x-hidden overflow-y-auto border-l',
+        animateOpen && 'transition-all duration-200',
         open ? 'w-[320px] opacity-100' : 'pointer-events-none w-0 opacity-0'
       )}
       style={{ maxHeight: 'calc(100dvh - 6rem)' }}
