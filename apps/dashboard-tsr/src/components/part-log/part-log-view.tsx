@@ -178,7 +178,18 @@ export function PartLogView() {
         </Card>
       ) : (
         <>
-          {chartsOpen && <PartLogCharts rows={rows} />}
+          <div
+            className={cn(
+              'grid transition-all duration-300 ease-in-out',
+              chartsOpen
+                ? 'grid-rows-[1fr] opacity-100'
+                : 'grid-rows-[0fr] opacity-0'
+            )}
+          >
+            <div className="overflow-hidden">
+              <PartLogCharts rows={rows} />
+            </div>
+          </div>
           <PartLogTable rows={rows} hostId={hostId} />
         </>
       )}

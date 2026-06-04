@@ -112,10 +112,21 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && expensiveQueriesConfig.relatedCharts && (
-              <RelatedCharts
-                relatedCharts={expensiveQueriesConfig.relatedCharts}
-              />
+            {expensiveQueriesConfig.relatedCharts && (
+              <div
+                className={cn(
+                  'grid transition-all duration-300 ease-in-out',
+                  chartsOpen
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0'
+                )}
+              >
+                <div className="overflow-hidden">
+                  <RelatedCharts
+                    relatedCharts={expensiveQueriesConfig.relatedCharts}
+                  />
+                </div>
+              </div>
             )}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
