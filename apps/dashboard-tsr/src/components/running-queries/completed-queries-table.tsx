@@ -1,4 +1,10 @@
-import { ArrowRight, CheckCircle2, Clock, User as UserIcon } from 'lucide-react'
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  User as UserIcon,
+} from 'lucide-react'
 
 import { memo, useMemo } from 'react'
 import { KindBadge } from '@/components/query-tables/kind-badge'
@@ -162,12 +168,21 @@ const CompletedRow = memo(function CompletedRow({
         </span>
         <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10.5px] text-muted-foreground">
           {detailUrl ? (
-            <Link
-              href={detailUrl}
-              className="inline-flex items-center gap-1 font-mono transition-colors hover:text-foreground"
-            >
-              #{d.id.slice(0, 8)}
-            </Link>
+            <>
+              <Link
+                href={detailUrl}
+                className="inline-flex items-center gap-1 font-mono transition-colors hover:text-foreground"
+              >
+                #{d.id.slice(0, 8)}
+              </Link>
+              <Link
+                href={detailUrl}
+                className="inline-flex items-center gap-1 rounded px-1 py-0.5 font-medium text-primary transition-colors hover:bg-primary/10"
+              >
+                View
+                <ExternalLink className="size-3" />
+              </Link>
+            </>
           ) : (
             <span className="inline-flex items-center gap-1 font-mono">
               #n/a
