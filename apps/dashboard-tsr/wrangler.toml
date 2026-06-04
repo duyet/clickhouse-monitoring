@@ -33,10 +33,11 @@ CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:@preset/chmonitor"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
 OPENROUTER_APP_NAME = "chmonitor"
+# Server-side auth provider (runtime). The CLIENT auth provider + Clerk
+# publishable key are NOT runtime vars — they are build-time inlined via
+# import.meta.env.VITE_* (see vite.config.ts CLIENT_ENV).
 CHM_AUTH_PROVIDER = "clerk"
-NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
@@ -66,10 +67,8 @@ LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
 OPENROUTER_REFERER = "https://clickhouse.duyet.net"
 OPENROUTER_APP_NAME = "chmonitor"
 
-# Auth provider for preview deployment
+# Server-side auth provider for preview (runtime). Client auth provider + the
+# Clerk publishable key are build-time inlined (import.meta.env.VITE_*); the CI
+# build step sets the pk_test key for preview deploys.
 CHM_AUTH_PROVIDER = "clerk"
-NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
-
-# Clerk test key for preview environment
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"

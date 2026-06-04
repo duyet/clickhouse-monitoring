@@ -19,8 +19,8 @@ export const featureFlags = {
    * Enable persistent database storage for AI agent conversations.
    *
    * When enabled, conversations are stored in D1 (Cloudflare Workers) or PostgreSQL
-   * instead of localStorage. Requires NEXT_PUBLIC_AUTH_PROVIDER=clerk for user
-   * isolation.
+   * instead of localStorage. Requires the clerk auth provider
+   * (VITE_AUTH_PROVIDER=clerk) for user isolation.
    *
    * @default false (unset)
    * @env VITE_FEATURE_CONVERSATION_DB (was NEXT_PUBLIC_FEATURE_CONVERSATION_DB)

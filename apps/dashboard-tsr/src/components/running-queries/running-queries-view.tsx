@@ -35,10 +35,10 @@ import { cn } from '@/lib/utils'
  *
  * Defaults to 5s so the table reads as genuinely "live"; `system.processes`
  * is an in-memory table, so frequent polling is cheap.
- * Override with `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS`.
+ * Override with `VITE_RUNNING_QUERIES_REFRESH_MS`.
  */
 const REFRESH_INTERVAL = (() => {
-  const envValue = process.env.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS
+  const envValue = import.meta.env.VITE_RUNNING_QUERIES_REFRESH_MS
   const parsed = envValue ? Number.parseInt(envValue, 10) : NaN
   return !Number.isNaN(parsed) && parsed > 0 ? parsed : 5_000
 })()
