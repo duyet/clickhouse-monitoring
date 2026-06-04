@@ -1,5 +1,3 @@
-const repo = process.env.GITHUB_REPOSITORY ?? 'duyet/clickhouse-monitoring'
-const tag = process.env.RELEASE_TAG ?? process.env.GITHUB_REF_NAME ?? 'v0.0.0'
 const sha = process.env.GITHUB_SHA ?? ''
 const shortSha = sha.slice(0, 7) || 'unknown'
 const date = new Date().toISOString()
