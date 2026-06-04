@@ -72,7 +72,7 @@ export const TreeNode = function TreeNode({
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="flex size-4 items-center justify-center rounded-sm hover:bg-sidebar-accent"
+                className="flex size-4 items-center justify-center rounded-sm hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 onClick={(e) => {
                   e.stopPropagation()
                 }}
