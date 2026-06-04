@@ -372,6 +372,20 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy --minify
 
+      - name: Verify deployment
+        env:
+          CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="https://preview.dash-tsr.chmonitor.dev"
+          else
+            BASE="https://dash-tsr.chmonitor.dev"
+          fi
+          echo "Verifying $BASE ..."
+          # Give the worker a few seconds to propagate after deploy
+          sleep 5
+          bun scripts/verify-deploy.ts --base-url "$BASE" --hosts 0
+
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v9
