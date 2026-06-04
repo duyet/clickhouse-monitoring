@@ -159,8 +159,16 @@ export function ExplorerEmptyState() {
               return (
                 <Card
                   key={db.name}
+                  role="button"
+                  tabIndex={0}
                   className="group cursor-pointer p-4 transition-[border-color,background-color] hover:border-primary/50 hover:bg-muted/50"
                   onClick={() => setDatabase(db.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setDatabase(db.name)
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div
