@@ -1,5 +1,10 @@
 import { DatabaseTree } from './tree/database-tree'
-import { Sheet, SheetContent } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import {
   SidebarContent,
   SidebarGroup,
@@ -37,6 +42,9 @@ export function ExplorerSidebar({
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
         <SheetContent side="left" className="w-80 p-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Database browser</SheetTitle>
+          </SheetHeader>
           <div className="flex h-full flex-col">{content}</div>
         </SheetContent>
       </Sheet>
