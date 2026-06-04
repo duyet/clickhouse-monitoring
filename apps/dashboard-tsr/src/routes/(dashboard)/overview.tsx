@@ -101,6 +101,29 @@ const LazyTabContent = function LazyTabContent({
   )
 }
 
+/**
+ * Per-tab loading fallback shown while a newly-visited tab's lazy chart chunks
+ * load. Mirrors the tab's real grid (class + chart count) so the swap is
+ * height-stable and only the tab region — not the whole page — shows skeletons.
+ */
+function TabContentSkeleton({ tab }: { tab: (typeof OVERVIEW_TABS)[number] }) {
+  if (tab.customContent === 'topology') {
+    return <Skeleton className="h-[420px] w-full rounded-lg" />
+  }
+
+  return (
+    <div className={tab.gridClassName} aria-hidden="true">
+      {tab.charts.map((chart) => (
+        <ChartSkeleton
+          key={chart.id}
+          className={cn(OVERVIEW_CHART_CLASS_NAME, chart.className)}
+          type={chart.type === 'metric' ? 'metric' : undefined}
+        />
+      ))}
+    </div>
+  )
+}
+
 function OverviewPageContent() {
   const hostId = useHostId()
   const searchParams = useSearchParams()
@@ -183,19 +206,28 @@ function OverviewPageContent() {
               forceMount={visitedTabs.has(tab.value) ? true : undefined}
             >
               {visitedTabs.has(tab.value) ? (
-                tab.customContent === 'topology' ? (
-                  <TopologyView
-                    hostId={hostId}
-                    detailHref={`/clusters?host=${hostId}`}
-                  />
-                ) : (
-                  <LazyTabContent
-                    charts={tab.charts}
-                    gridClassName={tab.gridClassName}
-                    label={tab.label}
-                    hostId={hostId}
-                  />
-                )
+                // LOCAL Suspense per tab: the charts are React.lazy(), so a
+                // first-time tab visit suspends while its chunk loads. Without
+                // a boundary here that suspension bubbles to the page-level
+                // <Suspense> and flashes the FULL-PAGE skeleton (status strip +
+                // KPI cards + tab bar) on every first tab switch. Catching it
+                // locally swaps only the tab's chart region; everything outside
+                // the tab content stays mounted.
+                <Suspense fallback={<TabContentSkeleton tab={tab} />}>
+                  {tab.customContent === 'topology' ? (
+                    <TopologyView
+                      hostId={hostId}
+                      detailHref={`/clusters?host=${hostId}`}
+                    />
+                  ) : (
+                    <LazyTabContent
+                      charts={tab.charts}
+                      gridClassName={tab.gridClassName}
+                      label={tab.label}
+                      hostId={hostId}
+                    />
+                  )}
+                </Suspense>
               ) : null}
             </TabsContent>
           ))}
