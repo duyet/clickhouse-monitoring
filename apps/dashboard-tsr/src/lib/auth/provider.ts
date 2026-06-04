@@ -1,6 +1,9 @@
+// Server reads the runtime worker var CHM_AUTH_PROVIDER first, then falls back
+// to the build-time client constant VITE_AUTH_PROVIDER (import.meta.env). The
+// legacy Next `NEXT_PUBLIC_AUTH_PROVIDER` prefix is gone in the Vite app.
 export const AUTH_PROVIDER_ENV_VARS = [
   'CHM_AUTH_PROVIDER',
-  'NEXT_PUBLIC_AUTH_PROVIDER',
+  'VITE_AUTH_PROVIDER',
 ] as const
 
 export const AUTH_PROVIDERS = ['none', 'clerk'] as const
@@ -36,7 +39,7 @@ export function parseAuthProvider(
 
 export function getAuthProvider(): AuthProvider {
   return parseAuthProvider(
-    process.env.CHM_AUTH_PROVIDER ?? process.env.NEXT_PUBLIC_AUTH_PROVIDER
+    process.env.CHM_AUTH_PROVIDER ?? import.meta.env.VITE_AUTH_PROVIDER
   )
 }
 

@@ -15,7 +15,7 @@ import { useHostId } from '@/lib/swr/use-host'
 const AUTOCOMPLETE_LIMIT = (() => {
   const envLimit =
     typeof process !== 'undefined'
-      ? process.env.NEXT_PUBLIC_AUTOCOMPLETE_LIMIT
+      ? import.meta.env.VITE_AUTOCOMPLETE_LIMIT
       : undefined
   const parsed = envLimit ? parseInt(envLimit, 10) : 500
   // Clamp between 1 and 1000, fallback to 500 if invalid

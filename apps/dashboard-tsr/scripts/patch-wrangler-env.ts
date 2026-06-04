@@ -46,9 +46,11 @@ const SHARED_VARS = {
   OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
-  NEXT_PUBLIC_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
 }
+// NOTE: client auth config (auth provider + Clerk publishable key) is NOT a
+// runtime worker var — it is build-time inlined via import.meta.env.VITE_* (see
+// vite.config.ts CLIENT_ENV). Only the SERVER-side CHM_AUTH_PROVIDER lives here.
 
 // --- Production config (keep in sync with wrangler.toml top-level) ---
 const PROD_CONFIG = {
@@ -57,7 +59,6 @@ const PROD_CONFIG = {
   vars: {
     ...SHARED_VARS,
     LLM_MODEL: 'anyrouter:@preset/chmonitor',
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
   },
 }
 
@@ -68,8 +69,6 @@ const PREVIEW_CONFIG = {
   vars: {
     ...SHARED_VARS,
     LLM_MODEL: 'anyrouter:z-ai/glm-4.7-flash',
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      'pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ',
   },
 }
 

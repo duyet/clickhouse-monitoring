@@ -17,9 +17,8 @@
  *   available in workerd and must not be imported (FAIL-LOUD rule). Per-request
  *   auth is centralized in middleware. The client treats principal as a hint;
  *   the server still enforces auth on protected routes.
- * - authProvider is read from the Worker env binding (canonical source on
- *   Workers) falling back to process.env, via the same CHM_AUTH_PROVIDER /
- *   NEXT_PUBLIC_AUTH_PROVIDER precedence the dashboard uses.
+ * - authProvider is read from the runtime CHM_AUTH_PROVIDER worker var, falling
+ *   back to the build-time import.meta.env.VITE_AUTH_PROVIDER constant.
  *
  * The shared feature-resolution helpers (lib/feature-permissions/shared.ts) and
  * env-override parsing (server.ts) are not ported into this app, so the minimal
@@ -195,7 +194,7 @@ function parseEnvFeatureOverrides(): FeatureOverrides {
 
 function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
   const authProvider = parseAuthProvider(
-    readEnv('CHM_AUTH_PROVIDER') ?? readEnv('NEXT_PUBLIC_AUTH_PROVIDER')
+    readEnv('CHM_AUTH_PROVIDER') ?? import.meta.env.VITE_AUTH_PROVIDER
   )
 
   const features = parseEnvFeatureOverrides()

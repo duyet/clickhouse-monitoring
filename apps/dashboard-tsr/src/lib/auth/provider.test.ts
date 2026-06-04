@@ -6,19 +6,12 @@ import {
 import { afterEach, describe, expect, test } from 'bun:test'
 
 const originalChmAuthProvider = process.env.CHM_AUTH_PROVIDER
-const originalNextPublicAuthProvider = process.env.NEXT_PUBLIC_AUTH_PROVIDER
 
 afterEach(() => {
   if (originalChmAuthProvider === undefined) {
     delete process.env.CHM_AUTH_PROVIDER
   } else {
     process.env.CHM_AUTH_PROVIDER = originalChmAuthProvider
-  }
-
-  if (originalNextPublicAuthProvider === undefined) {
-    delete process.env.NEXT_PUBLIC_AUTH_PROVIDER
-  } else {
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER = originalNextPublicAuthProvider
   }
 })
 
@@ -40,10 +33,13 @@ describe('parseAuthProvider', () => {
     expect(() => parseAuthProvider('basic')).toThrow(AuthProviderConfigError)
   })
 
-  test('prefers CHM_AUTH_PROVIDER over legacy public auth provider env', () => {
+  test('reads the runtime CHM_AUTH_PROVIDER worker var', () => {
+    // Server reads CHM_AUTH_PROVIDER first, then the build-time
+    // import.meta.env.VITE_AUTH_PROVIDER fallback (undefined under bun test).
     process.env.CHM_AUTH_PROVIDER = 'none'
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
-
     expect(getAuthProvider()).toBe('none')
+
+    process.env.CHM_AUTH_PROVIDER = 'clerk'
+    expect(getAuthProvider()).toBe('clerk')
   })
 })

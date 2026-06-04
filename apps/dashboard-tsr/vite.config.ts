@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { cloudflare } from '@cloudflare/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
@@ -7,6 +8,52 @@ import { nitro } from 'nitro/vite'
 import { defineConfig, type PluginOption } from 'vite'
 
 const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Build-time client env (`import.meta.env.VITE_*`).
+//
+// Vite/TanStack inline `import.meta.env.VITE_*` into BOTH the client and server
+// bundles at build time — the equivalent of Next's `NEXT_PUBLIC_*` inlining.
+// Cloudflare Worker `[vars]` are RUNTIME-only and never reach the client bundle,
+// so anything the browser needs at build time lives here, not in wrangler vars.
+//
+// Values come from `process.env.VITE_*` (CI overrides — e.g. the pk_test Clerk
+// key for preview deploys) with non-secret committed defaults that mirror
+// `scripts/patch-wrangler-env.ts`. The Clerk publishable key is a PUBLIC key
+// (already committed in wrangler.toml), so defaulting it here is safe.
+function git(cmd: string): string {
+  try {
+    return execSync(`git ${cmd}`, { encoding: 'utf-8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
+const CLIENT_ENV = {
+  VITE_AUTH_PROVIDER: process.env.VITE_AUTH_PROVIDER ?? 'clerk',
+  VITE_CLERK_PUBLISHABLE_KEY:
+    process.env.VITE_CLERK_PUBLISHABLE_KEY ??
+    'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
+  VITE_FEATURE_CONVERSATION_DB:
+    process.env.VITE_FEATURE_CONVERSATION_DB ?? 'true',
+  VITE_AUTOCOMPLETE_LIMIT: process.env.VITE_AUTOCOMPLETE_LIMIT ?? '',
+  VITE_RUNNING_QUERIES_REFRESH_MS:
+    process.env.VITE_RUNNING_QUERIES_REFRESH_MS ?? '',
+  VITE_GIT_SHA: process.env.VITE_GIT_SHA ?? git('rev-parse HEAD'),
+  VITE_GIT_REF: process.env.VITE_GIT_REF ?? git('rev-parse --abbrev-ref HEAD'),
+  VITE_BUILD_TIMESTAMP:
+    process.env.VITE_BUILD_TIMESTAMP ?? new Date().toISOString(),
+  VITE_CI: process.env.VITE_CI ?? (process.env.CI ? 'true' : ''),
+} as const
+
+// Explicit text-replacement of each `import.meta.env.VITE_*` read. Deterministic
+// across local + CI builds regardless of Vite's .env-file discovery.
+const CLIENT_ENV_DEFINE = Object.fromEntries(
+  Object.entries(CLIENT_ENV).map(([k, v]) => [
+    `import.meta.env.${k}`,
+    JSON.stringify(v),
+  ])
+)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SSR stub for browser-only render libraries (#1393 worker size limit).
@@ -147,6 +194,9 @@ const runtimePlugins: PluginOption[] = isNode
     ]
 
 export default defineConfig({
+  // Inline client-exposed build-time env (`import.meta.env.VITE_*`). See
+  // CLIENT_ENV above — Worker [vars] are runtime-only and never reach the client.
+  define: CLIENT_ENV_DEFINE,
   server: {
     port: 3000,
     // Allow Vite to read shared @chm/* package sources outside the app root.

@@ -160,7 +160,7 @@ function AboutPage() {
       <Separator />
 
       {/* Build Information - Only show in production builds */}
-      {process.env.NEXT_PUBLIC_CI && (
+      {import.meta.env.VITE_CI && (
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Build Information</h2>
           <Card>
@@ -173,11 +173,11 @@ function AboutPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     <code className="bg-muted rounded px-2 py-1 text-sm font-mono">
-                      {process.env.NEXT_PUBLIC_GIT_SHA?.slice(0, 7)}
+                      {import.meta.env.VITE_GIT_SHA?.slice(0, 7)}
                     </code>
-                    {process.env.NEXT_PUBLIC_GIT_SHA && (
+                    {import.meta.env.VITE_GIT_SHA && (
                       <a
-                        href={`${GITHUB_REPO.replace('git+', '').replace('.git', '')}/commit/${process.env.NEXT_PUBLIC_GIT_SHA}`}
+                        href={`${GITHUB_REPO.replace('git+', '').replace('.git', '')}/commit/${import.meta.env.VITE_GIT_SHA}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-foreground text-sm"
@@ -196,7 +196,7 @@ function AboutPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="font-mono text-xs">
-                      {process.env.NEXT_PUBLIC_GIT_REF}
+                      {import.meta.env.VITE_GIT_REF}
                     </Badge>
                   </div>
                 </div>
@@ -207,9 +207,9 @@ function AboutPage() {
                     Build Time
                   </p>
                   <p className="text-sm">
-                    {process.env.NEXT_PUBLIC_BUILD_TIMESTAMP
+                    {import.meta.env.VITE_BUILD_TIMESTAMP
                       ? new Date(
-                          process.env.NEXT_PUBLIC_BUILD_TIMESTAMP
+                          import.meta.env.VITE_BUILD_TIMESTAMP
                         ).toLocaleString('en-US', {
                           dateStyle: 'long',
                           timeStyle: 'medium',
