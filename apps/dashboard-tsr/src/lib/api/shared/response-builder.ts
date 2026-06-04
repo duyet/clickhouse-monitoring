@@ -119,14 +119,14 @@ export function createSuccessResponse<T>(
     metadata: responseMetadata,
   }
 
+  // Default cache headers apply to successful GET-like responses, but
+  // caller-supplied headers must WIN — otherwise createCachedResponse's custom
+  // Cache-Control is silently clobbered by the default, defeating its purpose.
+  // Spread defaults first, then `headers`, so explicit values take precedence.
   const responseHeaders: HeadersInit = {
     'Content-Type': 'application/json',
+    ...(status >= 200 && status < 300 ? DEFAULT_CACHE_HEADERS : {}),
     ...headers,
-  }
-
-  // Add cache headers for successful GET-like responses
-  if (status >= 200 && status < 300) {
-    Object.assign(responseHeaders, DEFAULT_CACHE_HEADERS)
   }
 
   return Response.json(response, {
