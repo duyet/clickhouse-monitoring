@@ -36,7 +36,9 @@ const TAB_TRIGGER_CLASS = cn(
   // states
   'transition-colors hover:text-foreground',
   'data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none',
-  'dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-transparent'
+  'dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-transparent',
+  // keyboard focus — inset ring stays inside the bottom-border strip
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset'
 )
 
 interface LazyTabContentProps {
