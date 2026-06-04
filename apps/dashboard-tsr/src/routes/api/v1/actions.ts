@@ -13,6 +13,8 @@ import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, log } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 // --- Inline ActionSchema (not yet ported to TSR lib/api/schemas) ---
 
@@ -162,6 +164,19 @@ export const Route = createFileRoute('/api/v1/actions')({
     handlers: {
       POST: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+
+        // Feature-permission gate: mutating actions (KILL QUERY / OPTIMIZE
+        // TABLE) honor CHM_FEATURE_ACTIONS_ACCESS / disabled-feature config
+        // independently of the global API guard. The global guard is a
+        // public passthrough under provider='none', so without this an
+        // operator who sets actions to `authenticated`/disabled would be
+        // silently ignored (anonymous mutating actions). Matches the
+        // dashboard route.
+        const permissionResponse = await authorizeFeatureRequest(
+          ACTIONS_FEATURE_PERMISSION,
+          request
+        )
+        if (permissionResponse) return permissionResponse
 
         const requestId = generateRequestId()
 
