@@ -231,8 +231,21 @@ export function SlowQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && slowQueriesConfig.relatedCharts && (
-              <RelatedCharts relatedCharts={slowQueriesConfig.relatedCharts} />
+            {slowQueriesConfig.relatedCharts && (
+              <div
+                className={cn(
+                  'grid transition-all duration-300 ease-in-out',
+                  chartsOpen
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0'
+                )}
+              >
+                <div className="overflow-hidden">
+                  <RelatedCharts
+                    relatedCharts={slowQueriesConfig.relatedCharts}
+                  />
+                </div>
+              </div>
             )}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">

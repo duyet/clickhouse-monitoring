@@ -278,7 +278,18 @@ export const RunningQueriesView = function RunningQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && <RunningQueriesCharts rows={rows} />}
+            <div
+              className={cn(
+                'grid transition-all duration-300 ease-in-out',
+                chartsOpen
+                  ? 'grid-rows-[1fr] opacity-100'
+                  : 'grid-rows-[0fr] opacity-0'
+              )}
+            >
+              <div className="overflow-hidden">
+                <RunningQueriesCharts rows={rows} />
+              </div>
+            </div>
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">
