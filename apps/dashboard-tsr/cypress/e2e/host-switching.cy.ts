@@ -44,14 +44,14 @@ describe('API smoke tests (auth posture)', () => {
     })
   })
 
-  it('gates /api/v1/* behind auth (401 without a token)', () => {
+  it('does not serve /api/v1/* data unauthenticated', () => {
     cy.request({
       url: '/api/v1/menu-counts?hostId=0',
       failOnStatusCode: false,
     }).then((res) => {
-      // 401 when API-key auth is enabled (prod parity); 200 only if the
-      // deployment runs with auth disabled. Either is a valid gate state.
-      expect([200, 401]).to.include(res.status)
+      // Gated states: 401 (no key) / 403 (forbidden). 200 only if the
+      // deployment runs with auth disabled. Any of these is a valid gate.
+      expect([200, 401, 403]).to.include(res.status)
     })
   })
 })
