@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 
 import { useEffect, useRef, useState } from 'react'
+import { activateOnEnterOrSpace } from '@/lib/a11y'
 import { cn } from '@/lib/utils'
 
 export interface ExpandableTextProps {
@@ -24,15 +25,6 @@ function getLineClampStyle(maxLines: number): CSSProperties {
 
 function checkOverflow(element: HTMLElement): boolean {
   return element.scrollHeight > element.clientHeight
-}
-
-function useKeyboardToggle(toggle: () => void) {
-  return (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      toggle()
-    }
-  }
 }
 
 function useClickOutside(
@@ -95,7 +87,7 @@ const PopoverVariant = function PopoverVariant({
     setIsOpen((prev) => !prev)
   }
 
-  const handleKeyDown = useKeyboardToggle(handleToggle)
+  const handleKeyDown = activateOnEnterOrSpace(handleToggle)
 
   useClickOutside(isOpen, [contentRef, popoverRef], () => setIsOpen(false))
 
@@ -172,7 +164,7 @@ const InlineVariant = function InlineVariant({
     setIsExpanded((prev) => !prev)
   }
 
-  const handleKeyDown = useKeyboardToggle(handleToggle)
+  const handleKeyDown = activateOnEnterOrSpace(handleToggle)
 
   return (
     <div

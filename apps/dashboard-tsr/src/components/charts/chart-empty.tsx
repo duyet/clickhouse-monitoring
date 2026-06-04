@@ -14,6 +14,7 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import { SuggestionCard } from '@/components/ui/suggestion-card'
+import { activateOnEnterOrSpace } from '@/lib/a11y'
 import { useRouter } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
@@ -92,14 +93,6 @@ export const ChartEmpty = function ChartEmpty({
     navigateToHref()
   }
 
-  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!href) return
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      navigateToHref()
-    }
-  }
-
   return (
     <Card
       className={cn(
@@ -110,7 +103,7 @@ export const ChartEmpty = function ChartEmpty({
         className
       )}
       onClick={handleCardClick}
-      onKeyDown={handleCardKeyDown}
+      onKeyDown={href ? activateOnEnterOrSpace(navigateToHref) : undefined}
       tabIndex={href ? 0 : undefined}
       role={href ? 'link' : 'status'}
       aria-label={
