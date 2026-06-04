@@ -127,6 +127,13 @@ const SSR_STUB_PREFIXES = [
   // remend, emenda-carousel, vaul, hast/rehype/marked, nanoid, zustand, dequal.
   '@assistant-ui/react',
   '@assistant-ui/react-ai-sdk',
+  // @json-render/shadcn (~532 KiB) + @json-render/react (~20 KiB). Only imported
+  // by json-render-registry.ts and json-render-catalog-with-schema.ts, which are
+  // consumed exclusively by the lazy-loaded assistant-ui components (json-render-
+  // message.tsx behind React.lazy). The server-side API route (api/v1/agent.ts)
+  // only imports @json-render/core (~60 KiB, must NOT be stubbed).
+  '@json-render/shadcn',
+  '@json-render/react',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -234,6 +241,18 @@ const SSR_STUB_NAMED_EXPORTS = [
   'useThreadRuntime',
   // @assistant-ui/react-ai-sdk
   'useChatRuntime',
+  // @json-render/react — value imports from json-render-catalog-with-schema.ts,
+  // json-render-registry.ts, and json-render-message.tsx. (type imports like
+  // DataPart are erased at build time and need no entry).
+  'schema',
+  'defineRegistry',
+  'getTextFromParts',
+  'Renderer',
+  'useJsonRenderMessage',
+  // @json-render/shadcn — value import from json-render-registry.ts.
+  'shadcnComponents',
+  // @json-render/shadcn/catalog — value import from json-render-catalog-with-schema.ts.
+  'shadcnComponentDefinitions',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
