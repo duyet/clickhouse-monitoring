@@ -469,8 +469,11 @@ const handleGet = withApiHandler(async (request: Request) => {
     query,
     format: (format || 'JSONEachRow') as DataFormat,
     hostId,
-    // Pass timezone to ClickHouse for session-level time conversion
-    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
+    // SECURITY: Enforce readonly mode to prevent DML/DDL even if SQL validation is bypassed
+    clickhouse_settings: {
+      readonly: 1,
+      ...(timezone ? { session_timezone: timezone } : {}),
+    },
   })
 
   // Handle errors
@@ -597,8 +600,11 @@ const handlePost = withApiHandler(async (request: Request) => {
     format: dataFormat,
     hostId,
     queryConfig: serverQueryConfig,
-    // Pass timezone to ClickHouse for session-level time conversion
-    clickhouse_settings: timezone ? { session_timezone: timezone } : undefined,
+    // SECURITY: Enforce readonly mode to prevent DML/DDL even if SQL validation is bypassed
+    clickhouse_settings: {
+      readonly: 1,
+      ...(timezone ? { session_timezone: timezone } : {}),
+    },
   })
 
   // Handle errors
