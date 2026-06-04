@@ -84,7 +84,19 @@ export const LazyChartWrapper = function LazyChartWrapper({
         containIntrinsicSize: isVisible ? undefined : `auto ${minHeightValue}`,
       }}
     >
-      {isVisible ? children : <Skeleton className="h-full w-full rounded-xl" />}
+      {isVisible ? (
+        children
+      ) : (
+        <div
+          role="status"
+          aria-busy="true"
+          aria-label="Loading chart"
+          className="h-full w-full"
+        >
+          <Skeleton className="h-full w-full rounded-xl" />
+          <span className="sr-only">Loading chart…</span>
+        </div>
+      )}
     </div>
   )
 }
