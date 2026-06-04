@@ -84,15 +84,26 @@ const securityHeadersMiddleware = createMiddleware().server(
 // 401 even when the user has a valid Clerk session cookie.
 //
 // The middleware must run before apiAuthMiddleware so the auth context is
-// available to downstream guards and route handlers. Only registered when
-// Clerk is the active auth provider (CHM_AUTH_PROVIDER=clerk).
+// available to downstream guards and route handlers.
+//
+// GUARD: `clerkMiddleware()` calls `clerkClient()` which requires
+// `CLERK_SECRET_KEY`. This key is only available at runtime (Cloudflare Worker
+// secret), NOT during CI builds or prerender. Without the guard, the build
+// fails with "Clerk: no secret key provided" during static generation.
+
+/** True when the Clerk secret key is available (runtime only, not CI build). */
+function hasClerkSecretKey(): boolean {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY || import.meta.env.CLERK_SECRET_KEY
+  )
+}
 
 export const startInstance = createStart(() => {
   // Order matters: security-headers is first (outermost) so it wraps the
   // entire chain and patches the response on the way out.
   const middleware = [securityHeadersMiddleware]
 
-  if (isClerkAuthProvider()) {
+  if (isClerkAuthProvider() && hasClerkSecretKey()) {
     middleware.push(clerkMiddleware())
   }
 
