@@ -1,0 +1,58 @@
+# Migrate to v0.3
+
+> **v0.3 is a breaking release.** This page lists what changed and what you need
+> to do to upgrade. Each future release with breaking changes gets its own
+> "Migrate to vX.Y" page in this same format.
+
+## Overview
+
+The dashboard is rebuilt on a new framework (TanStack Start). It is faster to
+load and pre-renders every page, but the features, routes, and ClickHouse setup
+are unchanged. Most self-hosters only need to redeploy — with one config change
+noted below.
+
+## Breaking changes
+
+### 1. Browser config variables renamed
+
+Variables that are exposed to the browser now use the **`VITE_`** prefix instead
+of `NEXT_PUBLIC_`.
+
+**What you need to do** — rename these in your deployment config:
+
+| Old name | New name |
+|---|---|
+| `NEXT_PUBLIC_AUTH_PROVIDER` | `VITE_AUTH_PROVIDER` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `VITE_CLERK_PUBLISHABLE_KEY` |
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `VITE_FEATURE_CONVERSATION_DB` |
+| `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | `VITE_AUTOCOMPLETE_LIMIT` |
+| `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | `VITE_RUNNING_QUERIES_REFRESH_MS` |
+
+The browser config must be set **at build time** (e.g. your CI build step), not
+only as a runtime variable.
+
+> The old `NEXT_PUBLIC_*` names still work as a fallback, so the rename is
+> recommended but not required — nothing breaks if you skip it.
+
+Server-side and secret variables (`CLICKHOUSE_*`, `CHM_*`, `LLM_*`,
+`CLERK_SECRET_KEY`, …) are **unchanged** — keep their names.
+
+See the [Environment Variables](/docs/reference/environment-variables) reference
+for the full list.
+
+## Upgrade steps
+
+1. Pull the v0.3 release.
+2. Rename the browser variables above (optional — old names still work).
+3. Redeploy as usual (Docker or Cloudflare).
+4. Verify (below).
+
+## Verify
+
+After deploying, load the dashboard and open **Overview** — charts should render
+with live data. If you use authentication, sign in and confirm the data loads.
+
+---
+
+_No action beyond the rename and a redeploy is required. Your ClickHouse hosts,
+credentials, and feature settings carry over unchanged._

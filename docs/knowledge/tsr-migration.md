@@ -217,3 +217,50 @@ data-dashboard pages** (render-delay collapses), but it's not universal.
   (mirrors the Next app's tsconfig); wiring `bun test` for them is a follow-up.
 - Make the **Cloudflare deploy a required CI check** — a size-failing deploy reached main
   during the migration because it isn't.
+
+## Env migration: `NEXT_PUBLIC_*` → `VITE_*` (client) + back-compat
+
+Next inlined browser vars as `process.env.NEXT_PUBLIC_*`; Vite inlines
+`import.meta.env.VITE_*` at build time into BOTH client and server bundles.
+Worker `[vars]` are **runtime-only** and never reach the client — so a
+browser-needed value MUST be a `VITE_*` set during `vite build`, not just a
+wrangler var.
+
+Wiring (all four must stay in sync per var):
+- `vite.config.ts` `CLIENT_ENV` + `define` block — inlines each `VITE_*` with
+  precedence `VITE_X ?? NEXT_PUBLIC_X ?? <committed default>` (back-compat).
+- `.github/workflows/cloudflare.yml` dashboard-tsr build step `env:` — sets
+  `VITE_*` (pk_test for PR preview, pk_live for prod) + git metadata.
+- `src/vite-env.d.ts` — types each `VITE_*`.
+- `wrangler.toml` / `patch-wrangler-env.ts` — only the SERVER vars (`CHM_*`),
+  never the client publishable key (it's build-time).
+
+Server reads use runtime `CHM_AUTH_PROVIDER` → build-time
+`import.meta.env.VITE_AUTH_PROVIDER` → legacy `NEXT_PUBLIC_AUTH_PROVIDER`
+fallback. Security boundary: only PUBLIC values are `VITE_*`; secrets stay
+server-side. Verify a build inlined the key: `grep -rl pk_live dist/client/assets/*.js` ≥ 1.
+
+The user-facing upgrade notes live at `docs/content/migrating/v0-3.mdx`
+("Migrate to v0.3") — keep that page non-technical (what changed + what to do).
+
+### Agent auto-migrate prompt (hand to an AI agent on another repo)
+
+```text
+Migrate this project's client-exposed env vars from Next's NEXT_PUBLIC_* to the
+Vite/TanStack VITE_* convention. Rules:
+1. SCOPE: only CLIENT (browser) vars. Never rename server/runtime/secret vars
+   (CLICKHOUSE_*, CHM_*, LLM_*, secrets).
+2. READS: client `process.env.NEXT_PUBLIC_X` → `import.meta.env.VITE_X`; server
+   reads use runtime var first, then `import.meta.env.VITE_X`, then keep
+   `NEXT_PUBLIC_X` as a final back-compat fallback.
+3. BUILD WIRING: Vite only inlines `import.meta.env.VITE_*` from the BUILD env,
+   not runtime Worker vars. Add a vite.config define/CLIENT_ENV mapping
+   `VITE_X ?? NEXT_PUBLIC_X ?? default` per var; set values in the CI build step.
+   Keep secrets OUT of this block.
+4. TYPES: declare each VITE_X in src/vite-env.d.ts.
+5. CONFIG: drop dead NEXT_PUBLIC_* from runtime Worker [vars]; keep CHM_*.
+   Update .env.example + docs.
+6. BACK-COMPAT: old NEXT_PUBLIC_* names must still work.
+7. SECURITY: never inline a secret into the client bundle.
+Verify: build, then `grep -rl '<pk_ key>' dist/client/assets/*.js` ≥ 1. Report the diff.
+```
