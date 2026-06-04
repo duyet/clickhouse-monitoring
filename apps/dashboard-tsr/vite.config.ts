@@ -134,6 +134,10 @@ const SSR_STUB_PREFIXES = [
   // only imports @json-render/core (~60 KiB, must NOT be stubbed).
   '@json-render/shadcn',
   '@json-render/react',
+  // assistant-stream (~15 KiB gz). Only imported by d1-thread-list-adapter.tsx
+  // and local-thread-list-adapter.tsx, both behind React.lazy in the agent thread.
+  // Never executes during SSR or prerender.
+  'assistant-stream',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -253,6 +257,9 @@ const SSR_STUB_NAMED_EXPORTS = [
   'shadcnComponents',
   // @json-render/shadcn/catalog — value import from json-render-catalog-with-schema.ts.
   'shadcnComponentDefinitions',
+  // assistant-stream — named import from d1-thread-list-adapter.tsx and
+  // local-thread-list-adapter.tsx (both behind React.lazy agent boundary).
+  'createAssistantStream',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
