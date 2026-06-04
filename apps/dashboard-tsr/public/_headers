@@ -1,0 +1,14 @@
+# Cloudflare Workers static-asset response headers.
+# https://developers.cloudflare.com/workers/static-assets/headers/
+#
+# Vite copies this file from public/ to the client build output (dist/client),
+# which is the Workers assets root. It applies the same security headers as the
+# request middleware in src/lib/security-headers.ts (SECURITY_HEADERS) — but to
+# PRERENDERED STATIC PAGES, which are served straight from the edge asset store
+# and bypass the worker (so the middleware never runs for them). Keep this list
+# in sync with SECURITY_HEADERS.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
