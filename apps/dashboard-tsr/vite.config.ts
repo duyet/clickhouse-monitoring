@@ -178,14 +178,17 @@ const SSR_STUB_NAMED_EXPORTS = [
   // @xyflow/react (React Flow) — all value imports from src/components/explorer
   // and src/components/ai-elements. Type imports (Edge, Node, ReactFlowProps,
   // etc.) need no entry — they're erased at build time.
+  'Background',
   'BaseEdge',
   'BezierEdge',
   'ConnectionLineType',
   'ControlButton',
+  'Controls',
   'EdgeLabelRenderer',
   'getBezierPath',
   'getNodesBounds',
   'Handle',
+  'MarkerType',
   'MiniMap',
   'NodeResizer',
   'Panel',
@@ -195,7 +198,9 @@ const SSR_STUB_NAMED_EXPORTS = [
   'StepEdge',
   'StraightEdge',
   'useEdges',
+  'useEdgesState',
   'useNodes',
+  'useNodesState',
   'useReactFlow',
   'ViewportPortal',
   // highlight.js — default export used as `hljs` in code-block.tsx (no named
