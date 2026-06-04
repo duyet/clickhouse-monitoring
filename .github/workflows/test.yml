@@ -181,6 +181,62 @@ jobs:
         env:
           CYPRESS_BROWSER: chrome
 
+  # E2E smoke for the TanStack Start app. Builds the Node target and self-serves
+  # on localhost (NOT the live edge worker — Cloudflare's bot WAF 403s CI/datacenter
+  # IPs). CHM_API_KEY_SECRET enables the /api/v1 auth gate so menu-counts returns
+  # 401 before any ClickHouse access — no DB service needed. Non-blocking, like
+  # the Next e2e job.
+  e2e-test-tsr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+
+      - name: Cypress Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-v1-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-v1-
+
+      - name: Install dependencies
+        working-directory: apps/dashboard-tsr
+        run: bun install
+
+      - name: Build Node target
+        working-directory: apps/dashboard-tsr
+        run: BUILD_TARGET=node bun run build:node
+
+      - name: Start server + run E2E
+        working-directory: apps/dashboard-tsr
+        run: |
+          node .output/server/index.mjs &
+          SERVER_PID=$!
+          # Wait up to 60s for the server to accept connections.
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/api/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health >/dev/null || { echo "server never came up"; kill $SERVER_PID; exit 1; }
+          bun run test:e2e:headless
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+        env:
+          CYPRESS_BROWSER: chrome
+          CYPRESS_BASE_URL: http://localhost:3000
+          PORT: '3000'
+          # Enables the API-key gate so /api/v1/* returns 401 without touching CH.
+          CHM_API_KEY_SECRET: ci-e2e-secret
+          CHM_AUTH_PROVIDER: none
+
   # Query config tests - latest ClickHouse only
   test-queries-config:
     runs-on: ubuntu-latest

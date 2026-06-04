@@ -97,6 +97,11 @@ const SSR_STUB_PREFIXES = [
   '@dagrejs/dagre',
   '@codemirror/',
   'codemirror',
+  // SQL beautify (sql-formatter, ~484K). Imported statically in 4 dialog/editor
+  // components, but `format()` only runs on user interaction — beautify defaults
+  // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
+  // it never executes during prerender. Stub it out of the worker bundle.
+  'sql-formatter',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -121,6 +126,8 @@ const SSR_STUB_NAMED_EXPORTS = [
   'placeholder',
   'EditorView',
   'keymap',
+  // sql-formatter
+  'format',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'

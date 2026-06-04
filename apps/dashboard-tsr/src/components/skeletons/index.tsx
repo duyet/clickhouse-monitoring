@@ -1,28 +1,13 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export { Skeleton }
 
-export function ChartSkeleton({
-  title,
-  type: _type,
-  className,
-}: {
-  title?: string
-  type?: string
-  className?: string
-} = {}) {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton variant="shimmer" className="h-5 w-40" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton variant="shimmer" className="h-48 w-full" />
-      </CardContent>
-    </Card>
-  )
-}
+// The chart skeleton must match the rendered ChartCard frame exactly to avoid a
+// load→render size flash, so use the typed, frame-matched implementation in
+// ./chart (it honors `type` to mirror area/bar/line/metric/table layouts).
+// The previous inline placeholder here used a default shadcn <Card> (py-6,
+// shadow, fixed h-48) that mismatched the chart card and caused the flash.
+export { ChartSkeleton, type ChartSkeletonType } from './chart'
 
 export function TableSkeleton({ rows = 8 }: { rows?: number }) {
   return (

@@ -96,9 +96,11 @@ interface ChartCardProps
 }
 
 /**
- * Inner card content that uses scale context (must be inside ChartScaleProvider)
+ * Inner card content. Renders ScaleToggle unconditionally — it self-nullifies
+ * (returns null) when no ChartScaleProvider is present, so the same component
+ * serves both the scale-enabled and scale-disabled paths (see ChartCard).
  */
-function ChartCardContentWithScale({
+function ChartCardContent({
   title,
   icon,
   headerClassName,
@@ -198,120 +200,19 @@ function ChartCardContentWithScale({
   )
 }
 
-/**
- * Inner card content without scale context
- */
-function ChartCardContentWithoutScale({
-  title,
-  icon,
-  headerClassName,
-  sql,
-  data,
-  metadata,
-  className,
-  contentClassName,
-  children,
-  dateRangeConfig,
-  currentRange,
-  onRangeChange,
-  staleError,
-  onRetry,
-  zoomButton,
-  href,
-  ...cardProps
-}: ChartCardProps) {
-  const router = useRouter()
-  const hostId = useHostId()
-
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!href) return
-
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest(
-      'button, a, select, input, [role="button"], [role="menuitem"], [role="tab"], .interactive-element'
-    )
-
-    if (isInteractive) {
-      return
-    }
-
-    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
-  }
-
-  return (
-    <Card
-      className={cn(chartCard.base, chartCard.variants.normal, className)}
-      {...cardProps}
-    >
-      {title ? (
-        <CardHeader className={cn(chartCard.header, headerClassName)}>
-          <header className="flex flex-row items-center justify-between gap-2">
-            <div
-              className={cn(
-                'flex items-center gap-1.5 min-w-0 flex-1 group/title',
-                href && 'cursor-pointer'
-              )}
-              onClick={href ? handleCardClick : undefined}
-            >
-              {icon && <span className="shrink-0">{icon}</span>}
-              <ExpandableText
-                variant="popover"
-                maxLines={1}
-                className={cn(
-                  'text-xs font-semibold tracking-wide text-foreground/90 uppercase min-w-0 flex-1 transition-colors duration-200',
-                  href && 'group-hover/title:text-primary'
-                )}
-              >
-                {title}
-              </ExpandableText>
-              {href && (
-                <ArrowUpRight className="size-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover/title:opacity-60 group-hover/title:translate-x-0 group-hover/title:translate-y-0 transition-all duration-300 text-muted-foreground shrink-0" />
-              )}
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              {staleError && onRetry && (
-                <ChartStaleIndicator error={staleError} onRetry={onRetry} />
-              )}
-              {zoomButton}
-              {dateRangeConfig && onRangeChange && (
-                <DateRangeSelector
-                  config={dateRangeConfig}
-                  value={currentRange ?? dateRangeConfig.defaultValue}
-                  onChange={onRangeChange}
-                />
-              )}
-              <CardToolbar
-                sql={sql}
-                data={data}
-                metadata={metadata}
-                filename={typeof title === 'string' ? title : undefined}
-              />
-            </div>
-          </header>
-        </CardHeader>
-      ) : null}
-
-      <CardContent
-        className={cn(chartCard.content, 'overflow-hidden', contentClassName)}
-      >
-        {children}
-      </CardContent>
-    </Card>
-  )
-}
-
 export const ChartCard = function ChartCard({
   enableScaleToggle = true,
   ...props
 }: ChartCardProps) {
-  // Wrap in ChartScaleProvider if scale toggle is enabled
+  // Scale-enabled charts get a ChartScaleProvider so the log/linear toggle
+  // works; otherwise ChartCardContent's ScaleToggle self-nullifies (no context).
   if (enableScaleToggle) {
     return (
       <ChartScaleProvider>
-        <ChartCardContentWithScale {...props} />
+        <ChartCardContent {...props} />
       </ChartScaleProvider>
     )
   }
 
-  return <ChartCardContentWithoutScale {...props} />
+  return <ChartCardContent {...props} />
 }
