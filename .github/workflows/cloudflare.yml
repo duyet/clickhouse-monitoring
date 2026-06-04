@@ -187,6 +187,7 @@ jobs:
               '| App | Preview URL |',
               '|-----|-------------|',
               '| **Dashboard** | https://preview.dash.chmonitor.dev |',
+              '| **Dashboard (TSR)** | https://preview.dash-tsr.chmonitor.dev |',
               '| **MCP** | https://preview.dash.chmonitor.dev/api/mcp |',
               '| **Landing** | https://preview.chmonitor.dev |',
               '| **Docs** | https://preview.docs.chmonitor.dev |',
@@ -386,30 +387,9 @@ jobs:
           sleep 5
           bun scripts/verify-deploy.ts --base-url "$BASE" --hosts 0
 
-      - name: Comment preview URL on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const sha = '${{ github.event.pull_request.head.sha }}'.slice(0, 7);
-            const body = [
-              '### ☁️ Cloudflare Preview Deployment (TSR)',
-              '',
-              '| App | Preview URL |',
-              '|-----|-------------|',
-              '| **Dashboard (TSR)** | https://preview.dash-tsr.chmonitor.dev |',
-              '',
-              `| **Commit** | \`${sha}\` |`,
-              '',
-              '> TanStack Start preview — automatically updated on every push to this PR.',
-            ].join('\n');
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body,
-            });
+      # The TSR preview URL is now included in the unified "☁️ Cloudflare Preview
+      # Deployment" comment posted by the main dashboard job — no separate
+      # comment here (avoids two preview comments per PR).
 
       - name: Deployment summary
         if: github.event_name != 'pull_request'
