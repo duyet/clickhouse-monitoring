@@ -102,6 +102,12 @@ const SSR_STUB_PREFIXES = [
   // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
   // it never executes during prerender. Stub it out of the worker bundle.
   'sql-formatter',
+  // highlight.js (~106K chunk). Imported in code-block.tsx (default hljs from
+  // lib/core + subpath languages). highlightCode() runs inside useMemo guarded
+  // by `if (!displaySQL) return ''` — during SSR/prerender sql metadata is
+  // undefined so the function is never invoked. The Proxy stub satisfies
+  // the import without breaking the render.
+  'highlight.js',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
