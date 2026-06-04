@@ -276,8 +276,11 @@ function isStubbedSpecifier(id: string): boolean {
 function ssrClientOnlyStub(): PluginOption {
   // Virtual module: a Proxy default export (covers default/namespace imports of
   // mermaid/katex/cytoscape) plus explicit named aliases for the codemirror
-  // symbols. The Proxy is never invoked — these modules only execute inside
-  // browser effects / lazy chunks that the worker never reaches.
+  // symbols. The modules only execute meaningfully inside browser effects /
+  // lazy chunks the worker never reaches, BUT some are evaluated at module
+  // top-level during prerender (e.g. `defineRegistry(...).registry` in
+  // json-render-registry.ts). So `apply()`/`get` both return the chainable
+  // `stub` — calling or property-accessing a stub stays safe and never throws.
   const namedExports = SSR_STUB_NAMED_EXPORTS.map(
     (n) => `export const ${n} = stub`
   ).join('\n')
@@ -289,7 +292,7 @@ const stub = new Proxy(noop, {
     if (typeof p === 'symbol') return undefined
     return stub
   },
-  apply() { return undefined },
+  apply() { return stub },
   construct() { return {} },
 })
 export default stub
