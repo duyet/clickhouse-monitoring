@@ -223,7 +223,7 @@ const FIRST_TAB = OVERVIEW_TABS[0]
 function OverviewPageFallback() {
   return (
     <div>
-      <Skeleton className="mb-3 h-10 w-full rounded-lg" />
+      <Skeleton className="mb-3 h-5 w-full rounded-lg" />
       <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-lg" />
