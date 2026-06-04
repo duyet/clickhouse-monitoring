@@ -12,6 +12,7 @@ import {
 import { AnimatedNumber } from '@/components/cards/animated-number'
 import { MiniAreaChart } from '@/components/charts/mini-charts'
 import { AppLink as Link } from '@/components/ui/app-link'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /** Sparkline color when a card does not specify one (blue-600). */
@@ -93,9 +94,9 @@ export const KpiCard = function KpiCard({
   if (isLoading) {
     return (
       <div className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}>
-        <div className="h-3 w-24 animate-pulse rounded bg-foreground/[0.06]" />
-        <div className="h-7 w-20 animate-pulse rounded-md bg-foreground/[0.06]" />
-        <div className="h-3 w-28 animate-pulse rounded bg-foreground/[0.04]" />
+        <Skeleton variant="shimmer" className="h-3 w-24" />
+        <Skeleton variant="shimmer" className="h-7 w-20" />
+        <Skeleton variant="shimmer" className="h-3 w-28" />
       </div>
     )
   }
