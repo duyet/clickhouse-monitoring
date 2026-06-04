@@ -22,7 +22,7 @@ function TableRedirect() {
   }, [searchParams, router])
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-96 items-center justify-center">
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-96 w-full" />
@@ -35,7 +35,7 @@ function TablePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center">
+        <div className="flex h-96 items-center justify-center">
           <div className="space-y-4">
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-96 w-full" />
