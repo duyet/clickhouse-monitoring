@@ -197,6 +197,19 @@ data-dashboard pages** (render-delay collapses), but it's not universal.
   `nodejs_compat_populate_process_env` — the first thing to check is that the
   secret is set on `chmonitor-dash-tsr` (and `--env preview`), then redeploy.
   Verify with `bun wrangler secret list` (top-level and `--env preview`).
+- **Surfaced by wiring the chrome (#1433), deferred as separate items:**
+  - **Refresh controls are no-ops on TanStack Query.** `HeaderActions`/
+    `RefreshCountdown` (and the Cmd/Ctrl+R shortcut) still dispatch the SWR-era
+    `swr:revalidate` window event; the Query data hooks don't listen. Bridge it
+    to `queryClient.invalidateQueries()` once — but guard against doubling up
+    with each query's own `refetchInterval`.
+  - **Focus rings lost under the global shadow strip.** The project-wide
+    `box-shadow: none !important` on buttons/cards (ported verbatim from the Next
+    `globals.css`) also kills shadcn's `focus-visible:ring-*`. Narrow it to skip
+    `:focus-visible` — apply to **both** apps' globals so they stay in parity.
+  - **`--destructive-foreground` is mapped but undefined** in both apps'
+    `globals.css` (`text-destructive-foreground` resolves to nothing; currently
+    unused). Add the token to both files together if a consumer ever needs it.
 - Conversation **server-persistence** needs a provisioned `CONVERSATIONS_D1`
   (`wrangler d1 create`) + binding in `wrangler.toml` + `patch-wrangler-env.ts`. Agent chat
   works via the client thread store until then.

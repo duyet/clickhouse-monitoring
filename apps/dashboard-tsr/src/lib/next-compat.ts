@@ -23,7 +23,11 @@ import { useMemo } from 'react'
  */
 export function useSearchParams(): URLSearchParams {
   const searchStr = useRouterState({ select: (s) => s.location.searchStr })
-  return new URLSearchParams(searchStr)
+  // Memoize on searchStr so the URLSearchParams keeps a stable identity while
+  // the query string is unchanged. Consumers (e.g. the client-side redirect
+  // routes) put the result in useEffect deps; a fresh object every render would
+  // re-run those effects on unrelated re-renders.
+  return useMemo(() => new URLSearchParams(searchStr), [searchStr])
 }
 
 /**
