@@ -25,7 +25,7 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, useMemo, Suspense, useEffect, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -229,7 +229,10 @@ function useAutoCompleteSchema(hostId: number) {
     refetchOnWindowFocus: false,
   })
 
-  return (() => {
+  // Memoize to avoid returning a new object reference every render, which
+  // would trigger the SqlEditor's schema useEffect on every render and
+  // potentially cause expensive CodeMirror reconfigurations.
+  return useMemo(() => {
     const schema: Record<string, string[]> = {}
     const databases = dbResponse?.data || []
 
@@ -239,7 +242,7 @@ function useAutoCompleteSchema(hostId: number) {
     }
 
     return schema
-  })()
+  }, [dbResponse?.data])
 }
 
 export function QueryTab() {
