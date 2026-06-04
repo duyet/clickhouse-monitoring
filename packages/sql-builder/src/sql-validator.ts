@@ -53,7 +53,7 @@ export const SQL_PATTERNS = {
   /**
    * UNION-based injection attacks
    */
-  UNION_INJECTION: /\bunion\s+select\b/i,
+  UNION_INJECTION: /\bunion\s+(all\s+)?select\b/i,
 
   /** ClickHouse SET commands that modify server behavior */
   SET_COMMAND: /\bSET\b/i,
