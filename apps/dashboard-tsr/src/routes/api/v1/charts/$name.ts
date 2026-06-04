@@ -19,6 +19,7 @@ import {
   executeMultiChartQuery,
   isValidInterval,
 } from '@/lib/api/query-executor'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 export const Route = createFileRoute('/api/v1/charts/$name')({
   server: {
@@ -125,6 +126,17 @@ export const Route = createFileRoute('/api/v1/charts/$name')({
             { status: 500 }
           )
         }
+
+        // Enforce the chart's deployment-level feature gate (e.g. system
+        // metric charts carry METRICS_PERMISSION). Without this, direct
+        // requests like /api/v1/charts/memory-usage would bypass
+        // CHM_DISABLED_FEATURES / CHM_AUTH_REQUIRED_FEATURES. Matches the
+        // dashboard chart route.
+        const permissionResponse = await authorizeFeatureRequest(
+          queryDef.permission,
+          request
+        )
+        if (permissionResponse) return permissionResponse
 
         try {
           // Multi-query chart (summary charts)

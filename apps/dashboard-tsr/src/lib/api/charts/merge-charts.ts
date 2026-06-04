@@ -45,12 +45,14 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
   `,
       optional: true,
       tableCheck: 'system.metric_log',
-      // Query variants for different ClickHouse versions
-      variants: [
+      // metric_log exists from v20.5; older versions fall back to the
+      // point-in-time system.metrics. VersionedSql picks the highest `since`
+      // <= CH version (first/oldest entry is the unknown-version fallback).
+      // Replaces the deprecated `variants` form (not selected by the executor).
+      sql: [
         {
-          // For very old versions without metric_log, provide current values only
-          versions: { maxVersion: '20.5' },
-          query: `
+          since: '1.0',
+          sql: `
     SELECT
       now() AS event_time,
       toFloat64(value) AS avg_CurrentMetric_Merge,
@@ -66,8 +68,19 @@ export const mergeCharts: Record<string, ChartQueryBuilder> = {
     WHERE metric = 'PartMutation'
     ORDER BY event_time
         `,
-          description:
-            'Fallback for pre-20.5: returns current merge count only (no history)',
+        },
+        {
+          since: '20.5',
+          sql: `
+    SELECT ${applyInterval(interval, 'event_time')},
+           avg(CurrentMetric_Merge) AS avg_CurrentMetric_Merge,
+           avg(CurrentMetric_PartMutation) AS avg_CurrentMetric_PartMutation
+    FROM merge('system', '^metric_log')
+    ${timeFilter ? `WHERE ${timeFilter}` : ''}
+    GROUP BY 1
+    ORDER BY 1
+    WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  `,
         },
       ],
     }

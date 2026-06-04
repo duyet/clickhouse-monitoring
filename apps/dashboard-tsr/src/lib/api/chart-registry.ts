@@ -15,6 +15,7 @@
  */
 
 import type { VersionedSql } from '@chm/sql-builder'
+import type { FeaturePermission } from '@/lib/feature-permissions/types'
 import type { ClickHouseInterval } from './query-executor'
 
 import { connectionCharts } from './charts/connection-charts'
@@ -65,12 +66,20 @@ export interface ChartQueryResult<_T extends ChartDataPoint = ChartDataPoint> {
   optional?: boolean
   tableCheck?: string | string[]
   cachePolicy?: CachePolicy
+  /**
+   * Deployment-level feature gate (e.g. METRICS_PERMISSION on system charts).
+   * The route enforces it via `authorizeFeatureRequest` before executing, so
+   * `CHM_DISABLED_FEATURES` / `CHM_AUTH_REQUIRED_FEATURES` are honored.
+   */
+  permission?: FeaturePermission
 }
 
 /** Multi-query chart result (executed in parallel, keyed). */
 export interface MultiChartQueryResult {
   queries: Array<{ key: string; query: string; optional?: boolean }>
   cachePolicy?: CachePolicy
+  /** Deployment-level feature gate; enforced by the route before executing. */
+  permission?: FeaturePermission
 }
 
 /** A chart builder maps params to a (multi-)query result. */
