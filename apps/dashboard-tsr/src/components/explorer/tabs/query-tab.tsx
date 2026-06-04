@@ -39,6 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { apiFetch } from '@/lib/swr/api-fetch'
+import { activateOnEnterOrSpace } from '@/lib/a11y'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -96,13 +97,6 @@ const ExpandableCell = function ExpandableCell({ value }: { value: unknown }) {
     setExpanded((prev) => !prev)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      toggleExpand()
-    }
-  }
-
   if (!isLong) {
     return <span className="block truncate">{stringValue}</span>
   }
@@ -112,7 +106,7 @@ const ExpandableCell = function ExpandableCell({ value }: { value: unknown }) {
       role="button"
       tabIndex={0}
       onClick={toggleExpand}
-      onKeyDown={handleKeyDown}
+      onKeyDown={activateOnEnterOrSpace(toggleExpand)}
       className={cn(
         'block cursor-pointer transition-colors',
         expanded ? 'whitespace-pre-wrap break-words' : 'truncate',
