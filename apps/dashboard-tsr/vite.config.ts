@@ -108,6 +108,25 @@ const SSR_STUB_PREFIXES = [
   // always false during prerender (TanStack Query data is empty). Stubbing this
   // out of the worker bundle is the single largest remaining size win.
   'recharts',
+  // Streaming markdown renderer — only used in assistant-ui / ai-elements
+  // components behind React.lazy boundaries (agent-thread-page,
+  // global-assistant-modal-impl). Never executes during SSR/prerender.
+  'streamdown',
+  '@streamdown',
+  // React Flow graph visualization (~372 KB with d3-* deps). The explorer route
+  // lazy-loads the entire DependencyGraph via React.lazy + Suspense, so xyflow
+  // never executes during SSR or prerender.
+  '@xyflow/react',
+  // highlight.js (~106K chunk). Imported in code-block.tsx. highlightCode() runs
+  // inside useMemo guarded by `if (!displaySQL) return ''` — during SSR/prerender
+  // sql metadata is undefined so the function is never invoked.
+  'highlight.js',
+  // @assistant-ui/react + react-ai-sdk (~1.5 MB thread chunk). All assistant-ui
+  // code is behind React.lazy in agents-page-client.tsx and
+  // global-assistant-modal.tsx. Also drops transitive deps: assistant-cloud,
+  // remend, emenda-carousel, vaul, hast/rehype/marked, nanoid, zustand, dequal.
+  '@assistant-ui/react',
+  '@assistant-ui/react-ai-sdk',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -153,6 +172,63 @@ const SSR_STUB_NAMED_EXPORTS = [
   'RadialBarChart',
   'XAxis',
   'YAxis',
+  // streamdown + @streamdown/mermaid
+  'Streamdown',
+  'mermaid',
+  // @xyflow/react (React Flow) — all value imports from src/components/explorer
+  // and src/components/ai-elements. Type imports (Edge, Node, ReactFlowProps,
+  // etc.) need no entry — they're erased at build time.
+  'BaseEdge',
+  'BezierEdge',
+  'ConnectionLineType',
+  'ControlButton',
+  'EdgeLabelRenderer',
+  'getBezierPath',
+  'getNodesBounds',
+  'Handle',
+  'MiniMap',
+  'NodeResizer',
+  'Panel',
+  'Position',
+  'ReactFlow',
+  'SimpleBezierEdge',
+  'StepEdge',
+  'StraightEdge',
+  'useEdges',
+  'useNodes',
+  'useReactFlow',
+  'ViewportPortal',
+  // highlight.js — default export used as `hljs` in code-block.tsx (no named
+  // exports needed; the subpath imports like `highlight.js/lib/languages/sql`
+  // are matched by the prefix rule).
+  // @assistant-ui/react — all named imports used across src/components/assistant-ui/
+  // and src/lib/conversation-store/adapter/
+  'ActionBarPrimitive',
+  'AssistantModalPrimitive',
+  'AssistantRuntimeProvider',
+  'BranchPickerPrimitive',
+  'ComposerPrimitive',
+  'EnrichedPartState',
+  'ErrorPrimitive',
+  'MessagePartStatus',
+  'MessagePrimitive',
+  'PartState',
+  'RuntimeAdapterProvider',
+  'ThreadListItemPrimitive',
+  'ThreadListPrimitive',
+  'ThreadPrimitive',
+  'ToolCallMessagePartStatus',
+  'useAui',
+  'useMessage',
+  'useMessageTiming',
+  'useRemoteThreadListRuntime',
+  'useScrollLock',
+  'useThread',
+  'useThreadList',
+  'useThreadListItem',
+  'useThreadRuntime',
+  // @assistant-ui/react-ai-sdk
+  'useChatRuntime',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
