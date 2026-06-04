@@ -1,10 +1,5 @@
 import { chartCard } from '@/components/charts/chart-card-styles'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -224,10 +219,14 @@ export const ChartSkeleton = function ChartSkeleton({
   }
 
   return (
+    // Use the SAME frame as the rendered ChartCard (variants.normal: border,
+    // pt-1 pb-2, rounded-xl, gradient bg) so the card geometry is pixel-identical
+    // between loading and loaded — only the inner content swaps. Mismatched
+    // padding/border/radius here was the source of the load→render size flash.
     <Card
       className={cn(
         chartCard.base,
-        chartCard.variants.default,
+        chartCard.variants.normal,
         'min-h-[160px]',
         className
       )}
@@ -235,19 +234,23 @@ export const ChartSkeleton = function ChartSkeleton({
       aria-busy="true"
       aria-label={title ? `Loading ${title}` : 'Loading chart'}
     >
+      {/* Header geometry mirrors ChartCard's header (same padding + typography)
+          so the title row is the same height in both states. */}
       <CardHeader className={chartCard.header}>
-        <CardDescription className="text-xs font-medium tracking-wide text-muted-foreground/80 uppercase py-2 flex items-center justify-between">
+        <header className="flex flex-row items-center justify-between gap-2">
           {title ? (
-            <span className="flex items-center gap-2">
-              <span className="truncate max-w-[200px]">{title}</span>
-              <span className="text-[10px] text-muted-foreground/40 font-normal lowercase animate-pulse">
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="truncate text-xs font-semibold tracking-wide text-foreground/90 uppercase">
+                {title}
+              </span>
+              <span className="text-[10px] text-muted-foreground/40 font-normal lowercase animate-pulse shrink-0">
                 (loading…)
               </span>
             </span>
           ) : (
             <Skeleton className="h-3 w-32" />
           )}
-        </CardDescription>
+        </header>
       </CardHeader>
 
       <CardContent
