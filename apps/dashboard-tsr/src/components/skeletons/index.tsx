@@ -8,21 +8,7 @@ export { Skeleton }
 // The previous inline placeholder here used a default shadcn <Card> (py-6,
 // shadow, fixed h-48) that mismatched the chart card and caused the flash.
 export { ChartSkeleton, type ChartSkeletonType } from './chart'
-
-export function TableSkeleton({ rows = 8 }: { rows?: number }) {
-  return (
-    <div className="flex flex-col gap-2">
-      {Array.from({ length: rows }, (_, i) => `skeleton-row-${i}`).map(
-        (key) => (
-          <Skeleton key={key} variant="shimmer" className="h-9 w-full" />
-        )
-      )}
-    </div>
-  )
-}
-
-// Additional page-scoped skeletons re-exported from their sub-files (the
-// foundation kept ChartSkeleton/TableSkeleton inline with the shimmer variant).
+// Additional page-scoped skeletons re-exported from their sub-files.
 export { ExplorerSkeleton } from './explorer'
 export {
   AgentsPageSkeleton,
@@ -31,5 +17,9 @@ export {
   TableOnlyPageSkeleton,
 } from './page'
 export { SidebarSkeleton } from './sidebar'
+// Re-export the shape-matched TableSkeleton (header area, column headers,
+// row stagger, pagination footer, a11y attributes) so all consumers get a
+// skeleton that mirrors the real DataTable layout and avoids CLS.
+export { TableSkeleton } from './table'
 export { TabsSkeleton } from './tabs'
 export { ListSkeleton, MultiLineSkeleton, SingleLineSkeleton } from './ui'
