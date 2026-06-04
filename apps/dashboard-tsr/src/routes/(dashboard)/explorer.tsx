@@ -14,7 +14,7 @@ const ExplorerLayout = lazy(() =>
 function ExplorerPage() {
   return (
     <Suspense fallback={<ExplorerSkeleton />}>
-      <div className="h-[calc(100vh-4rem)]">
+      <div className="h-[calc(100dvh-4rem)]">
         <ExplorerLayout />
       </div>
     </Suspense>
