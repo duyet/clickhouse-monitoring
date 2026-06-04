@@ -29,21 +29,39 @@ function git(cmd: string): string {
   }
 }
 
+// Back-compat: each client var also accepts its legacy Next `NEXT_PUBLIC_*`
+// build-env name as a fallback, so configs from before the VITE_ rename keep
+// working. Precedence: VITE_* (new) → NEXT_PUBLIC_* (legacy) → committed default.
+// Only PUBLIC vars live here — never a runtime secret (security boundary).
+const e = process.env
 const CLIENT_ENV = {
-  VITE_AUTH_PROVIDER: process.env.VITE_AUTH_PROVIDER ?? 'clerk',
+  VITE_AUTH_PROVIDER:
+    e.VITE_AUTH_PROVIDER ?? e.NEXT_PUBLIC_AUTH_PROVIDER ?? 'clerk',
   VITE_CLERK_PUBLISHABLE_KEY:
-    process.env.VITE_CLERK_PUBLISHABLE_KEY ??
+    e.VITE_CLERK_PUBLISHABLE_KEY ??
+    e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
     'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
   VITE_FEATURE_CONVERSATION_DB:
-    process.env.VITE_FEATURE_CONVERSATION_DB ?? 'true',
-  VITE_AUTOCOMPLETE_LIMIT: process.env.VITE_AUTOCOMPLETE_LIMIT ?? '',
+    e.VITE_FEATURE_CONVERSATION_DB ??
+    e.NEXT_PUBLIC_FEATURE_CONVERSATION_DB ??
+    'true',
+  VITE_AUTOCOMPLETE_LIMIT:
+    e.VITE_AUTOCOMPLETE_LIMIT ?? e.NEXT_PUBLIC_AUTOCOMPLETE_LIMIT ?? '',
   VITE_RUNNING_QUERIES_REFRESH_MS:
-    process.env.VITE_RUNNING_QUERIES_REFRESH_MS ?? '',
-  VITE_GIT_SHA: process.env.VITE_GIT_SHA ?? git('rev-parse HEAD'),
-  VITE_GIT_REF: process.env.VITE_GIT_REF ?? git('rev-parse --abbrev-ref HEAD'),
+    e.VITE_RUNNING_QUERIES_REFRESH_MS ??
+    e.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS ??
+    '',
+  VITE_GIT_SHA:
+    e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
+  VITE_GIT_REF:
+    e.VITE_GIT_REF ??
+    e.NEXT_PUBLIC_GIT_REF ??
+    git('rev-parse --abbrev-ref HEAD'),
   VITE_BUILD_TIMESTAMP:
-    process.env.VITE_BUILD_TIMESTAMP ?? new Date().toISOString(),
-  VITE_CI: process.env.VITE_CI ?? (process.env.CI ? 'true' : ''),
+    e.VITE_BUILD_TIMESTAMP ??
+    e.NEXT_PUBLIC_BUILD_TIMESTAMP ??
+    new Date().toISOString(),
+  VITE_CI: e.VITE_CI ?? e.NEXT_PUBLIC_CI ?? (e.CI ? 'true' : ''),
 } as const
 
 // Explicit text-replacement of each `import.meta.env.VITE_*` read. Deterministic

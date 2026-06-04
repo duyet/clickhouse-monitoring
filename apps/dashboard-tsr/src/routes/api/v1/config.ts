@@ -194,7 +194,9 @@ function parseEnvFeatureOverrides(): FeatureOverrides {
 
 function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
   const authProvider = parseAuthProvider(
-    readEnv('CHM_AUTH_PROVIDER') ?? import.meta.env.VITE_AUTH_PROVIDER
+    readEnv('CHM_AUTH_PROVIDER') ??
+      import.meta.env.VITE_AUTH_PROVIDER ??
+      readEnv('NEXT_PUBLIC_AUTH_PROVIDER')
   )
 
   const features = parseEnvFeatureOverrides()
