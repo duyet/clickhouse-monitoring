@@ -102,6 +102,12 @@ const SSR_STUB_PREFIXES = [
   // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
   // it never executes during prerender. Stub it out of the worker bundle.
   'sql-formatter',
+  // recharts (~1 MiB raw). All recharts consumers are client-only: full chart
+  // components load via React.lazy() through the chart registry, and KpiCard
+  // sparklines guard recharts behind `spark && spark.length >= 2` which is
+  // always false during prerender (TanStack Query data is empty). Stubbing this
+  // out of the worker bundle is the single largest remaining size win.
+  'recharts',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -128,6 +134,25 @@ const SSR_STUB_NAMED_EXPORTS = [
   'keymap',
   // sql-formatter
   'format',
+  // recharts — all named imports from src/ (rolldown doesn't honour
+  // syntheticNamedExports; `import * as RechartsPrimitive` and `import type`
+  // need no entry — namespace uses the Proxy default; types are erased).
+  'Area',
+  'AreaChart',
+  'Bar',
+  'BarChart',
+  'CartesianGrid',
+  'Cell',
+  'ComposedChart',
+  'Label',
+  'LabelList',
+  'Line',
+  'Pie',
+  'PieChart',
+  'RadialBar',
+  'RadialBarChart',
+  'XAxis',
+  'YAxis',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
