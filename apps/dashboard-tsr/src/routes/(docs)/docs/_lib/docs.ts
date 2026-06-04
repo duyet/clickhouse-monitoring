@@ -76,8 +76,9 @@ export const docsNav: DocsNavSection[] = [
     ],
   },
   {
+    // One "Migrate to vX.Y" page per breaking release, newest first.
     title: 'Migrating',
-    items: [{ title: 'To TanStack (v0.3)', slug: 'migrating/to-tanstack' }],
+    items: [{ title: 'Migrate to v0.3', slug: 'migrating/v0-3' }],
   },
   {
     title: 'Reference',
