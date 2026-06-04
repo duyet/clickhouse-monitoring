@@ -155,7 +155,11 @@ function OverviewPageContent() {
       <OverviewStatusStrip className="mb-3" />
       <OverviewCharts className="mb-4 sm:mb-6" />
 
-      <ClientOnly fallback={<TabsSkeleton tabCount={OVERVIEW_TABS.length} />}>
+      <ClientOnly
+        fallback={
+          <TabsSkeleton tabCount={OVERVIEW_TABS.length} variant="underline" />
+        }
+      >
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
@@ -229,7 +233,7 @@ function OverviewPageFallback() {
           <Skeleton key={i} className="h-24 rounded-lg" />
         ))}
       </div>
-      <TabsSkeleton tabCount={OVERVIEW_TABS.length} />
+      <TabsSkeleton tabCount={OVERVIEW_TABS.length} variant="underline" />
       {/* Reserve the first tab's chart grid so the loading document is roughly
           as tall as the loaded page. Reuses the real grid class + chart count
           so it stays in sync if charts are added/removed. */}
