@@ -102,6 +102,11 @@ const SSR_STUB_PREFIXES = [
   // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
   // it never executes during prerender. Stub it out of the worker bundle.
   'sql-formatter',
+  // Streaming markdown renderer — only used in assistant-ui / ai-elements
+  // components behind React.lazy boundaries (agent-thread-page,
+  // global-assistant-modal-impl). Never executes during SSR/prerender.
+  'streamdown',
+  '@streamdown',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -128,6 +133,9 @@ const SSR_STUB_NAMED_EXPORTS = [
   'keymap',
   // sql-formatter
   'format',
+  // streamdown + @streamdown/mermaid
+  'Streamdown',
+  'mermaid',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
