@@ -6,7 +6,7 @@ export const AUTH_PROVIDER_ENV_VARS = [
   'VITE_AUTH_PROVIDER',
 ] as const
 
-export const AUTH_PROVIDERS = ['none', 'clerk'] as const
+export const AUTH_PROVIDERS = ['none', 'clerk', 'proxy'] as const
 
 export type AuthProvider = (typeof AUTH_PROVIDERS)[number]
 
@@ -15,7 +15,7 @@ export class AuthProviderConfigError extends Error {
     super(
       `Invalid auth provider value "${value}" in ${AUTH_PROVIDER_ENV_VARS.join(
         ' or '
-      )}. Expected one of: none, clerk.`
+      )}. Expected one of: none, clerk, proxy.`
     )
     this.name = 'AuthProviderConfigError'
   }
@@ -32,6 +32,10 @@ export function parseAuthProvider(
 
   if (normalized === 'clerk') {
     return 'clerk'
+  }
+
+  if (normalized === 'proxy') {
+    return 'proxy'
   }
 
   throw new AuthProviderConfigError(value ?? '')

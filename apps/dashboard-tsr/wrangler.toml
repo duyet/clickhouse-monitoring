@@ -40,6 +40,26 @@ CHM_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Reverse-proxy auth (EXAMPLE — not active; dash-tsr uses `clerk` above).
+# Set CHM_AUTH_PROVIDER = "proxy" to authenticate requests via a trusted proxy.
+# Two mechanisms; either success authenticates a request:
+#
+#   (a) Cloudflare Access — verifies the signed `Cf-Access-Jwt-Assertion` JWT.
+#       CHM_CF_ACCESS_TEAM_DOMAIN is your Access team URL; CHM_CF_ACCESS_AUD is
+#       the Access application AUD tag.
+#   (b) Trusted identity header — read CHM_PROXY_AUTH_HEADER (default
+#       `X-Forwarded-User`) ONLY when the request also presents the shared
+#       secret `CHM_PROXY_AUTH_SECRET` (set via `wrangler secret put`, never a
+#       plaintext var). Without the secret, header trust is disabled because any
+#       client could forge it on a publicly-reachable worker.
+#
+# CHM_AUTH_PROVIDER = "proxy"
+# CHM_CF_ACCESS_TEAM_DOMAIN = "https://your-team.cloudflareaccess.com"
+# CHM_CF_ACCESS_AUD = "<access-application-aud-tag>"
+# CHM_PROXY_AUTH_HEADER = "X-Forwarded-User"
+# CHM_PROXY_AUTH_SECRET via: wrangler secret put CHM_PROXY_AUTH_SECRET
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
 # Deployed by GitHub Actions on pull requests (see .github/workflows/cloudflare.yml)
 # and reachable at https://preview.dash-tsr.chmonitor.dev.

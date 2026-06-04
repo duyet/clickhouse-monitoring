@@ -111,17 +111,35 @@ full details.
 
 ---
 
-## Authentication (Clerk)
+## Authentication
 
-Only needed when any feature is set to `access = "authenticated"`.
+The active server-side auth provider is chosen by `CHM_AUTH_PROVIDER`. See the
+[Authentication](/docs/reference/authentication) reference for the full model
+(public, API key, Clerk, and reverse-proxy methods).
 
 | Variable | Default | Description |
 |---|---|---|
-| `CHM_AUTH_PROVIDER` | `none` | Auth provider: `none`, `clerk`. |
+| `CHM_AUTH_PROVIDER` | `none` | Server auth provider: `none`, `clerk`, `proxy`. |
 | `NEXT_PUBLIC_AUTH_PROVIDER` | `none` | Client-side auth provider (mirror `CHM_AUTH_PROVIDER`). |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). |
 | `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). |
-| `CHM_API_KEY_SECRET` | — | Shared secret for `/api/v1/auth/api-key` and MCP auth. |
+| `CHM_API_KEY_SECRET` | — | Shared secret for `chm_` API keys (`/api/v1/auth/api-key` + MCP auth). When set, API-key auth is always on alongside the provider. |
+
+### Reverse proxy (`CHM_AUTH_PROVIDER=proxy`)
+
+Trust a reverse proxy that already authenticated the user. Either mechanism
+below authenticates a request; whichever succeeds first wins.
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_CF_ACCESS_TEAM_DOMAIN` | — | Cloudflare Access team URL (`https://<team>.cloudflareaccess.com`). Enables `Cf-Access-Jwt-Assertion` JWT verification. |
+| `CHM_CF_ACCESS_AUD` | — | Access application AUD tag the JWT must carry. |
+| `CHM_PROXY_AUTH_SECRET` | — | Shared secret. When set, a trusted identity header is honored only if the request also presents this secret (constant-time compared). Set via `wrangler secret put`. |
+| `CHM_PROXY_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header the proxy sets to the shared secret. |
+| `CHM_PROXY_AUTH_HEADER` | `X-Forwarded-User` | Header the proxy sets to the authenticated user identity. |
+
+> Without `CHM_PROXY_AUTH_SECRET`, the trusted-header mechanism is **disabled** —
+> any client could forge `X-Forwarded-User` on a publicly-reachable worker.
 
 ---
 

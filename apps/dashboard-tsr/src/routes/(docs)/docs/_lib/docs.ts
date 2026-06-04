@@ -81,6 +81,11 @@ export const docsNav: DocsNavSection[] = [
     items: [{ title: 'Migrate to v0.3', slug: 'migrating/v0-3' }],
   },
   {
+    // One "What's New in vX.Y" page per release, newest first.
+    title: 'Releases',
+    items: [{ title: "What's New in v0.3", slug: 'releases/v0-3' }],
+  },
+  {
     title: 'Reference',
     items: [
       {
@@ -90,6 +95,10 @@ export const docsNav: DocsNavSection[] = [
       {
         title: 'Environment Variables',
         slug: 'reference/environment-variables',
+      },
+      {
+        title: 'Authentication',
+        slug: 'reference/authentication',
       },
       {
         title: 'MCP Server',

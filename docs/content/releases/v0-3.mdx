@@ -1,0 +1,137 @@
+# v0.3 — What's New
+
+v0.3 rebuilds the dashboard on TanStack Start, ships a pluggable authentication
+system, and delivers a batch of monitoring and UI improvements that accumulated
+during the v0.2 cycle.
+
+---
+
+## New framework (TanStack Start)
+
+The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with
+Vite as the build tool. Every page is pre-rendered at build time so the initial
+shell loads from cache even before ClickHouse is contacted.
+
+- Static prerender for all 75+ dashboard pages.
+- TanStack Query replaces SWR for client-side data fetching.
+- Cloudflare Workers and Docker/Node builds produced from the same source.
+- `NEXT_PUBLIC_*` env vars renamed to `VITE_*`; old names still work as a
+  fallback.
+
+See [Migrate to v0.3](/docs/migrating/v0-3) for the one-step upgrade.
+
+---
+
+## Pluggable authentication
+
+A new server-side auth layer replaces the previous Clerk-only approach. Set
+`CHM_AUTH_PROVIDER` to choose how requests are authenticated:
+
+| Provider | Description |
+|---|---|
+| `none` | Default. Dashboard is open (no login required). |
+| `clerk` | Clerk browser sessions — same as before. |
+| `proxy` | Trust a reverse proxy: Cloudflare Access JWT or a trusted header + shared secret. |
+
+An always-on **API key** layer (`CHM_API_KEY_SECRET`) issues signed `chm_`
+Bearer tokens for scripts and MCP clients, independent of the active provider.
+
+See the [Authentication](/docs/reference/authentication) reference for setup
+details and the decision flow.
+
+---
+
+## Cluster topology visualization
+
+The `/cluster` page is now a live topology diagram.
+
+- Shard and replica nodes are drawn with distinct shapes and the ClickHouse
+  logo.
+- Physical cluster groupings are shown with labeled hull overlays.
+- Nodes are sized and colored by live metrics.
+- Nodes can be toggled on/off; the diagram adjusts height to the data.
+
+---
+
+## Query page improvements
+
+- **Running queries** split into a live "Running" table and a
+  "Recently completed" table with animated row transitions.
+- **Slow, expensive, and failed query** pages redesigned with expand panels,
+  per-column filters, and highlighted columns.
+- **EXPLAIN tree** — the Explain page renders the query plan as an interactive
+  tree instead of raw text. Five explain modes (Plan, Pipeline, AST, Syntax,
+  Estimate).
+- **Request Info dialog** redesigned with formatted SQL and metadata badges.
+
+---
+
+## Table/card layout for all data pages
+
+Every data table now has a card grid view alongside the standard table view.
+Toggle between them per-page. Cards are the default on narrow screens.
+
+- Sitewide card toggle rolls out across all 54 query-config pages (tables,
+  merges, replication, system, diagnostics, keeper, and more).
+- Rich expandable rows let you inspect SQL, metadata, and related actions
+  inline without leaving the page.
+- Mobile layout uses SQL-hero cards so the most important column is always
+  visible.
+
+---
+
+## New monitoring views
+
+Views added from ClickHouse system tables:
+
+- **Kafka consumers** — `system.kafka_consumers` at `/kafka-consumers`.
+- **Part log** — `system.part_log` redesigned with lifecycle charts, KPIs, and
+  a filterable events table.
+- **Query metric log** — `system.query_metric_log` view at `/query-metric-log`.
+- **User processes** — `system.user_processes` with formatted badges and memory
+  bars.
+- **Moves** — `system.moves` at `/moves`.
+- **Dropped tables** — `system.dropped_tables` at `/dropped-tables`.
+- **Warnings** — `system.warnings` at `/warnings`.
+- **Replicated fetches** — `system.replicated_fetches` at `/replicated-fetches`.
+- **Replicated MergeTree settings** — at `/replicated-merge-tree-settings`.
+
+---
+
+## AI agent improvements
+
+- **Conversation titles** auto-generated from the first message.
+- **Findings** — the agent can now record and list persistent findings across
+  sessions.
+- **Workflow harness** — dynamic workflow templates for multi-step analysis.
+- Multi-provider LLM config (`LLM_API_KEY`, `LLM_API_BASE`, `LLM_MODEL`) plus a
+  redesigned chat UI with model selector.
+
+---
+
+## MCP server improvements
+
+- Clerk OAuth login/consent flow for MCP clients — authenticate with an OAuth
+  browser flow instead of a `chm_` key.
+- In-process MCP route in the TanStack app; no separate worker required.
+
+---
+
+## Deployment
+
+- **Helm chart** — a production-ready Helm chart is now vendored in the repo
+  (`deploy/helm/`) alongside kustomize bases.
+- **Kubernetes guide** added to the docs.
+- **Health alerting** — a cron-based health sweep runs automatically and can
+  post alerts.
+- **CSV export** — export any chart card's data directly to a CSV file.
+- **Auto-refresh interval** persisted to `localStorage` across reloads.
+- **Time range** persisted to `localStorage` and synced to the URL.
+
+---
+
+## Breaking changes and upgrading
+
+See [Migrate to v0.3](/docs/migrating/v0-3) for the complete upgrade steps. The
+only change most self-hosters need is a redeploy; the optional `NEXT_PUBLIC_*` →
+`VITE_*` rename is backward-compatible.

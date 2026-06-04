@@ -1,18 +1,24 @@
 import { FirstRunEmptyState } from './first-run-empty-state'
+import { FirstRunUnauthorizedState } from './first-run-unauthorized-state'
 import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 /**
  * Gates the dashboard content on having at least one configured ClickHouse
- * host. When zero hosts are configured (env + browser) the dashboard would
- * otherwise be a bare, confusing surface, so we render a first-run onboarding
- * EmptyState instead.
+ * host. Two first-run surfaces replace the bare, confusing default:
+ *
+ *  - unauthorized (hosts fetch 401/403) → prompt to sign in
+ *  - zero hosts configured (env + browser) → onboarding EmptyState
  *
  * While hosts are still loading we render children so existing skeletons /
  * Suspense fallbacks keep showing — we only swap in onboarding once we are
- * certain there are no hosts.
+ * certain about the state.
  */
 export function FirstRunGate({ children }: { children: React.ReactNode }) {
-  const { hosts, isLoading } = useMergedHosts()
+  const { hosts, isLoading, isUnauthorized } = useMergedHosts()
+
+  if (!isLoading && isUnauthorized) {
+    return <FirstRunUnauthorizedState />
+  }
 
   if (!isLoading && hosts.length === 0) {
     return <FirstRunEmptyState />
