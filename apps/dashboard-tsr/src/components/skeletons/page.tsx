@@ -1,3 +1,5 @@
+import { ChartSkeleton } from '@/components/skeletons/chart'
+import { TableSkeleton } from '@/components/skeletons/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -126,61 +128,6 @@ export const AgentsPageSkeleton = function AgentsPageSkeleton({
             <Skeleton key={`agent-sidebar-row-${i}`} className="h-9 w-full" />
           ))}
         </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Chart Skeleton
- */
-const ChartSkeleton = function ChartSkeleton() {
-  return (
-    <div
-      className="rounded-lg border border-border/50 bg-card/50 p-4"
-      role="status"
-      aria-label="Loading chart"
-    >
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-12" />
-        </div>
-        <Skeleton className="h-36 w-full rounded-md" />
-      </div>
-    </div>
-  )
-}
-
-/**
- * Table Skeleton
- */
-const TableSkeleton = function TableSkeleton({
-  rows = 5,
-}: {
-  rows?: number
-} = {}) {
-  return (
-    <div
-      className="rounded-lg border border-border/50 bg-card/50 overflow-hidden"
-      role="status"
-      aria-label="Loading table"
-    >
-      {/* Header */}
-      <div className="border-b border-border/50 p-4">
-        <Skeleton className="h-5 w-40 mb-2" />
-        <Skeleton className="h-3 w-56" />
-      </div>
-
-      {/* Rows */}
-      <div className="divide-y divide-border/30">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div key={`row-${i}`} className="flex items-center gap-3 p-4">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 flex-1" />
-            <Skeleton className="h-4 w-20" />
-          </div>
-        ))}
       </div>
     </div>
   )
