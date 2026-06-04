@@ -72,6 +72,11 @@ export const ChartEmpty = function ChartEmpty({
         toolbarMetadata.host ||
         toolbarMetadata.queryId))
 
+  const navigateToHref = () => {
+    if (!href) return
+    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
+  }
+
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!href) return
 
@@ -84,7 +89,15 @@ export const ChartEmpty = function ChartEmpty({
       return
     }
 
-    router.push(`${href}${href.includes('?') ? '&' : '?'}host=${hostId}`)
+    navigateToHref()
+  }
+
+  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!href) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      navigateToHref()
+    }
   }
 
   return (
@@ -97,8 +110,18 @@ export const ChartEmpty = function ChartEmpty({
         className
       )}
       onClick={handleCardClick}
-      role="status"
-      aria-label={title ? `${title} - no data` : 'No data available'}
+      onKeyDown={handleCardKeyDown}
+      tabIndex={href ? 0 : undefined}
+      role={href ? 'link' : 'status'}
+      aria-label={
+        href
+          ? title
+            ? `${title} - no data, click to navigate`
+            : 'No data available, click to navigate'
+          : title
+            ? `${title} - no data`
+            : 'No data available'
+      }
     >
       {/* Header with title and toolbar */}
       {(title || hasToolbar) && (
