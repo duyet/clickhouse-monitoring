@@ -85,21 +85,22 @@ export function isFeatureAllowed(
 ): boolean {
   const state = resolveFeatureState(permission, config)
   if (!state.enabled) return false
-  if (state.access === 'authenticated') {
-    return config.principal === 'authenticated'
-  }
 
   // Interaction-gated features (e.g. the agent) render their UI for everyone
-  // but require sign-in to actually use. When an auth provider is active and
-  // the visitor is anonymous, hide them from the menu instead of advertising a
-  // feature they can't use without logging in. With no auth provider everyone
-  // is anonymous yet no sign-in is possible, so keep them visible.
-  if (
-    permission?.interactionGated &&
-    config.authProvider !== 'none' &&
-    config.principal !== 'authenticated'
-  ) {
-    return false
+  // and prompt sign-in only on the action (see AgentAuthGate). They are always
+  // menu-visible regardless of auth provider or principal — that is the whole
+  // point of the flag and matches the menu.ts contract ("Render the chat UI for
+  // everyone; sign-in is prompted on send, not at the route level").
+  //
+  // NOTE: This intentionally takes precedence over the `access: 'authenticated'`
+  // gate below. In a fully static workerd deploy the server cannot run Clerk's
+  // `auth()`, so /api/v1/config always reports `principal: 'anonymous'`; gating
+  // an interaction-gated feature on principal would hide it from signed-in users
+  // too. Server routes still enforce auth on the actual action.
+  if (permission?.interactionGated) return true
+
+  if (state.access === 'authenticated') {
+    return config.principal === 'authenticated'
   }
 
   return true
