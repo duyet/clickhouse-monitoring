@@ -2,17 +2,32 @@
  * Next.js navigation compatibility layer for TanStack Start migration.
  *
  * Provides drop-in replacements for `next/navigation` hooks so that ported
- * components work without per-file rewrites. In SPA mode (no SSR),
- * `window.location` is always available.
+ * components work without per-file rewrites. The location hooks source state
+ * from the router (reactive + SSR/prerender-safe) rather than `window`, so they
+ * re-render on navigation and don't throw during the static prerender.
  */
-import { useRouter as useTanStackRouter } from '@tanstack/react-router'
+import {
+  useRouterState,
+  useRouter as useTanStackRouter,
+} from '@tanstack/react-router'
+
+import { useMemo } from 'react'
 
 /**
  * Read-only search params from the current URL.
  * Returns a standard URLSearchParams (same interface as Next.js useSearchParams).
+ *
+ * Sourced from the router's location state — which exists during prerender and
+ * updates on navigation — so it is reactive and SSR-safe (no bare
+ * `window.location` read that throws when the chrome renders on the server).
  */
 export function useSearchParams(): URLSearchParams {
-  return new URLSearchParams(window.location.search)
+  const searchStr = useRouterState({ select: (s) => s.location.searchStr })
+  // Memoize on searchStr so the URLSearchParams keeps a stable identity while
+  // the query string is unchanged. Consumers (e.g. the client-side redirect
+  // routes) put the result in useEffect deps; a fresh object every render would
+  // re-run those effects on unrelated re-renders.
+  return useMemo(() => new URLSearchParams(searchStr), [searchStr])
 }
 
 /**
@@ -40,27 +55,39 @@ function splitHref(href: string): {
 /**
  * Next.js-compatible router wrapping TanStack Router.
  * Accepts Next.js navigation options (scroll, shallow, etc.) and ignores them.
+ *
+ * Memoized on the (stable) TanStack router so the returned object keeps a
+ * stable identity across renders — matching Next's `useRouter`. Without this
+ * the fresh object literal would change every render and re-run effects that
+ * depend on `[router]` (e.g. the client-side redirect routes).
  */
 export function useRouter() {
   const router = useTanStackRouter()
-  return {
-    push: (href: string, _opts?: Record<string, unknown>) =>
-      router.navigate(splitHref(href)),
-    replace: (href: string, _opts?: Record<string, unknown>) =>
-      router.navigate({ ...splitHref(href), replace: true }),
-    back: () => router.history.back(),
-    forward: () => router.history.forward(),
-    refresh: () => router.invalidate(),
-    prefetch: (_href: string) => {
-      /* no-op in SPA mode */
-    },
-  }
+  return useMemo(
+    () => ({
+      push: (href: string, _opts?: Record<string, unknown>) =>
+        router.navigate(splitHref(href)),
+      replace: (href: string, _opts?: Record<string, unknown>) =>
+        router.navigate({ ...splitHref(href), replace: true }),
+      back: () => router.history.back(),
+      forward: () => router.history.forward(),
+      refresh: () => router.invalidate(),
+      prefetch: (_href: string) => {
+        /* no-op in SPA mode */
+      },
+    }),
+    [router]
+  )
 }
 
 /**
  * Returns the current pathname (equivalent to Next.js usePathname).
+ *
+ * Reads from reactive router state so chrome mounted in the persistent layout
+ * (breadcrumb, the global agent's route check) updates on client-side
+ * navigation instead of reading a one-shot `router.state` snapshot. Also
+ * SSR-safe for the prerender.
  */
 export function usePathname(): string {
-  const router = useTanStackRouter()
-  return router.state.location.pathname
+  return useRouterState({ select: (s) => s.location.pathname })
 }
