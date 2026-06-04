@@ -115,7 +115,11 @@ function TabContentSkeleton({ tab }: { tab: (typeof OVERVIEW_TABS)[number] }) {
   }
 
   return (
-    <div className={tab.gridClassName} aria-hidden="true">
+    <div
+      className={tab.gridClassName}
+      role="status"
+      aria-label={`Loading ${tab.label} charts`}
+    >
       {tab.charts.map((chart) => (
         <ChartSkeleton
           key={chart.id}
@@ -276,7 +280,11 @@ function OverviewPageFallback() {
       {/* Reserve the first tab's chart grid so the loading document is roughly
           as tall as the loaded page. Reuses the real grid class + chart count
           so it stays in sync if charts are added/removed. */}
-      <div className={cn('mt-2', FIRST_TAB.gridClassName)} aria-hidden="true">
+      <div
+        className={cn('mt-2', FIRST_TAB.gridClassName)}
+        role="status"
+        aria-label="Loading charts"
+      >
         {FIRST_TAB.charts.map((chart) => (
           <ChartSkeleton
             key={chart.id}
