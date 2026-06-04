@@ -57,11 +57,17 @@ const apiAuthMiddleware = createMiddleware().server(
  */
 const securityHeadersMiddleware = createMiddleware().server(
   async ({ next }) => {
-    const ctx = await next()
+    const result = await next()
 
-    if (ctx.response instanceof Response) {
-      ctx.response = withSecurityHeaders(ctx.response)
+    if (result.response instanceof Response) {
+      result.response = withSecurityHeaders(result.response)
     }
+
+    // Return the result (not void) — TanStack Start types a request middleware
+    // as returning `RequestServerResult | Response`, and the runtime reads the
+    // response from the returned value. Returning the mutated result both
+    // type-checks and avoids relying on by-reference ctx mutation.
+    return result
   }
 )
 
