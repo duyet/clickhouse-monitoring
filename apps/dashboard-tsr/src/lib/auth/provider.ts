@@ -38,8 +38,12 @@ export function parseAuthProvider(
 }
 
 export function getAuthProvider(): AuthProvider {
+  // Precedence: runtime CHM_AUTH_PROVIDER → build-time VITE_AUTH_PROVIDER →
+  // legacy NEXT_PUBLIC_AUTH_PROVIDER (back-compat for pre-rename configs).
   return parseAuthProvider(
-    process.env.CHM_AUTH_PROVIDER ?? import.meta.env.VITE_AUTH_PROVIDER
+    process.env.CHM_AUTH_PROVIDER ??
+      import.meta.env.VITE_AUTH_PROVIDER ??
+      process.env.NEXT_PUBLIC_AUTH_PROVIDER
   )
 }
 

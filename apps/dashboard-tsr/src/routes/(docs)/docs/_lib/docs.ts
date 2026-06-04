@@ -76,6 +76,10 @@ export const docsNav: DocsNavSection[] = [
     ],
   },
   {
+    title: 'Migrating',
+    items: [{ title: 'To TanStack (v0.3)', slug: 'migrating/to-tanstack' }],
+  },
+  {
     title: 'Reference',
     items: [
       {
