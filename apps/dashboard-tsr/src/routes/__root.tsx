@@ -10,6 +10,9 @@ import type { ReactNode } from 'react'
 import appCss from '../styles.css?url'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { AppProvider } from '@/lib/context/app-context'
+import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
+import { TimeRangeProvider } from '@/lib/context/time-range-context'
+import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
@@ -61,15 +64,21 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body className="bg-background font-sans antialiased">
         <ClerkAuthProvider>
-          <ThemeProvider>
-            <QueryProvider>
-              <AppProvider>
-                <FeaturePermissionsProvider>
-                  {children}
-                </FeaturePermissionsProvider>
-              </AppProvider>
-            </QueryProvider>
-          </ThemeProvider>
+          <TimezoneProvider>
+            <ThemeProvider>
+              <TimeRangeProvider>
+                <QueryProvider>
+                  <BrowserConnectionsProvider>
+                    <AppProvider>
+                      <FeaturePermissionsProvider>
+                        {children}
+                      </FeaturePermissionsProvider>
+                    </AppProvider>
+                  </BrowserConnectionsProvider>
+                </QueryProvider>
+              </TimeRangeProvider>
+            </ThemeProvider>
+          </TimezoneProvider>
         </ClerkAuthProvider>
         <Scripts />
       </body>

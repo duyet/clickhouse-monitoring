@@ -120,6 +120,41 @@ middleware (#1397, PR #1428) restores that parity.
 - Build gate: `bun run build` (`vite build && tsc --noEmit`) must be green; 112 pages
   prerender. dashboard-tsr is now wired into CI (the `dashboard-tsr` job).
 
+### Visual parity — app chrome + theme (was the big gap)
+
+"Pages return matching status" only checks HTTP codes, NOT what renders. Three
+visual gaps shipped to `dash-tsr` undetected because nothing diffs the DOM:
+
+1. **Sidebar/header/breadcrumb chrome was never wired.** `(dashboard)/route.tsx`
+   and `(peerdb)/route.tsx` were bare `<main>` placeholders ("ported in a later
+   issue") even though every chrome component (`AppSidebar`, `HeaderActions`,
+   `Breadcrumb`, `ResizableSidebarProvider`, `NavMain`, `HostSwitcher`,
+   `NavUser`) was already ported. Fix: a shared `components/layout/dashboard-shell.tsx`
+   (ported 1:1 from the Next `(dashboard)`/`(peerdb)` layout bodies, which were
+   identical) used by both groups. `(dashboard)` wraps its children in
+   `FirstRunGate`; `(peerdb)` does not — that's the only difference.
+2. **shadcn theme tokens were missing from `styles.css`.** It had only
+   `@import "tailwindcss"` + a shimmer keyframe — none of the `:root`/`.dark`
+   OKLCH color vars or the `@theme inline` color mappings, so `bg-background`,
+   `bg-sidebar`, `text-foreground`, `border-border` resolved to nothing. Fix:
+   port the full Next `app/globals.css` theme, translating its
+   `@config '../tailwind.config.js'` into inline `@theme` (keyframes/animations/
+   radius/container) for the v4 CSS-first pipeline; add `tw-animate-css` (the
+   shadcn Radix enter/exit animations depend on it).
+3. **Root `/` was the "Hello from TanStack Start" stub**, not the
+   `→ /overview?host=0` redirect. Fixed to mirror the Next root page
+   (`useRouter().replace` via `next-compat`).
+
+The chrome needs `TimezoneProvider` + `TimeRangeProvider` +
+`BrowserConnectionsProvider` (header time-range picker reads `useTimeRange`) —
+added to `__root.tsx`, all SSR-safe (`typeof window === 'undefined'` guards), so
+prerender of the dashboard pages stays green. The chrome hydrates client-side
+(the static shell is intentionally minimal); `window is not defined` lines during
+prerender are pre-existing and non-fatal (client-only page content), not a regression.
+
+> **Lesson:** add a DOM/visual parity gate (sidebar present, computed
+> `--background` non-empty), not just status-code crawl. HTTP 200 ≠ rendered UI.
+
 ## Performance (framework shell, Next+OpenNext vs TanStack Start)
 
 > Both deployments are key-gated, so this measures the **app shell + client JS** load
@@ -152,6 +187,16 @@ data-dashboard pages** (render-delay collapses), but it's not universal.
 
 ## Known follow-ups
 
+- **`CLICKHOUSE_PASSWORD` is a per-worker secret** — `wrangler.toml` `[vars]`
+  carry `CLICKHOUSE_HOST`/`USER`/`NAME` (same hosts as the Next prod worker), but
+  the password is injected via `wrangler secret put CLICKHOUSE_PASSWORD` and is
+  **not shared** between the `chmonitor-dash` and `chmonitor-dash-tsr` workers. If
+  `dash-tsr` charts show "Unable to connect to the server" (the `offline`
+  card-error variant) while the data path is code-correct — env bridged via
+  `bridgeClickHouseEnv`, web client auto-selected by `CLOUDFLARE_WORKERS=1` +
+  `nodejs_compat_populate_process_env` — the first thing to check is that the
+  secret is set on `chmonitor-dash-tsr` (and `--env preview`), then redeploy.
+  Verify with `bun wrangler secret list` (top-level and `--env preview`).
 - Conversation **server-persistence** needs a provisioned `CONVERSATIONS_D1`
   (`wrangler d1 create`) + binding in `wrangler.toml` + `patch-wrangler-env.ts`. Agent chat
   works via the client thread store until then.

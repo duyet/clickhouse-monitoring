@@ -1,11 +1,779 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/@streamdown/mermaid/dist/*.js";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Theme extensions ported from the Next app's tailwind.config.js. The Next
+   globals.css loads them via `@config '../tailwind.config.js'`; the TanStack
+   app is pure Tailwind v4 CSS-first, so they live inline here. Keyframes and
+   `--animate-*` tokens register the `animate-*` utilities project-wide. */
 @theme {
   --animate-shimmer: shimmer 1.5s infinite;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-pulse-subtle: pulse-subtle 3s ease-in-out infinite;
+  --animate-progress-fill: progress-fill 0.8s ease-out forwards;
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes pulse-subtle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+  @keyframes progress-fill {
+    0% {
+      width: 0%;
+    }
+    100% {
+      width: var(--progress-width);
+    }
+  }
 }
 
-@keyframes shimmer {
+/* Container utility — Next config centered it with 2rem padding and a 1400px
+   2xl cap. Tailwind v4 dropped container theming, so replicate it here. */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply h-full;
+    /* Reserve the scrollbar track so content width never shifts when a chart
+       grows the page past one viewport — a subtle but real source of horizontal
+       jump while charts stream in. */
+    scrollbar-gutter: stable;
+  }
+  body {
+    @apply min-h-full bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Opt an element out of the browser's scroll-anchoring heuristic. Used on
+     lazily-mounted chart slots so inserting a chart above the viewport during a
+     fast scroll-to-bottom doesn't yank the scroll position around ("flaking").
+     Pairs with reserved slot heights so there is no shift to anchor against.
+
+     NOTE: `content-visibility: auto` is intentionally NOT set here. It is
+     applied inline by LazyChartWrapper only while a slot is still off-screen and
+     unloaded. Once a chart has mounted we must NOT keep content-visibility on it
+     — the browser would skip rendering it whenever it scrolls out of view and
+     repaint (re-running entrance animations) on scroll-back, which looks like
+     the chart "reloading". See lazy-chart-wrapper.tsx. */
+  .overflow-anchor-none {
+    overflow-anchor: none;
+  }
+}
+
+/* Strip box-shadow from all buttons and card-like surfaces project-wide.
+   Overlay surfaces (popover, dialog, sheet, dropdown, tooltip, hover-card)
+   keep their shadows so they remain visually distinct from page content.
+
+   NOTE: !important suppresses hover:shadow-* and any other shadow utility
+   on these elements. If a future contributor needs a shadow on a specific
+   button/card, override this with an inline style or a more-specific
+   selector — not a Tailwind shadow utility.
+
+   The [class*="bg-card/"] selector catches Tailwind's opacity variants
+   (bg-card/30, bg-card/40, etc.) which are emitted as separate classes
+   and would otherwise miss this rule. */
+@layer utilities {
+  button,
+  [role='button'],
+  [data-slot='card'],
+  .bg-card,
+  [class*='bg-card/'] {
+    box-shadow: none !important;
+  }
+}
+
+/* Screen reader only utility - hides content visually but keeps it accessible to screen readers */
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  /* Scrollbar hide utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Markdown content styling for agent responses */
+.markdown-content {
+  max-width: none;
+  color: oklch(from var(--foreground) l c h);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-content > * + * {
+  margin-top: 1em;
+}
+
+.markdown-content p {
+  margin: 0.75em 0;
+  line-height: 1.6;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.markdown-content h1 {
+  font-size: 1.5rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.25rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.125rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-content li {
+  margin: 0.25em 0;
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+}
+
+.markdown-content code {
+  font-size: 0.75rem;
+  background-color: oklch(from var(--muted) l c h);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.markdown-content pre {
+  margin: 0.75em 0;
+  padding: 0.75rem;
+  background-color: oklch(from var(--muted) l c h);
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.markdown-content table {
+  margin: 0.75em 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-content a {
+  color: oklch(from var(--primary) l c h);
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  text-decoration: none;
+}
+
+.docs-markdown a {
+  color: oklch(from var(--primary) l c h);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.docs-markdown a:hover {
+  color: oklch(from var(--primary) calc(l * 0.85) c h);
+  text-decoration-thickness: 2px;
+}
+
+.dark .docs-markdown a:hover {
+  color: oklch(from var(--primary) calc(l * 1.08) c h);
+}
+
+.docs-markdown a:visited {
+  color: oklch(from var(--primary) calc(l * 0.8) c h);
+}
+
+.docs-markdown a:active {
+  color: oklch(from var(--primary) calc(l * 0.75) c h);
+}
+
+.docs-markdown a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid oklch(from var(--primary) l c h);
+  outline-offset: 2px;
+  text-decoration-thickness: 2px;
+}
+
+.dark .docs-markdown a:focus-visible {
+  outline-color: oklch(from var(--primary) calc(l * 1.08) c h);
+}
+
+.markdown-content blockquote {
+  border-left: 2px solid oklch(from var(--border) l c h);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: oklch(from var(--muted-foreground) l c h);
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid oklch(from var(--border) l c h);
+  margin: 1.5em 0;
+}
+
+.docs-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+.docs-markdown h1 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.docs-markdown h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  margin-top: 2.5rem;
+}
+
+.docs-markdown h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin-top: 2rem;
+}
+
+.docs-markdown h4 {
+  margin-top: 1.5rem;
+}
+
+.docs-markdown p,
+.docs-markdown ul,
+.docs-markdown ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.docs-markdown img {
+  margin: 1.25rem 0;
+  width: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
+.docs-markdown pre {
+  border: 1px solid oklch(from var(--border) l c h);
+  background-color: oklch(from var(--muted) l c h / 0.6);
+}
+
+/* Dark mode adjustments */
+.dark .markdown-content {
+  color: oklch(from var(--foreground) l c h);
+}
+
+.dark .markdown-content code {
+  background-color: oklch(from var(--muted) l c h);
+}
+
+.dark .markdown-content pre {
+  background-color: oklch(from var(--muted) l c h);
+}
+
+/* Disable sidebar transitions during resize for instant feedback */
+[data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-gap"],
+[data-slot="sidebar-wrapper"][data-resizing="true"] [data-slot="sidebar-container"] {
+  transition: none !important;
+}
+
+/* Command palette input wrapper - better border */
+[data-slot="command-input-wrapper"] {
+  border-color: oklch(from var(--border) l c h / 0.5);
+  transition: border-color 150ms ease;
+}
+[data-slot="command-input-wrapper"]:hover {
+  border-color: var(--border);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  --chart-6: hsl(230 94% 82%);
+  --chart-7: hsl(353 96% 90%);
+  --chart-8: hsl(20.5 90.2% 48.2%);
+  --chart-9: hsl(0.13 100% 0.6%);
+  --chart-10: hsl(142 77% 73%);
+  --chart-11: hsl(21 76% 73%);
+  --chart-12: hsl(212 96% 78%);
+  --chart-13: hsl(327 87% 82%);
+  --chart-pink-300: hsl(327 87% 82%);
+  --chart-blue-300: hsl(212 96% 78%);
+  --chart-rose-200: hsl(353 96% 90%);
+  --chart-orange-600: hsl(20.5 90.2% 48.2%);
+  --chart-indigo-300: hsl(230 94% 82%);
+  --chart-yellow: hsl(45 100% 60%);
+
+  /* Semantic badge colors for user badges */
+  --badge-purple: oklch(0.65 0.2 290);
+  --badge-purple-bg: oklch(0.97 0.03 290);
+  --badge-blue: oklch(0.55 0.2 250);
+  --badge-blue-bg: oklch(0.97 0.03 250);
+  --badge-green: oklch(0.6 0.2 145);
+  --badge-green-bg: oklch(0.97 0.03 145);
+  --badge-amber: oklch(0.7 0.15 85);
+  --badge-amber-bg: oklch(0.98 0.03 85);
+  --badge-pink: oklch(0.65 0.2 350);
+  --badge-pink-bg: oklch(0.97 0.03 350);
+  --badge-slate: oklch(0.5 0 0);
+  --badge-slate-bg: oklch(0.97 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar-background: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+  --color-chart-11: var(--chart-11);
+  --color-chart-12: var(--chart-12);
+  --color-chart-13: var(--chart-13);
+  --color-chart-pink-300: var(--chart-pink-300);
+  --color-chart-blue-300: var(--chart-blue-300);
+  --color-chart-rose-200: var(--chart-rose-200);
+  --color-chart-orange-600: var(--chart-orange-600);
+  --color-chart-indigo-300: var(--chart-indigo-300);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-sidebar: var(--sidebar);
+}
+
+/* Indeterminate progress — a segment that slides across the track, used by
+   the running-queries "Reading…" state where no total row count is known. */
+@keyframes rq-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
   100% {
-    transform: translateX(100%);
+    transform: translateX(320%);
+  }
+}
+
+@layer utilities {
+  .animate-rq-indeterminate {
+    animation: rq-indeterminate 1.3s ease-in-out infinite;
+  }
+}
+
+/* ---------------------------------------------------------------
+ * transitions.dev — copy-paste CSS snippets (https://transitions.dev)
+ *
+ * Source: https://github.com/Jakubantalik/transitions.dev
+ * Patterns: digit pop-in, text swap, success check, error shake.
+ *
+ * The :root custom properties and @keyframes are taken verbatim
+ * from the upstream snippets. The trigger classes are simplified
+ * to fire on element mount (paired with React `key` remount in
+ * usage sites) instead of the upstream is-animating/is-shaking
+ * class-toggle workflow.
+ * --------------------------------------------------------------- */
+
+:root {
+  /* Digit pop-in */
+  --digit-dur: 500ms;
+  --digit-distance: 8px;
+  --digit-blur: 2px;
+  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --digit-dir-x: 0;
+  --digit-dir-y: 1;
+
+  /* Text swap */
+  --text-swap-dur: 280ms;
+  --text-swap-translate-y: 6px;
+  --text-swap-blur: 4px;
+  --text-swap-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Success check */
+  --check-opacity-dur: 550ms;
+  --check-rotate-dur: 550ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 450ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 550ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+
+  /* Error shake */
+  --shake-distance: 6px;
+  --shake-overshoot: 4px;
+  --shake-dur-a: 80ms;
+  --shake-dur-b: 60ms;
+  --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer utilities {
+  /* Digit pop-in: a number that fades + blurs + slides on every change. */
+  @keyframes t-digit-pop-in {
+    0% {
+      transform: translate(
+        calc(var(--digit-distance) * var(--digit-dir-x)),
+        calc(var(--digit-distance) * var(--digit-dir-y))
+      );
+      opacity: 0;
+      filter: blur(var(--digit-blur));
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+  .t-digit {
+    display: inline-block;
+    will-change: transform, opacity, filter;
+    animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+  }
+
+  /* Text swap (enter half): blur + slide in when the text changes. */
+  @keyframes t-text-swap-in {
+    0% {
+      transform: translateY(var(--text-swap-translate-y));
+      filter: blur(var(--text-swap-blur));
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+  .t-text-swap {
+    display: inline-block;
+    will-change: transform, filter, opacity;
+    animation: t-text-swap-in var(--text-swap-dur) var(--text-swap-ease) both;
+  }
+
+  /* Success check: fade + rotate + Y-bob + blur on the wrapper, with an
+     SVG stroke draw on the path. Applied to a span wrapping a lucide icon. */
+  @keyframes t-check-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes t-check-rotate {
+    from { transform: rotate(var(--check-rotate-from)); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes t-check-blur {
+    from { filter: blur(var(--check-blur-from)); }
+    to { filter: blur(0); }
+  }
+  @keyframes t-check-bob {
+    from { translate: 0 var(--check-y-amount); }
+    to { translate: 0 0; }
+  }
+  @keyframes t-check-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  .t-success-check {
+    display: inline-block;
+    transform-origin: center;
+    will-change: transform, opacity, filter;
+    animation:
+      t-check-fade var(--check-opacity-dur) var(--check-ease-out) both,
+      t-check-rotate var(--check-rotate-dur) var(--check-ease-out) both,
+      t-check-blur var(--check-blur-dur) var(--check-ease-out) both,
+      t-check-bob var(--check-bob-dur) var(--check-ease-bob) both;
+  }
+  .t-success-check svg {
+    display: block;
+    overflow: visible;
+  }
+  .t-success-check svg path {
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    animation: t-check-draw var(--check-path-dur) var(--check-ease-out)
+      var(--check-path-delay) both;
+  }
+
+  /* Error shake: short side-to-side oscillation on validation failure. */
+  @keyframes t-input-shake {
+    0% {
+      transform: translateX(0);
+      animation-timing-function: var(--shake-ease);
+    }
+    28.57% {
+      transform: translateX(var(--shake-distance));
+      animation-timing-function: var(--shake-ease);
+    }
+    57.14% {
+      transform: translateX(calc(var(--shake-distance) * -1));
+      animation-timing-function: var(--shake-ease);
+    }
+    78.57% {
+      transform: translateX(var(--shake-overshoot));
+      animation-timing-function: var(--shake-ease);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  .t-error-shake {
+    will-change: transform;
+    animation: t-input-shake
+      calc(var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2)
+      linear both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .t-digit,
+    .t-text-swap,
+    .t-success-check,
+    .t-success-check svg path,
+    .t-error-shake {
+      animation: none !important;
+      transition: none !important;
+    }
+    /* Without the draw animation the path would stay clipped at its
+       full stroke-dashoffset and render invisibly. Snap it to the final
+       drawn state so the check still appears for reduced-motion users. */
+    .t-success-check svg path {
+      stroke-dashoffset: 0 !important;
+    }
+  }
+}
+
+/* Cluster Topology live indicator — a soft expanding pulse behind the dot,
+   matching the design's `live-dot`. Used on the status strip and inspector
+   "live" tags. */
+@keyframes topo-live-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.topo-live-dot {
+  animation: topo-live-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Cluster Topology "current node" halo — a gentle breathing ring around the
+   connected (is_local) ClickHouse node so it is always identifiable. transform-box
+   keeps the scale centered on the node glyph's own box. */
+@keyframes topo-current-breathe {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.topo-current-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: topo-current-breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topo-live-dot,
+  .topo-current-ring {
+    animation: none;
   }
 }
