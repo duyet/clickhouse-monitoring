@@ -17,6 +17,18 @@ export function QueryProvider({ children }: QueryProviderProps) {
             // and the cached result is considered fresh for this long.
             staleTime: 5_000,
 
+            // Keep inactive (unmounted) query data in cache for 30 min before
+            // garbage-collecting it. Orthogonal to staleTime: this does NOT
+            // affect freshness — data still revalidates per staleTime — it only
+            // controls how long a cached result survives after its last consumer
+            // unmounts. A monitoring dashboard hops between pages constantly;
+            // with the 5 min default, returning to a page after the GC window
+            // shows a loading skeleton. 30 min lets the user navigate back to an
+            // instant stale-while-revalidate render (cached data shown, refetch
+            // in background) instead of a blank skeleton. (TanStack Query
+            // default gcTime is 5 min.)
+            gcTime: 30 * 60_000,
+
             // SWR revalidateOnFocus: false
             // Don't refetch when the browser tab regains focus.
             refetchOnWindowFocus: false,
