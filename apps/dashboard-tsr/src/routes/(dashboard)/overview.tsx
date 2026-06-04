@@ -6,6 +6,7 @@ import { OVERVIEW_TABS } from './-charts-config'
 import { lazy, Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
+import { cardStyles } from '@/components/overview-charts/card-styles'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
 import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
@@ -262,9 +263,13 @@ function OverviewPageFallback() {
   return (
     <div>
       <Skeleton className="mb-3 h-5 w-full rounded-lg" />
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 md:grid-cols-4">
+      <div className="mb-4 grid auto-rows-fr grid-cols-1 gap-3 sm:mb-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-lg" />
+          <div key={i} className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}>
+            <Skeleton variant="shimmer" className="h-3 w-24" />
+            <Skeleton variant="shimmer" className="h-7 w-20" />
+            <Skeleton variant="shimmer" className="h-3 w-28" />
+          </div>
         ))}
       </div>
       <TabsSkeleton tabCount={OVERVIEW_TABS.length} variant="underline" />
