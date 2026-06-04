@@ -5,9 +5,10 @@
  * *foundation* surface: the fields the server-side query executor and the
  * registries actually consume. The dashboard's full QueryConfig couples to
  * web-app-only types (ChartProps, CustomSortingFnNames, FeaturePermission,
- * FilterSchema, ColumnFormat) that belong to the not-yet-ported component /
- * data-table layer. Those UI-formatting fields are DEFERRED and intentionally
- * omitted here so this module has zero dependencies on un-ported app code.
+ * ColumnFormat) that belong to the not-yet-ported component / data-table
+ * layer. Those UI-formatting fields are DEFERRED and intentionally omitted
+ * here. `filterSchema` IS included — it drives server-side WHERE injection
+ * (see the table registry), and `@/lib/filters/types` is ported.
  *
  * VersionedSql / QueryConfigVariant / getAllSqlStrings come from
  * @chm/sql-builder (aliased to source in tsconfig.json) so this app never
@@ -17,6 +18,7 @@
 import type { ClickHouseSettings } from '@clickhouse/client'
 
 import type { QueryConfigVariant, VersionedSql } from '@chm/sql-builder'
+import type { FilterSchema } from '@/lib/filters/types'
 
 // Re-export the version-compat SQL primitives from the shared package so
 // `@/lib/query-config/types` consumers can import them from one place,
@@ -77,6 +79,13 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * are auto-extracted from the SQL by the underlying validator.
    */
   tableCheck?: string | string[]
+  /**
+   * Schema-driven dynamic filtering. When present, the table registry parses
+   * active filters from URL params against this schema and injects a
+   * parameterized WHERE clause into the SQL's `/* __FILTERS__ *​/` placeholder.
+   * The schema is the trusted SQL source (column UI is sugar over it).
+   */
+  filterSchema?: FilterSchema
   /** Disable SQL validation (used by the query-config test suite). */
   disableSqlValidation?: boolean
   /** Optional docs URL surfaced on query error. */

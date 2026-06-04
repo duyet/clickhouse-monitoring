@@ -11,7 +11,7 @@ import { error } from '@chm/logger'
 import { executeTableConfig } from '@/lib/api/query-executor'
 import {
   getAvailableTables,
-  getTableConfig,
+  getTableQuery,
   hasTable,
 } from '@/lib/api/table-registry'
 
@@ -51,8 +51,21 @@ export const Route = createFileRoute('/api/v1/tables/$name')({
           )
         }
 
-        const config = getTableConfig(name)
-        if (!config) {
+        // Resolve the runnable query via the registry. This applies the
+        // config's schema-driven filterSchema WHERE injection (history-queries,
+        // running-queries) and merges defaultParams + filter params. Configs
+        // without a filterSchema get the plain defaultParams + search-params
+        // merge.
+        const searchParamsObj: Record<string, string> = {}
+        for (const [key, value] of searchParams.entries()) {
+          if (key === 'hostId') continue
+          searchParamsObj[key] = value
+        }
+        const queryDef = getTableQuery(name, {
+          hostId,
+          searchParams: searchParamsObj,
+        })
+        if (!queryDef) {
           return Response.json(
             {
               success: false,
@@ -64,15 +77,10 @@ export const Route = createFileRoute('/api/v1/tables/$name')({
             { status: 500 }
           )
         }
-
-        // Build query params: config defaults first, then URL params override
-        const queryParams: Record<string, unknown> = {
-          ...(config.defaultParams ?? {}),
-        }
-        for (const [key, value] of searchParams.entries()) {
-          if (key === 'hostId') continue
-          queryParams[key] = value
-        }
+        // The resolved config carries the filter-injected SQL; execution runs
+        // version selection on it.
+        const config = queryDef.queryConfig
+        const queryParams = queryDef.queryParams
 
         // Validate timezone
         const timezoneParam = searchParams.get('timezone') || undefined
