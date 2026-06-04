@@ -8,19 +8,18 @@
  * Two pieces of the Next middleware are reproduced here:
  *
  *  1. API-key auth (`getApiKeyAuthFailure`) — when `apiKeyAuthEnabled()` is
- *     true, EVERY `/api/v1/*` route requires a valid `chm_` Bearer token and
- *     returns a 401 JSON `{ error: 'API key required' }` (or
- *     `Invalid API key: <reason>`) otherwise. Exempt: `/api/v1/auth/api-key`
- *     (it owns its own secret-based auth in the handler).
+ *     true, every `/api/v1/*` route requires EITHER a valid `chm_` Bearer token
+ *     (programmatic/MCP clients) OR a valid Clerk session (browser clients, via
+ *     the `__session` cookie). Anonymous requests get a 401 JSON
+ *     `{ error: 'API key required' }` (or `Invalid API key: <reason>`). Exempt:
+ *     `/api/v1/auth/api-key` (it owns its own secret-based auth in the handler).
+ *
+ *     The Clerk-session branch (`hasValidClerkSession`) is the Next
+ *     `clerkMiddleware()` cookie precheck — #1397 dropped it during the port,
+ *     which made a logged-in dashboard 401 on every data call (the browser
+ *     holds a Clerk session, not a chm_ token).
  *
  *  2. cloud→dash 301 redirect (`getLegacyHostRedirect`).
- *
- * NOT ported: the Next `clerkMiddleware()` / Clerk-cookie precheck for
- * protected agent routes (`getAgentApiClerkPrecheck`). In this app those routes
- * (`/api/v1/agent`, …) already enforce feature-permission auth in-handler via
- * `authorizeAgentApiRequest` / `authorizeFeatureRequest`, and Clerk runs as a
- * client provider (see __root.tsx) — there is no server-side Clerk middleware
- * to bypass. The route handlers own that decision, identical to Next behavior.
  *
  * `apiKeyAuthEnabled()` and `verifyApiKey()` read `process.env.CHM_API_KEY_SECRET`
  * directly. On Cloudflare Workers the canonical source is the `env` binding, so
@@ -102,18 +101,49 @@ export async function getApiKeyAuthFailure(
     return null
   }
 
+  // 1. Programmatic clients (MCP, scripts): a valid `chm_` Bearer token.
   const headerToken = getBearerToken(request.headers.get('authorization'))
-
-  if (!headerToken) {
-    return jsonError('API key required', 401)
+  if (headerToken) {
+    const result = await verifyApiKey(headerToken)
+    if (result.valid) return null
+    // Not a valid chm_ key — fall through to the Clerk-session check; the
+    // Authorization header may carry a Clerk token rather than a chm_ key.
   }
 
-  const result = await verifyApiKey(headerToken)
-  if (!result.valid) {
-    return jsonError(`Invalid API key: ${result.reason}`, 401)
-  }
+  // 2. Browser clients: a valid Clerk session. Clerk sets the `__session`
+  //    cookie (sent automatically same-origin) and may also send a Clerk token
+  //    in the Authorization header. This restores the Clerk-cookie precheck the
+  //    Next middleware relied on, which #1397 dropped — without it a logged-in
+  //    dashboard 401s on every data call because the browser holds a Clerk
+  //    session, not a chm_ token.
+  if (await hasValidClerkSession(request)) return null
 
-  return null
+  return jsonError('API key required', 401)
+}
+
+/**
+ * Verify a Clerk session straight off the `Request` — networkless JWT
+ * verification via `clerkClient().authenticateRequest` (reads `CLERK_SECRET_KEY`
+ * from the runtime env; publishable key inlined at build time). Works in the
+ * request middleware without Clerk's ambient context, and fails closed on any
+ * error. Only consulted when the configured auth provider is `clerk`.
+ */
+async function hasValidClerkSession(request: Request): Promise<boolean> {
+  if (getAuthProvider() !== 'clerk') return false
+
+  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+  if (!publishableKey || !process.env.CLERK_SECRET_KEY) return false
+
+  try {
+    const { clerkClient } = await import('@clerk/tanstack-react-start/server')
+    const requestState = await clerkClient().authenticateRequest(request, {
+      publishableKey,
+      authorizedParties: [new URL(request.url).origin],
+    })
+    return requestState.isSignedIn
+  } catch {
+    return false
+  }
 }
 
 /**
