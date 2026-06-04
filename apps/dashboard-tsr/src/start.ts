@@ -17,6 +17,7 @@ import { createMiddleware, createStart } from '@tanstack/react-start'
 
 import { env } from 'cloudflare:workers'
 import { bridgeApiKeyEnv, resolveApiGuard } from '@/lib/auth/api-guard'
+import { withSecurityHeaders } from '@/lib/security-headers'
 
 // Returning a Response from a request middleware short-circuits the chain and
 // sends that Response without running the route handler (same mechanism the
@@ -36,8 +37,38 @@ const apiAuthMiddleware = createMiddleware().server(
   }
 )
 
+// ---------------------------------------------------------------------------
+// Security response headers
+// ---------------------------------------------------------------------------
+// Applied to every response (pages, API, static assets). The middleware runs
+// AFTER the downstream chain (via `next()`) so it can patch the final
+// Response. See `@/lib/security-headers` for the header set and rationale.
+// CSP is intentionally omitted — the app loads remote scripts (Clerk,
+// analytics) and constructing a strict CSP would require ongoing maintenance
+// that outweighs the benefit at this stage.
+
+/**
+ * Appends security headers to every response.
+ *
+ * `next()` returns the accumulated middleware context whose `.response` is
+ * the final `Response` produced by the route handler or prerender. We clone
+ * it with the extra headers. The middleware MUST come first in the array so
+ * it wraps the entire chain (outermost position).
+ */
+const securityHeadersMiddleware = createMiddleware().server(
+  async ({ next }) => {
+    const ctx = await next()
+
+    if (ctx.response instanceof Response) {
+      ctx.response = withSecurityHeaders(ctx.response)
+    }
+  }
+)
+
 export const startInstance = createStart(() => {
   return {
-    requestMiddleware: [apiAuthMiddleware],
+    // Order matters: security-headers is first so it wraps the entire chain
+    // and patches the response on the way out.
+    requestMiddleware: [securityHeadersMiddleware, apiAuthMiddleware],
   }
 })
