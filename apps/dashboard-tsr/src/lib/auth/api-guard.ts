@@ -5,21 +5,26 @@
  * Next middleware; TanStack Start has no `middleware.ts`, so the equivalent
  * runs as a global request middleware registered in `src/start.ts`.
  *
- * Two pieces of the Next middleware are reproduced here:
+ * Pluggable auth model. The active provider comes from `getAuthProvider()`
+ * (`CHM_AUTH_PROVIDER` / `VITE_AUTH_PROVIDER`):
  *
- *  1. API-key auth (`getApiKeyAuthFailure`) — when `apiKeyAuthEnabled()` is
- *     true, every `/api/v1/*` route requires EITHER a valid `chm_` Bearer token
- *     (programmatic/MCP clients) OR a valid Clerk session (browser clients, via
- *     the `__session` cookie). Anonymous requests get a 401 JSON
- *     `{ error: 'API key required' }` (or `Invalid API key: <reason>`). Exempt:
- *     `/api/v1/auth/api-key` (it owns its own secret-based auth in the handler).
+ *  - `none`  — public dashboard; every caller is authenticated.
+ *  - `clerk` — browser Clerk session (the `__session` cookie / Clerk token).
+ *  - `proxy` — a trusted reverse proxy (Cloudflare Access JWT, or a trusted
+ *              identity header gated by a shared secret).
  *
- *     The Clerk-session branch (`hasValidClerkSession`) is the Next
- *     `clerkMiddleware()` cookie precheck — #1397 dropped it during the port,
- *     which made a logged-in dashboard 401 on every data call (the browser
- *     holds a Clerk session, not a chm_ token).
+ * On top of the provider, API-key auth (`chm_` Bearer tokens) is ALWAYS on
+ * whenever `CHM_API_KEY_SECRET` is set, for programmatic/MCP clients.
  *
- *  2. cloud→dash 301 redirect (`getLegacyHostRedirect`).
+ * Enforcement on `/api/v1/*` (`getApiKeyAuthFailure`):
+ *  - PUBLIC passthrough only when provider is `none` AND API-key auth is off.
+ *  - Otherwise a request must present EITHER a valid `chm_` Bearer token OR pass
+ *    the active provider's `authenticateRequest`. Anonymous requests get a 401
+ *    JSON `{ error: 'Authentication required' }`. Exempt: `/api/v1/auth/api-key`
+ *    (it owns its own secret-based auth in the handler).
+ *
+ * Also reproduced from the Next middleware: the cloud→dash 301 redirect
+ * (`getLegacyHostRedirect`).
  *
  * `apiKeyAuthEnabled()` and `verifyApiKey()` read `process.env.CHM_API_KEY_SECRET`
  * directly. On Cloudflare Workers the canonical source is the `env` binding, so
@@ -33,6 +38,7 @@ import {
   verifyApiKey,
 } from '@chm/mcp-server/auth'
 import { getAuthProvider, isAuthProviderConfigError } from '@/lib/auth/provider'
+import { resolveServerAuthProvider } from '@/lib/auth/providers'
 
 const API_V1_PREFIX = '/api/v1/'
 // Key issuance route has its own secret-based auth in its handler.
@@ -94,7 +100,9 @@ export async function getApiKeyAuthFailure(
     return null
   }
 
-  if (!apiKeyAuthEnabled()) return null
+  // Public passthrough only when the dashboard is fully open: provider is
+  // `none` AND API-key auth is off. Any other config enforces.
+  if (getAuthProvider() === 'none' && !apiKeyAuthEnabled()) return null
 
   // Key issuance route has its own secret-based auth in the handler.
   if (pathname === API_KEY_ISSUANCE_PATH) {
@@ -106,44 +114,29 @@ export async function getApiKeyAuthFailure(
   if (headerToken) {
     const result = await verifyApiKey(headerToken)
     if (result.valid) return null
-    // Not a valid chm_ key — fall through to the Clerk-session check; the
-    // Authorization header may carry a Clerk token rather than a chm_ key.
+    // Not a valid chm_ key — fall through to the provider check; the
+    // Authorization header may carry a Clerk/proxy token rather than a chm_ key.
   }
 
-  // 2. Browser clients: a valid Clerk session. Clerk sets the `__session`
-  //    cookie (sent automatically same-origin) and may also send a Clerk token
-  //    in the Authorization header. This restores the Clerk-cookie precheck the
-  //    Next middleware relied on, which #1397 dropped — without it a logged-in
-  //    dashboard 401s on every data call because the browser holds a Clerk
-  //    session, not a chm_ token.
-  if (await hasValidClerkSession(request)) return null
-
-  return jsonError('API key required', 401)
-}
-
-/**
- * Verify a Clerk session straight off the `Request` — networkless JWT
- * verification via `clerkClient().authenticateRequest` (reads `CLERK_SECRET_KEY`
- * from the runtime env; publishable key inlined at build time). Works in the
- * request middleware without Clerk's ambient context, and fails closed on any
- * error. Only consulted when the configured auth provider is `clerk`.
- */
-async function hasValidClerkSession(request: Request): Promise<boolean> {
-  if (getAuthProvider() !== 'clerk') return false
-
-  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
-  if (!publishableKey || !process.env.CLERK_SECRET_KEY) return false
-
-  try {
-    const { clerkClient } = await import('@clerk/tanstack-react-start/server')
-    const requestState = await clerkClient().authenticateRequest(request, {
-      publishableKey,
-      authorizedParties: [new URL(request.url).origin],
-    })
-    return requestState.isSignedIn
-  } catch {
-    return false
+  // 2. The active auth provider (clerk session, proxy identity, …). Browser
+  //    clients send a Clerk `__session` cookie; proxy deployments send a
+  //    Cloudflare Access JWT or a trusted identity header.
+  //
+  //    Skip this for the `none` provider: reaching here with `none` means
+  //    API-key auth is ON (the public passthrough above already returned for
+  //    `none` + no key), so the API key is the ONLY accepted credential. The
+  //    `none` provider authenticates everyone, so consulting it here would let
+  //    keyless requests through and silently defeat API-key auth.
+  const provider = getAuthProvider()
+  if (
+    provider !== 'none' &&
+    (await resolveServerAuthProvider(provider).authenticateRequest(request))
+      .authenticated
+  ) {
+    return null
   }
+
+  return jsonError('Authentication required', 401)
 }
 
 /**

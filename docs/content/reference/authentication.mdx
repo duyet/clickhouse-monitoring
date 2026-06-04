@@ -1,0 +1,165 @@
+# Authentication
+
+chmonitor ships with a pluggable authentication model. A single server-side
+**auth provider** decides whether a browser request is authenticated, and an
+always-on **API key** layer authenticates programmatic clients. Pick the
+provider that matches how you deploy.
+
+The server provider is selected with `CHM_AUTH_PROVIDER` (`none` by default).
+Browser-facing settings mirror it on the client via `VITE_AUTH_PROVIDER`
+(`NEXT_PUBLIC_AUTH_PROVIDER` in the legacy Next app), inlined at build time.
+
+Enforcement runs on every `/api/v1/*` route. A request is allowed when it
+carries a valid `chm_` API key **or** the active provider authenticates it.
+The only public passthrough is `CHM_AUTH_PROVIDER=none` with no API key
+configured — i.e. a fully open dashboard.
+
+---
+
+## Summary
+
+| Method | Who reads it | Browser / proxy auth | curl auth |
+|---|---|---|---|
+| Public (`none`) | — | open | none needed |
+| API key | Provider-agnostic, always on when `CHM_API_KEY_SECRET` set | — | `Authorization: Bearer chm_…` |
+| Clerk | `clerk` provider | Clerk `__session` cookie | Clerk token / `chm_` key |
+| Clerk OAuth (MCP) | MCP server | — | OAuth bearer token |
+| Proxy → Cloudflare Access | `proxy` provider | `Cf-Access-Jwt-Assertion` JWT | — |
+| Proxy → trusted header | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
+
+---
+
+## Public (`none`)
+
+The default. The dashboard is open and `/api/v1/*` requires no authentication —
+unless you also set an API key (see below), in which case the key is still
+enforced for non-browser callers.
+
+```bash
+CHM_AUTH_PROVIDER=none   # or unset
+```
+
+---
+
+## API key (`chm_` Bearer)
+
+Independent of the provider. When `CHM_API_KEY_SECRET` is set, every
+`/api/v1/*` route accepts a signed `chm_` token in the `Authorization` header.
+This is how MCP clients and scripts authenticate. Keys are HMAC-SHA-256 signed
+and time-limited; issue one via `/api/v1/auth/api-key` (which has its own
+secret-based auth).
+
+```bash
+CHM_API_KEY_SECRET=a-long-random-string
+```
+
+```bash
+curl https://dash.example.com/api/v1/hosts \
+  -H "Authorization: Bearer chm_eyJ...<signed>"
+```
+
+API-key auth coexists with any provider: a valid key always satisfies the
+guard, and otherwise the provider gets a chance to authenticate the request.
+
+---
+
+## Clerk (browser session)
+
+Set the provider to `clerk` and supply Clerk keys. Browser clients sign in
+through Clerk; the `__session` cookie (sent automatically same-origin) is
+verified networklessly on each `/api/v1/*` call.
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+VITE_AUTH_PROVIDER=clerk            # client mirror (NEXT_PUBLIC_AUTH_PROVIDER on Next)
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+```
+
+The publishable key must be present at build time for the client gate to enable
+Clerk UI (sign-in buttons, user menu). The secret key is read at runtime to
+verify sessions.
+
+---
+
+## Clerk OAuth (MCP)
+
+The MCP server (`/api/mcp`) additionally accepts Clerk **OAuth** access tokens.
+Clerk hosts the authorization server (login + consent + dynamic client
+registration); chmonitor is only the resource server that verifies the bearer
+token via Clerk's REST introspection endpoint. This lets MCP clients
+authenticate with an OAuth flow instead of a `chm_` key. See the
+[MCP Server](/docs/reference/mcp-server) reference for details. It uses the same
+`CLERK_SECRET_KEY` as the browser session provider.
+
+---
+
+## Proxy → Cloudflare Access
+
+Set `CHM_AUTH_PROVIDER=proxy` and put the worker behind
+[Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/).
+Access authenticates the user and forwards a signed `Cf-Access-Jwt-Assertion`
+JWT, which chmonitor verifies cryptographically against your team's JWKS. No
+shared secret is needed — the signature is the proof.
+
+```bash
+CHM_AUTH_PROVIDER=proxy
+CHM_CF_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
+CHM_CF_ACCESS_AUD=<access-application-aud-tag>
+```
+
+The JWT is validated for: a matching `aud`, an issuer equal to your team
+domain, an unexpired `exp`, and an `RS256` signature from a current Access
+signing key. The authenticated subject is the token's `email` (falling back to
+`sub`). When `CHM_CF_ACCESS_*` are unset, this mechanism is skipped.
+
+---
+
+## Proxy → trusted header + shared secret
+
+Also under `CHM_AUTH_PROVIDER=proxy`. When you front the worker with a proxy
+that performs its own authentication (e.g. nginx + an SSO module), the proxy can
+forward the authenticated identity in a header. Because any client could forge
+such a header on a publicly-reachable worker, the header is trusted **only** when
+the request also presents a shared secret.
+
+```bash
+CHM_AUTH_PROVIDER=proxy
+CHM_PROXY_AUTH_HEADER=X-Forwarded-User          # identity header (default)
+CHM_PROXY_SHARED_SECRET_HEADER=X-Chm-Proxy-Secret  # secret header (default)
+# Set the secret out-of-band, never as a plaintext var:
+#   wrangler secret put CHM_PROXY_AUTH_SECRET
+```
+
+Example nginx config that sets both headers after authenticating the user:
+
+```nginx
+location / {
+  # ...your auth_request / SSO module sets $authenticated_user...
+  proxy_set_header X-Forwarded-User  $authenticated_user;
+  proxy_set_header X-Chm-Proxy-Secret "the-same-long-random-secret";
+  proxy_pass http://chmonitor_upstream;
+}
+```
+
+The shared secret is compared in constant time. Without
+`CHM_PROXY_AUTH_SECRET`, the trusted-header mechanism is disabled and only
+Cloudflare Access (if configured) can authenticate proxy requests.
+
+---
+
+## How enforcement decides
+
+For each `/api/v1/*` request:
+
+1. If `CHM_AUTH_PROVIDER=none` and no `CHM_API_KEY_SECRET` is set → allow (public).
+2. The key-issuance route `/api/v1/auth/api-key` is exempt (it has its own auth).
+3. A valid `chm_` Bearer token → allow.
+4. Otherwise the active provider's check runs; if it authenticates → allow.
+5. Else → `401 { "error": "Authentication required" }`.
+
+All auth paths fail closed: a missing config or verification error resolves to
+"not authenticated" rather than granting access.
+
+See [Environment Variables](/docs/reference/environment-variables#authentication)
+for every variable referenced here.

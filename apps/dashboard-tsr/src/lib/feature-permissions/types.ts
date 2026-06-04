@@ -61,7 +61,7 @@ export type Principal = 'anonymous' | 'authenticated'
 export type ResolvedFeatureStates = Record<FeatureId, FeatureState>
 
 export interface PublicFeaturePermissionConfig {
-  authProvider: 'none' | 'clerk'
+  authProvider: 'none' | 'clerk' | 'proxy'
   principal: Principal
   features: FeatureOverrides
   resolved?: ResolvedFeatureStates

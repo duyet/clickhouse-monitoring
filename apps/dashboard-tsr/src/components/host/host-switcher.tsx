@@ -39,7 +39,7 @@ export function HostSwitcher() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isMobile, state } = useSidebar()
-  const { hosts, isLoading } = useHosts()
+  const { hosts, isLoading, error, isUnauthorized } = useHosts()
   const currentHostId = useHostId()
 
   const activeHost = hosts[currentHostId] || hosts[0]
@@ -81,9 +81,51 @@ export function HostSwitcher() {
     )
   }
 
-  // Don't render switcher if no hosts configured
+  // No active host: instead of disappearing, keep the switcher's shape and
+  // surface WHY there is no host — unauthorized (sign in), a load error, or
+  // genuinely none configured. Same layout as the normal single-host view.
   if (!activeHost) {
-    return null
+    const { label, hint } = isUnauthorized
+      ? { label: 'Sign in to load hosts', hint: 'Authentication required' }
+      : error
+        ? { label: "Couldn't load hosts", hint: 'Tap to retry from a page' }
+        : { label: 'No host', hint: 'None configured' }
+
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" asChild>
+            <div
+              className={cn(
+                'flex gap-2',
+                showExpanded ? 'items-center' : 'items-center justify-center'
+              )}
+              data-testid="host-switcher-empty"
+              aria-label={label}
+              title={showExpanded ? undefined : label}
+            >
+              <div className="relative">
+                <ClickHouseLogo
+                  width={20}
+                  height={20}
+                  className="size-5 opacity-50"
+                />
+              </div>
+              {showExpanded && (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium text-muted-foreground">
+                    {label}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground/70">
+                    {hint}
+                  </span>
+                </div>
+              )}
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
   }
 
   // For single host, render simplified view without dropdown

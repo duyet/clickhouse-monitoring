@@ -11,37 +11,43 @@ interface HostsResponse {
   data?: HostInfo[]
 }
 
+/** Error carrying the HTTP status so callers can distinguish 401 from empty. */
+class HostsFetchError extends Error {
+  constructor(
+    message: string,
+    readonly status: number
+  ) {
+    super(message)
+    this.name = 'HostsFetchError'
+  }
+}
+
 /**
  * TanStack Query hook to fetch the list of configured ClickHouse hosts.
  * Provides automatic caching and deduplication.
  *
- * @returns {Object} Query state with hosts array, error, isLoading
+ * On failure the fetcher THROWS (rather than swallowing to `[]`) so callers can
+ * tell "no hosts configured" (success, empty list) apart from "couldn't load /
+ * unauthorized" (error). `hosts` still falls back to `[]` so existing consumers
+ * are unaffected; new `error` / `isUnauthorized` surface the failure mode.
  *
- * @example
- * ```typescript
- * const { hosts, error, isLoading } = useHosts()
- * ```
+ * @returns {Object} Query state: hosts, error, isLoading, isUnauthorized
  */
 export function useHosts() {
-  const fetcher = useCallback(async () => {
-    try {
-      const response = await apiFetch('/api/v1/hosts')
-      if (!response.ok) {
-        ErrorLogger.logWarning(
-          `Failed to fetch hosts: ${response.status} ${response.statusText}`,
-          { component: 'useHosts' }
-        )
-        return []
-      }
-      const result = (await response.json()) as HostsResponse
-      return result.success && result.data ? result.data : []
-    } catch (err) {
-      ErrorLogger.logError(
-        err instanceof Error ? err : new Error('Failed to fetch hosts'),
+  const fetcher = useCallback(async (): Promise<HostInfo[]> => {
+    const response = await apiFetch('/api/v1/hosts')
+    if (!response.ok) {
+      ErrorLogger.logWarning(
+        `Failed to fetch hosts: ${response.status} ${response.statusText}`,
         { component: 'useHosts' }
       )
-      return []
+      throw new HostsFetchError(
+        `Failed to fetch hosts: ${response.status}`,
+        response.status
+      )
     }
+    const result = (await response.json()) as HostsResponse
+    return result.success && result.data ? result.data : []
   }, [])
 
   const { data, error, isLoading } = useQuery<HostInfo[]>({
@@ -51,11 +57,21 @@ export function useHosts() {
     staleTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
+    // Don't hammer the server when auth is the problem — a 401/403 won't change
+    // on retry. Other failures keep the default-ish 2 retries.
+    retry: (failureCount, err) => {
+      const status = err instanceof HostsFetchError ? err.status : undefined
+      if (status === 401 || status === 403) return false
+      return failureCount < 2
+    },
   })
+
+  const status = error instanceof HostsFetchError ? error.status : undefined
 
   return {
     hosts: data ?? [],
     error,
     isLoading,
+    isUnauthorized: status === 401 || status === 403,
   }
 }

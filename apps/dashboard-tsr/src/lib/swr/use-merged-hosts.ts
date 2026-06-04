@@ -23,7 +23,7 @@ export interface MergedHostInfo extends HostInfo {
  * ```
  */
 export function useMergedHosts() {
-  const { hosts: envHosts, error, isLoading } = useHosts()
+  const { hosts: envHosts, error, isLoading, isUnauthorized } = useHosts()
   const { connections, mounted } = useBrowserConnections()
 
   const mergedHosts: MergedHostInfo[] = [
@@ -42,6 +42,8 @@ export function useMergedHosts() {
   return {
     hosts: mergedHosts,
     error,
+    // Only the env-host fetch can be unauthorized; browser connections are local.
+    isUnauthorized: Boolean(isUnauthorized),
     isLoading: isLoading || !mounted,
   }
 }
