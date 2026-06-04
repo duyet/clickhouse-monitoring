@@ -201,11 +201,24 @@ describe('SQL_PATTERNS', () => {
       expect(SQL_PATTERNS.UNION_INJECTION.test('union select')).toBe(true)
     })
 
-    test('should not match UNION ALL SELECT (in allowed context)', () => {
-      // The pattern specifically matches UNION followed by SELECT
+    test('should match UNION SELECT with table reference', () => {
       expect(SQL_PATTERNS.UNION_INJECTION.test('UNION SELECT * FROM t')).toBe(
         true
       )
+    })
+
+    test('should match UNION ALL SELECT', () => {
+      expect(SQL_PATTERNS.UNION_INJECTION.test('UNION ALL SELECT')).toBe(true)
+      expect(SQL_PATTERNS.UNION_INJECTION.test('union all select')).toBe(true)
+      expect(
+        SQL_PATTERNS.UNION_INJECTION.test(
+          'SELECT 1 UNION ALL SELECT secret FROM system.users'
+        )
+      ).toBe(true)
+    })
+
+    test('should not match UNION without SELECT', () => {
+      expect(SQL_PATTERNS.UNION_INJECTION.test('UNION')).toBe(false)
     })
   })
 
@@ -560,6 +573,12 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
         validateSqlQuery(
           "SELECT * FROM users WHERE name = '' UNION SELECT * FROM passwords"
         )
+      ).toThrow('Potentially dangerous SQL detected')
+    })
+
+    test('should reject UNION ALL injection', () => {
+      expect(() =>
+        validateSqlQuery('SELECT 1 UNION ALL SELECT secret FROM system.users')
       ).toThrow('Potentially dangerous SQL detected')
     })
 
