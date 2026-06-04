@@ -93,7 +93,12 @@ export const KpiCard = function KpiCard({
 }: KpiCardProps) {
   if (isLoading) {
     return (
-      <div className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}>
+      <div
+        className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}
+        role="status"
+        aria-busy="true"
+        aria-label={`Loading ${label}`}
+      >
         <Skeleton variant="shimmer" className="h-3 w-24" />
         <Skeleton variant="shimmer" className="h-7 w-20" />
         <Skeleton variant="shimmer" className="h-3 w-28" />
