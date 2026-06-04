@@ -15,6 +15,7 @@ import { useExplorerState } from './hooks/use-explorer-state'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { activateOnEnterOrSpace } from '@/lib/a11y'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
@@ -163,12 +164,7 @@ export function ExplorerEmptyState() {
                   tabIndex={0}
                   className="group cursor-pointer p-4 transition-[border-color,background-color] hover:border-primary/50 hover:bg-muted/50"
                   onClick={() => setDatabase(db.name)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setDatabase(db.name)
-                    }
-                  }}
+                  onKeyDown={activateOnEnterOrSpace(() => setDatabase(db.name))}
                 >
                   <div className="flex items-center gap-3">
                     <div
