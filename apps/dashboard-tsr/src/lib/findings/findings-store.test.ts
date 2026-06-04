@@ -19,9 +19,10 @@ let fetchDataImpl: (arg: {
 let lastQuery = ''
 let lastParams: Record<string, unknown> = {}
 
-mock.module('@chm/logger', () => ({
-  ErrorLogger: { logDebug: () => {}, logWarning: () => {}, logError: () => {} },
-}))
+// NB: do NOT mock '@chm/logger' — replacing the whole module drops named
+// exports other modules import (e.g. clerk-client's `error`), and bun's
+// mock.module is global + persists across files. The real logger is harmless
+// in tests. Only the data client is mocked.
 mock.module('@chm/clickhouse-client', () => ({
   getClient: async () => ({
     command: (...a: unknown[]) => commandImpl.apply(null, a as []),
