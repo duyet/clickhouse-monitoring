@@ -102,6 +102,13 @@ const SSR_STUB_PREFIXES = [
   // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
   // it never executes during prerender. Stub it out of the worker bundle.
   'sql-formatter',
+  // @assistant-ui/react + react-ai-sdk (~1.5 MB thread chunk). All assistant-ui
+  // code is behind React.lazy in agents-page-client.tsx and
+  // global-assistant-modal.tsx — neither path executes during SSR/prerender.
+  // Stubbing also drops transitive deps: assistant-cloud, remend, embla-carousel,
+  // vaul, hast/rehype/marked, nanoid, zustand, entities, dequal.
+  '@assistant-ui/react',
+  '@assistant-ui/react-ai-sdk',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -128,6 +135,34 @@ const SSR_STUB_NAMED_EXPORTS = [
   'keymap',
   // sql-formatter
   'format',
+  // @assistant-ui/react — all named imports used across src/components/assistant-ui/
+  // and src/lib/conversation-store/adapter/
+  'ActionBarPrimitive',
+  'AssistantModalPrimitive',
+  'AssistantRuntimeProvider',
+  'BranchPickerPrimitive',
+  'ComposerPrimitive',
+  'EnrichedPartState',
+  'ErrorPrimitive',
+  'MessagePartStatus',
+  'MessagePrimitive',
+  'PartState',
+  'RuntimeAdapterProvider',
+  'ThreadListItemPrimitive',
+  'ThreadListPrimitive',
+  'ThreadPrimitive',
+  'ToolCallMessagePartStatus',
+  'useAui',
+  'useMessage',
+  'useMessageTiming',
+  'useRemoteThreadListRuntime',
+  'useScrollLock',
+  'useThread',
+  'useThreadList',
+  'useThreadListItem',
+  'useThreadRuntime',
+  // @assistant-ui/react-ai-sdk
+  'useChatRuntime',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
