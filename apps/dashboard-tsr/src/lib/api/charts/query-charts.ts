@@ -137,7 +137,10 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   `,
   }),
 
-  // v24.1+: Query cache usage stats from query_log
+  // query_cache_usage column only exists from v24.1. VersionedSql picks the
+  // highest `since` <= CH version; the first (oldest) entry is the fallback for
+  // older / unknown versions. (Replaces the deprecated `variants` form, which
+  // the TSR executor does not select.)
   'query-cache-usage': ({ lastHours = 24 * 7 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
@@ -152,12 +155,24 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     GROUP BY query_cache_usage
     ORDER BY query_count DESC
   `,
-      // Fallback for pre-24.1 versions
-      variants: [
+      sql: [
         {
-          versions: { maxVersion: '24.1' },
-          query: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
-          description: 'query_cache_usage column not available before v24.1',
+          since: '1.0',
+          sql: `SELECT 'Not available' AS query_cache_usage, 0 AS query_count, 0 AS percentage`,
+        },
+        {
+          since: '24.1',
+          sql: `
+    SELECT
+      query_cache_usage,
+      COUNT() AS query_count,
+      round(100 * query_count / sum(query_count) OVER (), 2) AS percentage
+    FROM merge('system', '^query_log')
+    WHERE type = 'QueryFinish'
+          ${timeFilter ? `AND ${timeFilter}` : ''}
+    GROUP BY query_cache_usage
+    ORDER BY query_count DESC
+  `,
         },
       ],
     }
