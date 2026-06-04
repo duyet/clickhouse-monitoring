@@ -17,6 +17,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { DataFormat } from '@clickhouse/client'
 import { createClient } from '@clickhouse/client-web'
 
+import { validateSqlQuery } from '@chm/sql-builder'
 import { createValidationError } from '@/lib/api/error-handler'
 import {
   createErrorResponse,
@@ -88,6 +89,18 @@ async function handlePost(request: Request): Promise<Response> {
   }
   if (!query || typeof query !== 'string') {
     return createValidationError('Missing required field: query', ROUTE_CONTEXT)
+  }
+
+  // SECURITY: Validate SQL query to prevent injection attacks
+  try {
+    validateSqlQuery(query)
+  } catch (validationErr) {
+    return createValidationError(
+      validationErr instanceof Error
+        ? validationErr.message
+        : 'SQL validation failed',
+      ROUTE_CONTEXT
+    )
   }
 
   // Validate host URL and block SSRF targets
