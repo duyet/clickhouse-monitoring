@@ -16,7 +16,9 @@
 import { createMiddleware, createStart } from '@tanstack/react-start'
 
 import { env } from 'cloudflare:workers'
+import { clerkMiddleware } from '@clerk/tanstack-react-start/server'
 import { bridgeApiKeyEnv, resolveApiGuard } from '@/lib/auth/api-guard'
+import { isClerkAuthProvider } from '@/lib/auth/provider'
 import { withSecurityHeaders } from '@/lib/security-headers'
 
 // Returning a Response from a request middleware short-circuits the chain and
@@ -71,10 +73,30 @@ const securityHeadersMiddleware = createMiddleware().server(
   }
 )
 
+// ---------------------------------------------------------------------------
+// Clerk middleware
+// ---------------------------------------------------------------------------
+// `auth()` from `@clerk/tanstack-react-start/server` reads the authenticated
+// session from `getGlobalStartContext().auth`, which is ONLY populated by
+// `clerkMiddleware()`. Without it, every server-side `auth()` call throws
+// `clerkMiddlewareNotConfigured` (silently caught by try/catch in
+// feature-permission checks), causing all authenticated endpoints to return
+// 401 even when the user has a valid Clerk session cookie.
+//
+// The middleware must run before apiAuthMiddleware so the auth context is
+// available to downstream guards and route handlers. Only registered when
+// Clerk is the active auth provider (CHM_AUTH_PROVIDER=clerk).
+
 export const startInstance = createStart(() => {
-  return {
-    // Order matters: security-headers is first so it wraps the entire chain
-    // and patches the response on the way out.
-    requestMiddleware: [securityHeadersMiddleware, apiAuthMiddleware],
+  // Order matters: security-headers is first (outermost) so it wraps the
+  // entire chain and patches the response on the way out.
+  const middleware = [securityHeadersMiddleware]
+
+  if (isClerkAuthProvider()) {
+    middleware.push(clerkMiddleware())
   }
+
+  middleware.push(apiAuthMiddleware)
+
+  return { requestMiddleware: middleware }
 })

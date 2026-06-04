@@ -7,11 +7,18 @@ export { getSqlForDisplay } from './types'
 // Anomaly Detection
 import { anomalyQueries } from './anomaly/anomaly-queries'
 import {
+  explorerAllDependenciesConfig,
   explorerColumnsConfig,
+  explorerDatabaseDependenciesConfig,
   explorerDatabasesConfig,
   explorerDdlConfig,
+  explorerDependenciesDownstreamConfig,
+  explorerDependenciesUpstreamConfig,
+  explorerDictionarySourceConfig,
   explorerIndexesConfig,
+  explorerProjectionsConfig,
   explorerSkipIndexesConfig,
+  explorerTableDependenciesConfig,
   explorerTablesConfig,
 } from './explorer'
 import {
@@ -101,6 +108,13 @@ export const queries: Array<QueryConfig> = [
   explorerDdlConfig,
   explorerIndexesConfig,
   explorerSkipIndexesConfig,
+  explorerProjectionsConfig,
+  explorerAllDependenciesConfig,
+  explorerDatabaseDependenciesConfig,
+  explorerDependenciesDownstreamConfig,
+  explorerDependenciesUpstreamConfig,
+  explorerDictionarySourceConfig,
+  explorerTableDependenciesConfig,
 
   // Tables
   tablesOverviewConfig,
