@@ -3,18 +3,35 @@
  *
  * Ported from apps/dashboard/lib/api/chart-registry.ts. A chart is a builder
  * function `(params) => ChartQueryResult` registered under a name. The
- * dashboard composes ~14 domain chart modules into one map; here the map
- * starts EMPTY (chart fan-out is later) and exposes `registerChartQuery` so
- * ported modules can self-register, plus the same get/has/list surface the
- * route handler uses.
+ * dashboard composes 15 domain chart modules into one map; this module does
+ * the same by importing every domain module and registering its builders at
+ * load time (see the registration block at the bottom of this file). The
+ * `registerChartQuery`/`registerChartQueries` surface is also exposed for
+ * dynamic registration, plus the same get/has/list surface the route uses.
  *
- * Chart-data types are defined locally (the dashboard re-exports them from
- * its `@/types/chart-data`, which is not ported). They mirror that shape so
- * ported chart builders need no edits.
+ * Chart-data types are defined locally; they mirror `@/types/chart-data` so
+ * ported chart builders (typed with the canonical types) need no edits — the
+ * canonical result type only adds optional fields, so builders stay assignable.
  */
 
 import type { VersionedSql } from '@chm/sql-builder'
 import type { ClickHouseInterval } from './query-executor'
+
+import { connectionCharts } from './charts/connection-charts'
+import { dashboardCharts } from './charts/dashboard-charts'
+import { dictionaryCharts } from './charts/dictionary-charts'
+import { insightCharts } from './charts/insight-charts'
+import { logsCharts } from './charts/logs-charts'
+import { mergeCharts } from './charts/merge-charts'
+import { overviewCharts } from './charts/overview-charts'
+import { pageViewCharts } from './charts/page-view-charts'
+import { queryCharts } from './charts/query-charts'
+import { queryPerfCharts } from './charts/query-perf-charts'
+import { replicationCharts } from './charts/replication-charts'
+import { securityCharts } from './charts/security-charts'
+import { systemCharts } from './charts/system-charts'
+import { threadCharts } from './charts/thread-charts'
+import { zookeeperCharts } from './charts/zookeeper-charts'
 
 /** Cache policy → Cache-Control TTL bucket (handler maps to headers). */
 export type CachePolicy = 'realtime' | 'standard' | 'historical'
@@ -103,3 +120,28 @@ export function getAvailableCharts(): string[] {
 export function hasChart(chartName: string): boolean {
   return chartRegistry.has(chartName)
 }
+
+/**
+ * Compose all domain chart modules into the registry at module load.
+ *
+ * The route handler imports this module for `hasChart`/`getChartQuery`, so
+ * importing it triggers this side effect before any request is served. Order
+ * mirrors the original dashboard; later spreads win on name collisions.
+ */
+registerChartQueries({
+  ...queryCharts,
+  ...mergeCharts,
+  ...systemCharts,
+  ...connectionCharts,
+  ...replicationCharts,
+  ...zookeeperCharts,
+  ...pageViewCharts,
+  ...overviewCharts,
+  ...dashboardCharts,
+  ...securityCharts,
+  ...threadCharts,
+  ...logsCharts,
+  ...dictionaryCharts,
+  ...queryPerfCharts,
+  ...insightCharts,
+})
