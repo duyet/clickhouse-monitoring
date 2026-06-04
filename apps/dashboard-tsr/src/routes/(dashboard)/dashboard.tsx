@@ -5,7 +5,7 @@ import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { getChartComponent, hasChart } from '@/components/charts/registry'
 import { ChartPicker } from '@/components/dashboard/chart-picker'
 import { SavedDashboardsToolbar } from '@/components/dashboard/saved-dashboards-toolbar'
-import { ChartSkeleton } from '@/components/skeletons'
+import { ChartSkeleton, ChartsOnlyPageSkeleton } from '@/components/skeletons'
 import { useHostId } from '@/lib/swr'
 
 /** Charts shown when no saved dashboard is loaded */
@@ -106,7 +106,7 @@ function DashboardContent() {
 
 function DashboardPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<ChartsOnlyPageSkeleton chartCount={8} />}>
       <DashboardContent />
     </Suspense>
   )
