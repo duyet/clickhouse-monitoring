@@ -2,6 +2,22 @@
 
 Reference of all supported environment variables, grouped by category.
 
+> **Client var prefix differs by app.** Browser-exposed (client) variables are
+> **build-time inlined** and the prefix depends on which dashboard you run:
+>
+> | App | Client prefix | Read via |
+> |---|---|---|
+> | `apps/dashboard` (Next.js, legacy) | `NEXT_PUBLIC_*` | `process.env.NEXT_PUBLIC_*` |
+> | `apps/dashboard-tsr` (TanStack Start) | `VITE_*` | `import.meta.env.VITE_*` |
+>
+> Same variable, different prefix — e.g. `NEXT_PUBLIC_AUTH_PROVIDER` ↔
+> `VITE_AUTH_PROVIDER`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` ↔
+> `VITE_CLERK_PUBLISHABLE_KEY`. The tables below list the legacy `NEXT_PUBLIC_*`
+> names; for the TanStack app substitute the `VITE_` prefix. Worker `[vars]` are
+> runtime-only and never reach the client, so these MUST be set at build time
+> (CI build step / `vite.config.ts`). Authoritative TanStack reference:
+> [`apps/dashboard-tsr/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/dashboard-tsr/.env.example).
+
 ---
 
 ## ClickHouse Connection

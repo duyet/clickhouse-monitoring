@@ -18,7 +18,8 @@
     "cf:dry-run": "vite build && wrangler deploy --dry-run",
     "cf-typegen": "wrangler types",
     "type-check": "tsc --noEmit",
-    "test": "bun test src/"
+    "test": "bun test src/",
+    "verify-deploy": "bun scripts/verify-deploy.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",
