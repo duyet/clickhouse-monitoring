@@ -471,7 +471,7 @@ const handleGet = withApiHandler(async (request: Request) => {
     hostId,
     // SECURITY: Enforce readonly mode to prevent DML/DDL even if SQL validation is bypassed
     clickhouse_settings: {
-      readonly: 1,
+      readonly: '1',
       ...(timezone ? { session_timezone: timezone } : {}),
     },
   })
@@ -602,7 +602,7 @@ const handlePost = withApiHandler(async (request: Request) => {
     queryConfig: serverQueryConfig,
     // SECURITY: Enforce readonly mode to prevent DML/DDL even if SQL validation is bypassed
     clickhouse_settings: {
-      readonly: 1,
+      readonly: '1',
       ...(timezone ? { session_timezone: timezone } : {}),
     },
   })
