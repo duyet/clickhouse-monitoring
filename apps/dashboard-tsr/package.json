@@ -19,6 +19,10 @@
     "cf-typegen": "wrangler types",
     "type-check": "tsc --noEmit",
     "test": "bun test src/",
+    "test:e2e": "cypress open --e2e",
+    "test:e2e:headless": "cypress run --e2e",
+    "test:component": "cypress open --component",
+    "test:component:headless": "cypress run --component",
     "verify-deploy": "bun scripts/verify-deploy.ts"
   },
   "dependencies": {
@@ -102,6 +106,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
+    "cypress": "^15.16.0",
     "nitro": "^3.0.260522-beta",
     "typescript": "^6",
     "vite": "^8.0.16",
