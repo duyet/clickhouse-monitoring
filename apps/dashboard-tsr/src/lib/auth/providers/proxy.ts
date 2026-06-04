@@ -25,16 +25,21 @@ import type { AuthResult, ServerAuthProvider } from './types'
 const CF_ACCESS_JWT_HEADER = 'Cf-Access-Jwt-Assertion'
 const DEFAULT_SHARED_SECRET_HEADER = 'X-Chm-Proxy-Secret'
 const DEFAULT_IDENTITY_HEADER = 'X-Forwarded-User'
-// Cache JWKS keys for ~1h to avoid fetching certs on every request.
+// Cache the WHOLE JWKS document per team domain for ~1h to avoid fetching certs
+// on every request. Caching the full set (not per-kid) is deliberate: a forged
+// token with an unknown `kid` must NOT trigger a fetch — otherwise an
+// unauthenticated client could force an outbound JWKS fetch on every request (a
+// DoS / latency vector on the auth path). An unknown kid simply misses the
+// already-cached set until the TTL expires and the set is refreshed.
 const JWKS_TTL_MS = 60 * 60 * 1000
 
-interface CachedKey {
-  key: CryptoKey
+interface CachedKeySet {
+  keys: Map<string, CryptoKey> // kid → imported verify key
   expiresAt: number
 }
 
-// In-module JWKS cache keyed by JWT `kid`. Cleared on TTL expiry per kid.
-const jwksCache = new Map<string, CachedKey>()
+// In-module JWKS cache keyed by team domain.
+const jwksCache = new Map<string, CachedKeySet>()
 
 function unb64url(input: string): Uint8Array<ArrayBuffer> | null {
   const base64 = input.replace(/-/g, '+').replace(/_/g, '/')
@@ -104,15 +109,10 @@ interface Jwk extends JsonWebKey {
   kid?: string
 }
 
-async function getVerificationKey(
-  teamDomain: string,
-  kid: string
-): Promise<CryptoKey | null> {
-  const cached = jwksCache.get(kid)
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.key
-  }
-
+/** Fetch + import the team's full JWKS into a kid→key map, or null on failure. */
+async function fetchKeySet(
+  teamDomain: string
+): Promise<Map<string, CryptoKey> | null> {
   let res: Response
   try {
     res = await fetch(`${teamDomain}/cdn-cgi/access/certs`, {
@@ -130,22 +130,43 @@ async function getVerificationKey(
     return null
   }
 
-  const jwk = jwks.keys?.find((k) => k.kid === kid)
-  if (!jwk) return null
-
-  try {
-    const key = await crypto.subtle.importKey(
-      'jwk',
-      jwk,
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-      false,
-      ['verify']
-    )
-    jwksCache.set(kid, { key, expiresAt: Date.now() + JWKS_TTL_MS })
-    return key
-  } catch {
-    return null
+  const keys = new Map<string, CryptoKey>()
+  for (const jwk of jwks.keys ?? []) {
+    if (!jwk.kid) continue
+    try {
+      keys.set(
+        jwk.kid,
+        await crypto.subtle.importKey(
+          'jwk',
+          jwk,
+          { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+          false,
+          ['verify']
+        )
+      )
+    } catch {
+      // Skip an individual unusable key; keep the rest.
+    }
   }
+  return keys
+}
+
+async function getVerificationKey(
+  teamDomain: string,
+  kid: string
+): Promise<CryptoKey | null> {
+  const cached = jwksCache.get(teamDomain)
+  // Fresh cache: resolve the kid against it WITHOUT any fetch. An unknown kid
+  // (e.g. a forged token) misses here and returns null — no outbound request.
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.keys.get(kid) ?? null
+  }
+
+  // Stale or absent: refresh the whole set once, cache it, then resolve.
+  const keys = await fetchKeySet(teamDomain)
+  if (!keys) return null
+  jwksCache.set(teamDomain, { keys, expiresAt: Date.now() + JWKS_TTL_MS })
+  return keys.get(kid) ?? null
 }
 
 /**
