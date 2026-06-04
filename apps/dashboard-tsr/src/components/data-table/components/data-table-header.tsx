@@ -1,11 +1,8 @@
 import {
   FilterIcon,
-  LayoutGrid,
   Loader2Icon,
   PlusIcon,
   SearchIcon,
-  Settings2Icon,
-  Table2,
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
@@ -21,19 +18,13 @@ import { CardToolbar } from '@/components/cards/card-toolbar'
 import { CsvExportButton } from '@/components/data-table/buttons/csv-export-button'
 import { ResetColumnOrderButton } from '@/components/data-table/buttons/reset-column-order'
 import { BulkActions } from '@/components/data-table/components/bulk-actions'
+import {
+  DisplayOptionsDropdown,
+  ViewToggle,
+} from '@/components/data-table/components/data-table-header-parts'
 import { MobileSortMenu } from '@/components/data-table/components/mobile-table-cards'
 import { Button } from '@/components/ui/button'
 import { DebouncedInput } from '@/components/ui/debounced-input'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Popover,
@@ -47,7 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { getSqlForDisplay } from '@/types/query-config'
 
 export interface DataTableHeaderProps<TData extends RowData> {
@@ -104,48 +94,6 @@ const OPERATOR_LABELS: Record<TableFilterCondition['operator'], string> = {
   notContains: 'does not contain',
 }
 
-/** Segmented table/cards toggle. */
-function ViewToggle({
-  view,
-  onViewChange,
-}: {
-  view: 'table' | 'cards' | 'auto'
-  onViewChange?: (view: 'table' | 'cards') => void
-}) {
-  const isMobile = useIsMobile()
-  const active = view === 'auto' ? (isMobile ? 'cards' : 'table') : view
-  return (
-    <div
-      className="inline-flex items-center gap-0.5 rounded-md border border-border/60 p-0.5"
-      role="group"
-      aria-label="Result view"
-    >
-      <Button
-        type="button"
-        variant={active === 'table' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'table'}
-        onClick={() => onViewChange?.('table')}
-      >
-        <Table2 className="size-3.5" />
-        Table
-      </Button>
-      <Button
-        type="button"
-        variant={active === 'cards' ? 'secondary' : 'ghost'}
-        size="sm"
-        className="gap-1.5 px-2 text-xs"
-        aria-pressed={active === 'cards'}
-        onClick={() => onViewChange?.('cards')}
-      >
-        <LayoutGrid className="size-3.5" />
-        Cards
-      </Button>
-    </div>
-  )
-}
-
 export const DataTableHeader = memo(function DataTableHeader<
   TData extends RowData,
 >({
@@ -184,6 +132,14 @@ export const DataTableHeader = memo(function DataTableHeader<
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
+  // A blank filter draft seeded with the first filterable column.
+  const blankFilterDraft = (): TableFilterCondition => ({
+    id: createFilterId(),
+    columnId: filterableColumns[0]?.column.id || '',
+    operator: 'contains',
+    value: '',
+  })
+
   // Memoize filterable columns with their labels to avoid recomputing on every render.
   // This stabilizes the SelectItem arrays and reduces popover open cost.
   const filterableColumns = useMemo(() => {
@@ -219,30 +175,13 @@ export const DataTableHeader = memo(function DataTableHeader<
     setIsFiltersOpen(open)
     if (open) {
       setFilterDrafts(
-        advancedFilters.length > 0
-          ? [...advancedFilters]
-          : [
-              {
-                id: createFilterId(),
-                columnId: filterableColumns[0]?.column.id || '',
-                operator: 'contains',
-                value: '',
-              },
-            ]
+        advancedFilters.length > 0 ? [...advancedFilters] : [blankFilterDraft()]
       )
     }
   }
 
   const addFilterDraft = () => {
-    setFilterDrafts((prev) => [
-      ...prev,
-      {
-        id: createFilterId(),
-        columnId: filterableColumns[0]?.column.id || '',
-        operator: 'contains',
-        value: '',
-      },
-    ])
+    setFilterDrafts((prev) => [...prev, blankFilterDraft()])
   }
 
   const updateFilterDraft = (
@@ -257,16 +196,7 @@ export const DataTableHeader = memo(function DataTableHeader<
   const removeFilterDraft = (id: string) => {
     setFilterDrafts((prev) => {
       const filtered = prev.filter((draft) => draft.id !== id)
-      return filtered.length > 0
-        ? filtered
-        : [
-            {
-              id: createFilterId(),
-              columnId: filterableColumns[0]?.column.id || '',
-              operator: 'contains',
-              value: '',
-            },
-          ]
+      return filtered.length > 0 ? filtered : [blankFilterDraft()]
     })
   }
 
@@ -341,79 +271,12 @@ export const DataTableHeader = memo(function DataTableHeader<
             {offerViewToggle && (
               <ViewToggle view={view} onViewChange={onViewChange} />
             )}
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 px-3 border-border/50 rounded-lg text-xs"
-                  aria-label="Column Options"
-                  title="Column Options"
-                >
-                  <Settings2Icon className="size-3.5" />
-                  <span>Display options</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-56 max-h-[80vh] overflow-y-auto rounded-xl shadow-lg"
-              >
-                <DropdownMenuLabel className="text-xs font-semibold px-2.5 py-1.5 text-muted-foreground uppercase tracking-wider">
-                  Density
-                </DropdownMenuLabel>
-                {onDensityChange && (
-                  <DropdownMenuRadioGroup
-                    value={density}
-                    onValueChange={(v) => onDensityChange(v as TableDensity)}
-                    className="px-1"
-                  >
-                    <DropdownMenuRadioItem
-                      value="comfortable"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Comfortable
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="compact"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Compact
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="dense"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Dense
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-semibold px-2.5 py-1.5 text-muted-foreground uppercase tracking-wider">
-                  Columns
-                </DropdownMenuLabel>
-                <div className="px-1">
-                  {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-xs"
-                      >
-                        {getColumnLabel(column.id)}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DisplayOptionsDropdown
+              table={table}
+              density={density}
+              onDensityChange={onDensityChange}
+              getColumnLabel={getColumnLabel}
+            />
             <CsvExportButton table={table} filename={queryConfig.name} />
             {enableColumnReordering && onResetColumnOrder && (
               <ResetColumnOrderButton onReset={onResetColumnOrder} />
@@ -592,81 +455,12 @@ export const DataTableHeader = memo(function DataTableHeader<
               <ViewToggle view={view} onViewChange={onViewChange} />
             )}
             {/* Combined Display Options Dropdown */}
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 px-3 border-border/50 rounded-lg text-xs"
-                  aria-label="Column Options"
-                  title="Column Options"
-                >
-                  <Settings2Icon className="size-3.5" />
-                  <span>Display options</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-56 max-h-[80vh] overflow-y-auto rounded-xl shadow-lg"
-              >
-                <DropdownMenuLabel className="text-xs font-semibold px-2.5 py-1.5 text-muted-foreground uppercase tracking-wider">
-                  Density
-                </DropdownMenuLabel>
-                {onDensityChange && (
-                  <DropdownMenuRadioGroup
-                    value={density}
-                    onValueChange={(v) => onDensityChange(v as TableDensity)}
-                    className="px-1"
-                  >
-                    <DropdownMenuRadioItem
-                      value="comfortable"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Comfortable
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="compact"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Compact
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="dense"
-                      className="text-xs"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      Dense
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                )}
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuLabel className="text-xs font-semibold px-2.5 py-1.5 text-muted-foreground uppercase tracking-wider">
-                  Columns
-                </DropdownMenuLabel>
-                <div className="px-1">
-                  {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-xs"
-                      >
-                        {getColumnLabel(column.id)}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DisplayOptionsDropdown
+              table={table}
+              density={density}
+              onDensityChange={onDensityChange}
+              getColumnLabel={getColumnLabel}
+            />
 
             {/* Export CSV button */}
             <CsvExportButton table={table} filename={queryConfig.name} />
