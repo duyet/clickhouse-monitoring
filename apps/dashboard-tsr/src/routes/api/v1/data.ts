@@ -551,6 +551,26 @@ const handlePost = withApiHandler(async (request: Request) => {
     )
   }
 
+  // SECURITY: Validate SQL query to prevent injection attacks (mirrors GET handler).
+  // This must run before fetchData regardless of whether queryConfigName is provided.
+  try {
+    validateSqlQuery(query)
+  } catch (validationErr) {
+    error('[POST /api/v1/data] Security: SQL validation failed', {
+      queryPreview: query.substring(0, 100),
+      error:
+        validationErr instanceof Error
+          ? validationErr.message
+          : 'Unknown error',
+    })
+    return createValidationError(
+      validationErr instanceof Error
+        ? validationErr.message
+        : 'SQL validation failed',
+      { ...ROUTE_CONTEXT, method: 'POST', hostId }
+    )
+  }
+
   // SECURITY: If no queryConfigName provided, validate the query exists in dashboard tables
   // This prevents arbitrary SQL execution from clients
   if (!queryConfigName) {
