@@ -102,6 +102,10 @@ const SSR_STUB_PREFIXES = [
   // OFF and getInitialBeautifyState() returns false under SSR (no `window`), so
   // it never executes during prerender. Stub it out of the worker bundle.
   'sql-formatter',
+  // React Flow graph visualization (~372 KB with d3-* deps). The explorer route
+  // lazy-loads the entire DependencyGraph via React.lazy + Suspense, so xyflow
+  // never executes during SSR or prerender. Stub it out of the worker bundle.
+  '@xyflow/react',
 ]
 
 // rolldown does not honour `syntheticNamedExports` from a resolveId result, so
@@ -128,6 +132,24 @@ const SSR_STUB_NAMED_EXPORTS = [
   'keymap',
   // sql-formatter
   'format',
+  // @xyflow/react (React Flow) — all value imports from src/components/explorer
+  // and src/components/ai-elements. Type imports (Edge, Node, ReactFlowProps,
+  // ReactFlowInstance, ConnectionLineComponent, EdgeProps, InternalNode) are
+  // erased at compile time and do not need entries.
+  'Background',
+  'BaseEdge',
+  'Controls',
+  'getBezierPath',
+  'getSimpleBezierPath',
+  'Handle',
+  'MarkerType',
+  'NodeToolbar',
+  'Panel',
+  'Position',
+  'ReactFlow',
+  'useEdgesState',
+  'useInternalNode',
+  'useNodesState',
 ]
 
 const SSR_STUB_VIRTUAL_ID = '\0chm-ssr-client-only-stub'
