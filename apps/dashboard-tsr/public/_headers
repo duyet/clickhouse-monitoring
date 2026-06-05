@@ -12,3 +12,16 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Content-hashed build assets (Vite emits `name-[hash].js|css|woff2|…` under
+# /assets). The hash IS the cache key — any change produces a new filename — so
+# these are safe to cache forever. `immutable` additionally tells the browser to
+# skip the conditional revalidation request (304) entirely on repeat loads.
+#
+# Cloudflare Workers Assets default for the browser is `max-age=0,
+# must-revalidate`, so WITHOUT this every JS/CSS chunk costs a revalidation
+# round-trip on every page load — directly inflating TTFB/load for returning
+# visitors. The HTML shell is intentionally NOT cached this way: it must stay
+# revalidating so a new deploy's fresh asset hashes are always picked up.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
