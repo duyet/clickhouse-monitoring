@@ -387,6 +387,24 @@ jobs:
           sleep 5
           bun scripts/verify-deploy.ts --base-url "$BASE" --hosts 0
 
+      - name: Chart smoke test
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        env:
+          CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+        run: |
+          echo "Running chart-level smoke test against $BASE ..."
+          bun ../../scripts/smoke-test.ts --base-url "$BASE" --json 2>&1 | tee smoke-result.json
+          # Parse pass/fail counts for the step summary
+          PASSED=$(jq -r '.passed // 0' smoke-result.json 2>/dev/null || echo '?')
+          FAILED=$(jq -r '.failed // 0' smoke-result.json 2>/dev/null || echo '?')
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Charts passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| Charts failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Informational gate — not blocking deploy. Promote to blocking once baseline is established._" >> $GITHUB_STEP_SUMMARY
+
       # The TSR preview URL is now included in the unified "☁️ Cloudflare Preview
       # Deployment" comment posted by the main dashboard job — no separate
       # comment here (avoids two preview comments per PR).

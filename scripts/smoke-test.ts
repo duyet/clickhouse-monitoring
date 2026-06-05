@@ -18,6 +18,15 @@ const BASE_URL =
   'https://clickhouse.duyet.net'
 const JSON_OUTPUT = args.includes('--json')
 const _VERBOSE = args.includes('--verbose')
+const API_KEY_SECRET =
+  args.find((a) => a.startsWith('--api-key-secret='))?.split('=')[1] ||
+  (args.indexOf('--api-key-secret') !== -1
+    ? args[args.indexOf('--api-key-secret') + 1]
+    : undefined) ||
+  process.env.CHM_API_KEY_SECRET
+
+/** Bearer token for authenticated requests (minted via /api/v1/auth/api-key). */
+let authToken = ''
 
 // ── Types ──────────────────────────────────────────────
 
@@ -62,9 +71,22 @@ interface CategoryGroup {
 
 // ── Helpers ────────────────────────────────────────────
 
-async function fetchJSON(url: string): Promise<any> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(30_000) })
-  return res.json()
+async function fetchJSON(
+  url: string,
+  init?: RequestInit
+): Promise<{ status: number; json: any }> {
+  const headers: Record<string, string> = {
+    ...(init?.headers as Record<string, string>),
+  }
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`
+  }
+  const res = await fetch(url, {
+    ...init,
+    headers,
+    signal: AbortSignal.timeout(30_000),
+  })
+  return { status: res.status, json: await res.json() }
 }
 
 function categorizeError(error: string): ErrorCategory {
@@ -107,7 +129,7 @@ async function discoverHosts(): Promise<HostInfo[]> {
   const hosts: HostInfo[] = []
   // Try /api/v1/hosts first
   try {
-    const d = await fetchJSON(`${BASE_URL}/api/v1/hosts`)
+    const { json: d } = await fetchJSON(`${BASE_URL}/api/v1/hosts`)
     if (d.success && Array.isArray(d.data)) {
       for (const h of d.data) {
         hosts.push({
@@ -132,7 +154,7 @@ async function discoverHosts(): Promise<HostInfo[]> {
   if (hosts.length === 0) {
     for (let i = 0; i < 10; i++) {
       try {
-        const r = await fetchJSON(
+        const { json: r } = await fetchJSON(
           `${BASE_URL}/api/v1/data?hostId=${i}&sql=SELECT+1`
         )
         if (!r.success) break
@@ -157,7 +179,7 @@ async function discoverHosts(): Promise<HostInfo[]> {
 
 async function getHostVersion(hostId: number): Promise<string | undefined> {
   try {
-    const d = await fetchJSON(
+    const { json: d } = await fetchJSON(
       `${BASE_URL}/api/v1/data?hostId=${hostId}&sql=SELECT+version()`
     )
     if (d.success && Array.isArray(d.data) && d.data[0]) {
@@ -170,10 +192,46 @@ async function getHostVersion(hostId: number): Promise<string | undefined> {
 }
 
 async function getChartList(): Promise<string[]> {
-  const d = await fetchJSON(`${BASE_URL}/api/v1/charts/nonexistent?hostId=0`)
+  const { json: d } = await fetchJSON(
+    `${BASE_URL}/api/v1/charts/nonexistent?hostId=0`
+  )
   const list = d?.error?.details?.availableCharts as string
   if (!list) throw new Error('Could not fetch chart list from API')
   return list.split(', ').map((s: string) => s.trim())
+}
+
+// ── Auth ───────────────────────────────────────────────
+
+async function mintAuthToken(): Promise<void> {
+  if (!API_KEY_SECRET) return
+  try {
+    const { status, json } = await fetchJSON(
+      `${BASE_URL}/api/v1/auth/api-key`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${API_KEY_SECRET}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ label: 'smoke-test', days: 1 }),
+      }
+    )
+    const token = (json as { data?: { apiKey?: string } })?.data?.apiKey ?? ''
+    if (status === 200 && token.startsWith('chm_')) {
+      authToken = token
+      if (!JSON_OUTPUT) {
+        console.log(`  🔑 Authenticated: minted ${token.slice(0, 10)}…\n`)
+      }
+    } else if (!JSON_OUTPUT) {
+      console.log(
+        `  ⚠️  Token mint failed (HTTP ${status}) — proceeding unauthenticated\n`
+      )
+    }
+  } catch {
+    if (!JSON_OUTPUT) {
+      console.log('  ⚠️  Token mint failed — proceeding unauthenticated\n')
+    }
+  }
 }
 
 // ── Test runner ────────────────────────────────────────
@@ -181,7 +239,7 @@ async function getChartList(): Promise<string[]> {
 async function testChart(chart: string, hostId: number): Promise<TestResult> {
   const start = Date.now()
   try {
-    const d = await fetchJSON(
+    const { json: d } = await fetchJSON(
       `${BASE_URL}/api/v1/charts/${chart}?hostId=${hostId}`
     )
     const success = d.success === true
@@ -419,6 +477,9 @@ function wrapList(items: string, maxLen: number): string {
 // ── Main ───────────────────────────────────────────────
 
 async function main() {
+  // Mint auth token if API key secret is provided
+  await mintAuthToken()
+
   // Discover hosts
   const hosts = await discoverHosts()
   if (hosts.length === 0) {
