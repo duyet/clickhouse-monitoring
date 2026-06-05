@@ -4,11 +4,11 @@ import { Suspense } from 'react'
 import { HealthGrid } from '@/components/health/health-grid'
 import { HealthSettingsDialog } from '@/components/health/health-settings-dialog'
 import { PageHeader } from '@/components/layout'
-import { ChartSkeleton } from '@/components/skeletons'
+import { ChartsOnlyPageSkeleton } from '@/components/skeletons'
 
 function HealthPageContent() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4">
       <PageHeader
         title="Health Summary"
         description="Real-time health indicators for your ClickHouse cluster"
@@ -21,7 +21,7 @@ function HealthPageContent() {
 
 function HealthPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<ChartsOnlyPageSkeleton chartCount={8} />}>
       <HealthPageContent />
     </Suspense>
   )

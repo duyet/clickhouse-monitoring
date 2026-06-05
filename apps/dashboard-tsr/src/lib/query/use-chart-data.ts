@@ -56,16 +56,18 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   timezone,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
 }: UseChartDataParams): UseChartResult<T> {
-  const searchParams = new URLSearchParams()
-  if (hostId !== undefined) searchParams.append('hostId', String(hostId))
-  if (interval) searchParams.append('interval', interval)
-  if (lastHours !== undefined)
-    searchParams.append('lastHours', String(lastHours))
-  if (params) searchParams.append('params', JSON.stringify(params))
-  if (timezone) searchParams.append('timezone', timezone)
+  const url = useMemo(() => {
+    const searchParams = new URLSearchParams()
+    if (hostId !== undefined) searchParams.append('hostId', String(hostId))
+    if (interval) searchParams.append('interval', interval)
+    if (lastHours !== undefined)
+      searchParams.append('lastHours', String(lastHours))
+    if (params) searchParams.append('params', JSON.stringify(params))
+    if (timezone) searchParams.append('timezone', timezone)
 
-  const queryString = searchParams.toString()
-  const url = `/api/v1/charts/${chartName}${queryString ? `?${queryString}` : ''}`
+    const queryString = searchParams.toString()
+    return `/api/v1/charts/${chartName}${queryString ? `?${queryString}` : ''}`
+  }, [chartName, hostId, interval, lastHours, params, timezone])
 
   const queryKey = [
     '/api/v1/charts',
@@ -95,11 +97,10 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
       await throwIfNotOk(response, 'Failed to fetch chart data')
       return response.json() as Promise<ChartDataResponse<T>>
     },
-    staleTime: 5_000,
+    staleTime: Math.max((refreshInterval as number) * 0.9, 5_000),
     refetchInterval: resolvedRefetchInterval,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
     retry: (failureCount, err) => {
       if (
         'status' in err &&

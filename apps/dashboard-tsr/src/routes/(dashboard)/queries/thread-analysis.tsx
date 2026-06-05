@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { threadAnalysisConfig } from '@/lib/query-config/queries/thread-analysis'
 
 function ThreadAnalysisContent() {
@@ -13,7 +13,7 @@ function ThreadAnalysisContent() {
 
 function ThreadAnalysisPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ThreadAnalysisContent />
     </Suspense>
   )

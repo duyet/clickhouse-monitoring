@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { profilerConfig } from '@/lib/query-config/queries/profiler'
 
 function ProfilerContent() {
@@ -11,7 +11,7 @@ function ProfilerContent() {
 
 function ProfilerPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ProfilerContent />
     </Suspense>
   )

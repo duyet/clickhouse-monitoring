@@ -186,8 +186,14 @@ export const EmptyState = memo(function EmptyState({
     >
       {/* Decorative background circles */}
       <div className="relative mb-4">
-        <div className="absolute inset-0 scale-150 rounded-full bg-muted/20 animate-pulse" />
-        <div className="absolute inset-0 scale-125 rounded-full bg-muted/40" />
+        <div
+          className="absolute inset-0 scale-150 rounded-full bg-muted/20 animate-pulse"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 scale-125 rounded-full bg-muted/40"
+          aria-hidden="true"
+        />
         <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 backdrop-blur-sm">
           {icon || config.icon}
         </div>

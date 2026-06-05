@@ -417,6 +417,7 @@ export const DataTableHeader = memo(function DataTableHeader<
                         size="icon-sm"
                         onClick={() => removeFilterDraft(draft.id)}
                         className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+                        aria-label="Remove filter condition"
                       >
                         <Trash2Icon className="size-3.5" />
                       </Button>

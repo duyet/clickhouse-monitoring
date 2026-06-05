@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import {
   parseFiltersFromParams,
   serializeActiveFilters,
@@ -40,7 +40,7 @@ function HistoryQueriesPageContent() {
 
 function HistoryQueriesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <HistoryQueriesPageContent />
     </Suspense>
   )

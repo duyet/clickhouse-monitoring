@@ -228,7 +228,24 @@ jobs:
         working-directory: apps/dashboard-tsr
         run: bun install
 
+      # Cache the built Node target keyed on the exact build inputs (lockfile +
+      # app source/config + shared package source — the @chm/* packages are
+      # bundled from source via ssr.noExternal). On an exact hit we SKIP the
+      # ~15-min Vite build entirely (a production `vite build` rebuilds from
+      # scratch, so a stale `.output` is only useful if the build is skipped).
+      # No restore-keys: a partial/stale build must never be served to e2e.
+      # This shrinks the window in which a concurrency cancel-in-progress (a
+      # newer push to main) kills the run before the specs execute — the reason
+      # this gate has historically never completed on main.
+      - name: TSR Node build cache
+        id: tsr-build-cache
+        uses: actions/cache@v5
+        with:
+          path: apps/dashboard-tsr/.output
+          key: ${{ runner.os }}-tsr-output-v1-${{ hashFiles('apps/dashboard-tsr/bun.lock', 'apps/dashboard-tsr/src/**', 'apps/dashboard-tsr/vite.config.ts', 'apps/dashboard-tsr/package.json', 'apps/dashboard-tsr/public/**', 'packages/*/src/**', 'packages/*/package.json') }}
+
       - name: Build Node target
+        if: steps.tsr-build-cache.outputs.cache-hit != 'true'
         working-directory: apps/dashboard-tsr
         # CHM_SKIP_PRERENDER=1: skip the 119-route prerender for the e2e build.
         # It runs the un-stubbed real render libs (dagre/recharts/mermaid) across
