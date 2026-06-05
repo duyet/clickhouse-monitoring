@@ -185,7 +185,7 @@ The AI agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
 | `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `false` | Deprecated alias for `AGENT_CONVERSATION_PERSISTENCE=true`. |
 | `AGENTSTATE_API_KEY` | — | AgentState API key. Required for `agentstate`; must start with `as_live_`. |
 | `AGENTSTATE_API_BASE` | `https://agentstate.app/api` | AgentState API base URL. |
-| `CONVERSATIONS_D1_DATABASE_ID` | — | Deploy-time Cloudflare D1 database UUID for the optional `CONVERSATIONS_D1` binding. Without it, deploy prep removes the unprovisioned binding unless D1 storage is explicitly required. |
+| `CONVERSATIONS_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the optional `CONVERSATIONS_D1` binding. Required to enable D1-backed conversation storage in deployed environments. |
 | `AGENT_CONVERSATIONS_D1_DATABASE_ID` | — | Alias accepted by deploy prep for `CONVERSATIONS_D1_DATABASE_ID`. |
 | `AGENT_CONVERSATIONS_DO_BINDING` | `AGENT_CONVERSATIONS_DO` | Durable Object binding used by `durable-object`. |
 | `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` | `${CLICKHOUSE_DATABASE}.agent_conversations` | ClickHouse table for `clickhouse` store. In `auto`, ClickHouse is tried only when this is explicitly set. |

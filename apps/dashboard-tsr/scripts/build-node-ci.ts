@@ -1,12 +1,19 @@
 #!/usr/bin/env bun
 
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 
 const SUCCESS_MARKER = '[prerender] - /'
 const REQUIRED_ARTIFACTS = ['.output/server/index.mjs', '.output/nitro.json']
 const TIMEOUT_MS = 10 * 60 * 1000
 const GRACE_MS = 5_000
+const CHILD_ENV = {
+  ...process.env,
+  BUILD_TARGET: 'node',
+  CHM_SKIP_PRERENDER: '1',
+}
+const WAIT_FOR_PRERENDER_MARKER = CHILD_ENV.CHM_SKIP_PRERENDER !== '1'
+const startedAt = Date.now()
 
 let sawSuccessMarker = false
 let settled = false
@@ -15,16 +22,15 @@ let recentOutput = ''
 
 const child = spawn('bun', ['run', 'build:node'], {
   detached: true,
-  env: {
-    ...process.env,
-    BUILD_TARGET: 'node',
-    CHM_SKIP_PRERENDER: '1',
-  },
+  env: CHILD_ENV,
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 
 function artifactsExist() {
-  return REQUIRED_ARTIFACTS.every((path) => existsSync(path))
+  return REQUIRED_ARTIFACTS.every((path) => {
+    if (!existsSync(path)) return false
+    return statSync(path).mtimeMs >= startedAt - 1000
+  })
 }
 
 function stopChild(signal: NodeJS.Signals = 'SIGTERM') {
@@ -49,7 +55,10 @@ function finish(code: number) {
 }
 
 function scheduleSuccessfulShutdown() {
-  if (!sawSuccessMarker || !artifactsExist() || graceTimer || settled) return
+  const hasSuccessSignal = WAIT_FOR_PRERENDER_MARKER
+    ? sawSuccessMarker
+    : artifactsExist()
+  if (!hasSuccessSignal || !artifactsExist() || graceTimer || settled) return
 
   graceTimer = setTimeout(() => {
     if (settled) return
@@ -64,6 +73,11 @@ function scheduleSuccessfulShutdown() {
 function stream(chunk: Buffer, target: NodeJS.WriteStream) {
   const text = chunk.toString()
   target.write(text)
+  if (!WAIT_FOR_PRERENDER_MARKER) {
+    scheduleSuccessfulShutdown()
+    return
+  }
+
   recentOutput = (recentOutput + text).slice(-SUCCESS_MARKER.length * 2)
   if (recentOutput.includes(SUCCESS_MARKER)) {
     sawSuccessMarker = true
@@ -100,7 +114,11 @@ child.on('exit', (code, signal) => {
     return
   }
 
-  if (sawSuccessMarker && artifactsExist() && signal === 'SIGTERM') {
+  if (
+    (sawSuccessMarker || !WAIT_FOR_PRERENDER_MARKER) &&
+    artifactsExist() &&
+    signal === 'SIGTERM'
+  ) {
     finish(0)
     return
   }

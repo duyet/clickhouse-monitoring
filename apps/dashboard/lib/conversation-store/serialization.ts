@@ -27,15 +27,23 @@ export function parseJsonObject(
 }
 
 export function parseMessages(value: unknown): UIMessage[] {
-  if (Array.isArray(value)) return value as UIMessage[]
+  if (Array.isArray(value)) return value.filter(isUIMessageLike)
   if (typeof value !== 'string') return []
 
   try {
     const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? (parsed as UIMessage[]) : []
+    return Array.isArray(parsed) ? parsed.filter(isUIMessageLike) : []
   } catch {
     return []
   }
+}
+
+function isUIMessageLike(value: unknown): value is UIMessage {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    typeof (value as { role?: unknown }).role === 'string'
+  )
 }
 
 export function metadataToJson(
@@ -72,9 +80,7 @@ export function normalizeConversation(
   conversation: StoredConversation
 ): StoredConversation {
   const now = Date.now()
-  const messages = Array.isArray(conversation.messages)
-    ? conversation.messages
-    : []
+  const messages = parseMessages(conversation.messages)
 
   return {
     ...conversation,
