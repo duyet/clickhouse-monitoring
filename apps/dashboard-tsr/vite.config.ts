@@ -278,13 +278,17 @@ function ssrClientOnlyStub(): PluginOption {
   // mermaid/katex/cytoscape) plus explicit named aliases for the codemirror
   // symbols. The modules only execute meaningfully inside browser effects /
   // lazy chunks the worker never reaches, BUT some are evaluated at module
-  // top-level during prerender (e.g. `defineRegistry(...).registry` in
-  // json-render-registry.ts). So `apply()`/`get` both return the chainable
-  // `stub` — calling or property-accessing a stub stays safe and never throws.
+  // top-level / during render at prerender time (e.g. `defineRegistry(...).registry`
+  // in json-render-registry.ts, or `new dagre.graphlib.Graph().setDefaultEdgeLabel()`
+  // in dagre-layout.ts). So `get`/`apply`/`construct` all return the chainable
+  // `stub` — property access, calls, AND `new X().chain()` stay safe and never throw.
+  // The Proxy target MUST be a regular `function` (not an arrow): a Proxy only
+  // exposes [[Construct]] when its target is constructable, so an arrow target
+  // would make `new stub()` throw "is not a constructor" before the trap fires.
   const namedExports = SSR_STUB_NAMED_EXPORTS.map(
     (n) => `export const ${n} = stub`
   ).join('\n')
-  const code = `const noop = () => undefined
+  const code = `function noop() {}
 const stub = new Proxy(noop, {
   get(_t, p) {
     if (p === '__esModule') return true
@@ -293,7 +297,7 @@ const stub = new Proxy(noop, {
     return stub
   },
   apply() { return stub },
-  construct() { return {} },
+  construct() { return stub },
 })
 export default stub
 ${namedExports}
