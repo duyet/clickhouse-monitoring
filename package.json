@@ -20,6 +20,7 @@
     "build": "turbo run build",
     "build:landing": "cd apps/landing && bun install --frozen-lockfile && bun run build",
     "build:docs": "cd apps/docs && bun install --frozen-lockfile && bun run build",
+    "perf:compare": "bun scripts/perf-compare.ts --skip-build",
     "start": "bun --filter dashboard start",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
