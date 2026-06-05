@@ -83,13 +83,17 @@ export function QueryProvider({ children }: QueryProviderProps) {
   > | null>(null)
 
   useEffect(() => {
-    setPersister(
-      createSyncStoragePersister({
-        storage: window.localStorage,
-        key: PERSIST_KEY,
-        throttleTime: PERSIST_THROTTLE_MS,
-      })
-    )
+    try {
+      setPersister(
+        createSyncStoragePersister({
+          storage: window.localStorage,
+          key: PERSIST_KEY,
+          throttleTime: PERSIST_THROTTLE_MS,
+        })
+      )
+    } catch {
+      setPersister(null)
+    }
   }, [])
 
   if (!persister) {
