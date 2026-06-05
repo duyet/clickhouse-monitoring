@@ -1,0 +1,19 @@
+# Cloudflare Workers static-asset redirects.
+# https://developers.cloudflare.com/workers/static-assets/redirects/
+#
+# Vite copies this file from public/ to the client build output (dist/client),
+# which is the Workers assets root. Asset routing (including these rules) is
+# evaluated at the edge BEFORE the worker runs, so a match here never invokes
+# the SSR worker — the cheapest possible response.
+#
+# Root path → overview. WITHOUT this rule, `/` had no prerendered asset and fell
+# through to the worker, where the root route's `validateSearch` (host→0) emitted
+# a 307 to `/?host=0`, whose SPA shell then ran a client-side `router.replace`
+# to `/overview?host=0` — three hops (worker 307 → shell → JS redirect) for the
+# single most common entry URL. This collapses all of that into ONE edge 302.
+#
+# 302 (not 301/308): the default host is a product routing choice, not a
+# permanent contract — a temporary redirect keeps it changeable without fighting
+# browsers that have cached a permanent redirect. The path-only match also
+# catches `/?host=0`; `/overview?host=0` does not match `/`, so there is no loop.
+/    /overview?host=0    302
