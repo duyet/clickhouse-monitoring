@@ -270,9 +270,9 @@ function OverviewPageFallback() {
       <div className="mb-4 grid auto-rows-fr grid-cols-1 gap-3 sm:mb-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}>
-            <Skeleton variant="shimmer" className="h-3 w-24" />
-            <Skeleton variant="shimmer" className="h-7 w-20" />
-            <Skeleton variant="shimmer" className="h-3 w-28" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-7 w-20" />
+            <Skeleton className="h-3 w-28" />
           </div>
         ))}
       </div>

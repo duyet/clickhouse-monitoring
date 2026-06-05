@@ -99,9 +99,9 @@ export const KpiCard = function KpiCard({
         aria-busy="true"
         aria-label={`Loading ${label}`}
       >
-        <Skeleton variant="shimmer" className="h-3 w-24" />
-        <Skeleton variant="shimmer" className="h-7 w-20" />
-        <Skeleton variant="shimmer" className="h-3 w-28" />
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-3 w-28" />
       </div>
     )
   }
