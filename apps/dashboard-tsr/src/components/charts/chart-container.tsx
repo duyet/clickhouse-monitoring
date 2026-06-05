@@ -9,7 +9,13 @@ import { ChartEmpty } from './chart-empty'
 import { ChartError } from './chart-error'
 import { getChartSkeletonType } from './chart-registry'
 import { ChartZoomButton, ChartZoomDialog } from './chart-zoom-dialog'
-import { cloneElement, isValidElement, useState } from 'react'
+import {
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
 import { ChartSkeleton } from '@/components/skeletons'
 import { FadeIn } from '@/components/ui/fade-in'
 import { cn } from '@/lib/utils'
@@ -102,14 +108,15 @@ export function ChartContainer<TData extends ChartDataPoint = ChartDataPoint>({
   })()
 
   // Stable retry handler to prevent re-renders in ChartError
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     mutate()
-  }
+  }, [mutate])
 
   // Pass all metadata fields dynamically
-  const toolbarMetadata: CardToolbarMetadata | undefined = metadata
-    ? { ...metadata }
-    : undefined
+  const toolbarMetadata: CardToolbarMetadata | undefined = useMemo(
+    () => (metadata ? { ...metadata } : undefined),
+    [metadata]
+  )
 
   // Render chart content (called once, before early returns to satisfy hook rules)
   const chartContent =

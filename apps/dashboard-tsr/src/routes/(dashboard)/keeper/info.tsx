@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { KeeperNodeCards } from '@/components/keeper/keeper-node-cards'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { keeperInfoConfig } from '@/lib/query-config/keeper'
 
 function KeeperInfoPageContent() {
@@ -18,7 +18,7 @@ function KeeperInfoPageContent() {
 
 function KeeperInfoPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <KeeperInfoPageContent />
     </Suspense>
   )

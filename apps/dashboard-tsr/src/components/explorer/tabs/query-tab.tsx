@@ -25,11 +25,12 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { lazy, useMemo, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -38,8 +39,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { apiFetch } from '@/lib/swr/api-fetch'
 import { activateOnEnterOrSpace } from '@/lib/a11y'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -53,9 +54,7 @@ function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
     setMounted(true)
   }, [])
   if (!mounted) {
-    return (
-      <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
-    )
+    return <Skeleton className="min-h-[120px] rounded-md" />
   }
   return <>{children}</>
 }
@@ -436,9 +435,7 @@ export function QueryTab() {
         </div>
         <SqlEditorWrapper>
           <Suspense
-            fallback={
-              <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
-            }
+            fallback={<Skeleton className="min-h-[120px] rounded-md" />}
           >
             <SqlEditor
               value={editorValue}

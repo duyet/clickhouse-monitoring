@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { textLogConfig } from '@/lib/query-config/logs/text-log'
 
 function TextLogContent() {
@@ -11,7 +11,7 @@ function TextLogContent() {
 
 function TextLogPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <TextLogContent />
     </Suspense>
   )

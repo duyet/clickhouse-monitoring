@@ -27,6 +27,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
@@ -227,10 +228,10 @@ function UserSkeleton() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton size="lg" disabled data-testid="nav-user-trigger">
-          <div className="size-8 rounded-lg bg-muted animate-pulse" />
+          <Skeleton className="size-8 rounded-lg" />
           <div className="grid flex-1 gap-1">
-            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+            <Skeleton className="h-4 w-24 rounded" />
+            <Skeleton className="h-3 w-16 rounded" />
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>

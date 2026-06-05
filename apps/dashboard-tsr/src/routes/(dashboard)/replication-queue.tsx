@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { replicationQueueConfig } from '@/lib/query-config/tables/replication-queue'
 
 function ReplicationQueuePageContent() {
@@ -16,7 +16,7 @@ function ReplicationQueuePageContent() {
 
 function ReplicationQueuePage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ReplicationQueuePageContent />
     </Suspense>
   )

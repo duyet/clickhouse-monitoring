@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { pageViewsConfig } from '@/lib/query-config/more/page-views'
 
 function PageViewsPageContent() {
@@ -11,7 +11,7 @@ function PageViewsPageContent() {
 
 function PageViewsPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <PageViewsPageContent />
     </Suspense>
   )
