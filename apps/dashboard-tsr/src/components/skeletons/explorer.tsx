@@ -25,12 +25,10 @@ export function ExplorerSkeleton({ className }: { className?: string }) {
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={`tree-node-${i}`}
-            className="flex items-center gap-2 py-1.5 animate-pulse"
+            className="flex items-center gap-2 py-1.5"
             style={{
               // Indent every other node to suggest tree nesting
               paddingLeft: i % 3 === 0 ? '0.25rem' : '1.25rem',
-              animationDelay: `${i * 60}ms`,
-              animationFillMode: 'backwards',
             }}
           >
             <Skeleton className="size-4 shrink-0 rounded-sm" />
@@ -70,11 +68,7 @@ export function ExplorerSkeleton({ className }: { className?: string }) {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`content-row-${i}`}
-              className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0 animate-pulse"
-              style={{
-                animationDelay: `${i * 75}ms`,
-                animationFillMode: 'backwards',
-              }}
+              className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
             >
               {Array.from({ length: 5 }).map((_, j) => (
                 <Skeleton key={`content-cell-${j}`} className="h-4 flex-1" />

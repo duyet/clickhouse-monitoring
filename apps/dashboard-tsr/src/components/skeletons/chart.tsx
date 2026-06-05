@@ -42,7 +42,6 @@ const AreaChartSkeleton = () => (
         <path
           d="M0,100 L0,68 Q50,22 100,52 Q150,80 200,44 Q250,22 300,58 Q350,82 400,48 L400,100 Z"
           fill="url(#area-skeleton-grad)"
-          className="animate-[pulse-subtle_3s_ease-in-out_infinite]"
         />
         {/* Wavy line stroke */}
         <path
@@ -50,8 +49,7 @@ const AreaChartSkeleton = () => (
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="opacity-40 animate-[pulse-subtle_3s_ease-in-out_infinite]"
-          style={{ animationDelay: '150ms' }}
+          className="opacity-40"
         />
       </svg>
     </div>
@@ -90,7 +88,6 @@ const LineChartSkeleton = () => (
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
-          className="animate-[pulse-subtle_3s_ease-in-out_infinite]"
         />
       </svg>
     </div>
@@ -105,7 +102,7 @@ const LineChartSkeleton = () => (
   </div>
 )
 
-/** Bar chart skeleton with mathematical heights and staggered wave pulse */
+/** Bar chart skeleton with mathematical heights (static, no animation) */
 const BarChartSkeleton = () => (
   <div className="w-full h-full min-h-[140px] flex flex-col justify-between pt-4">
     {/* Simulated Bars */}
@@ -116,11 +113,9 @@ const BarChartSkeleton = () => (
           className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end"
         >
           <Skeleton
-            variant="shimmer"
             className="w-full rounded-t-[3px] bg-accent/40"
             style={{
               height: `${height}%`,
-              animationDelay: `${i * 100}ms`,
             }}
           />
         </div>
@@ -143,7 +138,7 @@ const MetricCardSkeleton = () => (
     <div className="space-y-3 flex-1">
       <Skeleton className="h-3 w-2/5 opacity-80" />
       <div className="flex items-baseline gap-1.5">
-        <Skeleton variant="shimmer" className="h-9 w-3/5 font-bold" />
+        <Skeleton className="h-9 w-3/5 font-bold" />
         <Skeleton className="h-4 w-1/5 opacity-60" />
       </div>
       <Skeleton className="h-3.5 w-1/2 opacity-70" />
@@ -161,7 +156,6 @@ const MetricCardSkeleton = () => (
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
-          className="animate-[pulse-subtle_2.5s_ease-in-out_infinite]"
         />
       </svg>
     </div>
@@ -178,11 +172,11 @@ const TableSkeletonMini = () => (
       <Skeleton className="h-3 w-1/5 opacity-40 ml-auto" />
     </div>
 
-    {/* Table rows with shimmering effects */}
+    {/* Table rows (static, no animation) */}
     <div className="space-y-3 p-1 flex-1">
       {[1, 2, 3].map((row) => (
         <div key={row} className="flex items-center gap-4">
-          <Skeleton variant="shimmer" className="h-3 w-2/5" />
+          <Skeleton className="h-3 w-2/5" />
           <Skeleton className="h-3 w-1/5 opacity-80" />
           <Skeleton className="h-3 w-1/6 opacity-60 ml-auto" />
         </div>
@@ -243,7 +237,7 @@ export const ChartSkeleton = function ChartSkeleton({
               <span className="truncate text-xs font-semibold tracking-wide text-foreground/90 uppercase">
                 {title}
               </span>
-              <span className="text-[10px] text-muted-foreground/40 font-normal lowercase animate-pulse shrink-0">
+              <span className="text-[10px] text-muted-foreground/40 font-normal lowercase shrink-0">
                 (loading…)
               </span>
             </span>
