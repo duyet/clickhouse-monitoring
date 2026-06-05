@@ -1,10 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { HostInfo } from '@chm/types/host-info'
 
 import { apiFetch } from './api-fetch'
+import {
+  HOSTS_QUERY_KEY,
+  readCachedHosts,
+  writeCachedHosts,
+} from './host-cache'
 import { ErrorLogger } from '@chm/logger'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 interface HostsResponse {
   success: boolean
@@ -50,8 +55,10 @@ export function useHosts() {
     return result.success && result.data ? result.data : []
   }, [])
 
+  const queryClient = useQueryClient()
+
   const { data, error, isLoading } = useQuery<HostInfo[]>({
-    queryKey: ['/api/v1/hosts'],
+    queryKey: HOSTS_QUERY_KEY,
     queryFn: fetcher,
     // Hosts list changes rarely, so cache for 5 minutes
     staleTime: 300000,
@@ -65,6 +72,34 @@ export function useHosts() {
       return failureCount < 2
     },
   })
+
+  // Hydration-safe instant host list.
+  //
+  // We seed the cache AFTER mount (not via `initialData`, which renders at SSR
+  // time and would mismatch the prerendered skeleton — there is no localStorage
+  // on the server). On the first client paint the query has no data, matching
+  // the server HTML; this effect then fills it from the dedicated host cache so
+  // the selector shows the previous list immediately, even on the first load
+  // after a deploy when the git-SHA-busted query cache is empty. The background
+  // fetch still runs and overwrites it (stale-while-revalidate). When the
+  // persisted query cache already restored hosts, `getQueryData` is truthy and
+  // this is a no-op.
+  useEffect(() => {
+    if (queryClient.getQueryData<HostInfo[]>(HOSTS_QUERY_KEY)) return
+    const cached = readCachedHosts()
+    if (cached && cached.length > 0) {
+      queryClient.setQueryData(HOSTS_QUERY_KEY, cached)
+    }
+  }, [queryClient])
+
+  // Mirror every non-empty host list back into the dedicated cache so the next
+  // cold load can seed it. Writing a restored/seeded value back is harmless and
+  // keeps the entry fresh.
+  useEffect(() => {
+    if (data && data.length > 0 && !error) {
+      writeCachedHosts(data)
+    }
+  }, [data, error])
 
   const status = error instanceof HostsFetchError ? error.status : undefined
 
