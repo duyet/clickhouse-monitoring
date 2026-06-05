@@ -53,7 +53,7 @@ function getAppMetadata(referer?: string) {
       process.env.APP_NAME ||
       process.env.OPENROUTER_APP_NAME ||
       DEFAULT_APP_NAME,
-    source: process.env.APP_SOURCE || DEFAULT_APP_SOURCE,
+    source: process.env.APP_SOURCE?.trim() || DEFAULT_APP_SOURCE,
     category: process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
     version: process.env.APP_VERSION || DEFAULT_APP_VERSION,
   }

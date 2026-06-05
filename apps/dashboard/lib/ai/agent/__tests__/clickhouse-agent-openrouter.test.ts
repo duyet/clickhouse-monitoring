@@ -53,7 +53,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
     } else {
       delete process.env.APP_NAME
     }
-    if (originalAppSource) {
+    if (originalAppSource !== undefined) {
       process.env.APP_SOURCE = originalAppSource
     } else {
       delete process.env.APP_SOURCE
@@ -113,5 +113,28 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
     })
     expect(createOpenAIOptions[0]).not.toHaveProperty('name')
     expect(openAIChatMock).toHaveBeenCalledWith('google/gemma-test')
+  })
+
+  test('falls back to the default AnyRouter source when APP_SOURCE is unset', async () => {
+    process.env.ANYROUTER_API_KEY = 'ar-test'
+    process.env.APP_NAME = 'Agent Test'
+    delete process.env.APP_SOURCE
+    process.env.APP_CATEGORY = 'ops'
+    const { resolveAgentChatModel } = await import('../provider-chat-model')
+
+    resolveAgentChatModel({
+      model: 'anyrouter:google/gemma-test',
+      referer: 'https://example.test/agents',
+    })
+
+    // With APP_SOURCE unset, X-AnyRouter-Source falls back to DEFAULT_APP_SOURCE
+    // ('chmonitor') — the production path, since only OPENROUTER_APP_NAME is set
+    // in wrangler. The category stays in X-AnyRouter-Categories.
+    expect(createOpenAIOptions[0]).toMatchObject({
+      headers: {
+        'X-AnyRouter-Source': 'chmonitor',
+        'X-AnyRouter-Categories': 'ops',
+      },
+    })
   })
 })
