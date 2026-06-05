@@ -36,6 +36,7 @@ Durable code-smell/dead-code automation memory. Do not create dated files under 
 - `/docs` route reads source files from `docs/content` through `app/(docs)/docs/_lib/docs.ts`
 - Verify dead-code claims with zero non-test references before deleting symbols
 - Data-table synthetic utility column ids are `__expand`, `select`, and `action` (singular); exclude them from client-side filter/search/sort targets and card-control affordances
+- Collapsible TSR chart strips must unmount hidden chart subtrees, not just set `grid-rows-[0fr]` / `opacity-0`; otherwise auto-refreshing charts keep polling while invisible. The 30-minute TanStack Query `gcTime` already preserves fast reopen from cache.
 - Docker build must install full deps (`bun install --frozen-lockfile --ignore-scripts`) because `lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during `bun run build`
 - If automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`), stale versus `origin/main`, or `.git/worktrees/...` writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), run `git -C /Users/duet/project/clickhouse-monitor fetch origin`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
 
