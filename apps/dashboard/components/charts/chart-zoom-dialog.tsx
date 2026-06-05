@@ -96,9 +96,7 @@ function CopyableValue({
             className
           )}
         >
-          <span className="truncate max-w-[200px] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[700px] xl:max-w-[850px]">
-            {value}
-          </span>
+          <span className="truncate flex-1 min-w-0">{value}</span>
           {copied ? (
             <Check className="size-3 text-green-500 shrink-0" strokeWidth={2} />
           ) : (
@@ -156,7 +154,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
   )
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
   const [queryCopied, setQueryCopied] = useState(false)
-  const [dialogHeight, setDialogHeight] = useState<string | undefined>('75vh')
+  const [dialogHeight, setDialogHeight] = useState<string | undefined>('85vh')
   const contentRef = useRef<HTMLDivElement>(null)
   const resizeStartRef = useRef<{
     startY: number
@@ -245,7 +243,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
       <DialogContent
         ref={contentRef}
         className="max-w-[95vw] w-[95vw] flex flex-col p-0 pb-6"
-        style={{ height: dialogHeight, maxHeight: '90vh' }}
+        style={{ height: dialogHeight, maxHeight: '95vh' }}
       >
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <div className="flex items-center justify-between gap-4">
@@ -384,7 +382,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
             className="flex-1 min-h-0 p-6 flex flex-col"
           >
             <div className="w-full flex-1 min-h-[350px] relative h-full">
-              {children}
+              <div className="absolute inset-0">{children}</div>
             </div>
           </TabsContent>
 
