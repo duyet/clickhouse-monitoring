@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/popover'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { formatCompactNumber } from '@/lib/format-readable'
+import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { cn } from '@/lib/utils'
 
 // Re-exported so sibling modules can keep importing the row type from this
@@ -65,9 +66,31 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
   )
   const [sortKey, setSortKey] = useState<SortKey>('rank')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const layoutParam = searchParams.get('layout')
+
   const isMobile = useIsMobile()
-  const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
-  const view = userView ?? (isMobile ? 'cards' : 'table')
+  const view = useMemo<'table' | 'cards'>(() => {
+    if (layoutParam === 'card') return 'cards'
+    if (layoutParam === 'table') return 'table'
+    return isMobile ? 'cards' : 'table'
+  }, [layoutParam, isMobile])
+
+  const handleViewChange = useCallback(
+    (newView: 'table' | 'cards') => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (newView === 'cards') {
+        params.set('layout', 'card')
+      } else {
+        params.set('layout', 'table')
+      }
+      router.replace(`${pathname}?${params.toString()}`)
+    },
+    [searchParams, router, pathname]
+  )
+
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   // The server returns rows already ordered most-expensive-first; rank is
@@ -227,7 +250,7 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
           <div className="h-5 w-px bg-border" />
 
           {/* Table / cards view */}
-          <ViewToggle active={view} onChange={setUserView} />
+          <ViewToggle active={view} onChange={handleViewChange} />
 
           {/* Column visibility */}
           <ColumnVisibilityMenu
@@ -250,7 +273,7 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
       {view === 'cards' ? (
         /* Card list — SQL-first, the default on phones. */
         <div
-          className="flex flex-col gap-3 p-3"
+          className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3"
           data-testid="expensive-queries-cards"
         >
           {visible.map((d) => (
