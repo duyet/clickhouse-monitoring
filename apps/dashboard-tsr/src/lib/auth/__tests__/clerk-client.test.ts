@@ -8,11 +8,17 @@ import { afterEach, describe, expect, test } from 'bun:test'
  */
 const MODULE = '@/lib/clerk/clerk-client'
 
+// Monotonic counter for cache-busting. A timestamp (`Date.now()` +
+// `performance.now()`) collides when two cases run within the same millisecond
+// — the second import then resolves to the FIRST case's cached module (which
+// captured the other env), producing an intermittent failure under full-suite
+// load. A strictly-incrementing counter guarantees a unique specifier per call.
+let importCounter = 0
+
 async function freshIsClerkEnabled(): Promise<boolean> {
+  importCounter += 1
   // Cache-bust so the module re-evaluates with the current env.
-  const mod = await import(
-    `${MODULE}?t=${Date.now()}-${Math.round(performance.now())}`
-  )
+  const mod = await import(`${MODULE}?t=${importCounter}`)
   return mod.isClerkEnabled()
 }
 
