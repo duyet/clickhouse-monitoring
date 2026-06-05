@@ -405,6 +405,8 @@ The project uses custom chart components with consistent patterns:
 
 **Chart Refactoring**: Donut charts have been replaced with progress bars for better readability in percentage-based displays (query cache usage, query type distribution).
 
+**Collapsible chart sections**: when a page hides an auto-refreshing chart strip, unmount the chart subtree instead of only collapsing it with CSS. Otherwise the hidden charts keep polling and rendering in the background. TanStack Query's 30-minute `gcTime` keeps reopen fast without paying that hidden-work cost.
+
 #### Request Info (SQL) Dialog
 - **Beautify SQL**: Disabled by default to prevent slow rendering of very large queries. Users can toggle it on manually.
 - **Design**: Uses native shadcn/ui components (`Badge`, `Separator`, `ScrollArea`) for a premium look and consistent UI.

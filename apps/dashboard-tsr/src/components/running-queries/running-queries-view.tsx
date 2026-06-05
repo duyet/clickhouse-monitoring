@@ -287,7 +287,7 @@ export const RunningQueriesView = function RunningQueriesView() {
               )}
             >
               <div className="overflow-hidden">
-                <RunningQueriesCharts rows={rows} />
+                {chartsOpen && <RunningQueriesCharts rows={rows} />}
               </div>
             </div>
             {rows.length === 0 ? (

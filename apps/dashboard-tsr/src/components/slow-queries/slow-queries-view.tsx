@@ -241,9 +241,9 @@ export function SlowQueriesView() {
                 )}
               >
                 <div className="overflow-hidden">
-                  <RelatedCharts
-                    relatedCharts={slowQueriesConfig.relatedCharts}
-                  />
+                  {chartsOpen && (
+                    <RelatedCharts relatedCharts={slowQueriesConfig.relatedCharts} />
+                  )}
                 </div>
               </div>
             )}

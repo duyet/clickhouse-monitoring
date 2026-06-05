@@ -187,7 +187,7 @@ export function PartLogView() {
             )}
           >
             <div className="overflow-hidden">
-              <PartLogCharts rows={rows} />
+              {chartsOpen && <PartLogCharts rows={rows} />}
             </div>
           </div>
           <PartLogTable rows={rows} hostId={hostId} />
