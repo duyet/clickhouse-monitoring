@@ -27,6 +27,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
   const originalFallback = process.env.OPENROUTER_FREE_FALLBACK_MODEL
   const originalAnyRouterKey = process.env.ANYROUTER_API_KEY
   const originalAppName = process.env.APP_NAME
+  const originalAppSource = process.env.APP_SOURCE
   const originalAppCategory = process.env.APP_CATEGORY
   const originalAppVersion = process.env.APP_VERSION
 
@@ -51,6 +52,11 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
       process.env.APP_NAME = originalAppName
     } else {
       delete process.env.APP_NAME
+    }
+    if (originalAppSource) {
+      process.env.APP_SOURCE = originalAppSource
+    } else {
+      delete process.env.APP_SOURCE
     }
     if (originalAppCategory) {
       process.env.APP_CATEGORY = originalAppCategory
@@ -84,6 +90,7 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
   test('passes AnyRouter attribution headers to OpenAI-compatible provider', async () => {
     process.env.ANYROUTER_API_KEY = 'ar-test'
     process.env.APP_NAME = 'Agent Test'
+    process.env.APP_SOURCE = 'agent-source'
     process.env.APP_CATEGORY = 'ops'
     process.env.APP_VERSION = 'test-version'
     const { resolveAgentChatModel } = await import('../provider-chat-model')
@@ -99,7 +106,8 @@ describe('createClickHouseAgent OpenRouter model resolution', () => {
       headers: {
         'HTTP-Referer': 'https://example.test/agents',
         'X-AnyRouter-Title': 'Agent Test',
-        'X-AnyRouter-Source': 'ops',
+        'X-AnyRouter-Source': 'agent-source',
+        'X-AnyRouter-Categories': 'ops',
         'X-AnyRouter-Version': 'test-version',
       },
     })
