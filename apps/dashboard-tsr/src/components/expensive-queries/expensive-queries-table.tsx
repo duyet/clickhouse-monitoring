@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/popover'
 import { useLayoutView } from '@/hooks/use-layout-view'
 import { formatCompactNumber } from '@/lib/format-readable'
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { cn } from '@/lib/utils'
 
 // Re-exported so sibling modules can keep importing the row type from this
@@ -67,7 +66,6 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
   const [sortKey, setSortKey] = useState<SortKey>('rank')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [view, setView] = useLayoutView()
-
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   // The server returns rows already ordered most-expensive-first; rank is

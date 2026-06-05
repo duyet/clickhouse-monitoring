@@ -82,7 +82,6 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   // Card view leads on phones (the wide metric table is unreadable in a scroll
   // box), table on desktop — with a toggle so either is reachable anywhere.
   const [view, setView] = useLayoutView()
-
   // Expansion is keyed by a stable row key; `query_id` still drives actions.
   // A row stays open across refreshes and re-sorts as long as that underlying
   // identifier remains stable.
