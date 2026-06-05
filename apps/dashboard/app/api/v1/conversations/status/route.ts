@@ -4,7 +4,6 @@ import {
   resolveConversationStoreStatus,
   resolveStore,
 } from '@/lib/conversation-store/resolve-store'
-import { ConversationStoreError } from '@/lib/conversation-store/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,32 +24,29 @@ export async function GET(): Promise<Response> {
 
     try {
       await resolveUserId()
-    } catch (error) {
-      if (error instanceof ConversationStoreError) {
-        return Response.json({
-          enabled: false,
-          store: 'local',
-          requestedStore: status.requestedStore,
-          persistent: false,
-          reason: 'Authentication is required for server conversation storage.',
-        })
-      }
-      throw error
+    } catch {
+      return Response.json({
+        enabled: false,
+        store: 'local',
+        requestedStore: status.requestedStore,
+        persistent: false,
+        reason: 'Authentication is required for server conversation storage.',
+      })
     }
 
     try {
       await resolveStore()
     } catch (error) {
-      if (error instanceof ConversationStoreError) {
-        return Response.json({
-          enabled: false,
-          store: 'local',
-          requestedStore: status.requestedStore,
-          persistent: false,
-          reason: error.message,
-        })
-      }
-      throw error
+      return Response.json({
+        enabled: false,
+        store: 'local',
+        requestedStore: status.requestedStore,
+        persistent: false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : 'Server conversation storage is unavailable.',
+      })
     }
 
     return Response.json({
@@ -65,14 +61,11 @@ export async function GET(): Promise<Response> {
         ? error.message
         : 'Conversation storage status unavailable.'
 
-    return Response.json(
-      {
-        enabled: false,
-        store: 'local',
-        persistent: false,
-        reason: message,
-      },
-      { status: 500 }
-    )
+    return Response.json({
+      enabled: false,
+      store: 'local',
+      persistent: false,
+      reason: message,
+    })
   }
 }

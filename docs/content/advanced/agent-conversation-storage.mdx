@@ -66,6 +66,13 @@ Required binding: `CONVERSATIONS_D1`. The migration path is
 Cloudflare conversation history because it is a managed database with standard
 schema management, query tooling, import/export, and direct operational access.
 
+Wrangler deploys need a concrete D1 UUID for active bindings. The checked-in
+config keeps the conversation binding unprovisioned until setup runs. During
+deploy, `scripts/prepare-dashboard-wrangler.ts` removes that optional binding
+when no UUID is available; set `CONVERSATIONS_D1_DATABASE_ID=<uuid>` in CI or
+run `bun run cf:setup-conversations` locally to include it. The Cloudflare API
+token used for setup needs Workers deploy permissions plus D1 edit/read access.
+
 ## Durable Object
 
 ```bash

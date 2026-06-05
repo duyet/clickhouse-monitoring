@@ -111,8 +111,26 @@ function fromAgentStateMessage(message: AgentStateMessage): UIMessage {
   } as UIMessage
 }
 
+function stableJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stableJsonValue)
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, stableJsonValue(nested)])
+    )
+  }
+
+  return value
+}
+
+function stableStringify(value: unknown): string {
+  return JSON.stringify(stableJsonValue(value))
+}
+
 function messageSignature(message: UIMessage, index: number): string {
-  return JSON.stringify({
+  return stableStringify({
     id: stableMessageId(message, index),
     role: message.role,
     parts: message.parts ?? [],

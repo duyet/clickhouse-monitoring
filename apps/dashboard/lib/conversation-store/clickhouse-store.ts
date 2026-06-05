@@ -168,6 +168,7 @@ export class ClickHouseConversationStore implements ConversationStore {
   private readonly table: TableIdentifier
   private readonly autoCreate: boolean
   private initialized = false
+  private initializationPromise: Promise<void> | null = null
 
   constructor(config: ConversationStoreConfig) {
     this.table = parseClickHouseTableIdentifier(config.clickHouseTable)
@@ -185,7 +186,16 @@ export class ClickHouseConversationStore implements ConversationStore {
 
   private async ensureInitialized(): Promise<void> {
     if (this.initialized || !this.autoCreate) return
+    if (this.initializationPromise) {
+      await this.initializationPromise
+      return
+    }
 
+    this.initializationPromise = this.initializeTable()
+    await this.initializationPromise
+  }
+
+  private async initializeTable(): Promise<void> {
     try {
       const client = await this.getClient()
       await client.command({
@@ -193,6 +203,7 @@ export class ClickHouseConversationStore implements ConversationStore {
       })
       this.initialized = true
     } catch (error) {
+      this.initializationPromise = null
       throw new ConversationStoreError(
         `Failed to initialize ClickHouse conversation table: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'STORAGE_ERROR',
