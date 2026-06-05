@@ -144,11 +144,6 @@ function OverviewPageContent() {
     return tabParam && VALID_TABS.has(tabParam) ? tabParam : DEFAULT_TAB
   })
 
-  // Track visited tabs for lazy loading (include the initial tab from URL)
-  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
-    () => new Set([activeTab])
-  )
-
   const handleTabChange = (value: string) => {
     // Update URL with new tab value, preserving other params
     const params = new URLSearchParams(searchParams.toString())
@@ -172,12 +167,6 @@ function OverviewPageContent() {
 
     // Local state drives the active tab instantly (no navigation round-trip).
     setActiveTab(value)
-
-    // Update visited tabs for lazy loading
-    setVisitedTabs((prev) => {
-      if (prev.has(value)) return prev
-      return new Set([...prev, value])
-    })
   }
 
   return (
@@ -213,33 +202,36 @@ function OverviewPageContent() {
             <TabsContent
               key={tab.value}
               value={tab.value}
-              className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out data-[state=inactive]:hidden"
-              forceMount={visitedTabs.has(tab.value) ? true : undefined}
+              className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out"
             >
-              {visitedTabs.has(tab.value) ? (
-                // LOCAL Suspense per tab: the charts are React.lazy(), so a
-                // first-time tab visit suspends while its chunk loads. Without
-                // a boundary here that suspension bubbles to the page-level
-                // <Suspense> and flashes the FULL-PAGE skeleton (status strip +
-                // KPI cards + tab bar) on every first tab switch. Catching it
-                // locally swaps only the tab's chart region; everything outside
-                // the tab content stays mounted.
-                <Suspense fallback={<TabContentSkeleton tab={tab} />}>
-                  {tab.customContent === 'topology' ? (
-                    <TopologyView
-                      hostId={hostId}
-                      detailHref={`/clusters?host=${hostId}`}
-                    />
-                  ) : (
-                    <LazyTabContent
-                      charts={tab.charts}
-                      gridClassName={tab.gridClassName}
-                      label={tab.label}
-                      hostId={hostId}
-                    />
-                  )}
-                </Suspense>
-              ) : null}
+              {/*
+                No forceMount: Radix unmounts inactive tab content, so hidden
+                tabs stop polling their charts' refetchInterval (the project
+                convention is to UNMOUNT hidden chart subtrees, not CSS-hide
+                them). Revisiting a tab re-mounts it but TanStack Query's
+                30-min gcTime serves the cached data instantly — no skeleton,
+                no refetch. LOCAL Suspense per tab: the charts are React.lazy(),
+                so a first-time visit suspends while its chunk loads. Without a
+                boundary here that suspension bubbles to the page-level
+                <Suspense> and flashes the FULL-PAGE skeleton (status strip +
+                KPI cards + tab bar). Catching it locally swaps only the tab's
+                chart region; everything outside the tab content stays mounted.
+              */}
+              <Suspense fallback={<TabContentSkeleton tab={tab} />}>
+                {tab.customContent === 'topology' ? (
+                  <TopologyView
+                    hostId={hostId}
+                    detailHref={`/clusters?host=${hostId}`}
+                  />
+                ) : (
+                  <LazyTabContent
+                    charts={tab.charts}
+                    gridClassName={tab.gridClassName}
+                    label={tab.label}
+                    hostId={hostId}
+                  />
+                )}
+              </Suspense>
             </TabsContent>
           ))}
         </Tabs>

@@ -19,7 +19,7 @@ import type { ChartQueryParams } from '@/types/chart-data'
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   buildExpandColumnDef,
   EXPAND_COLUMN_ID,
@@ -217,7 +217,10 @@ export function DataTable<
   >([])
 
   // Determine which columns should be filterable (memoized)
-  const configuredColumns = queryConfig.columns.map(normalizeColumnName)
+  const configuredColumns = useMemo(
+    () => queryConfig.columns.map(normalizeColumnName),
+    [queryConfig.columns]
+  )
 
   // Client-side column filtering state with optional URL sync
   const {
@@ -241,19 +244,33 @@ export function DataTable<
   })
 
   // Memoize filterableColumns to prevent filterContext recreation
-  const resolvedFilterableColumns = filterableColumns || configuredColumns
+  const resolvedFilterableColumns = useMemo(
+    () => filterableColumns || configuredColumns,
+    [filterableColumns, configuredColumns]
+  )
 
   // Memoize filter context to prevent columnDefs recreation on every render
-  // This is critical to avoid infinite loops when filters change
-  const filterContext = enableColumnFilters
-    ? {
-        enableColumnFilters,
-        filterableColumns: resolvedFilterableColumns,
-        columnFilters,
-        setColumnFilter,
-        clearColumnFilter,
-      }
-    : undefined
+  // This is critical to avoid infinite loops when filters change.
+  // setColumnFilter/clearColumnFilter are stable (useCallback in useTableFilters).
+  const filterContext = useMemo(
+    () =>
+      enableColumnFilters
+        ? {
+            enableColumnFilters,
+            filterableColumns: resolvedFilterableColumns,
+            columnFilters,
+            setColumnFilter,
+            clearColumnFilter,
+          }
+        : undefined,
+    [
+      enableColumnFilters,
+      resolvedFilterableColumns,
+      columnFilters,
+      setColumnFilter,
+      clearColumnFilter,
+    ]
+  )
 
   // Schema-driven typed column filter wiring (date-range, multi-select, etc.)
   const { getActiveFilter, setFilter, clearFilter } = useColumnFilterState(

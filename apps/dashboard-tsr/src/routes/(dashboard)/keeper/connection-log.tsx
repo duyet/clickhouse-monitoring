@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { keeperConnectionLogConfig } from '@/lib/query-config/keeper'
 
 function KeeperConnectionLogPageContent() {
@@ -16,7 +16,7 @@ function KeeperConnectionLogPageContent() {
 
 function KeeperConnectionLogPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <KeeperConnectionLogPageContent />
     </Suspense>
   )

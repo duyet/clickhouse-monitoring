@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { userProcessesConfig } from '@/lib/query-config/tables/user-processes'
 
 function UserProcessesPageContent() {
@@ -11,7 +11,7 @@ function UserProcessesPageContent() {
 
 function UserProcessesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <UserProcessesPageContent />
     </Suspense>
   )

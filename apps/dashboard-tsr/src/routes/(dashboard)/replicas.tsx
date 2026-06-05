@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { replicasConfig } from '@/lib/query-config/tables/replicas'
 
 function ReplicasPageContent() {
@@ -11,7 +11,7 @@ function ReplicasPageContent() {
 
 function ReplicasPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ReplicasPageContent />
     </Suspense>
   )

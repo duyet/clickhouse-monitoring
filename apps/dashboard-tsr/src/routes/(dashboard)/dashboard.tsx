@@ -6,6 +6,7 @@ import { getChartComponent, hasChart } from '@/components/charts/registry'
 import { ChartPicker } from '@/components/dashboard/chart-picker'
 import { SavedDashboardsToolbar } from '@/components/dashboard/saved-dashboards-toolbar'
 import { ChartSkeleton, ChartsOnlyPageSkeleton } from '@/components/skeletons'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useHostId } from '@/lib/swr'
 
 /** Charts shown when no saved dashboard is loaded */
@@ -78,12 +79,11 @@ function DashboardContent() {
 
       {/* Empty state */}
       {validCharts.length === 0 && (
-        <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-muted-foreground">
-          <p className="text-sm font-medium">No charts selected</p>
-          <p className="text-xs">
-            Use &ldquo;Add Charts&rdquo; to build your dashboard.
-          </p>
-        </div>
+        <EmptyState
+          variant="no-data"
+          title="No charts selected"
+          description='Use "Add Charts" to build your dashboard.'
+        />
       )}
 
       {/* Chart grid */}

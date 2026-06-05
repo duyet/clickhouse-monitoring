@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { failedQueriesConfig } from '@/lib/query-config/queries/failed-queries'
 
 function FailedQueriesPageContent() {
@@ -11,7 +11,7 @@ function FailedQueriesPageContent() {
 
 function FailedQueriesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <FailedQueriesPageContent />
     </Suspense>
   )

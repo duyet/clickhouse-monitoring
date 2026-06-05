@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { zookeeperConfig } from '@/lib/query-config/more/zookeeper'
 
 function KeeperBrowserPageContent() {
@@ -13,7 +13,7 @@ function KeeperBrowserPageContent() {
 
 function KeeperBrowserPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <KeeperBrowserPageContent />
     </Suspense>
   )

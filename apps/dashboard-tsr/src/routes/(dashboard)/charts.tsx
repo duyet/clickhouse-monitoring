@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { getChartComponent, hasChart } from '@/components/charts/chart-registry'
-import { ChartSkeleton } from '@/components/skeletons'
+import { ChartSkeleton, ChartsOnlyPageSkeleton } from '@/components/skeletons'
 import { useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 
@@ -81,7 +81,7 @@ function ChartsPageContent() {
 
 function ChartsPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<ChartsOnlyPageSkeleton chartCount={4} />}>
       <ChartsPageContent />
     </Suspense>
   )

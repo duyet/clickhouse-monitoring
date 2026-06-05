@@ -5,6 +5,8 @@ import {
   type Dispatch,
   type SetStateAction,
   use,
+  useCallback,
+  useMemo,
   useState,
 } from 'react'
 import { usePathname } from '@/lib/next-compat'
@@ -71,34 +73,32 @@ export const AppProvider = ({
     readInitialReloadInterval(reloadIntervalSecond * 1000)
   )
 
-  const setReloadInterval: Dispatch<SetStateAction<number | null>> = (
-    action
-  ) => {
-    setReloadIntervalState((prev) => {
-      const next =
-        typeof action === 'function'
-          ? (action as (p: number | null) => number | null)(prev)
-          : action
-      persistReloadInterval(next)
-      return next
-    })
-  }
+  const setReloadInterval: Dispatch<SetStateAction<number | null>> =
+    useCallback((action) => {
+      setReloadIntervalState((prev) => {
+        const next =
+          typeof action === 'function'
+            ? (action as (p: number | null) => number | null)(prev)
+            : action
+        persistReloadInterval(next)
+        return next
+      })
+    }, [])
 
   const pathname = usePathname()
 
-  return (
-    <Context.Provider
-      value={{
-        interval,
-        setInterval,
-        reloadInterval,
-        setReloadInterval,
-        pathname,
-      }}
-    >
-      {children}
-    </Context.Provider>
+  const value = useMemo<ContextValue>(
+    () => ({
+      interval,
+      setInterval,
+      reloadInterval,
+      setReloadInterval,
+      pathname,
+    }),
+    [interval, setInterval, reloadInterval, setReloadInterval, pathname]
   )
+
+  return <Context.Provider value={value}>{children}</Context.Provider>
 }
 
 export const useAppContext = () => {
