@@ -40,6 +40,8 @@ interface AgentStateConversation {
 }
 
 const SOURCE = 'clickhouse-monitor'
+const REQUEST_TIMEOUT_MS = 15_000
+const LIST_PAGE_SIZE = 100
 
 function uiMessageId(message: UIMessage): string {
   return typeof message.id === 'string' && message.id
@@ -162,6 +164,14 @@ function extractConversations(value: unknown): AgentStateConversation[] {
   return []
 }
 
+function extractNextCursor(value: unknown): string | null {
+  if (!value || typeof value !== 'object') return null
+  const record = value as Record<string, unknown>
+  const cursor =
+    record.next_cursor ?? record.nextCursor ?? record.next ?? record.cursor
+  return typeof cursor === 'string' && cursor ? cursor : null
+}
+
 function extractConversation(value: unknown): AgentStateConversation | null {
   if (!value || typeof value !== 'object') return null
   const record = value as Record<string, unknown>
@@ -252,14 +262,29 @@ export class AgentStateStore implements ConversationStore {
     init: RequestInit = {},
     options: { allowNotFound?: boolean } = {}
   ): Promise<T | null> {
-    const response = await fetch(`${this.apiBase}${path}`, {
-      ...init,
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        ...(init.headers ?? {}),
-      },
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    let response: Response
+
+    try {
+      response = await fetch(`${this.apiBase}${path}`, {
+        ...init,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          ...(init.headers ?? {}),
+        },
+      })
+    } catch (error) {
+      throw new ConversationStoreError(
+        `AgentState request failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'STORAGE_ERROR',
+        error
+      )
+    } finally {
+      clearTimeout(timeout)
+    }
 
     if (options.allowNotFound && response.status === 404) {
       return null
@@ -331,22 +356,51 @@ export class AgentStateStore implements ConversationStore {
   }
 
   async list(userId: string, limit: number = 50): Promise<ConversationMeta[]> {
-    const body = await this.request<unknown>(
-      `/v1/conversations?limit=${Math.min(Math.max(limit, 1), 100)}&order=desc`
-    )
+    const normalizedLimit = Math.min(Math.max(limit, 1), 100)
+    const conversations: ConversationMeta[] = []
+    const seenCursors = new Set<string>()
+    let cursor: string | null = null
 
-    return extractConversations(body)
-      .filter(
-        (remote) =>
-          remote.metadata?.source === SOURCE &&
-          remote.metadata?.user_id === userId
+    while (conversations.length < normalizedLimit) {
+      const params = new URLSearchParams({
+        limit: String(LIST_PAGE_SIZE),
+        order: 'desc',
+      })
+      if (cursor) params.set('cursor', cursor)
+
+      const body = await this.request<unknown>(
+        `/v1/conversations?${params.toString()}`
       )
-      .map((remote) => agentStateToStored(remote, userId))
-      .filter(
-        (conversation): conversation is StoredConversation =>
-          !!conversation && conversation.userId === userId
-      )
-      .map(({ messages: _messages, ...meta }) => meta)
+      const remoteConversations = extractConversations(body)
+      const pageConversations = remoteConversations
+        .filter(
+          (remote) =>
+            remote.metadata?.source === SOURCE &&
+            remote.metadata?.user_id === userId
+        )
+        .map((remote) => agentStateToStored(remote, userId))
+        .filter(
+          (conversation): conversation is StoredConversation =>
+            !!conversation && conversation.userId === userId
+        )
+        .map(({ messages: _messages, ...meta }) => meta)
+
+      conversations.push(...pageConversations)
+
+      const nextCursor = extractNextCursor(body)
+      if (
+        !nextCursor ||
+        seenCursors.has(nextCursor) ||
+        remoteConversations.length < LIST_PAGE_SIZE
+      ) {
+        break
+      }
+
+      seenCursors.add(nextCursor)
+      cursor = nextCursor
+    }
+
+    return conversations.slice(0, normalizedLimit)
   }
 
   async get(
@@ -414,9 +468,17 @@ export class AgentStateStore implements ConversationStore {
   }
 
   async deleteAll(userId: string): Promise<void> {
-    const conversations = await this.list(userId, 100)
-    await Promise.all(
-      conversations.map((conversation) => this.delete(userId, conversation.id))
-    )
+    while (true) {
+      const conversations = await this.list(userId, LIST_PAGE_SIZE)
+      if (conversations.length === 0) return
+
+      await Promise.all(
+        conversations.map((conversation) =>
+          this.delete(userId, conversation.id)
+        )
+      )
+
+      if (conversations.length < LIST_PAGE_SIZE) return
+    }
   }
 }

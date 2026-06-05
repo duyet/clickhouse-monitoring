@@ -74,17 +74,33 @@ function updateWranglerToml(databaseId: string): boolean {
       return updated
     }
 
+    let matchedMain = false
+    let matchedPreview = false
+
     // Update the main D1 database binding
     const updatedMain = content.replace(
       /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
-      withDatabaseId
+      (block) => {
+        matchedMain = true
+        return withDatabaseId(block)
+      }
     )
 
     // Update the preview environment binding
     const updatedPreview = updatedMain.replace(
       /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
-      withDatabaseId
+      (block) => {
+        matchedPreview = true
+        return withDatabaseId(block)
+      }
     )
+
+    if (!matchedMain || !matchedPreview) {
+      console.error(
+        `❌ Expected CONVERSATIONS_D1 blocks were not matched in wrangler.toml for database_id ${databaseId}`
+      )
+      return false
+    }
 
     writeFileSync(WRANGLER_TOML_PATH, updatedPreview, 'utf-8')
     console.log(`✅ Updated wrangler.toml with database_id: ${databaseId}`)

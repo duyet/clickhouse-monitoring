@@ -34,12 +34,26 @@ let cachedBackend: {
   backend: ConversationBackend
   expiresAt: number
 } | null = null
+let inFlightResolvePromise: Promise<ConversationBackend> | null = null
 
 async function resolveConversationBackendAsync(): Promise<ConversationBackend> {
   const now = Date.now()
   if (cachedBackend && cachedBackend.expiresAt > now) {
     return cachedBackend.backend
   }
+
+  if (inFlightResolvePromise) return inFlightResolvePromise
+
+  inFlightResolvePromise = fetchConversationBackend()
+  try {
+    return await inFlightResolvePromise
+  } finally {
+    inFlightResolvePromise = null
+  }
+}
+
+async function fetchConversationBackend(): Promise<ConversationBackend> {
+  const now = Date.now()
 
   try {
     const response = await apiFetch(STATUS_URL, {
@@ -52,6 +66,14 @@ async function resolveConversationBackendAsync(): Promise<ConversationBackend> {
     cachedBackend = { backend, expiresAt: now + 30_000 }
     return backend
   } catch {
+    if (cachedBackend) {
+      cachedBackend = {
+        backend: cachedBackend.backend,
+        expiresAt: Date.now() + 5_000,
+      }
+      return cachedBackend.backend
+    }
+
     cachedBackend = { backend: 'local', expiresAt: now + 5_000 }
     return 'local'
   }

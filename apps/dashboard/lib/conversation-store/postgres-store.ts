@@ -21,6 +21,7 @@ import type {
 
 import {
   jsonToMetadata,
+  metadataToJson,
   normalizeConversation,
   normalizeOptionalNumber,
   normalizeOptionalString,
@@ -324,7 +325,7 @@ export class PostgresStore implements ConversationStore {
     try {
       const normalized = normalizeConversation(conversation)
       const messagesJson = JSON.stringify(normalized.messages)
-      const metadataJson = JSON.stringify(normalized.metadata ?? {})
+      const metadataJson = metadataToJson(normalized.metadata)
 
       await this.sql`
         INSERT INTO conversations (

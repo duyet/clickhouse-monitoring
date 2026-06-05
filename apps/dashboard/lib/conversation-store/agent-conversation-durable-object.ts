@@ -9,6 +9,7 @@ import {
   parseMessages,
   stripMessages,
 } from './serialization'
+import { ConversationStoreError } from './types'
 import { DurableObject } from 'cloudflare:workers'
 
 interface DurableConversationRow {
@@ -63,6 +64,14 @@ CREATE INDEX IF NOT EXISTS idx_conversations_user_updated
   ON conversations(user_id, updated_at DESC);
 `
 
+function durableStorageError(action: string, error: unknown) {
+  return new ConversationStoreError(
+    `Failed to ${action} Durable Object conversations: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    'STORAGE_ERROR',
+    error
+  )
+}
+
 function rowToConversation(row: DurableConversationRow): StoredConversation {
   return {
     id: row.id,
@@ -100,102 +109,122 @@ export class AgentConversationDurableObject extends DurableObject<CloudflareEnv>
   }
 
   async list(userId: string, limit: number = 50): Promise<ConversationMeta[]> {
-    const rows = this.sql
-      .exec<DurableConversationRow>(
-        `SELECT *
-         FROM conversations
-         WHERE user_id = ?
-         ORDER BY updated_at DESC
-         LIMIT ?`,
-        userId,
-        Math.min(Math.max(limit, 1), 100)
-      )
-      .toArray()
+    try {
+      const rows = this.sql
+        .exec<DurableConversationRow>(
+          `SELECT *
+           FROM conversations
+           WHERE user_id = ?
+           ORDER BY updated_at DESC
+           LIMIT ?`,
+          userId,
+          Math.min(Math.max(limit, 1), 100)
+        )
+        .toArray()
 
-    return rows.map(rowToConversation).map(stripMessages)
+      return rows.map(rowToConversation).map(stripMessages)
+    } catch (error) {
+      throw durableStorageError('list', error)
+    }
   }
 
   async get(
     userId: string,
     conversationId: string
   ): Promise<StoredConversation | null> {
-    const rows = this.sql
-      .exec<DurableConversationRow>(
-        `SELECT *
-         FROM conversations
-         WHERE id = ? AND user_id = ?
-         LIMIT 1`,
-        conversationId,
-        userId
-      )
-      .toArray()
+    try {
+      const rows = this.sql
+        .exec<DurableConversationRow>(
+          `SELECT *
+           FROM conversations
+           WHERE id = ? AND user_id = ?
+           LIMIT 1`,
+          conversationId,
+          userId
+        )
+        .toArray()
 
-    return rows[0] ? rowToConversation(rows[0]) : null
+      return rows[0] ? rowToConversation(rows[0]) : null
+    } catch (error) {
+      throw durableStorageError('get', error)
+    }
   }
 
   async upsert(conversation: StoredConversation): Promise<void> {
-    const normalized = normalizeConversation(conversation)
-    this.sql.exec(
-      `INSERT INTO conversations (
-         id, user_id, title, messages, message_count,
-         model, provider, host_id,
-         total_input_tokens, total_output_tokens, total_reasoning_tokens,
-         total_cached_tokens, total_duration_ms, total_cost_usd,
-         finish_reason, user_rating, error_count, metadata,
-         created_at, updated_at
-       )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET
-         user_id = excluded.user_id,
-         title = excluded.title,
-         messages = excluded.messages,
-         message_count = excluded.message_count,
-         model = excluded.model,
-         provider = excluded.provider,
-         host_id = excluded.host_id,
-         total_input_tokens = excluded.total_input_tokens,
-         total_output_tokens = excluded.total_output_tokens,
-         total_reasoning_tokens = excluded.total_reasoning_tokens,
-         total_cached_tokens = excluded.total_cached_tokens,
-         total_duration_ms = excluded.total_duration_ms,
-         total_cost_usd = excluded.total_cost_usd,
-         finish_reason = excluded.finish_reason,
-         user_rating = excluded.user_rating,
-         error_count = excluded.error_count,
-         metadata = excluded.metadata,
-         updated_at = excluded.updated_at`,
-      normalized.id,
-      normalized.userId,
-      normalized.title,
-      JSON.stringify(normalized.messages),
-      normalized.messageCount,
-      normalized.model ?? null,
-      normalized.provider ?? null,
-      normalized.hostId ?? null,
-      normalized.totalInputTokens ?? 0,
-      normalized.totalOutputTokens ?? 0,
-      normalized.totalReasoningTokens ?? 0,
-      normalized.totalCachedTokens ?? 0,
-      normalized.totalDurationMs ?? 0,
-      normalized.totalCostUsd ?? 0,
-      normalized.finishReason ?? null,
-      normalized.userRating ?? null,
-      normalized.errorCount ?? 0,
-      metadataToJson(normalized.metadata),
-      normalized.createdAt,
-      normalized.updatedAt
-    )
+    try {
+      const normalized = normalizeConversation(conversation)
+      this.sql.exec(
+        `INSERT INTO conversations (
+           id, user_id, title, messages, message_count,
+           model, provider, host_id,
+           total_input_tokens, total_output_tokens, total_reasoning_tokens,
+           total_cached_tokens, total_duration_ms, total_cost_usd,
+           finish_reason, user_rating, error_count, metadata,
+           created_at, updated_at
+         )
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           user_id = excluded.user_id,
+           title = excluded.title,
+           messages = excluded.messages,
+           message_count = excluded.message_count,
+           model = excluded.model,
+           provider = excluded.provider,
+           host_id = excluded.host_id,
+           total_input_tokens = excluded.total_input_tokens,
+           total_output_tokens = excluded.total_output_tokens,
+           total_reasoning_tokens = excluded.total_reasoning_tokens,
+           total_cached_tokens = excluded.total_cached_tokens,
+           total_duration_ms = excluded.total_duration_ms,
+           total_cost_usd = excluded.total_cost_usd,
+           finish_reason = excluded.finish_reason,
+           user_rating = excluded.user_rating,
+           error_count = excluded.error_count,
+           metadata = excluded.metadata,
+           updated_at = excluded.updated_at`,
+        normalized.id,
+        normalized.userId,
+        normalized.title,
+        JSON.stringify(normalized.messages),
+        normalized.messageCount,
+        normalized.model ?? null,
+        normalized.provider ?? null,
+        normalized.hostId ?? null,
+        normalized.totalInputTokens ?? 0,
+        normalized.totalOutputTokens ?? 0,
+        normalized.totalReasoningTokens ?? 0,
+        normalized.totalCachedTokens ?? 0,
+        normalized.totalDurationMs ?? 0,
+        normalized.totalCostUsd ?? 0,
+        normalized.finishReason ?? null,
+        normalized.userRating ?? null,
+        normalized.errorCount ?? 0,
+        metadataToJson(normalized.metadata),
+        normalized.createdAt,
+        normalized.updatedAt
+      )
+    } catch (error) {
+      throw durableStorageError('upsert', error)
+    }
   }
 
   async delete(userId: string, conversationId: string): Promise<void> {
-    this.sql.exec(
-      `DELETE FROM conversations WHERE id = ? AND user_id = ?`,
-      conversationId,
-      userId
-    )
+    try {
+      this.sql.exec(
+        `DELETE FROM conversations WHERE id = ? AND user_id = ?`,
+        conversationId,
+        userId
+      )
+    } catch (error) {
+      throw durableStorageError('delete', error)
+    }
   }
 
   async deleteAll(userId: string): Promise<void> {
-    this.sql.exec(`DELETE FROM conversations WHERE user_id = ?`, userId)
+    try {
+      this.sql.exec(`DELETE FROM conversations WHERE user_id = ?`, userId)
+    } catch (error) {
+      throw durableStorageError('delete all', error)
+    }
   }
 }

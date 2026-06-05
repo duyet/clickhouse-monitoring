@@ -30,6 +30,38 @@ const ROUTE_CONTEXT_POST = { route: '/api/v1/conversations', method: 'POST' }
 
 const DEFAULT_LIMIT = 20
 
+function toConversationMeta(conv: ConversationMeta): ConversationMeta {
+  const meta: ConversationMeta = {
+    id: conv.id,
+    userId: conv.userId,
+    title: conv.title,
+    messageCount: conv.messageCount,
+    createdAt: conv.createdAt,
+    updatedAt: conv.updatedAt,
+  }
+
+  if (conv.model !== undefined) meta.model = conv.model
+  if (conv.provider !== undefined) meta.provider = conv.provider
+  if (conv.hostId !== undefined) meta.hostId = conv.hostId
+  if (conv.totalInputTokens !== undefined)
+    meta.totalInputTokens = conv.totalInputTokens
+  if (conv.totalOutputTokens !== undefined)
+    meta.totalOutputTokens = conv.totalOutputTokens
+  if (conv.totalReasoningTokens !== undefined)
+    meta.totalReasoningTokens = conv.totalReasoningTokens
+  if (conv.totalCachedTokens !== undefined)
+    meta.totalCachedTokens = conv.totalCachedTokens
+  if (conv.totalDurationMs !== undefined)
+    meta.totalDurationMs = conv.totalDurationMs
+  if (conv.totalCostUsd !== undefined) meta.totalCostUsd = conv.totalCostUsd
+  if (conv.finishReason !== undefined) meta.finishReason = conv.finishReason
+  if (conv.userRating !== undefined) meta.userRating = conv.userRating
+  if (conv.errorCount !== undefined) meta.errorCount = conv.errorCount
+  if (conv.metadata !== undefined) meta.metadata = conv.metadata
+
+  return meta
+}
+
 /**
  * Conversation creation request payload
  */
@@ -86,9 +118,7 @@ export async function GET(request: Request): Promise<Response> {
     const conversations = await store.list(userId, limit)
 
     // Transform response to exclude internal fields
-    const responseMeta: ConversationMeta[] = conversations.map((conv) => ({
-      ...conv,
-    }))
+    const responseMeta = conversations.map(toConversationMeta)
 
     // Create response with standardized builder
     const response = createSuccessResponse(
@@ -121,7 +151,7 @@ export async function GET(request: Request): Promise<Response> {
         err.code === 'UNAUTHORIZED'
           ? ApiErrorType.PermissionError
           : err.code === 'DISABLED'
-            ? ApiErrorType.ValidationError
+            ? ApiErrorType.QueryError
             : ApiErrorType.QueryError
 
       return createApiErrorResponse(

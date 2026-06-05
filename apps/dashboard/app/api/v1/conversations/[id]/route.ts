@@ -144,7 +144,7 @@ export async function GET(
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
             : err.code === 'DISABLED'
-              ? ApiErrorType.ValidationError
+              ? ApiErrorType.QueryError
               : ApiErrorType.QueryError
 
       const statusCode =
@@ -322,7 +322,7 @@ export async function PUT(
             : err.code === 'UNAUTHORIZED'
               ? ApiErrorType.PermissionError
               : err.code === 'DISABLED'
-                ? ApiErrorType.ValidationError
+                ? ApiErrorType.QueryError
                 : ApiErrorType.QueryError
 
       const statusCode =
@@ -477,7 +477,7 @@ export async function DELETE(
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
             : err.code === 'DISABLED'
-              ? ApiErrorType.ValidationError
+              ? ApiErrorType.QueryError
               : ApiErrorType.QueryError
 
       const statusCode =

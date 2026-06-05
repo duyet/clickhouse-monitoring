@@ -531,6 +531,7 @@ export async function POST(request: Request) {
   // Tracks the provider-reported model ID from the last completed step.
   // Populated synchronously in onStepFinish so it is available after consumeStream().
   let lastStepModelId: string | undefined
+  let resolvedModelForPersistence: string | undefined
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
@@ -610,6 +611,7 @@ export async function POST(request: Request) {
           }
         }
         resolvedModel = resolvedModel || model
+        resolvedModelForPersistence = resolvedModel
 
         // Send aggregated usage/cost as a data part so the client can display it
         if (usageSteps.length > 0) {
@@ -642,7 +644,8 @@ export async function POST(request: Request) {
                 ...aggregateUsageWithCost(usageSteps, model),
                 model,
                 provider: requestedProvider,
-                resolvedModel: lastStepModelId || model,
+                resolvedModel:
+                  resolvedModelForPersistence || lastStepModelId || model,
               },
             ],
           })
@@ -663,7 +666,8 @@ export async function POST(request: Request) {
           ...aggregateUsageWithCost(usageSteps, model),
           model,
           provider: requestedProvider,
-          resolvedModel: lastStepModelId || model,
+          resolvedModel:
+            resolvedModelForPersistence || lastStepModelId || model,
         }
         console.log('[Agent API] Session usage:', stats)
       }
@@ -679,7 +683,8 @@ export async function POST(request: Request) {
           hostId,
           model,
           provider: requestedProvider,
-          resolvedModel: lastStepModelId || model,
+          resolvedModel:
+            resolvedModelForPersistence || lastStepModelId || model,
           usage,
           finishReason,
           sessionId,

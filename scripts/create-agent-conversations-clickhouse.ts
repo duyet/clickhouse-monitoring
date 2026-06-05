@@ -8,9 +8,29 @@ const table =
   process.env.CLICKHOUSE_AGENT_CONVERSATIONS_TABLE ||
   `${database}.agent_conversations`
 
+function resolveHostId(): number {
+  const raw = process.env.CLICKHOUSE_AGENT_CONVERSATIONS_HOST_ID
+  if (!raw) return 0
+
+  if (!/^\d+$/.test(raw)) {
+    throw new Error(
+      'CLICKHOUSE_AGENT_CONVERSATIONS_HOST_ID must be a non-negative integer.'
+    )
+  }
+
+  const hostId = Number.parseInt(raw, 10)
+  if (!Number.isInteger(hostId) || hostId < 0) {
+    throw new Error(
+      'CLICKHOUSE_AGENT_CONVERSATIONS_HOST_ID must be a non-negative integer.'
+    )
+  }
+
+  return hostId
+}
+
 async function main() {
   const client = await getClient({
-    hostId: Number(process.env.CLICKHOUSE_AGENT_CONVERSATIONS_HOST_ID || 0),
+    hostId: resolveHostId(),
   })
   const sql = createClickHouseConversationsTableSql(table)
   await client.command({ query: sql })

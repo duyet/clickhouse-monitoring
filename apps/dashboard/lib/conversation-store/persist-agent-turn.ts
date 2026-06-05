@@ -59,6 +59,8 @@ export async function persistAgentConversationTurn({
     })
 
   const now = Date.now()
+  const currentCachedTokens =
+    (usage?.cacheReadTokens ?? 0) + (usage?.cacheWriteTokens ?? 0)
   const conversation: StoredConversation = {
     id: conversationId,
     userId,
@@ -68,14 +70,18 @@ export async function persistAgentConversationTurn({
     model: resolvedModel || model,
     provider,
     hostId,
-    totalInputTokens: usage?.totalInputTokens ?? 0,
-    totalOutputTokens: usage?.totalOutputTokens ?? 0,
-    totalReasoningTokens: usage?.reasoningTokens ?? 0,
-    totalCachedTokens:
-      (usage?.cacheReadTokens ?? 0) + (usage?.cacheWriteTokens ?? 0),
-    totalCostUsd: usage?.estimatedCostUsd ?? 0,
+    totalInputTokens:
+      (existing?.totalInputTokens ?? 0) + (usage?.totalInputTokens ?? 0),
+    totalOutputTokens:
+      (existing?.totalOutputTokens ?? 0) + (usage?.totalOutputTokens ?? 0),
+    totalReasoningTokens:
+      (existing?.totalReasoningTokens ?? 0) + (usage?.reasoningTokens ?? 0),
+    totalCachedTokens: (existing?.totalCachedTokens ?? 0) + currentCachedTokens,
+    totalCostUsd:
+      (existing?.totalCostUsd ?? 0) + (usage?.estimatedCostUsd ?? 0),
     finishReason,
-    errorCount: finishReason === 'error' ? 1 : 0,
+    errorCount:
+      (existing?.errorCount ?? 0) + (finishReason === 'error' ? 1 : 0),
     metadata: {
       source: 'agent-finish',
       sessionId,

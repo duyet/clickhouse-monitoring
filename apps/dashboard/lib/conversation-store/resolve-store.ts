@@ -82,6 +82,19 @@ export function resolveConversationStoreStatus(
     }
   }
 
+  if (
+    config.requestedStore === 'memory' &&
+    process.env.NODE_ENV === 'production'
+  ) {
+    return {
+      enabled: false,
+      requestedStore: 'memory',
+      store: 'memory',
+      persistent: false,
+      reason: 'Memory conversation storage is not persistent in production.',
+    }
+  }
+
   if (config.requestedStore !== 'auto') {
     return {
       enabled: true,

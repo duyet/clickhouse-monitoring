@@ -48,7 +48,14 @@ interface ClickHouseConversationRow {
 }
 
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/
+const DELETE_ALL_PAGE_SIZE = 100
 
+/**
+ * Parses a ClickHouse table name in `database.table` format.
+ *
+ * Throws `ConversationStoreError` when either identifier needs quoting or the
+ * value is not fully-qualified.
+ */
 export function parseClickHouseTableIdentifier(value: string): TableIdentifier {
   const parts = value.split('.')
   if (parts.length !== 2) {
@@ -73,6 +80,12 @@ export function parseClickHouseTableIdentifier(value: string): TableIdentifier {
   }
 }
 
+/**
+ * Builds the idempotent ClickHouse DDL for the conversation history table.
+ *
+ * The table uses `ReplacingMergeTree` with tombstone rows so inserts stay
+ * append-only and small batches can use async inserts safely.
+ */
 export function createClickHouseConversationsTableSql(
   tableName: string
 ): string {
@@ -114,6 +127,10 @@ function toClickHouseRow(
   isDeleted = false
 ): ClickHouseConversationRow {
   const normalized = normalizeConversation(conversation)
+  const updatedAtMs = isDeleted
+    ? Math.max(Date.now(), normalized.updatedAt + 1)
+    : normalized.updatedAt
+
   return {
     conversation_id: normalized.id,
     user_id: normalized.userId,
@@ -135,7 +152,7 @@ function toClickHouseRow(
     metadata_json: metadataToJson(normalized.metadata),
     is_deleted: isDeleted ? 1 : 0,
     created_at_ms: normalized.createdAt,
-    updated_at_ms: isDeleted ? Date.now() : normalized.updatedAt,
+    updated_at_ms: updatedAtMs,
   }
 }
 
@@ -164,6 +181,12 @@ function rowToConversation(row: ClickHouseConversationRow): StoredConversation {
   }
 }
 
+/**
+ * ConversationStore backed by ClickHouse.
+ *
+ * Reads collapse append-only versions with `argMax`, while deletes insert a
+ * tombstone row that wins by timestamp.
+ */
 export class ClickHouseConversationStore implements ConversationStore {
   private readonly table: TableIdentifier
   private readonly autoCreate: boolean
@@ -342,9 +365,17 @@ LIMIT 1`,
   }
 
   async deleteAll(userId: string): Promise<void> {
-    const conversations = await this.list(userId, 100)
-    await Promise.all(
-      conversations.map((conversation) => this.delete(userId, conversation.id))
-    )
+    while (true) {
+      const conversations = await this.list(userId, DELETE_ALL_PAGE_SIZE)
+      if (conversations.length === 0) return
+
+      await Promise.all(
+        conversations.map((conversation) =>
+          this.delete(userId, conversation.id)
+        )
+      )
+
+      if (conversations.length < DELETE_ALL_PAGE_SIZE) return
+    }
   }
 }
