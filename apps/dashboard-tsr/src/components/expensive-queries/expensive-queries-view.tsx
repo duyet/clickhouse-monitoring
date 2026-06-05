@@ -122,9 +122,11 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
                 )}
               >
                 <div className="overflow-hidden">
-                  <RelatedCharts
-                    relatedCharts={expensiveQueriesConfig.relatedCharts}
-                  />
+                  {chartsOpen && (
+                    <RelatedCharts
+                      relatedCharts={expensiveQueriesConfig.relatedCharts}
+                    />
+                  )}
                 </div>
               </div>
             )}
