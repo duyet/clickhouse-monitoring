@@ -188,7 +188,14 @@ jobs:
   # the Next e2e job.
   e2e-test-tsr:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 35m, up from 20m: this job both BUILDS the heavy Node target (Vite build +
+    # prerender of 119 routes running the un-stubbed real render libs — dagre,
+    # recharts, mermaid — since the Node target keeps them, see vite.config.ts
+    # `if (isNode) return null`) AND runs the e2e suite. The build alone was
+    # creeping toward the old 20m ceiling and timing out before the specs ran
+    # (e.g. #1506), so the e2e gate never executed. 35m leaves headroom for the
+    # build + the full Cypress run; the Bun cache below claws back install time.
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -197,6 +204,17 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.3.3'
+
+      # This job was the ONLY one missing the Bun install cache, so every run
+      # re-downloaded the full dependency set from the registry before building
+      # — pure overhead against the timeout. Mirrors the build/e2e-test jobs.
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-v1-
 
       - name: Cypress Cache
         uses: actions/cache@v5
@@ -212,7 +230,13 @@ jobs:
 
       - name: Build Node target
         working-directory: apps/dashboard-tsr
-        run: BUILD_TARGET=node bun run build:node
+        # CHM_SKIP_PRERENDER=1: skip the 119-route prerender for the e2e build.
+        # It runs the un-stubbed real render libs (dagre/recharts/mermaid) across
+        # every route and takes >30 min on a CI runner — the job was cancelled
+        # mid-prerender before any spec ran. e2e exercises runtime behaviour
+        # against the SPA fallback shell with client-fetched data, so prerendered
+        # HTML is unnecessary here. Production (Docker) build still prerenders.
+        run: CHM_SKIP_PRERENDER=1 BUILD_TARGET=node bun run build:node
 
       - name: Start server + run E2E
         working-directory: apps/dashboard-tsr
