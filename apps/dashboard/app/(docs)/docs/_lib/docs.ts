@@ -55,6 +55,7 @@ export const docsNav: DocsNavSection[] = [
     title: 'Deployments',
     items: [
       { title: 'Deploy', slug: 'deploy' },
+      { title: 'Self-Host', slug: 'deploy/self-host' },
       { title: 'Vercel', slug: 'deploy/vercel' },
       { title: 'Cloudflare', slug: 'deploy/cloudflare' },
       { title: 'Docker', slug: 'deploy/docker' },
@@ -68,6 +69,10 @@ export const docsNav: DocsNavSection[] = [
   {
     title: 'Advanced',
     items: [
+      {
+        title: 'Agent Conversation Storage',
+        slug: 'advanced/agent-conversation-storage',
+      },
       { title: 'Multiple Hosts', slug: 'advanced/multiple-hosts' },
       { title: 'Custom Host Name', slug: 'advanced/custom-name' },
       { title: 'Queries History', slug: 'advanced/queries-history' },
@@ -90,6 +95,28 @@ export const docsNav: DocsNavSection[] = [
       {
         title: 'MCP Server',
         slug: 'reference/mcp-server',
+      },
+      {
+        title: 'Authentication',
+        slug: 'reference/authentication',
+      },
+    ],
+  },
+  {
+    title: 'Migrating',
+    items: [
+      {
+        title: 'Migrate to v0.3',
+        slug: 'migrating/v0-3',
+      },
+    ],
+  },
+  {
+    title: 'Releases',
+    items: [
+      {
+        title: 'v0.3',
+        slug: 'releases/v0-3',
       },
     ],
   },
