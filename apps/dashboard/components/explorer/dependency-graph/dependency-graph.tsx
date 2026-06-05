@@ -412,7 +412,7 @@ export function DependencyGraph({
   }, [])
 
   // Stable string representation of dependencies to prevent unnecessary recalculations
-  const depsKey = JSON.stringify(dependencies)
+  const depsKey = useMemo(() => JSON.stringify(dependencies), [dependencies])
 
   // Build and layout the graph structure stably
   // biome-ignore lint/correctness/useExhaustiveDependencies: depsKey is a stable representation of dependencies to prevent unnecessary recalculations
