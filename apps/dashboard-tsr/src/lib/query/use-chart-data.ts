@@ -56,18 +56,22 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   timezone,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
 }: UseChartDataParams): UseChartResult<T> {
+  // Serialize params so the memo key is value-stable: a parent passing an
+  // inline `params` object literal changes its reference every render, which
+  // would otherwise defeat this memo (re-running on every render).
+  const paramsKey = params ? JSON.stringify(params) : ''
   const url = useMemo(() => {
     const searchParams = new URLSearchParams()
     if (hostId !== undefined) searchParams.append('hostId', String(hostId))
     if (interval) searchParams.append('interval', interval)
     if (lastHours !== undefined)
       searchParams.append('lastHours', String(lastHours))
-    if (params) searchParams.append('params', JSON.stringify(params))
+    if (paramsKey) searchParams.append('params', paramsKey)
     if (timezone) searchParams.append('timezone', timezone)
 
     const queryString = searchParams.toString()
     return `/api/v1/charts/${chartName}${queryString ? `?${queryString}` : ''}`
-  }, [chartName, hostId, interval, lastHours, params, timezone])
+  }, [chartName, hostId, interval, lastHours, paramsKey, timezone])
 
   const queryKey = [
     '/api/v1/charts',

@@ -95,7 +95,7 @@ export const AppProvider = ({
       setReloadInterval,
       pathname,
     }),
-    [interval, reloadInterval, setReloadInterval, pathname]
+    [interval, setInterval, reloadInterval, setReloadInterval, pathname]
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>

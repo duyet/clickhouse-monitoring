@@ -31,6 +31,9 @@ export function useTableData<T = unknown>(
   refreshInterval?: number,
   timezone?: string
 ) {
+  // Serialize searchParams so the memo key is value-stable even when a parent
+  // recreates the object each render (inline literal / derived state).
+  const searchParamsKey = searchParams ? JSON.stringify(searchParams) : ''
   const url = useMemo(() => {
     const params = new URLSearchParams()
     if (hostId !== undefined) params.append('hostId', String(hostId))
@@ -45,7 +48,8 @@ export function useTableData<T = unknown>(
 
     const queryString = params.toString()
     return `/api/v1/tables/${queryConfigName}${queryString ? `?${queryString}` : ''}`
-  }, [queryConfigName, hostId, searchParams, timezone])
+    // searchParams is read inside but keyed via the stable searchParamsKey.
+  }, [queryConfigName, hostId, searchParamsKey, timezone])
 
   const queryKey = [
     '/api/v1/tables',
