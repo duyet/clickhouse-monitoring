@@ -17,6 +17,7 @@ export const DEFAULT_MODEL =
 
 export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
 export const DEFAULT_APP_NAME = 'chmonitor'
+export const DEFAULT_APP_SOURCE = 'chmonitor'
 export const DEFAULT_APP_CATEGORY = 'programming-app'
 export const DEFAULT_APP_VERSION = '0.2.0'
 
@@ -50,6 +51,7 @@ function getAppMetadata(referer?: string) {
       process.env.APP_NAME ||
       process.env.OPENROUTER_APP_NAME ||
       DEFAULT_APP_NAME,
+    source: process.env.APP_SOURCE?.trim() || DEFAULT_APP_SOURCE,
     category: process.env.APP_CATEGORY || DEFAULT_APP_CATEGORY,
     version: process.env.APP_VERSION || DEFAULT_APP_VERSION,
   }
@@ -59,10 +61,16 @@ function getOpenAICompatibleHeaders(providerId: string, referer?: string) {
   if (providerId !== 'anyrouter') return undefined
 
   const meta = getAppMetadata(referer)
+  // X-AnyRouter-Source is the app identifier AnyRouter groups rankings by (its
+  // curation matches this against `chmonitor`); the marketplace category goes in
+  // X-AnyRouter-Categories. Keep them separate — sending the category as the
+  // source makes AnyRouter attribute usage to `programming-app` instead of
+  // chmonitor.dev.
   return {
     'HTTP-Referer': meta.referer,
     'X-AnyRouter-Title': meta.name,
-    'X-AnyRouter-Source': meta.category,
+    'X-AnyRouter-Source': meta.source,
+    'X-AnyRouter-Categories': meta.category,
     'X-AnyRouter-Version': meta.version,
   }
 }
