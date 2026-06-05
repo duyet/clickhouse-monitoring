@@ -18,7 +18,7 @@ import { ApiErrorType } from '@/lib/api/types'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
-import { autoMigrate } from '@/lib/migration/auto-migrate'
+import { autoMigrateConversationStore } from '@/lib/migration/auto-migrate'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -69,7 +69,7 @@ export async function GET(
   })
 
   try {
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -143,10 +143,18 @@ export async function GET(
           ? ApiErrorType.ValidationError
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
-            : ApiErrorType.QueryError
+            : err.code === 'DISABLED'
+              ? ApiErrorType.ValidationError
+              : ApiErrorType.QueryError
 
       const statusCode =
-        err.code === 'NOT_FOUND' || err.code === 'UNAUTHORIZED' ? 404 : 500
+        err.code === 'NOT_FOUND'
+          ? 404
+          : err.code === 'UNAUTHORIZED'
+            ? 403
+            : err.code === 'DISABLED'
+              ? 503
+              : 500
 
       return createApiErrorResponse(
         {
@@ -207,7 +215,7 @@ export async function PUT(
   })
 
   try {
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -313,14 +321,20 @@ export async function PUT(
             ? ApiErrorType.ValidationError
             : err.code === 'UNAUTHORIZED'
               ? ApiErrorType.PermissionError
-              : ApiErrorType.QueryError
+              : err.code === 'DISABLED'
+                ? ApiErrorType.ValidationError
+                : ApiErrorType.QueryError
 
       const statusCode =
-        err.code === 'NOT_FOUND' ||
-        err.code === 'VALIDATION_ERROR' ||
-        err.code === 'UNAUTHORIZED'
+        err.code === 'NOT_FOUND'
           ? 404
-          : 500
+          : err.code === 'VALIDATION_ERROR'
+            ? 400
+            : err.code === 'UNAUTHORIZED'
+              ? 403
+              : err.code === 'DISABLED'
+                ? 503
+                : 500
 
       return createApiErrorResponse(
         {
@@ -385,7 +399,7 @@ export async function DELETE(
   })
 
   try {
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -462,10 +476,18 @@ export async function DELETE(
           ? ApiErrorType.ValidationError
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
-            : ApiErrorType.QueryError
+            : err.code === 'DISABLED'
+              ? ApiErrorType.ValidationError
+              : ApiErrorType.QueryError
 
       const statusCode =
-        err.code === 'NOT_FOUND' || err.code === 'UNAUTHORIZED' ? 404 : 500
+        err.code === 'NOT_FOUND'
+          ? 404
+          : err.code === 'UNAUTHORIZED'
+            ? 403
+            : err.code === 'DISABLED'
+              ? 503
+              : 500
 
       return createApiErrorResponse(
         {

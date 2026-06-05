@@ -216,7 +216,8 @@ export interface StoredConversation extends ConversationMeta {
 
 /**
  * Conversation storage adapter interface.
- * All backends (D1, PostgreSQL, memory, browser) implement this.
+ * All backends (AgentState, D1, Durable Object, ClickHouse, PostgreSQL, memory,
+ * browser) implement this.
  */
 export interface ConversationStore {
   list(userId: string, limit?: number): Promise<ConversationMeta[]>
@@ -239,6 +240,7 @@ export class ConversationStoreError extends Error {
     public readonly code:
       | 'NOT_FOUND'
       | 'UNAUTHORIZED'
+      | 'DISABLED'
       | 'STORAGE_ERROR'
       | 'VALIDATION_ERROR',
     public readonly cause?: unknown

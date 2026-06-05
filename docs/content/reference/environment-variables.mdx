@@ -180,10 +180,20 @@ The AI agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `false` | Enable database-backed conversation storage. Requires Clerk. |
-| `DATABASE_URL` | — | PostgreSQL connection string for conversation store. |
+| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enables server-side agent conversation persistence. |
+| `AGENT_CONVERSATION_STORE` | `auto` | Backend: `auto`, `agentstate`, `d1`, `durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. |
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `false` | Deprecated alias for `AGENT_CONVERSATION_PERSISTENCE=true`. |
+| `AGENTSTATE_API_KEY` | — | AgentState API key. Required for `agentstate`; must start with `as_live_`. |
+| `AGENTSTATE_API_BASE` | `https://agentstate.app/api` | AgentState API base URL. |
+| `AGENT_CONVERSATIONS_DO_BINDING` | `AGENT_CONVERSATIONS_DO` | Durable Object binding used by `durable-object`. |
+| `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` | `${CLICKHOUSE_DATABASE}.agent_conversations` | ClickHouse table for `clickhouse` store. In `auto`, ClickHouse is tried only when this is explicitly set. |
+| `CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE` | `true` | Create the ClickHouse conversation table at runtime if missing. |
+| `DATABASE_URL` | — | PostgreSQL connection string for `postgres`. |
 | `POSTGRES_URL` | — | Alternative PostgreSQL connection string. |
 | `POSTGRES_PRISMA_URL` | — | Prisma-specific PostgreSQL connection string. |
+
+See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage) for
+setup commands, backend permissions, and fallback behavior.
 
 ---
 

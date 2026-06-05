@@ -20,7 +20,7 @@ import { ApiErrorType } from '@/lib/api/types'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
-import { autoMigrate } from '@/lib/migration/auto-migrate'
+import { autoMigrateConversationStore } from '@/lib/migration/auto-migrate'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -65,7 +65,7 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     // Run pending migrations on first request
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -87,12 +87,7 @@ export async function GET(request: Request): Promise<Response> {
 
     // Transform response to exclude internal fields
     const responseMeta: ConversationMeta[] = conversations.map((conv) => ({
-      id: conv.id,
-      userId: conv.userId,
-      title: conv.title,
-      createdAt: conv.createdAt,
-      updatedAt: conv.updatedAt,
-      messageCount: conv.messageCount,
+      ...conv,
     }))
 
     // Create response with standardized builder
@@ -125,7 +120,9 @@ export async function GET(request: Request): Promise<Response> {
       const errorType =
         err.code === 'UNAUTHORIZED'
           ? ApiErrorType.PermissionError
-          : ApiErrorType.QueryError
+          : err.code === 'DISABLED'
+            ? ApiErrorType.ValidationError
+            : ApiErrorType.QueryError
 
       return createApiErrorResponse(
         {
@@ -133,7 +130,7 @@ export async function GET(request: Request): Promise<Response> {
           message: err.message,
           details: { timestamp: new Date().toISOString() },
         },
-        err.code === 'UNAUTHORIZED' ? 403 : 500,
+        err.code === 'UNAUTHORIZED' ? 403 : err.code === 'DISABLED' ? 503 : 500,
         ROUTE_CONTEXT_GET
       )
     }
@@ -171,7 +168,7 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     // Run pending migrations on first request
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -276,14 +273,18 @@ export async function POST(request: Request): Promise<Response> {
           ? ApiErrorType.ValidationError
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
-            : ApiErrorType.QueryError
+            : err.code === 'DISABLED'
+              ? ApiErrorType.ValidationError
+              : ApiErrorType.QueryError
 
       const statusCode =
         err.code === 'VALIDATION_ERROR'
           ? 400
           : err.code === 'UNAUTHORIZED'
             ? 403
-            : 500
+            : err.code === 'DISABLED'
+              ? 503
+              : 500
 
       return createApiErrorResponse(
         {

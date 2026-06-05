@@ -36,6 +36,7 @@ import {
 } from '@/lib/ai/providers'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { persistAgentConversationTurn } from '@/lib/conversation-store/persist-agent-turn'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
@@ -59,6 +60,7 @@ const textEncoder = new TextEncoder()
 const textDecoder = new TextDecoder()
 
 type AgentRequestBody = {
+  id?: string
   message?: string
   messages?: Array<
     | { id: string; role: string; parts: Array<unknown> }
@@ -431,6 +433,8 @@ export async function POST(request: Request) {
     typeof body.sessionId === 'string' && body.sessionId.length > 0
       ? body.sessionId
       : crypto.randomUUID()
+  const conversationId =
+    typeof body.id === 'string' && body.id.length > 0 ? body.id : sessionId
 
   // Resolve user ID for OpenRouter user tracking
   let userId = 'guest'
@@ -653,7 +657,7 @@ export async function POST(request: Request) {
       console.error('[Agent API] Classified error:', classified)
       return JSON.stringify(classified)
     },
-    onFinish: () => {
+    onFinish: async ({ messages, finishReason }) => {
       if (usageSteps.length > 0) {
         const stats = {
           ...aggregateUsageWithCost(usageSteps, model),
@@ -662,6 +666,26 @@ export async function POST(request: Request) {
           resolvedModel: lastStepModelId || model,
         }
         console.log('[Agent API] Session usage:', stats)
+      }
+
+      try {
+        const usage =
+          usageSteps.length > 0
+            ? aggregateUsageWithCost(usageSteps, model)
+            : undefined
+        await persistAgentConversationTurn({
+          conversationId,
+          messages,
+          hostId,
+          model,
+          provider: requestedProvider,
+          resolvedModel: lastStepModelId || model,
+          usage,
+          finishReason,
+          sessionId,
+        })
+      } catch (error) {
+        console.error('[Agent API] Conversation persistence failed:', error)
       }
     },
     originalMessages: uiMessages as unknown as UIMessage[],

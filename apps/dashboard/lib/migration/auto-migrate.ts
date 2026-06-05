@@ -13,6 +13,8 @@ import {
   MigrationRunner,
   MigrationType,
 } from './migration-runner'
+import { getPlatformBindings } from '@chm/platform'
+import { getConversationStoreConfig } from '@/lib/conversation-store/config'
 
 let migrationPromise: Promise<void> | null = null
 let migrationComplete = false
@@ -84,6 +86,26 @@ export async function autoMigrate(): Promise<void> {
   }
 
   return migrationPromise
+}
+
+export async function autoMigrateConversationStore(): Promise<void> {
+  const config = getConversationStoreConfig()
+  if (!config.enabled) return
+
+  if (config.requestedStore === 'd1') {
+    await autoMigrate()
+    return
+  }
+
+  if (config.requestedStore !== 'auto') return
+
+  try {
+    if (getPlatformBindings().getD1Database('CONVERSATIONS_D1')) {
+      await autoMigrate()
+    }
+  } catch {
+    // No D1 binding available; another store will handle its own schema.
+  }
 }
 
 async function runMigrations(): Promise<void> {
