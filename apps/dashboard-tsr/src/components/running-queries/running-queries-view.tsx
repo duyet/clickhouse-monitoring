@@ -278,9 +278,7 @@ export const RunningQueriesView = function RunningQueriesView() {
           </Card>
         ) : (
           <>
-            <div>
-              <RunningQueriesCharts rows={rows} compact={!chartsOpen} />
-            </div>
+            {chartsOpen && <RunningQueriesCharts rows={rows} />}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">

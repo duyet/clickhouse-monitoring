@@ -45,8 +45,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
+import { useLayoutView } from '@/hooks/use-layout-view'
 import { cn } from '@/lib/utils'
 
 // Re-exported so sibling modules can keep importing the row type from this
@@ -82,33 +81,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   // Card view leads on phones (the wide metric table is unreadable in a scroll
   // box), table on desktop — with a toggle so either is reachable anywhere.
-  // `null` follows the breakpoint until the user explicitly picks a view.
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-  const layoutParam = searchParams.get('layout')
-
-  // Card view leads on phones (the wide metric table is unreadable in a scroll
-  // box), table on desktop — with a toggle so either is reachable anywhere.
-  const isMobile = useIsMobile()
-  const view = useMemo<'table' | 'cards'>(() => {
-    if (layoutParam === 'card') return 'cards'
-    if (layoutParam === 'table') return 'table'
-    return isMobile ? 'cards' : 'table'
-  }, [layoutParam, isMobile])
-
-  const handleViewChange = useCallback(
-    (newView: 'table' | 'cards') => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (newView === 'cards') {
-        params.set('layout', 'card')
-      } else {
-        params.set('layout', 'table')
-      }
-      router.replace(`${pathname}?${params.toString()}`)
-    },
-    [searchParams, router, pathname]
-  )
+  const [view, setView] = useLayoutView()
   // Expansion is keyed by a stable row key; `query_id` still drives actions.
   // A row stays open across refreshes and re-sorts as long as that underlying
   // identifier remains stable.
@@ -315,7 +288,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           <div className="h-5 w-px bg-border" />
 
           {/* Table / cards view */}
-          <ViewToggle active={view} onChange={handleViewChange} />
+          <ViewToggle active={view} onChange={setView} />
 
           {/* Column visibility */}
           <ColumnVisibilityMenu
