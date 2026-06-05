@@ -344,8 +344,18 @@ const isNode = process.env.BUILD_TARGET === 'node'
 // served via Cloudflare Workers Assets / Docker static files), with a SPA
 // fallback shell for any non-crawled route. Dynamic data still loads
 // client-side via TanStack Query against the API routes — "fast like SSR".
+//
+// `CHM_SKIP_PRERENDER=1` turns prerender OFF for the e2e CI build only. The
+// Node-target prerender crawls all 119 routes running the un-stubbed real
+// render libs (dagre/recharts/mermaid) and takes >30 min on a CI runner — it
+// was cancelled mid-prerender before the e2e specs could run. e2e doesn't need
+// prerendered HTML: `spa.enabled` already serves a fallback shell for every
+// route, and the specs assert RUNTIME behaviour with data fetched client-side
+// (identical whether a route arrives prerendered or as the SPA shell). The
+// production Docker build does NOT set this flag, so prod still prerenders.
+const skipPrerender = process.env.CHM_SKIP_PRERENDER === '1'
 const startConfig = {
-  prerender: { enabled: true, crawlLinks: true },
+  prerender: { enabled: !skipPrerender, crawlLinks: !skipPrerender },
   spa: { enabled: true },
 }
 

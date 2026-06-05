@@ -230,7 +230,13 @@ jobs:
 
       - name: Build Node target
         working-directory: apps/dashboard-tsr
-        run: BUILD_TARGET=node bun run build:node
+        # CHM_SKIP_PRERENDER=1: skip the 119-route prerender for the e2e build.
+        # It runs the un-stubbed real render libs (dagre/recharts/mermaid) across
+        # every route and takes >30 min on a CI runner — the job was cancelled
+        # mid-prerender before any spec ran. e2e exercises runtime behaviour
+        # against the SPA fallback shell with client-fetched data, so prerendered
+        # HTML is unnecessary here. Production (Docker) build still prerenders.
+        run: CHM_SKIP_PRERENDER=1 BUILD_TARGET=node bun run build:node
 
       - name: Start server + run E2E
         working-directory: apps/dashboard-tsr
