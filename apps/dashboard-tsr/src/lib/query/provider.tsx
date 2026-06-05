@@ -2,7 +2,7 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface QueryProviderProps {
   children: React.ReactNode
@@ -76,21 +76,21 @@ function createQueryClient(): QueryClient {
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(createQueryClient)
 
-  // localStorage only exists in the browser. During SSR / static prerender
-  // there is no `window`, so fall back to the plain provider (the providers
-  // render no DOM of their own — only context — so swapping the wrapper between
-  // server and client is hydration-safe; children are identical). On the client
-  // we wrap with PersistQueryClientProvider, which restores the previous
-  // session's cache from localStorage on mount, then revalidates per staleTime.
-  const [persister] = useState(() =>
-    typeof window === 'undefined'
-      ? null
-      : createSyncStoragePersister({
-          storage: window.localStorage,
-          key: PERSIST_KEY,
-          throttleTime: PERSIST_THROTTLE_MS,
-        })
-  )
+  // localStorage only exists in the browser. Keep the first client render
+  // identical to SSR, then enable persisted query cache after hydration.
+  const [persister, setPersister] = useState<ReturnType<
+    typeof createSyncStoragePersister
+  > | null>(null)
+
+  useEffect(() => {
+    setPersister(
+      createSyncStoragePersister({
+        storage: window.localStorage,
+        key: PERSIST_KEY,
+        throttleTime: PERSIST_THROTTLE_MS,
+      })
+    )
+  }, [])
 
   if (!persister) {
     return (
