@@ -306,18 +306,11 @@ ${namedExports}
     name: 'chm:ssr-client-only-stub',
     enforce: 'pre',
     resolveId(id) {
-      // The stub keeps the Cloudflare Worker under the free-plan 3 MiB limit
-      // (#1393). The Node/Docker PRODUCTION target prerenders, and prerender
-      // runs the REAL libs during SSR — e.g. computeDagrePositions (PeerGraph)
-      // calls dagre — so prod Node must keep them.
-      //
-      // BUT the e2e Node build sets CHM_SKIP_PRERENDER=1: no prerender, and the
-      // server only emits the SPA fallback shell (the browser-only libs render
-      // client-side, where the client bundle still ships the real libs). With
-      // nothing rendering them server-side, stubbing these out of the Node
-      // server bundle is safe and cuts the build from >34 min (it was timing
-      // out at the 35 min ceiling on CI, killing the e2e gate) to ~CF speed.
-      if (isNode && !skipPrerender) return null
+      // The stub exists ONLY to keep the Cloudflare Worker under the free-plan
+      // 3 MiB limit (#1393). The Node/Docker target has no size limit and its
+      // prerender needs the REAL libs — e.g. computeDagrePositions (PeerGraph)
+      // calls dagre during SSR — so never stub when BUILD_TARGET=node.
+      if (isNode) return null
       // `this.environment` is the per-environment build context (Vite 6+/8).
       // Only stub in the worker/SSR environment, never the browser client build.
       if (this.environment?.name === 'client') return null
