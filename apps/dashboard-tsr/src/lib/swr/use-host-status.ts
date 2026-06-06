@@ -79,7 +79,13 @@ export function useHostStatus(
     },
     enabled: hostId !== null && !isBrowserConnection,
     staleTime: 10000,
-    refetchInterval: refreshInterval,
+    refetchInterval:
+      refreshInterval > 0
+        ? () =>
+            typeof document !== 'undefined' && document.hidden
+              ? false
+              : (refreshInterval as number)
+        : (refreshInterval as any),
     refetchOnWindowFocus: revalidateOnFocus,
     refetchOnReconnect: true,
   })

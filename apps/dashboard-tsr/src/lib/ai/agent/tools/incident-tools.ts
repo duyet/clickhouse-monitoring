@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 /**
  * Validate and sanitize the INTERVAL value to prevent SQL injection.
