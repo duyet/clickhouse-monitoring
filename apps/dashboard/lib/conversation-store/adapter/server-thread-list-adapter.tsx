@@ -1,11 +1,10 @@
 'use client'
 
 /**
- * D1 / server-backed assistant-ui thread list adapter.
+ * Server-backed assistant-ui thread list adapter.
  *
- * Used when `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` is enabled (Cloudflare
- * Workers deployments). Persists threads + messages through the existing
- * `/api/v1/conversations/*` routes, which resolve to D1 / Postgres server-side.
+ * Persists threads + messages through `/api/v1/conversations/*`; the server
+ * resolves the actual backend from AGENT_CONVERSATION_* environment config.
  *
  * Implements the same `RemoteThreadListAdapter` contract as the localStorage
  * backend so the two are interchangeable behind `resolve-thread-list-adapter`.
@@ -110,7 +109,7 @@ async function apiDelete(id: string): Promise<void> {
  * calls `withFormat()` for a format-bound `GenericThreadHistoryAdapter`; the
  * stored `MessageFormatItem[]` is kept in the conversation's `messages` field.
  */
-function createD1HistoryAdapter(
+export function createServerHistoryAdapter(
   aui: ReturnType<typeof useAui>
 ): ThreadHistoryAdapter {
   return {
@@ -184,7 +183,7 @@ function createD1HistoryAdapter(
 
 const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
   const aui = useAui()
-  const history = createD1HistoryAdapter(aui)
+  const history = createServerHistoryAdapter(aui)
   const adapters = { history }
   return (
     <RuntimeAdapterProvider adapters={adapters as never}>
@@ -194,9 +193,9 @@ const HistoryProvider: FC<PropsWithChildren> = ({ children }) => {
 }
 
 /**
- * Build a `RemoteThreadListAdapter` backed by the D1 conversations API.
+ * Build a `RemoteThreadListAdapter` backed by the conversations API.
  */
-export function createD1ThreadListAdapter(): RemoteThreadListAdapter {
+export function createServerThreadListAdapter(): RemoteThreadListAdapter {
   return {
     unstable_Provider: HistoryProvider,
 
@@ -257,14 +256,15 @@ export function createD1ThreadListAdapter(): RemoteThreadListAdapter {
       }
     },
 
-    async generateTitle(remoteId) {
+    async generateTitle(remoteId, unstableMessages) {
       const conversation = await apiGet(remoteId)
       const stored = Array.isArray(conversation?.messages)
         ? (conversation.messages as unknown[])
         : []
       // Stored entries may be bare messages or `{ message }` wrappers
       // (the format-adapter repository shape), so normalize before reading.
-      const messages = stored.map((entry) => {
+      const sourceMessages = stored.length ? stored : unstableMessages
+      const messages = sourceMessages.map((entry) => {
         const candidate =
           entry &&
           typeof entry === 'object' &&

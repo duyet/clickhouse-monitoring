@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { mergesConfig } from '@/lib/query-config/merges/merges'
 
 function MergesPageContent() {
@@ -11,7 +11,7 @@ function MergesPageContent() {
 
 function MergesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <MergesPageContent />
     </Suspense>
   )

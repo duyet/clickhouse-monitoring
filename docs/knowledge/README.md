@@ -32,6 +32,7 @@ Agents discover knowledge in this order:
 | **Operations** | [core-memory.md](core-memory.md) | workflow | Automation core memory: code-smell scans, dead-code rules |
 | **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
+| **Specs** | [agent-conversation-storage.md](agent-conversation-storage.md) | spec | Runtime-selected agent chat persistence backends and fallback rules |
 | **Specs** | [query-config-format.md](query-config-format.md) | spec | QueryConfig type format, versioned SQL, BackgroundBar columns |
 | **Specs** | [cluster-topology.md](cluster-topology.md) | spec | Cluster topology SVG: layout pipeline, constant contracts, OKLCH gotcha, shared component, verification harness |
 | **Specs** | [table-availability.md](table-availability.md) | spec | Sidebar muting (table availability), permission GRANT + version-mismatch errors, `toEmptyStateVariant` gotcha |

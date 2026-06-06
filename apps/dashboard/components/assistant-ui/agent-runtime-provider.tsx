@@ -9,15 +9,18 @@
  *   `/api/v1/agent`, carrying the custom request body (`hostId`, `model`,
  *   `disabledTools`, `sessionId`) the route expects.
  * - `useRemoteThreadListRuntime` layers persistent conversation history on top,
- *   backed by either D1 or localStorage (see `resolve-thread-list-adapter`).
+ *   backed by server runtime configuration or localStorage (see
+ *   `resolve-thread-list-adapter`).
  */
 
 import {
   AssistantRuntimeProvider,
   useRemoteThreadListRuntime,
 } from '@assistant-ui/react'
-import { useChatRuntime } from '@assistant-ui/react-ai-sdk'
-import { DefaultChatTransport } from 'ai'
+import {
+  AssistantChatTransport,
+  useChatRuntime,
+} from '@assistant-ui/react-ai-sdk'
 import { type ReactNode, useMemo } from 'react'
 import { resolveThreadListAdapter } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
@@ -37,7 +40,7 @@ function useAgentChatRuntime() {
 
   const transport = useMemo(
     () =>
-      new DefaultChatTransport({
+      new AssistantChatTransport({
         api: '/api/v1/agent',
         fetch: apiFetch as typeof globalThis.fetch,
         body: { hostId, model, disabledTools, sessionId },

@@ -159,7 +159,7 @@ export function Thread({
             <p className="text-muted-foreground px-1 text-[11px] leading-4">
               The agent runs read-only ClickHouse queries. Conversations are
               saved{' '}
-              {resolveConversationBackend() === 'd1'
+              {resolveConversationBackend() === 'server'
                 ? 'to your account'
                 : 'in this browser'}
               .

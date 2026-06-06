@@ -84,11 +84,19 @@ mock.module('ai', () => {
     createUIMessageStream: async ({
       execute,
       originalMessages,
+      onFinish,
     }: {
       execute: (params: {
         writer: { merge: (value: unknown) => void }
       }) => Promise<void> | void
       originalMessages?: unknown[]
+      onFinish?: (options: {
+        messages: unknown[]
+        finishReason: string
+        isContinuation: boolean
+        isAborted: boolean
+        responseMessage: unknown
+      }) => Promise<void> | void
     }) => {
       activeRecord = {
         executeCalled: false,
@@ -111,6 +119,17 @@ mock.module('ai', () => {
       try {
         await execute({ writer })
         record.executeCalled = true
+        await onFinish?.({
+          messages: originalMessages ?? [],
+          finishReason: 'stop',
+          isContinuation: false,
+          isAborted: false,
+          responseMessage: {
+            id: 'assistant-response',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'done' }],
+          },
+        })
       } catch (_err) {
         record.executeCalled = false
       }
@@ -169,6 +188,10 @@ describe('POST /api/v1/agent', () => {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER = 'clerk'
     delete process.env.CHM_FEATURE_AGENT_ACCESS
     delete process.env.ANYROUTER_API_KEY
+    delete process.env.AGENT_CONVERSATION_PERSISTENCE
+    delete process.env.AGENT_CONVERSATION_STORE
+    delete process.env.AGENTSTATE_API_KEY
+    delete process.env.CLERK_SECRET_KEY
     process.env.LLM_API_KEY = 'test-llm-key'
     process.env.LLM_MODEL = 'openrouter:openrouter/auto'
     process.env.OPENROUTER_API_KEY = 'test-openrouter-key'

@@ -20,7 +20,7 @@ import { ApiErrorType } from '@/lib/api/types'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
-import { autoMigrate } from '@/lib/migration/auto-migrate'
+import { autoMigrateConversationStore } from '@/lib/migration/auto-migrate'
 
 // This route is dynamic and should not be statically exported
 export const dynamic = 'force-dynamic'
@@ -29,6 +29,38 @@ const ROUTE_CONTEXT_GET = { route: '/api/v1/conversations', method: 'GET' }
 const ROUTE_CONTEXT_POST = { route: '/api/v1/conversations', method: 'POST' }
 
 const DEFAULT_LIMIT = 20
+
+function toConversationMeta(conv: ConversationMeta): ConversationMeta {
+  const meta: ConversationMeta = {
+    id: conv.id,
+    userId: conv.userId,
+    title: conv.title,
+    messageCount: conv.messageCount,
+    createdAt: conv.createdAt,
+    updatedAt: conv.updatedAt,
+  }
+
+  if (conv.model !== undefined) meta.model = conv.model
+  if (conv.provider !== undefined) meta.provider = conv.provider
+  if (conv.hostId !== undefined) meta.hostId = conv.hostId
+  if (conv.totalInputTokens !== undefined)
+    meta.totalInputTokens = conv.totalInputTokens
+  if (conv.totalOutputTokens !== undefined)
+    meta.totalOutputTokens = conv.totalOutputTokens
+  if (conv.totalReasoningTokens !== undefined)
+    meta.totalReasoningTokens = conv.totalReasoningTokens
+  if (conv.totalCachedTokens !== undefined)
+    meta.totalCachedTokens = conv.totalCachedTokens
+  if (conv.totalDurationMs !== undefined)
+    meta.totalDurationMs = conv.totalDurationMs
+  if (conv.totalCostUsd !== undefined) meta.totalCostUsd = conv.totalCostUsd
+  if (conv.finishReason !== undefined) meta.finishReason = conv.finishReason
+  if (conv.userRating !== undefined) meta.userRating = conv.userRating
+  if (conv.errorCount !== undefined) meta.errorCount = conv.errorCount
+  if (conv.metadata !== undefined) meta.metadata = conv.metadata
+
+  return meta
+}
 
 /**
  * Conversation creation request payload
@@ -65,7 +97,7 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     // Run pending migrations on first request
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -86,14 +118,7 @@ export async function GET(request: Request): Promise<Response> {
     const conversations = await store.list(userId, limit)
 
     // Transform response to exclude internal fields
-    const responseMeta: ConversationMeta[] = conversations.map((conv) => ({
-      id: conv.id,
-      userId: conv.userId,
-      title: conv.title,
-      createdAt: conv.createdAt,
-      updatedAt: conv.updatedAt,
-      messageCount: conv.messageCount,
-    }))
+    const responseMeta = conversations.map(toConversationMeta)
 
     // Create response with standardized builder
     const response = createSuccessResponse(
@@ -125,7 +150,9 @@ export async function GET(request: Request): Promise<Response> {
       const errorType =
         err.code === 'UNAUTHORIZED'
           ? ApiErrorType.PermissionError
-          : ApiErrorType.QueryError
+          : err.code === 'DISABLED'
+            ? ApiErrorType.QueryError
+            : ApiErrorType.QueryError
 
       return createApiErrorResponse(
         {
@@ -133,7 +160,7 @@ export async function GET(request: Request): Promise<Response> {
           message: err.message,
           details: { timestamp: new Date().toISOString() },
         },
-        err.code === 'UNAUTHORIZED' ? 403 : 500,
+        err.code === 'UNAUTHORIZED' ? 403 : err.code === 'DISABLED' ? 503 : 500,
         ROUTE_CONTEXT_GET
       )
     }
@@ -171,7 +198,7 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     // Run pending migrations on first request
-    await autoMigrate()
+    await autoMigrateConversationStore()
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -276,14 +303,18 @@ export async function POST(request: Request): Promise<Response> {
           ? ApiErrorType.ValidationError
           : err.code === 'UNAUTHORIZED'
             ? ApiErrorType.PermissionError
-            : ApiErrorType.QueryError
+            : err.code === 'DISABLED'
+              ? ApiErrorType.ValidationError
+              : ApiErrorType.QueryError
 
       const statusCode =
         err.code === 'VALIDATION_ERROR'
           ? 400
           : err.code === 'UNAUTHORIZED'
             ? 403
-            : 500
+            : err.code === 'DISABLED'
+              ? 503
+              : 500
 
       return createApiErrorResponse(
         {

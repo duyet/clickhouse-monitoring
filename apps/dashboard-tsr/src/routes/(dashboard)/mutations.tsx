@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { QueryPageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { mutationsConfig } from '@/lib/query-config/merges/mutations'
 
 function MutationsPageContent() {
@@ -11,7 +11,7 @@ function MutationsPageContent() {
 
 function MutationsPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <MutationsPageContent />
     </Suspense>
   )

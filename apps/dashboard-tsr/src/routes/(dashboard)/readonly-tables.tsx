@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { readOnlyTablesConfig } from '@/lib/query-config/tables/readonly-tables'
 
 function ReadonlyTablesPageContent() {
@@ -13,7 +13,7 @@ function ReadonlyTablesPageContent() {
 
 function ReadonlyTablesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ReadonlyTablesPageContent />
     </Suspense>
   )

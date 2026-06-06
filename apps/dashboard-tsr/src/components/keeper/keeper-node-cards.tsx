@@ -2,6 +2,7 @@ import { Database, Layers, ServerCrash, Wifi, WifiOff } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -350,19 +351,16 @@ function NodeCardSkeleton() {
   return (
     <div className="rounded-xl border border-border bg-card p-3 flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <div className="h-4 w-32 animate-pulse rounded bg-foreground/[0.06]" />
+        <Skeleton className="h-4 w-32 rounded" />
         <div className="ml-auto flex gap-1.5">
-          <div className="h-4 w-14 animate-pulse rounded bg-foreground/[0.06]" />
-          <div className="h-4 w-20 animate-pulse rounded bg-foreground/[0.06]" />
+          <Skeleton className="h-4 w-14 rounded" />
+          <Skeleton className="h-4 w-20 rounded" />
         </div>
       </div>
-      <div className="h-3 w-20 animate-pulse rounded bg-foreground/[0.04]" />
+      <Skeleton className="h-3 w-20 rounded" />
       <div className="mt-1 flex flex-col gap-1.5">
         {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-2.5 animate-pulse rounded bg-foreground/[0.04]"
-          />
+          <Skeleton key={i} className="h-2.5 rounded" />
         ))}
       </div>
     </div>

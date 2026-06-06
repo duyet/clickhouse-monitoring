@@ -101,6 +101,8 @@ LLM_MODEL=openrouter:openrouter/free        # default
 | `LLM_EXTRA_MODELS` | — | Extra models to surface in the model picker (see below). |
 | `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API. |
 | `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enables destructive tools (kill query, optimize). |
+| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enables server-side conversation persistence. |
+| `AGENT_CONVERSATION_STORE` | `auto` | Store backend: `auto`, `agentstate`, `d1`, `durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. |
 
 ### Adding extra models
 
@@ -136,6 +138,22 @@ CHM_FEATURE_AGENT_ACCESS=authenticated
 
 See [Environment Variables](/docs/reference/environment-variables) and
 [Feature Permissions](/docs/advanced/feature-permissions) for the full list.
+
+### Conversation history
+
+The default history backend is browser localStorage. Enable server persistence
+with:
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=auto
+```
+
+Supported stores are AgentState, Cloudflare D1, SQLite-backed Durable Objects,
+ClickHouse, Postgres, memory, and localStorage. Server stores require
+authenticated user identity; unauthenticated sessions keep local browser
+history. See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage)
+for backend-specific setup and permissions.
 
 ## Tools
 

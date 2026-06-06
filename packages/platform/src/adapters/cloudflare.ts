@@ -25,4 +25,21 @@ export class CloudflarePlatformBindings implements PlatformBindings {
       return null
     }
   }
+
+  getDurableObjectNamespace(
+    bindingName: string
+  ): DurableObjectNamespace | null {
+    try {
+      const ctx = getCloudflareContext()
+
+      if (ctx?.env && bindingName in ctx.env) {
+        const env = ctx.env as unknown as Record<string, unknown>
+        return env[bindingName] as DurableObjectNamespace
+      }
+
+      return null
+    } catch {
+      return null
+    }
+  }
 }
