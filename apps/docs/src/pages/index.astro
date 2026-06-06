@@ -1,0 +1,22 @@
+---
+// Root redirects to the latest version. Cloudflare's _redirects also covers
+// this in production; this page makes `astro preview` and direct hits work too.
+import versionsData from '../generated/versions.json'
+const target = `/${versionsData.latest}`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <title>chmonitor docs</title>
+    <script is:inline define:vars={{ target }}>
+      window.location.replace(target)
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{target}</a>…</p>
+  </body>
+</html>

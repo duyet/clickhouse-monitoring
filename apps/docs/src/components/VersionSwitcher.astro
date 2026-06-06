@@ -1,0 +1,45 @@
+---
+import versionsData from '../generated/versions.json'
+
+interface Props {
+  version: string
+  subpath: string
+}
+const { version, subpath } = Astro.props
+const { versions, latest } = versionsData
+const suffix = subpath ? `/${subpath}` : ''
+---
+
+{
+  versions.length > 1 ? (
+    <div class="version-switcher">
+      <label class="sr-only" for="version-select">
+        Documentation version
+      </label>
+      <select id="version-select" data-suffix={suffix}>
+        {versions.map((v) => (
+          <option value={v} selected={v === version}>
+            {v}
+            {v === latest ? ' (latest)' : ''}
+          </option>
+        ))}
+      </select>
+    </div>
+  ) : (
+    <span class="version-switcher" aria-label="Documentation version">
+      <select disabled>
+        <option>{version}</option>
+      </select>
+    </span>
+  )
+}
+
+<script>
+  const select = document.getElementById('version-select') as HTMLSelectElement | null
+  if (select) {
+    select.addEventListener('change', () => {
+      const suffix = select.dataset.suffix ?? ''
+      window.location.href = `/${select.value}${suffix}`
+    })
+  }
+</script>

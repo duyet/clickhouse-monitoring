@@ -1,0 +1,54 @@
+# Authentication
+
+chmonitor has two independent auth layers that work together on every `/api/v1/*` route:
+
+- **Auth provider** — one of `none`, `clerk`, or `proxy`. Controls whether browser sessions are authenticated. Set with `CHM_AUTH_PROVIDER` (server) and `VITE_AUTH_PROVIDER` (client, build-time inlined). Legacy Next.js app uses `NEXT_PUBLIC_AUTH_PROVIDER` instead of `VITE_AUTH_PROVIDER`.
+- **API key layer** — always active when `CHM_API_KEY_SECRET` is set. Authenticates programmatic clients (MCP, scripts, CI) with signed `chm_` Bearer tokens, independent of the provider.
+
+A request is allowed when either layer accepts it. The only fully public setup is `CHM_AUTH_PROVIDER=none` with no `CHM_API_KEY_SECRET`.
+
+## Summary
+
+| Method | Who reads it | Browser / proxy auth | curl / MCP auth |
+|---|---|---|---|
+| Public (`none`) | — | open | none needed |
+| API key | Provider-agnostic; active when `CHM_API_KEY_SECRET` set | — | `Authorization: Bearer chm_…` |
+| Clerk | `clerk` provider | Clerk `__session` cookie | Clerk token or `chm_` key |
+| Clerk OAuth (MCP only) | MCP server | — | OAuth bearer token |
+| Proxy → Cloudflare Access | `proxy` provider | `Cf-Access-Jwt-Assertion` JWT | — |
+| Proxy → trusted header | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
+
+## How enforcement decides
+
+For each `/api/v1/*` request, in order:
+
+1. If `CHM_AUTH_PROVIDER=none` and `CHM_API_KEY_SECRET` is not set → **allow** (public).
+2. The key-issuance route `/api/v1/auth/api-key` is exempt (it has its own auth).
+3. A valid `chm_` Bearer token → **allow**.
+4. The active provider's check runs; if it authenticates → **allow**.
+5. Otherwise → `401 { "error": "Authentication required" }`.
+
+All paths fail closed: a missing config or verification error resolves to "not authenticated".
+
+## Which one should I use?
+
+| Situation | Recommended setup |
+|---|---|
+| Local dev or internal network, no login needed | Public (`none`) — default |
+| Hosted dashboard with user accounts and sign-in | Clerk |
+| Behind Cloudflare Access or nginx/SSO | Proxy (`cloudflare-access` or `trusted-header`) |
+| MCP clients, scripts, CI pipelines | API key (`CHM_API_KEY_SECRET`) — add alongside any provider |
+
+## Provider pages
+
+- [Public / no auth](/docs/authentication/public) — default open dashboard
+- [API keys](/docs/authentication/api-keys) — `chm_` Bearer tokens for programmatic access
+- [Clerk](/docs/authentication/clerk) — browser sign-in with Clerk sessions
+- [Cloudflare Access](/docs/authentication/cloudflare-access) — reverse proxy JWT verification
+- [Trusted header](/docs/authentication/trusted-header) — reverse proxy with shared secret
+
+## Related
+
+- [Environment Variables — Authentication](/docs/reference/environment-variables#authentication)
+- [Feature Permissions](/docs/advanced/feature-permissions)
+- [MCP Server](/docs/reference/mcp-server)

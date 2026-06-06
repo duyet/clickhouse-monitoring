@@ -1,18 +1,24 @@
-// Sync the dashboard docs (docs/content/**) into the Starlight content
-// collection (src/content/docs/**), adapting Nextra MDX to Starlight MDX.
+// Sync the per-release docs snapshots (docs/versions/<version>/**) into the
+// Astro content collection (apps/docs/src/content/docs/<version>/**), and emit
+// the version manifest, per-version navigation, and Cloudflare redirects.
 //
-// Runs as a prebuild step (see package.json: `node scripts/sync-docs.mjs &&
-// astro build`). The synced files are generated artifacts and are gitignored —
-// docs/content is the single source of truth.
+// Runs as a prebuild step (package.json: `node scripts/sync-docs.mjs && astro
+// build`). Everything it writes under src/ and public/_redirects is a generated
+// artifact and is gitignored. The COMMITTED source of truth is:
+//   - docs/content/**            the current/working docs
+//   - docs/versions/<v>/**       frozen per-release snapshots (see snapshot-version.mjs)
 //
-// Conversions:
-//   - strip `nextra/components` and `lucide-react` imports
-//   - first `# Heading`         -> frontmatter `title`, remaining `# ` -> `## `
-//   - <Cards><Cards.Card .../>  -> <CardGrid><LinkCard title href />
-//   - <Tabs items={[a,b]}>      -> <Tabs><TabItem label="a">… (content dedented)
-//   - <Steps>### Step           -> <Steps><ol><li>**Step**…
-//   - local image paths         -> raw.githubusercontent.com URLs
-//   - inject the matching `@astrojs/starlight/components` import
+// Routing model: every version is served under /<version>/…. The newest version
+// is "latest"; public/_redirects sends `/` and any bare (unversioned) path to
+// the latest version, so old links like docs.chmonitor.dev/getting-started keep
+// working. Internal `/docs/…` links in the markdown are rewritten to the owning
+// version's prefix so navigation stays within a version.
+//
+// Conversions per file:
+//   - strip `nextra/components` / `lucide-react` imports (legacy authoring)
+//   - first `# Heading` -> frontmatter `title`; remaining `# ` demoted to `## `
+//   - `/docs/X` links   -> `/<version>/X`
+//   - local image paths -> raw.githubusercontent.com URLs
 
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
@@ -21,23 +27,72 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '../../..')
-const SRC_DIR = resolve(REPO_ROOT, 'docs/content')
+const VERSIONS_DIR = resolve(REPO_ROOT, 'docs/versions')
 const DEST_DIR = resolve(__dirname, '../src/content/docs')
-const RAW_BASE =
-  'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
-const EDIT_BASE =
-  'https://github.com/duyet/clickhouse-monitoring/edit/main'
+const GEN_DIR = resolve(__dirname, '../src/generated')
+const PUBLIC_DIR = resolve(__dirname, '../public')
+const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
+const EDIT_BASE = 'https://github.com/duyet/clickhouse-monitoring/edit/main'
+
+const VERSION_RE = /^v\d+(\.\d+)*$/
+
+// Curated order + display labels for the top-level sidebar sections. Sections
+// not listed here fall through in alphabetical order after the curated ones.
+const SECTION_ORDER = [
+  'getting-started',
+  'deploy',
+  'features',
+  'advanced',
+  'reference',
+  'ai-agent',
+  'authentication',
+  'migrating',
+  'releases',
+]
+
+const LABEL_OVERRIDES = {
+  'getting-started': 'Getting Started',
+  deploy: 'Deployment',
+  'ai-agent': 'AI Agent',
+  k8s: 'Kubernetes',
+  faq: 'FAQ',
+  mcp: 'MCP',
+  'mcp-server': 'MCP Server',
+  peerdb: 'PeerDB',
+  'peerdb-monitoring': 'PeerDB Monitoring',
+  api: 'API',
+  cloudflare: 'Cloudflare',
+  'cloudflare-access': 'Cloudflare Access',
+  ui: 'UI',
+}
+
+function humanize(slug) {
+  if (LABEL_OVERRIDES[slug]) return LABEL_OVERRIDES[slug]
+  return slug
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bV(\d)/g, 'v$1')
+}
+
+// Highest version first. Compares dotted numeric parts; "v0.4" > "v0.3".
+function compareVersionsDesc(a, b) {
+  const pa = a.slice(1).split('.').map(Number)
+  const pb = b.slice(1).split('.').map(Number)
+  const len = Math.max(pa.length, pb.length)
+  for (let i = 0; i < len; i++) {
+    const d = (pb[i] ?? 0) - (pa[i] ?? 0)
+    if (d) return d
+  }
+  return 0
+}
 
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true })
   const files = []
   for (const entry of entries) {
     const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...(await walk(full)))
-    } else if (entry.name.endsWith('.mdx') || entry.name.endsWith('.md')) {
-      files.push(full)
-    }
+    if (entry.isDirectory()) files.push(...(await walk(full)))
+    else if (/\.mdx?$/.test(entry.name)) files.push(full)
   }
   return files
 }
@@ -47,75 +102,6 @@ function stripImports(src) {
     /^import\s+.*\s+from\s+['"](?:nextra\/components|lucide-react)['"]\s*\n/gm,
     ''
   )
-}
-
-function dedent(text) {
-  const lines = text.replace(/^\n+/, '').replace(/\s+$/, '').split('\n')
-  const indents = lines
-    .filter((l) => l.trim().length > 0)
-    .map((l) => l.match(/^ */)[0].length)
-  const min = indents.length ? Math.min(...indents) : 0
-  return lines.map((l) => l.slice(min)).join('\n')
-}
-
-function convertCards(src) {
-  let out = src.replace(/<Cards>/g, '<CardGrid>').replace(/<\/Cards>/g, '</CardGrid>')
-  // Drop the `icon={<Foo />}` prop first — its inner `/>` would otherwise
-  // terminate the non-greedy <Cards.Card ... /> match early.
-  out = out.replace(/\s*icon=\{<[^}]*>\}/g, '')
-  out = out.replace(/<Cards\.Card\b[\s\S]*?\/>/g, (card) => {
-    const title = card.match(/title="([^"]*)"/)?.[1] ?? ''
-    const href = card.match(/href="([^"]*)"/)?.[1] ?? ''
-    return `<LinkCard title="${title}" href="${href}" />`
-  })
-  return out
-}
-
-function convertTabs(src) {
-  return src.replace(
-    /<Tabs\s+items=\{(\[[\s\S]*?\])\}>([\s\S]*?)<\/Tabs>/g,
-    (_match, arr, inner) => {
-      const labels = JSON.parse(arr.replace(/'/g, '"'))
-      const tabRe = /<Tabs\.Tab>([\s\S]*?)<\/Tabs\.Tab>/g
-      let body = ''
-      let i = 0
-      let m
-      while ((m = tabRe.exec(inner)) !== null) {
-        const label = labels[i] ?? `Tab ${i + 1}`
-        body += `\n<TabItem label=${JSON.stringify(label)}>\n\n${dedent(m[1])}\n\n</TabItem>\n`
-        i++
-      }
-      return `<Tabs>${body}</Tabs>`
-    }
-  )
-}
-
-function convertSteps(src) {
-  return src.replace(/<Steps>([\s\S]*?)<\/Steps>/g, (_match, inner) => {
-    const parts = inner.split(/^###\s+(.+)$/m)
-    let out = '<Steps>\n\n<ol>\n'
-    for (let i = 1; i < parts.length; i += 2) {
-      const title = parts[i].trim()
-      const content = (parts[i + 1] ?? '').replace(/^\n+/, '').replace(/\s+$/, '')
-      out += `\n<li>\n\n**${title}**\n\n${content}\n\n</li>\n`
-    }
-    out += '\n</ol>\n\n</Steps>'
-    return out
-  })
-}
-
-function rewriteImages(src, srcFileAbs) {
-  const fileDirRel = posix.dirname(relative(REPO_ROOT, srcFileAbs))
-  return src.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
-    if (/^https?:\/\//.test(url)) return match
-    let repoPath
-    if (url.startsWith('/')) {
-      repoPath = `apps/dashboard/public${url}`
-    } else {
-      repoPath = posix.normalize(posix.join(fileDirRel, url))
-    }
-    return `![${alt}](${RAW_BASE}/${repoPath})`
-  })
 }
 
 function extractTitle(src, fallback) {
@@ -130,70 +116,168 @@ function extractTitle(src, fallback) {
       break
     }
   }
-  // Demote any remaining top-level headings (only the title is the page h1).
+  // Only the frontmatter title is the page h1; demote any other top-level h1.
   const body = lines.join('\n').replace(/^#\s+(.+)$/gm, '## $1')
   return { title, body }
 }
 
-function starlightImport(body) {
-  const wanted = [
-    ['CardGrid', /<CardGrid[\s>]/],
-    ['Card', /<Card[\s>]/],
-    ['LinkCard', /<LinkCard[\s>]/],
-    ['Tabs', /<Tabs[\s>]/],
-    ['TabItem', /<TabItem[\s>]/],
-    ['Steps', /<Steps[\s>]/],
-  ]
-  const used = wanted.filter(([, re]) => re.test(body)).map(([name]) => name)
-  if (used.length === 0) return ''
-  return `import { ${used.join(', ')} } from '@astrojs/starlight/components'\n`
+// Rewrite `/docs/X` links to the owning version prefix: `/<version>/X`.
+// `/docs` (the docs root) maps to the version root `/<version>`.
+function rewriteDocLinks(src, version) {
+  return src.replace(/\]\((\/docs(?:\/[^)#]*)?)((?:#[^)]*)?)\)/g, (_m, path, hash) => {
+    const rest = path.replace(/^\/docs/, '')
+    return `](/${version}${rest}${hash})`
+  })
 }
 
-async function convertFile(srcFileAbs) {
+function rewriteImages(src, srcFileAbs) {
+  const fileDirRel = posix.dirname(relative(REPO_ROOT, srcFileAbs))
+  return src.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
+    if (/^https?:\/\//.test(url)) return match
+    let repoPath
+    if (url.startsWith('/')) repoPath = `apps/dashboard/public${url}`
+    else repoPath = posix.normalize(posix.join(fileDirRel, url))
+    return `![${alt}](${RAW_BASE}/${repoPath})`
+  })
+}
+
+function slugFromRel(rel) {
+  // rel like "getting-started/local.mdx" -> "getting-started/local"
+  // "index.mdx" -> "" ; "deploy.mdx" -> "deploy"
+  const noExt = rel.replace(/\.mdx?$/, '')
+  return noExt === 'index' ? '' : noExt.replace(/\/index$/, '')
+}
+
+async function convertFile(srcFileAbs, versionDir, version) {
   let content = await readFile(srcFileAbs, 'utf8')
-  const fallback = srcFileAbs
-    .split('/')
-    .pop()
-    .replace(/\.mdx?$/, '')
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+  const rel = relative(versionDir, srcFileAbs)
+  const fallback = humanize(rel.split('/').pop().replace(/\.mdx?$/, ''))
 
   content = stripImports(content)
-  content = convertCards(content)
-  content = convertTabs(content)
-  content = convertSteps(content)
   content = rewriteImages(content, srcFileAbs)
+  content = rewriteDocLinks(content, version)
   const { title, body } = extractTitle(content, fallback)
 
-  // Point the "Edit page" link at the real source file under docs/content/**
-  // (the synced src/content/docs copy is gitignored, so Starlight's default
-  // path-based edit link would 404).
   const editUrl = `${EDIT_BASE}/${posix.normalize(relative(REPO_ROOT, srcFileAbs))}`
+  const slug = slugFromRel(rel)
+  const frontmatter =
+    `---\n` +
+    `title: ${JSON.stringify(title)}\n` +
+    `editUrl: ${JSON.stringify(editUrl)}\n` +
+    `version: ${JSON.stringify(version)}\n` +
+    `slug: ${JSON.stringify(`${version}${slug ? `/${slug}` : ''}`)}\n` +
+    `---\n\n`
 
-  const imports = starlightImport(body)
-  const frontmatter = `---\ntitle: ${JSON.stringify(title)}\neditUrl: ${JSON.stringify(editUrl)}\n---\n\n`
-  return `${frontmatter}${imports ? `${imports}\n` : ''}${body.trim()}\n`
+  return { out: `${frontmatter}${body.trim()}\n`, slug, title }
+}
+
+// Build a grouped sidebar from a version's page list.
+function buildNav(pages, version) {
+  const base = `/${version}`
+  const byPath = new Map(pages.map((p) => [p.slug, p]))
+  const topLevel = pages.filter((p) => p.slug && !p.slug.includes('/'))
+  const dirs = new Map() // dir -> [child pages]
+  for (const p of pages) {
+    if (!p.slug.includes('/')) continue
+    const dir = p.slug.split('/')[0]
+    if (!dirs.has(dir)) dirs.set(dir, [])
+    dirs.get(dir).push(p)
+  }
+
+  const groups = []
+  const index = byPath.get('')
+  if (index) groups.push({ label: index.title || 'Introduction', link: base })
+
+  const usedTop = new Set()
+  const orderedDirs = [
+    ...SECTION_ORDER.filter((d) => dirs.has(d)),
+    ...[...dirs.keys()].filter((d) => !SECTION_ORDER.includes(d)).sort(),
+  ]
+
+  for (const dir of orderedDirs) {
+    const children = dirs.get(dir)
+    const overview = topLevel.find((p) => p.slug === dir)
+    if (overview) usedTop.add(overview.slug)
+    const items = []
+    if (overview) items.push({ label: 'Overview', link: `${base}/${overview.slug}` })
+    children
+      .map((c) => ({ label: c.title || humanize(c.slug.split('/').pop()), link: `${base}/${c.slug}`, slug: c.slug }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .forEach((it) => items.push({ label: it.label, link: it.link }))
+    groups.push({ label: humanize(dir), items })
+  }
+
+  // Top-level pages that aren't a section overview become a "More" group.
+  const leftovers = topLevel
+    .filter((p) => !usedTop.has(p.slug))
+    .map((p) => ({ label: p.title || humanize(p.slug), link: `${base}/${p.slug}` }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+  if (leftovers.length) groups.push({ label: 'More', items: leftovers })
+
+  return groups
 }
 
 async function main() {
-  if (!existsSync(SRC_DIR)) {
-    throw new Error(`Source docs not found at ${SRC_DIR}`)
+  if (!existsSync(VERSIONS_DIR)) {
+    throw new Error(
+      `No docs/versions found. Create the first snapshot:\n` +
+        `  cd apps/docs && node scripts/snapshot-version.mjs v0.3`
+    )
   }
 
-  // Reset the generated collection so removed source files don't linger.
+  const versionDirs = (await readdir(VERSIONS_DIR, { withFileTypes: true }))
+    .filter((e) => e.isDirectory() && VERSION_RE.test(e.name))
+    .map((e) => e.name)
+    .sort(compareVersionsDesc)
+
+  if (versionDirs.length === 0) {
+    throw new Error(`docs/versions has no version folders (expected e.g. v0.3).`)
+  }
+  const latest = versionDirs[0]
+
   await rm(DEST_DIR, { recursive: true, force: true })
   await mkdir(DEST_DIR, { recursive: true })
+  await mkdir(GEN_DIR, { recursive: true })
+  await mkdir(PUBLIC_DIR, { recursive: true })
 
-  const files = await walk(SRC_DIR)
-  let count = 0
-  for (const file of files) {
-    const rel = relative(SRC_DIR, file).replace(/\.md$/, '.mdx')
-    const dest = join(DEST_DIR, rel)
-    await mkdir(dirname(dest), { recursive: true })
-    await writeFile(dest, await convertFile(file), 'utf8')
-    count++
+  const nav = {}
+  let total = 0
+  for (const version of versionDirs) {
+    const versionDir = join(VERSIONS_DIR, version)
+    const files = await walk(versionDir)
+    const pages = []
+    for (const file of files) {
+      const { out, slug, title } = await convertFile(file, versionDir, version)
+      const rel = relative(versionDir, file).replace(/\.mdx?$/, '.md')
+      const dest = join(DEST_DIR, version, rel)
+      await mkdir(dirname(dest), { recursive: true })
+      await writeFile(dest, out, 'utf8')
+      pages.push({ slug, title })
+      total++
+    }
+    nav[version] = buildNav(pages, version)
   }
-  console.log(`[sync-docs] wrote ${count} page(s) to src/content/docs`)
+
+  await writeFile(
+    join(GEN_DIR, 'versions.json'),
+    JSON.stringify({ versions: versionDirs, latest }, null, 2),
+    'utf8'
+  )
+  await writeFile(join(GEN_DIR, 'nav.json'), JSON.stringify(nav, null, 2), 'utf8')
+
+  // Cloudflare _redirects: static assets win over redirects, so versioned
+  // paths (/v0.3/…) are served as files; only unmatched bare paths fall through
+  // to the latest version. Keeps old unversioned links alive.
+  const redirects = [
+    `/            /${latest}/        302`,
+    `/*           /${latest}/:splat   302`,
+    '',
+  ].join('\n')
+  await writeFile(join(PUBLIC_DIR, '_redirects'), redirects, 'utf8')
+
+  console.log(
+    `[sync-docs] ${total} page(s) across ${versionDirs.length} version(s); latest=${latest}`
+  )
 }
 
 await main()

@@ -1,0 +1,46 @@
+---
+import { QUICK_LINKS } from '../config'
+import navData from '../generated/nav.json'
+
+interface Props {
+  version: string
+  currentSlug: string
+}
+const { version, currentSlug } = Astro.props
+const groups = (navData as Record<string, any[]>)[version] ?? []
+const current = `/${currentSlug}`
+---
+
+<nav class="sidebar" aria-label="Documentation navigation">
+  <div class="nav-quick">
+    {
+      QUICK_LINKS.map((l) => (
+        <a class="nav-link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+          <span>{l.label}</span>
+          {l.badge && <span class="nav-badge">{l.badge}</span>}
+        </a>
+      ))
+    }
+  </div>
+
+  {
+    groups.map((group) =>
+      group.items ? (
+        <div class="nav-group">
+          <p class="nav-group__label">{group.label}</p>
+          {group.items.map((item: any) => (
+            <a class="nav-link" href={item.link} aria-current={item.link === current ? 'page' : undefined}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="nav-group">
+          <a class="nav-link" href={group.link} aria-current={group.link === current ? 'page' : undefined}>
+            {group.label}
+          </a>
+        </div>
+      )
+    )
+  }
+</nav>

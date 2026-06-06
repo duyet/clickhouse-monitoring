@@ -1,0 +1,63 @@
+---
+// Pagefind-powered search. The Pagefind UI bundle (/pagefind/pagefind-ui.js)
+// is produced by `pagefind --site dist` during build, so search is inert under
+// `astro dev` — the button still opens the dialog but reports unavailability.
+---
+
+<button class="icon-btn" id="search-open" type="button" aria-label="Search docs">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7"></circle>
+    <path d="m21 21-4.3-4.3"></path>
+  </svg>
+</button>
+
+<dialog class="search-modal" id="search-modal">
+  <div id="search"></div>
+  <p id="search-unavailable" hidden style="color: var(--fg-muted); font-size: 0.85rem; margin: 0.5rem 0 0;">
+    Search index is built at deploy time and isn't available in local dev.
+  </p>
+</dialog>
+
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+
+<script>
+  const openBtn = document.getElementById('search-open')
+  const modal = document.getElementById('search-modal') as HTMLDialogElement | null
+  let initialized = false
+
+  async function initSearch() {
+    if (initialized || !modal) return
+    initialized = true
+    try {
+      // Load the Pagefind UI bundle at runtime (it only exists in the built
+      // site, not in the source tree, so it can't be a static import).
+      await new Promise<void>((resolve, reject) => {
+        const s = document.createElement('script')
+        s.src = '/pagefind/pagefind-ui.js'
+        s.onload = () => resolve()
+        s.onerror = () => reject(new Error('pagefind unavailable'))
+        document.head.appendChild(s)
+      })
+      // @ts-expect-error — PagefindUI is attached to window by the bundle.
+      new window.PagefindUI({ element: '#search', showSubResults: true, showImages: false })
+    } catch {
+      const note = document.getElementById('search-unavailable')
+      if (note) note.hidden = false
+    }
+  }
+
+  openBtn?.addEventListener('click', async () => {
+    await initSearch()
+    modal?.showModal()
+    setTimeout(() => modal?.querySelector('input')?.focus(), 50)
+  })
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) modal.close()
+  })
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault()
+      openBtn?.click()
+    }
+  })
+</script>
