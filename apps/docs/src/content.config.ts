@@ -7,7 +7,7 @@ import { glob } from 'astro/loaders'
 //   - subpath page path within its version ("" = version index)
 //   - version owning release (e.g. "v0.3")
 const docs = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/docs' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/docs' }),
   schema: z.object({
     title: z.string(),
     editUrl: z.string().optional(),

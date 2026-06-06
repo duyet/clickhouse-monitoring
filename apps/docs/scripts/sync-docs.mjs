@@ -23,7 +23,7 @@
 
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { dirname, join, posix, relative, resolve } from 'node:path'
+import { dirname, join, posix, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -158,7 +158,8 @@ function subpathFromRel(rel) {
 
 async function convertFile(srcFileAbs, versionDir, version, routeBase) {
   let content = await readFile(srcFileAbs, 'utf8')
-  const rel = relative(versionDir, srcFileAbs)
+  // Normalize to forward slashes so slugs/links are stable on Windows too.
+  const rel = relative(versionDir, srcFileAbs).split(sep).join('/')
   const fallback = humanize(rel.split('/').pop().replace(/\.mdx?$/, ''))
 
   content = stripImports(content)

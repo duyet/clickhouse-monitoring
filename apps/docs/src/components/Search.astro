@@ -27,7 +27,6 @@
 
   async function initSearch() {
     if (initialized || !modal) return
-    initialized = true
     try {
       // Load the Pagefind UI bundle at runtime (it only exists in the built
       // site, not in the source tree, so it can't be a static import).
@@ -40,6 +39,7 @@
       })
       // @ts-expect-error — PagefindUI is attached to window by the bundle.
       new window.PagefindUI({ element: '#search', showSubResults: true, showImages: false })
+      initialized = true
     } catch {
       const note = document.getElementById('search-unavailable')
       if (note) note.hidden = false

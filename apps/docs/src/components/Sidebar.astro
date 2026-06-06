@@ -15,7 +15,7 @@ const current = `/${currentSlug}`
   <div class="nav-quick">
     {
       QUICK_LINKS.map((l) => (
-        <a class="nav-link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+        <a class="nav-link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
           <span>{l.label}</span>
           {l.badge && <span class="nav-badge">{l.badge}</span>}
         </a>
