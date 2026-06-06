@@ -1,0 +1,86 @@
+---
+import '@fontsource-variable/inter'
+import '@fontsource/ibm-plex-mono'
+import '../styles/global.css'
+import { SITE } from '../config'
+import Header from '../components/Header.astro'
+import Sidebar from '../components/Sidebar.astro'
+import TableOfContents from '../components/TableOfContents.astro'
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+interface Props {
+  title: string
+  description?: string
+  version: string
+  subpath: string
+  currentSlug: string
+  editUrl?: string
+  headings?: Heading[]
+}
+const {
+  title,
+  description = SITE.description,
+  version,
+  subpath,
+  currentSlug,
+  editUrl,
+  headings = [],
+} = Astro.props
+const pageTitle = title ? `${title} · ${SITE.title} docs` : `${SITE.title} docs`
+const canonical = new URL(Astro.url.pathname, Astro.site).toString()
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    {/* No-FOUC theme: set data-theme before paint. */}
+    <script is:inline>
+      const stored = localStorage.getItem('theme')
+      const dark =
+        stored === 'dark' ||
+        (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      if (localStorage.getItem('sidebar') === 'collapsed')
+        document.documentElement.setAttribute('data-sidebar', 'collapsed')
+    </script>
+  </head>
+  <body>
+    <a href="#article" class="sr-only skiplink">Skip to content</a>
+    <Header version={version} subpath={subpath} />
+    <div class="layout">
+      <Sidebar version={version} currentSlug={currentSlug} />
+      <main class="main">
+        <article id="article" class="content">
+          <slot />
+        </article>
+        {
+          editUrl && (
+            <footer class="page-foot">
+              <a href={editUrl} target="_blank" rel="noopener">
+                Edit this page on GitHub
+              </a>
+              <span>{version}</span>
+            </footer>
+          )
+        }
+      </main>
+      <TableOfContents headings={headings} />
+    </div>
+  </body>
+</html>
