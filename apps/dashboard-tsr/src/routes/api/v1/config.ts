@@ -218,7 +218,13 @@ export const Route = createFileRoute('/api/v1/config')({
       GET: async () => {
         try {
           const config = getPublicFeaturePermissionConfig()
-          return Response.json(config)
+          // Env-derived feature flags, principal always anonymous — cache at edge.
+          return Response.json(config, {
+            headers: {
+              'Cache-Control':
+                'public, s-maxage=300, stale-while-revalidate=300',
+            },
+          })
         } catch (err) {
           return Response.json(
             {
