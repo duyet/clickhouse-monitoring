@@ -68,7 +68,16 @@ export const Route = createFileRoute('/api/v1/hosts')({
           )
         }
 
-        return Response.json({ success: true, data: hosts })
+        // Host list is env-derived and constant per deploy — cache at the edge.
+        return Response.json(
+          { success: true, data: hosts },
+          {
+            headers: {
+              'Cache-Control':
+                'public, s-maxage=300, stale-while-revalidate=300',
+            },
+          }
+        )
       },
     },
   },

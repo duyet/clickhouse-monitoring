@@ -167,7 +167,8 @@ export const Route = createFileRoute('/api/v1/table-availability')({
 
           const headers = new Headers(response.headers)
           headers.set('X-Request-ID', requestId)
-          headers.set('Cache-Control', CacheControl.NONE)
+          // Table existence is slow-changing and anonymous — short edge cache.
+          headers.set('Cache-Control', CacheControl.MEDIUM)
 
           return new Response(response.body, {
             status: response.status,

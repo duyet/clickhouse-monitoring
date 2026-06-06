@@ -13,37 +13,42 @@
  * Ported from apps/dashboard/app/api/v1/data/route.ts.
  * - Per-route feature-permission auth (authorizeFeatureRequest) is DROPPED:
  *   it is centralized in middleware (#1397), matching merged charts/tables routes.
- * - The shared @/lib/api/error-handler / response-builder / status-code-mapper /
- *   validators modules are not yet ported into this app, so their behavior is
- *   inlined below (response shapes and validation logic are identical).
+ * - Error handling and request validation reuse the shared
+ *   @/lib/api/error-handler and @/lib/api/shared/validators modules. Only the
+ *   route-specific success-response builder and the FetchDataError→status
+ *   mapping (handleQueryError) remain local.
  */
 
 import { createFileRoute } from '@tanstack/react-router'
 import type { DataFormat } from '@clickhouse/client'
 
 import type { FetchDataError } from '@chm/clickhouse-client'
-import type { ApiError, ApiRequest, ApiResponse } from '@/lib/api/types'
+import type { ApiRequest, ApiResponse } from '@/lib/api/types'
 
 import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { validateSqlQuery } from '@chm/sql-builder'
 import { validateDashboardQuery } from '@/lib/api/data/dashboard-query-validator'
+import {
+  createErrorResponse as createApiErrorResponse,
+  createValidationError,
+  getStatusCodeForErrorType as mapErrorTypeToStatusCode,
+  withApiHandler,
+} from '@/lib/api/error-handler'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import {
+  getAndValidateHostId,
+  validateDataRequest,
+  validateSearchParams,
+} from '@/lib/api/shared/validators'
 import { getTableConfig } from '@/lib/api/table-registry'
 import { ApiErrorType } from '@/lib/api/types'
 
 const ROUTE_CONTEXT = { route: '/api/v1/data' } as const
 
-interface RouteContext {
-  readonly route?: string
-  readonly method?: string
-  readonly hostId?: number | string
-}
-
 // ---------------------------------------------------------------------------
-// Inlined response builders (mirror @/lib/api/shared/response-builder and
-// @/lib/api/error-handler — identical response shapes).
+// Route-specific success response builder.
 // ---------------------------------------------------------------------------
 
 const SUCCESS_CACHE_HEADERS = {
@@ -65,9 +70,9 @@ function createSuccessResponse<T>(
     success: true,
     data,
     metadata: {
-      queryId: meta?.queryId ? String(meta.queryId) : '',
-      duration: meta?.duration ? Number(meta.duration) : 0,
-      rows: meta?.rows ? Number(meta.rows) : 0,
+      queryId: meta?.queryId != null ? String(meta.queryId) : '',
+      duration: meta?.duration != null ? Number(meta.duration) : 0,
+      rows: meta?.rows != null ? Number(meta.rows) : 0,
       host: '',
       ...(meta?.sql && { sql: String(meta.sql) }),
       ...(meta?.timezone && { timezone: String(meta.timezone) }),
@@ -81,262 +86,6 @@ function createSuccessResponse<T>(
       ...SUCCESS_CACHE_HEADERS,
     },
   })
-}
-
-function createApiErrorResponse(
-  apiError:
-    | ApiError
-    | { type: ApiErrorType; message: string; details?: ApiError['details'] },
-  status: number,
-  context?: RouteContext
-): Response {
-  const response: ApiResponse = {
-    success: false,
-    metadata: {
-      queryId: '',
-      duration: 0,
-      rows: 0,
-      host: String(context?.hostId || 'unknown'),
-    },
-    error: apiError,
-  }
-
-  return Response.json(response, {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
-
-function createValidationError(
-  message: string,
-  context?: RouteContext
-): Response {
-  return createApiErrorResponse(
-    { type: ApiErrorType.ValidationError, message },
-    400,
-    context
-  )
-}
-
-const ERROR_TYPE_STATUS_MAP: Readonly<Record<ApiErrorType, number>> = {
-  [ApiErrorType.ValidationError]: 400,
-  [ApiErrorType.PermissionError]: 403,
-  [ApiErrorType.TableNotFound]: 404,
-  [ApiErrorType.NetworkError]: 503,
-  [ApiErrorType.QueryError]: 500,
-  [ApiErrorType.SslError]: 503,
-  [ApiErrorType.TimeoutError]: 504,
-}
-
-function mapErrorTypeToStatusCode(errorType: ApiErrorType): number {
-  return ERROR_TYPE_STATUS_MAP[errorType] ?? 500
-}
-
-// ---------------------------------------------------------------------------
-// Inlined validators (mirror @/lib/api/shared/validators).
-// ---------------------------------------------------------------------------
-
-function validateSearchParams(
-  searchParams: URLSearchParams,
-  requiredParams: string[]
-): ApiError | undefined {
-  for (const param of requiredParams) {
-    const value = searchParams.get(param)
-    if (!value || value.trim() === '') {
-      return {
-        type: ApiErrorType.ValidationError,
-        message: `Missing required parameter: ${param}`,
-      }
-    }
-  }
-  return undefined
-}
-
-function getAndValidateHostId(
-  searchParams: URLSearchParams
-): number | ApiError {
-  const hostId = searchParams.get('hostId')
-  if (!hostId) {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: 'Missing required parameter: hostId',
-    }
-  }
-
-  const parsed = Number.parseInt(hostId, 10)
-  if (Number.isNaN(parsed) || parsed < 0) {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: 'Invalid hostId: must be a non-negative number',
-    }
-  }
-  return parsed
-}
-
-const SUPPORTED_FORMATS = ['JSONEachRow', 'JSON', 'CSV', 'TSV'] as const
-
-function validateFormat(format: unknown): ApiError | undefined {
-  if (format === undefined || format === null) return undefined
-  if (typeof format !== 'string') {
-    return {
-      type: ApiErrorType.ValidationError,
-      message:
-        'Invalid format: must be a string. Supported formats: JSONEachRow, JSON, CSV, TSV',
-    }
-  }
-  if (
-    !SUPPORTED_FORMATS.includes(format as (typeof SUPPORTED_FORMATS)[number])
-  ) {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: 'Invalid format. Supported formats: JSONEachRow, JSON, CSV, TSV',
-    }
-  }
-  return undefined
-}
-
-function validateHostIdWithError(hostId: unknown): ApiError | undefined {
-  if (hostId === undefined || hostId === null || hostId === '') {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: 'Missing required field: hostId',
-    }
-  }
-
-  const parsed =
-    typeof hostId === 'number'
-      ? hostId
-      : typeof hostId === 'string'
-        ? Number.parseInt(hostId, 10)
-        : Number.NaN
-
-  if (Number.isNaN(parsed) || parsed < 0) {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: 'Invalid hostId: must be a non-negative number',
-    }
-  }
-  return undefined
-}
-
-function validateRequiredString(
-  value: unknown,
-  fieldName: string
-): ApiError | undefined {
-  if (typeof value !== 'string' || value.trim() === '') {
-    return {
-      type: ApiErrorType.ValidationError,
-      message: `Missing required field: ${fieldName}`,
-    }
-  }
-  return undefined
-}
-
-function validateDataRequest(body: Partial<ApiRequest>): ApiError | undefined {
-  const queryError = validateRequiredString(body.query, 'query')
-  if (queryError) return queryError
-
-  const hostIdError = validateHostIdWithError(body.hostId)
-  if (hostIdError) return hostIdError
-
-  const formatError = validateFormat(body.format)
-  if (formatError) return formatError
-
-  return undefined
-}
-
-// ---------------------------------------------------------------------------
-// Inlined error classifier (mirror @/lib/api/error-handler/error-classifier).
-// ---------------------------------------------------------------------------
-
-function classifyError(err: unknown): { type: ApiErrorType; message: string } {
-  const message =
-    err instanceof Error
-      ? err.message
-      : typeof err === 'string'
-        ? err
-        : 'An unexpected error occurred'
-  const normalized = message.toLowerCase()
-
-  if (
-    normalized.includes('table') &&
-    (normalized.includes('not found') ||
-      normalized.includes("doesn't exist") ||
-      normalized.includes('does not exist') ||
-      normalized.includes('missing'))
-  ) {
-    return { type: ApiErrorType.TableNotFound, message }
-  }
-
-  const patterns: Array<{ type: ApiErrorType; keywords: string[] }> = [
-    {
-      type: ApiErrorType.PermissionError,
-      keywords: ['permission', 'access denied', 'unauthorized', 'forbidden'],
-    },
-    {
-      type: ApiErrorType.NetworkError,
-      keywords: [
-        'network',
-        'connection',
-        'econnrefused',
-        'enotfound',
-        'connect failed',
-      ],
-    },
-    {
-      type: ApiErrorType.TimeoutError,
-      keywords: ['timeout', 'etimedout', 'socket timeout'],
-    },
-    {
-      type: ApiErrorType.SslError,
-      keywords: ['ssl', 'tls', 'certificate', 'handshake', '525', '526'],
-    },
-    {
-      type: ApiErrorType.ValidationError,
-      keywords: [
-        'invalid',
-        'missing',
-        'required',
-        'malformed',
-        'syntax error',
-        'parse error',
-      ],
-    },
-  ]
-
-  for (const { type, keywords } of patterns) {
-    if (keywords.some((kw) => normalized.includes(kw))) {
-      return { type, message }
-    }
-  }
-
-  return { type: ApiErrorType.QueryError, message }
-}
-
-/**
- * Wrap a handler so uncaught errors are classified into a standardized
- * error response (mirror @/lib/api/error-handler withApiHandler).
- */
-function withApiHandler(
-  handler: (request: Request) => Promise<Response>,
-  context?: RouteContext
-): (request: Request) => Promise<Response> {
-  return async (request: Request): Promise<Response> => {
-    try {
-      return await handler(request)
-    } catch (err) {
-      const { type, message } = classifyError(err)
-      return createApiErrorResponse(
-        {
-          type,
-          message,
-          details: { timestamp: new Date().toISOString() },
-        },
-        mapErrorTypeToStatusCode(type),
-        context
-      )
-    }
-  }
 }
 
 /**
