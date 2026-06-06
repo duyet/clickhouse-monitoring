@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { getAllSkills } from '../skills/dynamic-loader'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createSkillTools() {
   return {

@@ -52,8 +52,6 @@ const USER_COLORS = ['#0d9488', '#1e3a5f', '#f59e0b', '#8b5cf6', '#ef4444']
 
 // ───────────────────────── card primitives ─────────────────────────
 
-const cardClass =
-  'flex flex-col rounded-xl border border-border bg-card p-4 min-h-[196px]'
 const labelClass =
   'text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground'
 
@@ -67,6 +65,7 @@ function StatCard({
   color,
   series,
   valueFormatter,
+  compact,
 }: {
   label: string
   value: string
@@ -76,12 +75,18 @@ function StatCard({
   color: string
   series: number[]
   valueFormatter?: (value: number) => string
+  compact?: boolean
 }) {
   return (
-    <div className={cardClass}>
+    <div
+      className={cn(
+        'flex flex-col rounded-xl border border-border bg-card p-3.5',
+        compact ? 'min-h-[80px]' : 'min-h-[196px]'
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className={labelClass}>{label}</span>
-        {trend && (
+        {trend && !compact && (
           <span
             className={cn(
               'rounded-md border px-1.5 py-0.5 text-[10.5px] font-medium tabular-nums',
@@ -95,7 +100,12 @@ function StatCard({
         )}
       </div>
       <div className="mt-1.5 flex items-baseline gap-1.5">
-        <span className="text-[26px] font-bold leading-none tracking-tight tabular-nums">
+        <span
+          className={cn(
+            'font-bold leading-none tracking-tight tabular-nums',
+            compact ? 'text-[20px]' : 'text-[26px]'
+          )}
+        >
           {value}
         </span>
         {unit && (
@@ -104,15 +114,25 @@ function StatCard({
           </span>
         )}
       </div>
-      <div className="mt-0.5 text-[11.5px] text-muted-foreground">{sub}</div>
-      <div className="mt-auto h-[96px] pt-3">
-        <MiniAreaChart
-          data={series}
-          label={label}
-          color={color}
-          valueFormatter={valueFormatter}
-        />
-      </div>
+      {!compact ? (
+        <>
+          <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+            {sub}
+          </div>
+          <div className="mt-auto h-[96px] pt-3">
+            <MiniAreaChart
+              data={series}
+              label={label}
+              color={color}
+              valueFormatter={valueFormatter}
+            />
+          </div>
+        </>
+      ) : sub ? (
+        <div className="mt-0.5 text-[10.5px] text-muted-foreground line-clamp-1">
+          {sub}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -121,31 +141,50 @@ function StatCard({
 function ByUserCard({
   data,
   series,
+  compact,
 }: {
   data: Record<string, number>[]
   series: MiniBarSeries[]
+  compact?: boolean
 }) {
+  const activeUsersCount = series.length
   return (
-    <div className={cardClass}>
+    <div
+      className={cn(
+        'flex flex-col rounded-xl border border-border bg-card p-3.5',
+        compact ? 'min-h-[80px]' : 'min-h-[196px]'
+      )}
+    >
       <span className={labelClass}>Queries by user</span>
-      <div className="mt-auto pt-3">
-        <div className="h-[96px]">
-          <MiniBarChart data={data} series={series} />
+      {compact ? (
+        <div className="mt-1.5 flex items-baseline gap-1.5">
+          <span className="text-[20px] font-bold leading-none tracking-tight tabular-nums">
+            {activeUsersCount}
+          </span>
+          <span className="text-[11.5px] font-medium text-muted-foreground">
+            active {activeUsersCount === 1 ? 'user' : 'users'}
+          </span>
         </div>
-        {series.length > 0 && (
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-muted-foreground">
-            {series.map((s) => (
-              <span key={s.key} className="inline-flex items-center gap-1">
-                <span
-                  className="size-2 rounded-sm"
-                  style={{ background: s.color }}
-                />
-                {s.label}
-              </span>
-            ))}
+      ) : (
+        <div className="mt-auto pt-3">
+          <div className="h-[96px]">
+            <MiniBarChart data={data} series={series} />
           </div>
-        )}
-      </div>
+          {series.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-muted-foreground">
+              {series.map((s) => (
+                <span key={s.key} className="inline-flex items-center gap-1">
+                  <span
+                    className="size-2 rounded-sm"
+                    style={{ background: s.color }}
+                  />
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -158,31 +197,60 @@ interface SummaryItem {
 }
 
 /** Summary card: an icon-labelled key / value list. */
-function SummaryCard({ items }: { items: SummaryItem[] }) {
+function SummaryCard({
+  items,
+  compact,
+}: {
+  items: SummaryItem[]
+  compact?: boolean
+}) {
   return (
-    <div className={cardClass}>
+    <div
+      className={cn(
+        'flex flex-col rounded-xl border border-border bg-card p-3.5',
+        compact ? 'min-h-[80px]' : 'min-h-[196px]'
+      )}
+    >
       <span className={labelClass}>Summary</span>
-      <dl className="mt-2 flex flex-col gap-y-1.5">
-        {items.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between gap-2 text-[12px]"
-          >
-            <dt className="flex items-center gap-1.5 text-muted-foreground">
-              <item.icon className="size-3.5 text-muted-foreground/60" />
-              {item.label}
-            </dt>
-            <dd className="font-semibold tabular-nums">
-              {item.value}
-              {item.unit && (
-                <span className="ml-1 font-normal text-muted-foreground">
-                  {item.unit}
-                </span>
-              )}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {compact ? (
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11.5px]">
+          {items.slice(0, 3).map((item) => (
+            <div key={item.label} className="flex items-center gap-1">
+              <span className="text-muted-foreground">{item.label}:</span>
+              <span className="font-semibold tabular-nums">
+                {item.value}
+                {item.unit && (
+                  <span className="ml-0.5 font-normal text-muted-foreground">
+                    {item.unit}
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <dl className="mt-2 flex flex-col gap-y-1.5">
+          {items.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-between gap-2 text-[12px]"
+            >
+              <dt className="flex items-center gap-1.5 text-muted-foreground">
+                <item.icon className="size-3.5 text-muted-foreground/60" />
+                {item.label}
+              </dt>
+              <dd className="font-semibold tabular-nums">
+                {item.value}
+                {item.unit && (
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    {item.unit}
+                  </span>
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </div>
   )
 }
@@ -200,6 +268,7 @@ function splitSize(readable: string): { value: string; unit: string } {
 interface RunningQueriesChartsProps {
   /** Live `system.processes` rows — drives the Summary + active-memory card. */
   rows: RunningQueryRow[]
+  compact?: boolean
 }
 
 /**
@@ -212,6 +281,7 @@ interface RunningQueriesChartsProps {
  */
 export const RunningQueriesCharts = function RunningQueriesCharts({
   rows,
+  compact = false,
 }: RunningQueriesChartsProps) {
   const hostId = useHostId()
   const countSwr = useChartData<CountPoint>({
@@ -372,6 +442,7 @@ export const RunningQueriesCharts = function RunningQueriesCharts({
         color="hsl(38 92% 55%)"
         series={running.series}
         valueFormatter={(v) => `${v.toLocaleString()} queries`}
+        compact={compact}
       />
       <StatCard
         label="Query memory"
@@ -381,9 +452,10 @@ export const RunningQueriesCharts = function RunningQueriesCharts({
         color="#8b5cf6"
         series={memory.series}
         valueFormatter={formatReadableSize}
+        compact={compact}
       />
-      <ByUserCard data={byUser.data} series={byUser.series} />
-      <SummaryCard items={summary} />
+      <ByUserCard data={byUser.data} series={byUser.series} compact={compact} />
+      <SummaryCard items={summary} compact={compact} />
     </div>
   )
 }

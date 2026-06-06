@@ -16,7 +16,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { getEngineIconConfig } from '@/lib/clickhouse-engine-icons'
 import { computeDagrePositions } from '@/lib/graph/dagre-layout'
@@ -404,25 +404,36 @@ export function DependencyGraph({
   const hostId = useHostId()
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
   const [direction, setDirection] = useState<LayoutDirection>('TB')
+  const [isMounted, setIsMounted] = useState(false)
 
-  // Build initial graph structure
-  const {
-    nodes: rawNodes,
-    edges: rawEdges,
-    edgeCount,
-  } = buildInitialGraph(dependencies, currentTable, currentDatabase, hostId)
+  // Avoid hydration mismatch by rendering a placeholder until mounted on client
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
-  // Apply dagre layout
-  const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-    rawNodes,
-    rawEdges,
-    direction
-  )
+  // Stable string representation of dependencies to prevent unnecessary recalculations
+  const depsKey = useMemo(() => JSON.stringify(dependencies), [dependencies])
+
+  // Build and layout the graph structure stably
+  // biome-ignore lint/correctness/useExhaustiveDependencies: depsKey is a stable representation of dependencies to prevent unnecessary recalculations
+  const { layoutedNodes, layoutedEdges, edgeCount } = useMemo(() => {
+    const {
+      nodes: rawNodes,
+      edges: rawEdges,
+      edgeCount,
+    } = buildInitialGraph(dependencies, currentTable, currentDatabase, hostId)
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      rawNodes,
+      rawEdges,
+      direction
+    )
+    return { layoutedNodes, layoutedEdges, edgeCount }
+  }, [depsKey, currentTable, currentDatabase, hostId, direction])
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
 
-  // Update nodes when layout changes
+  // Update nodes and edges when layoutedNodes or layoutedEdges change
   useEffect(() => {
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
@@ -431,9 +442,10 @@ export function DependencyGraph({
   // Fit view when nodes change
   useEffect(() => {
     if (reactFlowInstance.current && nodes.length > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS)
       }, 50)
+      return () => clearTimeout(timer)
     }
   }, [nodes])
 
@@ -447,6 +459,19 @@ export function DependencyGraph({
   // Toggle layout direction
   const onLayoutChange = (newDirection: LayoutDirection) => {
     setDirection(newDirection)
+  }
+
+  if (!isMounted) {
+    return (
+      <div
+        className={cn(
+          'flex items-center justify-center rounded-lg border bg-muted/10 text-muted-foreground',
+          className
+        )}
+      >
+        <span className="text-xs">Loading graph...</span>
+      </div>
+    )
   }
 
   if (dependencies.length === 0) {

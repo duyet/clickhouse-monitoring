@@ -35,8 +35,24 @@ import { apiFetch } from '@/lib/swr/api-fetch'
 
 const BASE = '/api/v1/conversations'
 
-/** In-memory cache so per-turn `append()` calls do not refetch every time. */
+/**
+ * In-memory cache so per-turn `append()` calls do not refetch every time.
+ * Bounded to REPO_CACHE_MAX entries — evicts the oldest when full.
+ */
+const REPO_CACHE_MAX = 50
 const repoCache = new Map<string, MessageFormatRepository<unknown>>()
+
+function setRepoCache(
+  key: string,
+  value: MessageFormatRepository<unknown>
+): void {
+  if (repoCache.size >= REPO_CACHE_MAX && !repoCache.has(key)) {
+    // Evict oldest entry (first inserted key).
+    const oldest = repoCache.keys().next().value
+    if (oldest !== undefined) repoCache.delete(oldest)
+  }
+  repoCache.set(key, value)
+}
 
 function unwrap(json: unknown): Record<string, unknown> {
   if (json && typeof json === 'object') {
@@ -78,17 +94,15 @@ async function apiPut(
   id: string,
   payload: { title?: string; messages?: unknown[] }
 ): Promise<void> {
-  try {
-    const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    if (!res.ok) {
-      throw new Error(`PUT failed with status ${res.status}`)
-    }
-  } catch {
-    // Network / non-OK response — keep the cached copy; next append retries.
+  const res = await apiFetch(`${BASE}/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    throw new Error(
+      `Conversation persist failed (${res.status}): ${await res.text().catch(() => 'unknown')}`
+    )
   }
 }
 
@@ -144,14 +158,14 @@ function createD1HistoryAdapter(
               ? getId(messages[messages.length - 1].message)
               : undefined,
           }
-          repoCache.set(remoteId, repo)
+          setRepoCache(remoteId, repo)
           return repo
         },
         async append(item) {
           const { remoteId } = await aui.threadListItem().initialize()
           const repo = getCachedRepo(remoteId)
           upsertHistoryItem(repo, item, getId)
-          repoCache.set(remoteId, repo)
+          setRepoCache(remoteId, repo)
 
           await apiPut(remoteId, { messages: repo.messages })
 
@@ -174,7 +188,7 @@ function createD1HistoryAdapter(
           if (!remoteId) return
           const repo = getCachedRepo(remoteId)
           replaceHistoryItem(repo, item, localMessageId, getId)
-          repoCache.set(remoteId, repo)
+          setRepoCache(remoteId, repo)
           await apiPut(remoteId, { messages: repo.messages })
         },
       }
