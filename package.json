@@ -46,6 +46,7 @@
     "cf:setup-conversations": "bun --filter dashboard cf:setup-conversations",
     "cf:migrate-conversations": "bun --filter dashboard cf:migrate-conversations",
     "cf:migrate-conversations:local": "bun --filter dashboard cf:migrate-conversations:local",
+    "setup:agent-conversations-clickhouse": "bun scripts/create-agent-conversations-clickhouse.ts",
     "cf:health": "bun --filter dashboard cf:health",
     "cf:redirect-rule": "bun scripts/cloudflare-redirect-rule.ts",
     "gh:sync-secrets": "bun --filter dashboard gh:sync-secrets",

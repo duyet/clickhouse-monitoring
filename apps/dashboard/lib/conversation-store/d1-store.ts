@@ -6,13 +6,21 @@
  * and provides efficient querying for conversation lists.
  */
 
-import type { UIMessage } from 'ai'
 import type {
   ConversationMeta,
   ConversationStore,
   StoredConversation,
 } from './types'
 
+import {
+  jsonToMetadata,
+  metadataToJson,
+  normalizeConversation,
+  normalizeOptionalNumber,
+  normalizeOptionalString,
+  parseMessages,
+  stripMessages,
+} from './serialization'
 import { ConversationStoreError } from './types'
 import { getPlatformBindings } from '@chm/platform'
 
@@ -25,8 +33,45 @@ interface D1ConversationRow {
   title: string
   messages: string // JSON string
   message_count: number
+  model: string | null
+  provider: string | null
+  host_id: number | null
+  total_input_tokens: number
+  total_output_tokens: number
+  total_reasoning_tokens: number
+  total_cached_tokens: number
+  total_duration_ms: number
+  total_cost_usd: number
+  finish_reason: string | null
+  user_rating: number | null
+  error_count: number
+  metadata: string
   created_at: number
   updated_at: number
+}
+
+function rowToMeta(row: D1ConversationRow): ConversationMeta {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    messageCount: row.message_count,
+    model: normalizeOptionalString(row.model),
+    provider: normalizeOptionalString(row.provider),
+    hostId: normalizeOptionalNumber(row.host_id),
+    totalInputTokens: row.total_input_tokens,
+    totalOutputTokens: row.total_output_tokens,
+    totalReasoningTokens: row.total_reasoning_tokens,
+    totalCachedTokens: row.total_cached_tokens,
+    totalDurationMs: row.total_duration_ms,
+    totalCostUsd: row.total_cost_usd,
+    finishReason: normalizeOptionalString(row.finish_reason),
+    userRating: normalizeOptionalNumber(row.user_rating),
+    errorCount: row.error_count,
+    metadata: jsonToMetadata(row.metadata),
+  }
 }
 
 /**
@@ -80,6 +125,9 @@ export class D1Store implements ConversationStore {
       const stmt = db
         .prepare(
           `SELECT id, user_id, title, message_count, created_at, updated_at
+             , model, provider, host_id, total_input_tokens, total_output_tokens
+             , total_reasoning_tokens, total_cached_tokens, total_duration_ms
+             , total_cost_usd, finish_reason, user_rating, error_count, metadata
            FROM conversations
            WHERE user_id = ?1
            ORDER BY updated_at DESC
@@ -89,16 +137,7 @@ export class D1Store implements ConversationStore {
 
       const result = await stmt.all<D1ConversationRow>()
 
-      return (result.results || []).map(
-        (row): ConversationMeta => ({
-          id: row.id,
-          userId: row.user_id,
-          title: row.title,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-          messageCount: row.message_count,
-        })
-      )
+      return (result.results || []).map(rowToMeta)
     } catch (error) {
       throw new ConversationStoreError(
         `Failed to list conversations: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -125,6 +164,9 @@ export class D1Store implements ConversationStore {
       const stmt = db
         .prepare(
           `SELECT id, user_id, title, messages, message_count, created_at, updated_at
+             , model, provider, host_id, total_input_tokens, total_output_tokens
+             , total_reasoning_tokens, total_cached_tokens, total_duration_ms
+             , total_cost_usd, finish_reason, user_rating, error_count, metadata
            FROM conversations
            WHERE id = ?1 AND user_id = ?2`
         )
@@ -136,26 +178,9 @@ export class D1Store implements ConversationStore {
         return null
       }
 
-      // Parse messages JSON string
-      let messages: UIMessage[]
-      try {
-        messages = JSON.parse(result.messages) as UIMessage[]
-      } catch (error) {
-        throw new ConversationStoreError(
-          `Failed to parse messages JSON for conversation ${conversationId}`,
-          'STORAGE_ERROR',
-          error
-        )
-      }
-
       return {
-        id: result.id,
-        userId: result.user_id,
-        title: result.title,
-        messages,
-        createdAt: result.created_at,
-        updatedAt: result.updated_at,
-        messageCount: result.message_count,
+        ...rowToMeta(result),
+        messages: parseMessages(result.messages),
       }
     } catch (error) {
       if (error instanceof ConversationStoreError) {
@@ -182,28 +207,62 @@ export class D1Store implements ConversationStore {
     try {
       const db = this.getDb()
 
-      // Serialize messages to JSON string
-      const messagesJson = JSON.stringify(conversation.messages)
+      const normalized = normalizeConversation(conversation)
+      const messagesJson = JSON.stringify(normalized.messages)
+      const metadataJson = metadataToJson(normalized.metadata)
 
       const stmt = db
         .prepare(
-          `INSERT INTO conversations (id, user_id, title, messages, message_count, created_at, updated_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+          `INSERT INTO conversations (
+             id, user_id, title, messages, message_count,
+             model, provider, host_id,
+             total_input_tokens, total_output_tokens, total_reasoning_tokens,
+             total_cached_tokens, total_duration_ms, total_cost_usd,
+             finish_reason, user_rating, error_count, metadata,
+             created_at, updated_at
+           )
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)
            ON CONFLICT (id) DO UPDATE SET
              user_id = excluded.user_id,
              title = excluded.title,
              messages = excluded.messages,
              message_count = excluded.message_count,
+             model = excluded.model,
+             provider = excluded.provider,
+             host_id = excluded.host_id,
+             total_input_tokens = excluded.total_input_tokens,
+             total_output_tokens = excluded.total_output_tokens,
+             total_reasoning_tokens = excluded.total_reasoning_tokens,
+             total_cached_tokens = excluded.total_cached_tokens,
+             total_duration_ms = excluded.total_duration_ms,
+             total_cost_usd = excluded.total_cost_usd,
+             finish_reason = excluded.finish_reason,
+             user_rating = excluded.user_rating,
+             error_count = excluded.error_count,
+             metadata = excluded.metadata,
              updated_at = excluded.updated_at`
         )
         .bind(
-          conversation.id,
-          conversation.userId,
-          conversation.title,
+          normalized.id,
+          normalized.userId,
+          normalized.title,
           messagesJson,
-          conversation.messageCount,
-          conversation.createdAt,
-          conversation.updatedAt
+          normalized.messageCount,
+          normalized.model ?? null,
+          normalized.provider ?? null,
+          normalized.hostId ?? null,
+          normalized.totalInputTokens ?? 0,
+          normalized.totalOutputTokens ?? 0,
+          normalized.totalReasoningTokens ?? 0,
+          normalized.totalCachedTokens ?? 0,
+          normalized.totalDurationMs ?? 0,
+          normalized.totalCostUsd ?? 0,
+          normalized.finishReason ?? null,
+          normalized.userRating ?? null,
+          normalized.errorCount ?? 0,
+          metadataJson,
+          normalized.createdAt,
+          normalized.updatedAt
         )
 
       await stmt.run()
@@ -262,4 +321,10 @@ export class D1Store implements ConversationStore {
       )
     }
   }
+}
+
+export function toD1ConversationMeta(
+  conversation: StoredConversation
+): ConversationMeta {
+  return stripMessages(conversation)
 }

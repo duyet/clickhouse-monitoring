@@ -23,4 +23,12 @@ export interface PlatformBindings {
    * @returns The D1Database instance, or null if not available
    */
   getD1Database(bindingName: string): D1Database | null
+
+  /**
+   * Get a Durable Object namespace binding by name.
+   *
+   * @param bindingName - The binding name (e.g. 'AGENT_CONVERSATIONS_DO')
+   * @returns The namespace, or null if not available
+   */
+  getDurableObjectNamespace(bindingName: string): DurableObjectNamespace | null
 }

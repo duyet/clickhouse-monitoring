@@ -6,6 +6,7 @@ import {
   type SetStateAction,
   use,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -69,9 +70,14 @@ export const AppProvider = ({
   // Reload interval defaults to the provider prop but is restored from and
   // persisted to localStorage so the user's choice survives reloads.
   // setReloadInterval(null) to stop it.
-  const [reloadInterval, setReloadIntervalState] = useState<number | null>(() =>
-    readInitialReloadInterval(reloadIntervalSecond * 1000)
+  const defaultReloadInterval = reloadIntervalSecond * 1000
+  const [reloadInterval, setReloadIntervalState] = useState<number | null>(
+    defaultReloadInterval
   )
+
+  useEffect(() => {
+    setReloadIntervalState(readInitialReloadInterval(defaultReloadInterval))
+  }, [defaultReloadInterval])
 
   const setReloadInterval: Dispatch<SetStateAction<number | null>> =
     useCallback((action) => {
@@ -95,7 +101,7 @@ export const AppProvider = ({
       setReloadInterval,
       pathname,
     }),
-    [interval, setInterval, reloadInterval, setReloadInterval, pathname]
+    [interval, reloadInterval, setReloadInterval, pathname]
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>

@@ -3,8 +3,8 @@
 // Runtime types generated with workerd@1.20250927.0 2025-09-15 global_fetch_strictly_public,nodejs_compat
 declare namespace Cloudflare {
   interface GlobalProps {
-    mainModule: typeof import('./.open-next/worker')
-    durableNamespaces: 'DOQueueHandler'
+    mainModule: typeof import('./worker')
+    durableNamespaces: 'DOQueueHandler' | 'AgentConversationDurableObject'
   }
   interface Env {
     NEXT_INC_CACHE_KV: KVNamespace
@@ -13,12 +13,15 @@ declare namespace Cloudflare {
     CLICKHOUSE_USER: string
     CLICKHOUSE_PASSWORD: string
     NEXT_CACHE_DO_QUEUE: DurableObjectNamespace<
-      import('./.open-next/worker').DOQueueHandler
+      import('./worker').DOQueueHandler
+    >
+    AGENT_CONVERSATIONS_DO: DurableObjectNamespace<
+      import('./worker').AgentConversationDurableObject
     >
     NEXT_INC_CACHE_R2_BUCKET: R2Bucket
     NEXT_TAG_CACHE_D1: D1Database
     CONVERSATIONS_D1: D1Database
-    WORKER_SELF_REFERENCE: Service<typeof import('./.open-next/worker').default>
+    WORKER_SELF_REFERENCE: Service<typeof import('./worker').default>
     ASSETS: Fetcher
   }
 }

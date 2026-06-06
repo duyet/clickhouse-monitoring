@@ -236,7 +236,7 @@ jobs:
         # mid-prerender before any spec ran. e2e exercises runtime behaviour
         # against the SPA fallback shell with client-fetched data, so prerendered
         # HTML is unnecessary here. Production (Docker) build still prerenders.
-        run: CHM_SKIP_PRERENDER=1 BUILD_TARGET=node bun run build:node
+        run: bun scripts/build-node-ci.ts
 
       - name: Start server + run E2E
         working-directory: apps/dashboard-tsr

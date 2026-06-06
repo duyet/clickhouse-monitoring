@@ -143,9 +143,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CONVERSATIONS_D1_DATABASE_ID: ${{ secrets.CONVERSATIONS_D1_DATABASE_ID }}
         working-directory: apps/dashboard
         run: |
-          npx --yes --package=wrangler@4 wrangler deploy --env preview --minify 2>&1 | tee /tmp/deploy-output.txt
+          bun ../../scripts/prepare-dashboard-wrangler.ts --output .wrangler.preview.toml
+          npx --yes --package=wrangler@4 wrangler deploy --config .wrangler.preview.toml --env preview --minify 2>&1 | tee /tmp/deploy-output.txt
           exit ${PIPESTATUS[0]}
 
       - name: Set MCP worker preview secrets
@@ -526,11 +528,13 @@ jobs:
         uses: cloudflare/wrangler-action@v4
         env:
           OPEN_NEXT_DEPLOY: "true"
+          CONVERSATIONS_D1_DATABASE_ID: ${{ secrets.CONVERSATIONS_D1_DATABASE_ID }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/dashboard
-          command: deploy --minify
+          preCommands: bun ../../scripts/prepare-dashboard-wrangler.ts --output .wrangler.deploy.toml
+          command: deploy --config .wrangler.deploy.toml --minify
 
       - name: Set MCP worker secrets
         env:
