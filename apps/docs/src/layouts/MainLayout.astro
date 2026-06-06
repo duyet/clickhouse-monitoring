@@ -56,6 +56,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString()
         stored === 'dark' ||
         (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      if (localStorage.getItem('sidebar') === 'collapsed')
+        document.documentElement.setAttribute('data-sidebar', 'collapsed')
     </script>
   </head>
   <body>

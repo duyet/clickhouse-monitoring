@@ -1,6 +1,5 @@
 ---
 import { SITE } from '../config'
-import logo from '../assets/logo.svg'
 import Search from './Search.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
@@ -13,8 +12,17 @@ const { version, subpath } = Astro.props
 ---
 
 <header class="header">
+  <button class="icon-btn" id="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+      <path d="M9 3v18"></path>
+    </svg>
+  </button>
   <a class="header__brand" href="/">
-    <img src={logo.src} alt="" width="22" height="22" />
+    {/* ClickHouse mark — inlined so it inherits the theme color (currentColor). */}
+    <svg class="header__logo" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" role="img" aria-hidden="true">
+      <path d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"></path>
+    </svg>
     <span>{SITE.title}</span>
   </a>
   <div class="header__spacer"></div>
@@ -29,3 +37,22 @@ const { version, subpath } = Astro.props
     <ThemeToggle />
   </div>
 </header>
+
+<script>
+  const toggle = document.getElementById('sidebar-toggle')
+  const root = document.documentElement
+  const sync = () =>
+    toggle?.setAttribute(
+      'aria-expanded',
+      root.getAttribute('data-sidebar') === 'collapsed' ? 'false' : 'true'
+    )
+  sync()
+  toggle?.addEventListener('click', () => {
+    const collapsed = root.getAttribute('data-sidebar') === 'collapsed'
+    root.setAttribute('data-sidebar', collapsed ? 'expanded' : 'collapsed')
+    try {
+      localStorage.setItem('sidebar', collapsed ? 'expanded' : 'collapsed')
+    } catch {}
+    sync()
+  })
+</script>
