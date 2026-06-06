@@ -324,8 +324,11 @@ export function DataTable<
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
 
   // Column ordering for drag-and-drop reordering (with optional localStorage persistence)
-  const getStorageKey = () =>
-    `data-table-column-order-${columnOrderStorageKey || queryConfig.name}`
+  const getStorageKey = useCallback(
+    () =>
+      `data-table-column-order-${columnOrderStorageKey || queryConfig.name}`,
+    [columnOrderStorageKey, queryConfig.name]
+  )
   const initialColumnOrder = (() => {
     if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
       try {
@@ -343,29 +346,32 @@ export function DataTable<
 
   // Persist column order to localStorage when it changes
   // This handles both direct values and updater functions from TanStack Table
-  const handleColumnOrderChange = (
-    updaterOrValue:
-      | ColumnOrderState
-      | ((old: ColumnOrderState) => ColumnOrderState)
-  ) => {
-    // Update both React state and TanStack Table's state
-    setColumnOrder(updaterOrValue)
+  const handleColumnOrderChange = useCallback(
+    (
+      updaterOrValue:
+        | ColumnOrderState
+        | ((old: ColumnOrderState) => ColumnOrderState)
+    ) => {
+      // Update both React state and TanStack Table's state
+      setColumnOrder(updaterOrValue)
 
-    // Save to localStorage
-    if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
-      const newOrder =
-        typeof updaterOrValue === 'function'
-          ? (updaterOrValue as (old: ColumnOrderState) => ColumnOrderState)(
-              columnOrder
-            )
-          : updaterOrValue
-      try {
-        localStorage.setItem(getStorageKey(), JSON.stringify(newOrder))
-      } catch {
-        // Ignore localStorage errors
+      // Save to localStorage
+      if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
+        const newOrder =
+          typeof updaterOrValue === 'function'
+            ? (updaterOrValue as (old: ColumnOrderState) => ColumnOrderState)(
+                columnOrder
+              )
+            : updaterOrValue
+        try {
+          localStorage.setItem(getStorageKey(), JSON.stringify(newOrder))
+        } catch {
+          // Ignore localStorage errors
+        }
       }
-    }
-  }
+    },
+    [columnOrder, resolvedEnableColumnReordering, getStorageKey]
+  )
 
   // Row selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
