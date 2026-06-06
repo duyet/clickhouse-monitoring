@@ -19,7 +19,7 @@ import type { ChartQueryParams } from '@/types/chart-data'
 import type { ExpandableConfig, QueryConfig } from '@/types/query-config'
 
 import { arrayMove } from '@dnd-kit/sortable'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   buildExpandColumnDef,
   EXPAND_COLUMN_ID,
@@ -276,16 +276,26 @@ export function DataTable<
   const { getActiveFilter, setFilter, clearFilter } = useColumnFilterState(
     queryConfig.filterSchema
   )
-  const schemaFilterContext = ((): SchemaColumnFilterContext | undefined =>
-    queryConfig.filterSchema && queryConfig.columnFilters
-      ? {
-          schema: queryConfig.filterSchema,
-          configName: queryConfig.name,
-          getActiveFilter,
-          setFilter,
-          clearFilter,
-        }
-      : undefined)()
+  const schemaFilterContext = useMemo(
+    (): SchemaColumnFilterContext | undefined =>
+      queryConfig.filterSchema && queryConfig.columnFilters
+        ? {
+            schema: queryConfig.filterSchema,
+            configName: queryConfig.name,
+            getActiveFilter,
+            setFilter,
+            clearFilter,
+          }
+        : undefined,
+    [
+      queryConfig.filterSchema,
+      queryConfig.columnFilters,
+      queryConfig.name,
+      getActiveFilter,
+      setFilter,
+      clearFilter,
+    ]
+  )
 
   // Column calculations and definitions
   const { columnDefs } = useTableColumns<TData, TValue>({
@@ -570,37 +580,44 @@ export function DataTable<
   const { autoFitColumn } = useAutoFitColumns<TData>(tableContainerRef)
 
   // Handle auto-fit request for a specific column
-  const handleAutoFit = (columnId: string) => {
-    const column = table.getColumn(columnId)
-    if (!column) return
+  const handleAutoFit = useCallback(
+    (columnId: string) => {
+      const column = table.getColumn(columnId)
+      if (!column) return
 
-    const headerText = column.columnDef.header as string
-    autoFitColumn(column, rows, headerText)
-  }
+      const headerText = column.columnDef.header as string
+      autoFitColumn(column, rows, headerText)
+    },
+    [table, rows, autoFitColumn]
+  )
 
   // Handle drag end event for column reordering
   // This is called by table-header when columns are reordered via drag-and-drop
-  const handleDragEndColumnReorder = (activeId: string, overId: string) => {
-    const currentOrder = table.getState().columnOrder
+  const handleDragEndColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const currentOrder = table.getState().columnOrder
 
-    // Get ALL columns from the table (not just sortable ones)
-    const allColumnIds = table.getAllLeafColumns().map((col) => col.id)
+      // Get ALL columns from the table (not just sortable ones)
+      const allColumnIds = table.getAllLeafColumns().map((col) => col.id)
 
-    // Use currentOrder if it has values, otherwise use all columns in natural order
-    const effectiveOrder = currentOrder.length > 0 ? currentOrder : allColumnIds
+      // Use currentOrder if it has values, otherwise use all columns in natural order
+      const effectiveOrder =
+        currentOrder.length > 0 ? currentOrder : allColumnIds
 
-    const oldIndex = effectiveOrder.indexOf(activeId)
-    const newIndex = effectiveOrder.indexOf(overId)
+      const oldIndex = effectiveOrder.indexOf(activeId)
+      const newIndex = effectiveOrder.indexOf(overId)
 
-    if (oldIndex !== -1 && newIndex !== -1) {
-      // Reorder ALL columns, not just the sortable ones
-      const newOrder = arrayMove(effectiveOrder, oldIndex, newIndex)
-      handleColumnOrderChange(newOrder)
-    }
-  }
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Reorder ALL columns, not just the sortable ones
+        const newOrder = arrayMove(effectiveOrder, oldIndex, newIndex)
+        handleColumnOrderChange(newOrder)
+      }
+    },
+    [table, handleColumnOrderChange]
+  )
 
   // Reset column order to default (empty array means use natural order)
-  const handleResetColumnOrder = () => {
+  const handleResetColumnOrder = useCallback(() => {
     handleColumnOrderChange([])
     if (resolvedEnableColumnReordering && typeof window !== 'undefined') {
       try {
@@ -609,7 +626,7 @@ export function DataTable<
         // Ignore localStorage errors
       }
     }
-  }
+  }, [handleColumnOrderChange, resolvedEnableColumnReordering, getStorageKey])
 
   return (
     <TableDensityProvider value={{ cellClassName, density }}>
