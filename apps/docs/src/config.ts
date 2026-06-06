@@ -10,13 +10,8 @@ export const SITE = {
   dashboard: 'https://dash.chmonitor.dev/?ref=docs',
 }
 
-// External quick links shown at the top of the left sidebar (not versioned).
+// External quick links shown as a compact topbar above the sidebar nav.
 export const QUICK_LINKS = [
-  { label: '← Home', href: SITE.home, external: true },
-  {
-    label: 'Live Dashboard',
-    href: SITE.dashboard,
-    external: true,
-    badge: 'demo',
-  },
+  { label: 'Home', href: SITE.home, external: true },
+  { label: 'Dashboard', href: SITE.dashboard, external: true },
 ]

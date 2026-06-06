@@ -268,13 +268,28 @@ img {
 }
 
 /* ── Left sidebar nav ───────────────────────────────────────────────── */
-.nav-quick {
+/* Compact "Home | Dashboard" topbar above the sidebar nav. */
+.sidebar-topbar {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+  gap: 0.6rem;
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  padding: 0 0.6rem 0.85rem;
   border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.sidebar-topbar__link {
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+.sidebar-topbar__link:hover {
+  color: var(--fg);
+}
+.sidebar-topbar__link:not(:first-child)::before {
+  content: '|';
+  color: var(--fg-subtle);
+  margin-right: 0.6rem;
+  font-weight: 400;
 }
 .nav-group {
   margin-bottom: 1.25rem;
@@ -310,17 +325,6 @@ img {
   color: var(--accent);
   font-weight: 600;
 }
-.nav-badge {
-  font-size: 0.62rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.05rem 0.35rem;
-  border-radius: 999px;
-  background: var(--green-500);
-  color: #062b28;
-}
-
 /* ── Version switcher ───────────────────────────────────────────────── */
 .version-switcher {
   position: relative;

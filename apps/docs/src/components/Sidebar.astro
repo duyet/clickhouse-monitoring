@@ -12,12 +12,11 @@ const current = `/${currentSlug}`
 ---
 
 <nav class="sidebar" aria-label="Documentation navigation">
-  <div class="nav-quick">
+  <div class="sidebar-topbar">
     {
       QUICK_LINKS.map((l) => (
-        <a class="nav-link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
-          <span>{l.label}</span>
-          {l.badge && <span class="nav-badge">{l.badge}</span>}
+        <a class="sidebar-topbar__link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
+          {l.label}
         </a>
       ))
     }
