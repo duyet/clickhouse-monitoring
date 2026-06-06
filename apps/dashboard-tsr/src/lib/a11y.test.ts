@@ -1,7 +1,7 @@
-import { describe, expect, test } from 'bun:test'
 import type { KeyboardEvent } from 'react'
 
 import { activateOnEnterOrSpace } from './a11y'
+import { describe, expect, test } from 'bun:test'
 
 function fakeEvent(key: string) {
   let prevented = false
