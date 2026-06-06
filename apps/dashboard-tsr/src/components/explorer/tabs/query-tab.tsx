@@ -27,6 +27,7 @@ import type {
 import { useExplorerState } from '../hooks/use-explorer-state'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
+import { ClientOnly } from '@/components/client-only'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -47,17 +48,6 @@ import { cn } from '@/lib/utils'
 const SqlEditor = lazy(() =>
   import('../sql-editor').then((mod) => ({ default: mod.SqlEditor }))
 )
-
-function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  if (!mounted) {
-    return <Skeleton className="min-h-[120px] rounded-md" />
-  }
-  return <>{children}</>
-}
 
 const MAX_CELL_LENGTH = 100
 const DEFAULT_LIMIT = 100
@@ -433,7 +423,9 @@ export function QueryTab() {
             Ctrl+Enter to run
           </span>
         </div>
-        <SqlEditorWrapper>
+        <ClientOnly
+          fallback={<Skeleton className="min-h-[120px] rounded-md" />}
+        >
           <Suspense
             fallback={<Skeleton className="min-h-[120px] rounded-md" />}
           >
@@ -449,7 +441,7 @@ export function QueryTab() {
               schema={schema}
             />
           </Suspense>
-        </SqlEditorWrapper>
+        </ClientOnly>
         {validationError && (
           <p className="text-sm text-destructive">{validationError}</p>
         )}

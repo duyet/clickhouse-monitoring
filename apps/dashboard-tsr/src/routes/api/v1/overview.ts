@@ -51,8 +51,9 @@ export const Route = createFileRoute('/api/v1/overview')({
         }
 
         try {
-          // Single batch query returning all overview metrics
-          const result = await fetchData({
+          // The metrics batch query and the host-info query are independent —
+          // kick both off concurrently and await together.
+          const metricsPromise = fetchData({
             query: `
               -- Running queries count
               SELECT 'running_queries' as metric, COUNT() as value, COUNT() as value_num
@@ -100,6 +101,23 @@ export const Route = createFileRoute('/api/v1/overview')({
             format: 'JSONEachRow',
           })
 
+          // Fetch host info separately (different return shape)
+          const hostPromise = fetchData({
+            query: `
+              SELECT
+                version() as version,
+                formatReadableTimeDelta(uptime()) as uptime,
+                hostName() as hostname
+            `,
+            hostId,
+            format: 'JSONEachRow',
+          })
+
+          const [result, hostResult] = await Promise.all([
+            metricsPromise,
+            hostPromise,
+          ])
+
           if (result.error || !result.data) {
             error('[GET /api/v1/overview] Query error:', result.error)
             return Response.json(
@@ -121,18 +139,6 @@ export const Route = createFileRoute('/api/v1/overview')({
           for (const row of metrics) {
             overviewData[row.metric] = row.value_num
           }
-
-          // Fetch host info separately (different return shape)
-          const hostResult = await fetchData({
-            query: `
-              SELECT
-                version() as version,
-                formatReadableTimeDelta(uptime()) as uptime,
-                hostName() as hostname
-            `,
-            hostId,
-            format: 'JSONEachRow',
-          })
 
           const hostInfo = (
             hostResult.data as Array<{
