@@ -61,6 +61,7 @@ export const DataTableFooter = memo(function DataTableFooter<
               className="size-6"
               onClick={() => table.previousPage()}
               disabled={!canPrev}
+              aria-label="Previous page"
             >
               <ChevronLeftIcon className="size-3" />
             </Button>
@@ -70,6 +71,7 @@ export const DataTableFooter = memo(function DataTableFooter<
               className="size-6"
               onClick={() => table.nextPage()}
               disabled={!canNext}
+              aria-label="Next page"
             >
               <ChevronRightIcon className="size-3" />
             </Button>

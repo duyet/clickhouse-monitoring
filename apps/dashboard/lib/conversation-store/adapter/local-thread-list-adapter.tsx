@@ -78,7 +78,7 @@ const saveThreads = (threads: ThreadMeta[]) => writeJson(THREADS_KEY, threads)
  * format-bound `GenericThreadHistoryAdapter`; the legacy `load` / `append` are
  * required by the type but unused on the AI SDK runtime.
  */
-function createLocalHistoryAdapter(
+export function createLocalHistoryAdapter(
   aui: ReturnType<typeof useAui>
 ): ThreadHistoryAdapter {
   return {
@@ -222,14 +222,17 @@ export function createLocalThreadListAdapter(): RemoteThreadListAdapter {
       }
     },
 
-    async generateTitle(remoteId) {
+    async generateTitle(remoteId, unstableMessages) {
       // Derive a title from the first user message in the stored conversation.
       // Stored entries may be either bare messages or `{ message }` wrappers
       // (the format-adapter repository shape), so normalize before reading.
       const repo = readJson<{ messages: unknown[] }>(messagesKey(remoteId), {
         messages: [],
       })
-      const messages = repo.messages.map((entry) => {
+      const sourceMessages = repo.messages.length
+        ? repo.messages
+        : unstableMessages
+      const messages = sourceMessages.map((entry) => {
         const candidate =
           entry &&
           typeof entry === 'object' &&

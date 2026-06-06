@@ -30,6 +30,7 @@ import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -53,9 +54,7 @@ function SqlEditorWrapper({ children }: { children: React.ReactNode }) {
     setMounted(true)
   }, [])
   if (!mounted) {
-    return (
-      <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
-    )
+    return <Skeleton className="min-h-[120px] rounded-md" />
   }
   return <>{children}</>
 }
@@ -436,9 +435,7 @@ export function QueryTab() {
         </div>
         <SqlEditorWrapper>
           <Suspense
-            fallback={
-              <div className="min-h-[120px] rounded-md border border-input bg-muted/30 animate-pulse" />
-            }
+            fallback={<Skeleton className="min-h-[120px] rounded-md" />}
           >
             <SqlEditor
               value={editorValue}

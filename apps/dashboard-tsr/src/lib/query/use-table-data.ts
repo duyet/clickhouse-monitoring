@@ -31,19 +31,25 @@ export function useTableData<T = unknown>(
   refreshInterval?: number,
   timezone?: string
 ) {
-  const params = new URLSearchParams()
-  if (hostId !== undefined) params.append('hostId', String(hostId))
-  if (searchParams) {
-    Object.entries(searchParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.append(key, String(value))
-      }
-    })
-  }
-  if (timezone) params.append('timezone', timezone)
+  // Serialize searchParams so the memo key is value-stable even when a parent
+  // recreates the object each render (inline literal / derived state).
+  const searchParamsKey = searchParams ? JSON.stringify(searchParams) : ''
+  const url = useMemo(() => {
+    const params = new URLSearchParams()
+    if (hostId !== undefined) params.append('hostId', String(hostId))
+    if (searchParams) {
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value))
+        }
+      })
+    }
+    if (timezone) params.append('timezone', timezone)
 
-  const queryString = params.toString()
-  const url = `/api/v1/tables/${queryConfigName}${queryString ? `?${queryString}` : ''}`
+    const queryString = params.toString()
+    return `/api/v1/tables/${queryConfigName}${queryString ? `?${queryString}` : ''}`
+    // searchParams is read inside but keyed via the stable searchParamsKey.
+  }, [queryConfigName, hostId, searchParamsKey, timezone])
 
   const queryKey = [
     '/api/v1/tables',
@@ -71,11 +77,10 @@ export function useTableData<T = unknown>(
       await throwIfNotOk(response, 'Failed to fetch table data')
       return response.json() as Promise<TableDataResponse<T>>
     },
-    staleTime: 3_000,
+    staleTime: Math.max((refreshInterval ?? 0) * 0.9, 5_000),
     refetchInterval: resolvedRefetchInterval,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
   })
 
   const dataArray = data?.data ?? []

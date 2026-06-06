@@ -43,12 +43,10 @@ export class D1MigrationStorage implements MigrationStorage {
 
     const bindings = getPlatformBindings()
 
-    this.db =
-      bindings.getD1Database('CONVERSATIONS_D1') ||
-      bindings.getD1Database('NEXT_TAG_CACHE_D1')
+    this.db = bindings.getD1Database('CONVERSATIONS_D1')
 
     if (!this.db) {
-      throw new Error('No D1 binding found')
+      throw new Error('CONVERSATIONS_D1 binding not found')
     }
 
     return this.db

@@ -91,6 +91,22 @@ LLM_MODEL=your-model
 
 Keep server-side API keys out of `NEXT_PUBLIC_` variables.
 
+## Agent Conversation Storage
+
+History stays in browser localStorage unless server persistence is enabled:
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=auto
+```
+
+Use `agentstate`, `d1`, `durable-object`, `clickhouse`, or `postgres` for
+durable server storage. Server stores require authenticated user identity; when
+that is unavailable, the agent falls back to local browser history.
+
+See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage) for
+backend env examples and setup commands.
+
 ## Public Branding
 
 ```bash

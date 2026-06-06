@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { queryMetricLogConfig } from '@/lib/query-config/system/query-metric-log'
 
 function QueryMetricLogPageContent() {
@@ -13,7 +13,7 @@ function QueryMetricLogPageContent() {
 
 function QueryMetricLogPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <QueryMetricLogPageContent />
     </Suspense>
   )

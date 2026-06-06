@@ -19,6 +19,14 @@ import type {
   StoredConversation,
 } from './types'
 
+import {
+  jsonToMetadata,
+  metadataToJson,
+  normalizeConversation,
+  normalizeOptionalNumber,
+  normalizeOptionalString,
+  stripMessages,
+} from './serialization'
 import { ConversationStoreError } from './types'
 import postgres from 'postgres'
 
@@ -31,6 +39,19 @@ interface PostgresConversationRow {
   title: string
   messages: unknown // JSONB parsed by postgres package
   message_count: number
+  model: string | null
+  provider: string | null
+  host_id: number | null
+  total_input_tokens: number
+  total_output_tokens: number
+  total_reasoning_tokens: number
+  total_cached_tokens: number
+  total_duration_ms: number
+  total_cost_usd: number
+  finish_reason: string | null
+  user_rating: number | null
+  error_count: number
+  metadata: unknown
   created_at: number
   updated_at: number
 }
@@ -46,15 +67,68 @@ CREATE TABLE IF NOT EXISTS conversations (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   title TEXT NOT NULL DEFAULT 'New Conversation',
-  messages JSONB NOT NULL DEFAULT '[]',
+  messages JSONB NOT NULL DEFAULT '[]'::jsonb,
   message_count INTEGER NOT NULL DEFAULT 0,
+  model TEXT,
+  provider TEXT,
+  host_id INTEGER,
+  total_input_tokens INTEGER NOT NULL DEFAULT 0,
+  total_output_tokens INTEGER NOT NULL DEFAULT 0,
+  total_reasoning_tokens INTEGER NOT NULL DEFAULT 0,
+  total_cached_tokens INTEGER NOT NULL DEFAULT 0,
+  total_duration_ms INTEGER NOT NULL DEFAULT 0,
+  total_cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+  finish_reason TEXT,
+  user_rating INTEGER,
+  error_count INTEGER NOT NULL DEFAULT 0,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_conversations_user_updated
   ON conversations(user_id, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_active
+  ON conversations(user_id, updated_at DESC)
+  WHERE message_count > 0;
+
+CREATE INDEX IF NOT EXISTS idx_conversations_model
+  ON conversations(model, provider)
+  WHERE model IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_conversations_cost
+  ON conversations(user_id, total_cost_usd)
+  WHERE total_cost_usd > 0;
+
+CREATE INDEX IF NOT EXISTS idx_conversations_errors
+  ON conversations(user_id, error_count)
+  WHERE error_count > 0;
 `
+
+function rowToMeta(row: PostgresConversationRow): ConversationMeta {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
+    messageCount: row.message_count,
+    model: normalizeOptionalString(row.model),
+    provider: normalizeOptionalString(row.provider),
+    hostId: normalizeOptionalNumber(row.host_id),
+    totalInputTokens: row.total_input_tokens,
+    totalOutputTokens: row.total_output_tokens,
+    totalReasoningTokens: row.total_reasoning_tokens,
+    totalCachedTokens: row.total_cached_tokens,
+    totalDurationMs: row.total_duration_ms,
+    totalCostUsd: row.total_cost_usd,
+    finishReason: normalizeOptionalString(row.finish_reason),
+    userRating: normalizeOptionalNumber(row.user_rating),
+    errorCount: row.error_count,
+    metadata: jsonToMetadata(row.metadata),
+  }
+}
 
 /**
  * PostgreSQL-based conversation storage implementation.
@@ -152,23 +226,20 @@ export class PostgresStore implements ConversationStore {
 
     try {
       const rows = (await this.sql`
-        SELECT id, user_id, title, message_count, created_at, updated_at
+        SELECT
+          id, user_id, title, message_count,
+          model, provider, host_id,
+          total_input_tokens, total_output_tokens, total_reasoning_tokens,
+          total_cached_tokens, total_duration_ms, total_cost_usd,
+          finish_reason, user_rating, error_count, metadata,
+          created_at, updated_at
         FROM conversations
         WHERE user_id = ${userId}
         ORDER BY updated_at DESC
         LIMIT ${limit}
       `) as PostgresConversationRow[]
 
-      return rows.map(
-        (row): ConversationMeta => ({
-          id: row.id,
-          userId: row.user_id,
-          title: row.title,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-          messageCount: row.message_count,
-        })
-      )
+      return rows.map(rowToMeta)
     } catch (error) {
       throw new ConversationStoreError(
         `Failed to list conversations: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -196,7 +267,13 @@ export class PostgresStore implements ConversationStore {
 
     try {
       const rows = (await this.sql`
-        SELECT id, user_id, title, messages, message_count, created_at, updated_at
+        SELECT
+          id, user_id, title, messages, message_count,
+          model, provider, host_id,
+          total_input_tokens, total_output_tokens, total_reasoning_tokens,
+          total_cached_tokens, total_duration_ms, total_cost_usd,
+          finish_reason, user_rating, error_count, metadata,
+          created_at, updated_at
         FROM conversations
         WHERE id = ${conversationId} AND user_id = ${userId}
       `) as PostgresConversationRow[]
@@ -218,13 +295,8 @@ export class PostgresStore implements ConversationStore {
       )
 
       return {
-        id: row.id,
-        userId: row.user_id,
-        title: row.title,
+        ...rowToMeta(row),
         messages,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        messageCount: row.message_count,
       }
     } catch (error) {
       throw new ConversationStoreError(
@@ -251,27 +323,59 @@ export class PostgresStore implements ConversationStore {
     await this.ensureInitialized()
 
     try {
-      // Serialize messages to JSON string for safe parameter passing
-      const messagesJson = JSON.stringify(conversation.messages)
+      const normalized = normalizeConversation(conversation)
+      const messagesJson = JSON.stringify(normalized.messages)
+      const metadataJson = metadataToJson(normalized.metadata)
 
       await this.sql`
         INSERT INTO conversations (
-          id, user_id, title, messages, message_count, created_at, updated_at
+          id, user_id, title, messages, message_count,
+          model, provider, host_id,
+          total_input_tokens, total_output_tokens, total_reasoning_tokens,
+          total_cached_tokens, total_duration_ms, total_cost_usd,
+          finish_reason, user_rating, error_count, metadata,
+          created_at, updated_at
         )
         VALUES (
-          ${conversation.id},
-          ${conversation.userId},
-          ${conversation.title},
+          ${normalized.id},
+          ${normalized.userId},
+          ${normalized.title},
           ${messagesJson}::jsonb,      -- Cast string to JSONB
-          ${conversation.messageCount},
-          ${conversation.createdAt},
-          ${conversation.updatedAt}
+          ${normalized.messageCount},
+          ${normalized.model ?? null},
+          ${normalized.provider ?? null},
+          ${normalized.hostId ?? null},
+          ${normalized.totalInputTokens ?? 0},
+          ${normalized.totalOutputTokens ?? 0},
+          ${normalized.totalReasoningTokens ?? 0},
+          ${normalized.totalCachedTokens ?? 0},
+          ${normalized.totalDurationMs ?? 0},
+          ${normalized.totalCostUsd ?? 0},
+          ${normalized.finishReason ?? null},
+          ${normalized.userRating ?? null},
+          ${normalized.errorCount ?? 0},
+          ${metadataJson}::jsonb,
+          ${normalized.createdAt},
+          ${normalized.updatedAt}
         )
         ON CONFLICT (id) DO UPDATE SET
           user_id = EXCLUDED.user_id,
           title = EXCLUDED.title,
           messages = EXCLUDED.messages,
           message_count = EXCLUDED.message_count,
+          model = EXCLUDED.model,
+          provider = EXCLUDED.provider,
+          host_id = EXCLUDED.host_id,
+          total_input_tokens = EXCLUDED.total_input_tokens,
+          total_output_tokens = EXCLUDED.total_output_tokens,
+          total_reasoning_tokens = EXCLUDED.total_reasoning_tokens,
+          total_cached_tokens = EXCLUDED.total_cached_tokens,
+          total_duration_ms = EXCLUDED.total_duration_ms,
+          total_cost_usd = EXCLUDED.total_cost_usd,
+          finish_reason = EXCLUDED.finish_reason,
+          user_rating = EXCLUDED.user_rating,
+          error_count = EXCLUDED.error_count,
+          metadata = EXCLUDED.metadata,
           updated_at = EXCLUDED.updated_at
       `
     } catch (error) {
@@ -352,4 +456,10 @@ export class PostgresStore implements ConversationStore {
       // Ignore errors during close (connection may already be closed)
     }
   }
+}
+
+export function toPostgresConversationMeta(
+  conversation: StoredConversation
+): ConversationMeta {
+  return stripMessages(conversation)
 }

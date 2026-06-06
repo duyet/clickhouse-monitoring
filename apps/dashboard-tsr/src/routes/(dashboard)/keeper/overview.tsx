@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { KeeperNodeCards } from '@/components/keeper/keeper-node-cards'
 import { KeeperOverviewKpis } from '@/components/keeper/keeper-overview-kpis'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { keeperOverviewConfig } from '@/lib/query-config/keeper'
 
 function KeeperOverviewContent() {
@@ -22,7 +22,7 @@ function KeeperOverviewContent() {
 
 function KeeperOverviewPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <KeeperOverviewContent />
     </Suspense>
   )

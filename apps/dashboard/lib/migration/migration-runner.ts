@@ -449,17 +449,18 @@ export class MigrationRunner {
       const { getPlatformBindings } = await import('@chm/platform')
       const bindings = getPlatformBindings()
 
-      const db =
-        bindings.getD1Database('CONVERSATIONS_D1') ||
-        bindings.getD1Database('NEXT_TAG_CACHE_D1')
+      const db = bindings.getD1Database('CONVERSATIONS_D1')
 
       if (!db) {
-        throw new Error('No D1 binding found')
+        throw new Error('CONVERSATIONS_D1 binding not found')
       }
 
       await db.exec(sql)
     } catch (error) {
-      if (error instanceof Error && error.message === 'No D1 binding found') {
+      if (
+        error instanceof Error &&
+        error.message === 'CONVERSATIONS_D1 binding not found'
+      ) {
         throw error
       }
       throw new Error(`D1 SQL execution failed: ${error}`)

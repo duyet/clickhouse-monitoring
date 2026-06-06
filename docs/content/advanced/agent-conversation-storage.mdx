@@ -1,0 +1,149 @@
+# Agent Conversation Storage
+
+Agent chat history is stored in browser localStorage by default. Server-side
+persistence is off until you enable it at runtime:
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=auto
+```
+
+`AGENT_CONVERSATION_STORE` accepts `auto`, `agentstate`, `d1`,
+`durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. The deprecated
+`NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true` still enables `auto`, but do not use
+it for new deployments.
+
+Server stores require authenticated user identity by default. If the current
+request is unauthenticated, the browser keeps using localStorage.
+
+## Auto Selection
+
+`auto` chooses the first available backend in this order:
+
+1. AgentState when `AGENTSTATE_API_KEY` is set.
+2. D1 when `CONVERSATIONS_D1` is bound.
+3. Durable Object when `AGENT_CONVERSATIONS_DO` is bound.
+4. Postgres when `DATABASE_URL`, `POSTGRES_URL`, or `POSTGRES_PRISMA_URL` is set.
+5. ClickHouse only when `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` is explicitly set.
+6. Memory in development/test only.
+
+Production `auto` fails closed when no persistent backend is configured.
+
+## AgentState
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=agentstate
+AGENTSTATE_API_KEY=as_live_xxx
+AGENTSTATE_API_BASE=https://agentstate.app/api
+```
+
+The app uses direct REST calls. The AgentState record stores
+`external_id = threadId`, `metadata.user_id`, model/provider/host fields, and
+raw UI message metadata. Normal completed turns append new messages. If an edit
+or regeneration changes already-persisted messages, the adapter deletes and
+recreates the AgentState conversation with the same `external_id`.
+
+## Cloudflare D1
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=d1
+CHM_AUTH_PROVIDER=clerk
+NEXT_PUBLIC_AUTH_PROVIDER=clerk
+CLERK_SECRET_KEY=sk_live_xxx
+```
+
+Setup:
+
+```bash
+bun run cf:setup-conversations
+bun run cf:migrate-conversations
+```
+
+Required binding: `CONVERSATIONS_D1`. The migration path is
+`apps/dashboard/src/db/conversations-migrations`. D1 is recommended for ordinary
+Cloudflare conversation history because it is a managed database with standard
+schema management, query tooling, import/export, and direct operational access.
+
+> **Deploy requirements**
+>
+> Wrangler deploys need a concrete D1 UUID for active bindings:
+>
+> - The checked-in config keeps the conversation binding unprovisioned until setup runs.
+> - During deploy, `scripts/prepare-dashboard-wrangler.ts` removes optional bindings without a UUID.
+> - To enable it in CI, set `CONVERSATIONS_D1_DATABASE_ID=<uuid>`; locally, run `bun run cf:setup-conversations`.
+> - The Cloudflare API token needs Workers deploy permissions plus D1 edit/read access.
+
+## Durable Object
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=durable-object
+AGENT_CONVERSATIONS_DO_BINDING=AGENT_CONVERSATIONS_DO
+```
+
+The worker exports `AgentConversationDurableObject` and Wrangler config creates
+a SQLite-backed Durable Object namespace with `new_sqlite_classes`. The app uses
+one Durable Object per user id.
+
+Durable Objects are supported for deployments that want per-user coordination or
+strictly colocated state. For ordinary queryable history, prefer D1: D1 is
+easier to inspect, migrate, export, and operate outside a single object.
+
+## ClickHouse
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=clickhouse
+CLICKHOUSE_AGENT_CONVERSATIONS_TABLE=system.agent_conversations
+CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE=true
+```
+
+Setup:
+
+```bash
+bun run setup:agent-conversations-clickhouse
+```
+
+The ClickHouse user must be allowed to `CREATE TABLE` when auto-create is on and
+`INSERT`/`SELECT` on the conversation table. Deletes are tombstone rows. The
+table uses `ReplacingMergeTree`, native numeric/date columns, LowCardinality
+strings for repeated fields, and JSON strings for message and metadata payloads.
+Writes use async inserts with `wait_for_async_insert=1`.
+
+## Postgres
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=postgres
+DATABASE_URL=postgresql://user:password@host:5432/db
+```
+
+`POSTGRES_URL` and `POSTGRES_PRISMA_URL` are also accepted. The runtime creates
+the `conversations` table and indexes if they do not exist. The database user
+needs `CREATE TABLE`, `CREATE INDEX`, `SELECT`, `INSERT`, `UPDATE`, and
+`DELETE` on the target schema.
+
+## Memory And Local
+
+```bash
+AGENT_CONVERSATION_STORE=local
+```
+
+`local` keeps browser localStorage and is the default when persistence is off.
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=memory
+```
+
+`memory` is only for development and tests. It is never accepted as production
+persistent storage because data is lost on process restart.
+
+## Fallbacks
+
+- Persistence off: browser localStorage.
+- Server persistence on but user unauthenticated: browser localStorage.
+- `auto` with no backend in development/test: memory.
+- `auto` with no backend in production: disabled until a persistent backend is configured.

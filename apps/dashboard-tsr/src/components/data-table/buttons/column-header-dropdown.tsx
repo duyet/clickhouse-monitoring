@@ -71,7 +71,7 @@ export const ColumnHeaderDropdown = function ColumnHeaderDropdown({
             'opacity-0 group-hover:opacity-40 hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100',
             'transition'
           )}
-          aria-label="Column options"
+          aria-label={`Column options for ${column.id}`}
         >
           <EllipsisVerticalIcon data-icon="inline-start" />
         </Button>
@@ -82,13 +82,23 @@ export const ColumnHeaderDropdown = function ColumnHeaderDropdown({
             <DropdownMenuItem onClick={handleSortAsc}>
               <SortAscIcon className="mr-2 size-3.5" />A → Z
               {column.getIsSorted() === 'asc' && (
-                <span className="ml-auto text-xs">✓</span>
+                <>
+                  <span className="ml-auto text-xs" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span className="sr-only">active</span>
+                </>
               )}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSortDesc}>
               <SortDescIcon className="mr-2 size-3.5" />Z → A
               {column.getIsSorted() === 'desc' && (
-                <span className="ml-auto text-xs">✓</span>
+                <>
+                  <span className="ml-auto text-xs" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span className="sr-only">active</span>
+                </>
               )}
             </DropdownMenuItem>
           </>

@@ -5,6 +5,9 @@ import {
   type Dispatch,
   type SetStateAction,
   use,
+  useCallback,
+  useEffect,
+  useMemo,
   useState,
 } from 'react'
 import { usePathname } from '@/lib/next-compat'
@@ -67,38 +70,41 @@ export const AppProvider = ({
   // Reload interval defaults to the provider prop but is restored from and
   // persisted to localStorage so the user's choice survives reloads.
   // setReloadInterval(null) to stop it.
-  const [reloadInterval, setReloadIntervalState] = useState<number | null>(() =>
-    readInitialReloadInterval(reloadIntervalSecond * 1000)
+  const defaultReloadInterval = reloadIntervalSecond * 1000
+  const [reloadInterval, setReloadIntervalState] = useState<number | null>(
+    defaultReloadInterval
   )
 
-  const setReloadInterval: Dispatch<SetStateAction<number | null>> = (
-    action
-  ) => {
-    setReloadIntervalState((prev) => {
-      const next =
-        typeof action === 'function'
-          ? (action as (p: number | null) => number | null)(prev)
-          : action
-      persistReloadInterval(next)
-      return next
-    })
-  }
+  useEffect(() => {
+    setReloadIntervalState(readInitialReloadInterval(defaultReloadInterval))
+  }, [defaultReloadInterval])
+
+  const setReloadInterval: Dispatch<SetStateAction<number | null>> =
+    useCallback((action) => {
+      setReloadIntervalState((prev) => {
+        const next =
+          typeof action === 'function'
+            ? (action as (p: number | null) => number | null)(prev)
+            : action
+        persistReloadInterval(next)
+        return next
+      })
+    }, [])
 
   const pathname = usePathname()
 
-  return (
-    <Context.Provider
-      value={{
-        interval,
-        setInterval,
-        reloadInterval,
-        setReloadInterval,
-        pathname,
-      }}
-    >
-      {children}
-    </Context.Provider>
+  const value = useMemo<ContextValue>(
+    () => ({
+      interval,
+      setInterval,
+      reloadInterval,
+      setReloadInterval,
+      pathname,
+    }),
+    [interval, reloadInterval, setReloadInterval, pathname]
   )
+
+  return <Context.Provider value={value}>{children}</Context.Provider>
 }
 
 export const useAppContext = () => {

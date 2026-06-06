@@ -2,7 +2,7 @@
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
 
 name = "chmonitor-dash"
-main = ".open-next/worker.js"
+main = "worker.ts"
 compatibility_date = "2026-05-28"
 
 # Minification (set to false for debugging, true for production)
@@ -78,10 +78,19 @@ mode = "smart"
 name = "NEXT_CACHE_DO_QUEUE"
 class_name = "DOQueueHandler"
 
+# Durable Object namespace for agent conversations (one object per user id)
+[[durable_objects.bindings]]
+name = "AGENT_CONVERSATIONS_DO"
+class_name = "AgentConversationDurableObject"
+
 # SQLite migrations for Durable Objects
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DOQueueHandler"]
+
+[[migrations]]
+tag = "v2-agent-conversations"
+new_sqlite_classes = ["AgentConversationDurableObject"]
 
 # D1 database for tag cache
 [[d1_databases]]
@@ -89,6 +98,12 @@ binding = "NEXT_TAG_CACHE_D1"
 database_name = "clickhouse-monitor"
 database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
 migrations_dir = "src/db/migrations"
+
+# D1 database for AI agent conversations
+[[d1_databases]]
+binding = "CONVERSATIONS_D1"
+database_name = "clickhouse-monitor-conversations"
+migrations_dir = "src/db/conversations-migrations"
 
 # KV namespace for incremental cache
 [[kv_namespaces]]
@@ -225,6 +240,10 @@ service = "preview-chmonitor-dash"
 name = "NEXT_CACHE_DO_QUEUE"
 class_name = "DOQueueHandler"
 
+[[env.preview.durable_objects.bindings]]
+name = "AGENT_CONVERSATIONS_DO"
+class_name = "AgentConversationDurableObject"
+
 # Reuse the same R2 bucket (read-heavy monitoring data)
 [[env.preview.r2_buckets]]
 binding = "NEXT_INC_CACHE_R2_BUCKET"
@@ -236,6 +255,12 @@ binding = "NEXT_TAG_CACHE_D1"
 database_name = "clickhouse-monitor"
 database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
 migrations_dir = "src/db/migrations"
+
+# Reuse the same conversation D1 database once database_id is provisioned
+[[env.preview.d1_databases]]
+binding = "CONVERSATIONS_D1"
+database_name = "clickhouse-monitor-conversations"
+migrations_dir = "src/db/conversations-migrations"
 
 # Reuse the same KV namespace for incremental cache
 [[env.preview.kv_namespaces]]

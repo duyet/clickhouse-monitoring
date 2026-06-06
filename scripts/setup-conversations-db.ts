@@ -50,23 +50,57 @@ function updateWranglerToml(databaseId: string): boolean {
   try {
     const content = readFileSync(WRANGLER_TOML_PATH, 'utf-8')
 
-    // Check if database_id already exists
-    if (content.includes(`database_id = "${databaseId}"`)) {
-      console.log(`✅ Database ID already set in wrangler.toml`)
-      return true
+    const withDatabaseId = (block: string) => {
+      let updated = block
+
+      if (/^\s*database_id\s*=/m.test(updated)) {
+        updated = updated.replace(
+          /^\s*database_id\s*=.*$/m,
+          `database_id = "${databaseId}"`
+        )
+      } else if (/^\s*migrations_dir\s*=/m.test(updated)) {
+        updated = updated.replace(
+          /^\s*migrations_dir\s*=/m,
+          `database_id = "${databaseId}"\nmigrations_dir =`
+        )
+      } else {
+        updated = `${updated}\ndatabase_id = "${databaseId}"`
+      }
+
+      if (!/^\s*migrations_dir\s*=/m.test(updated)) {
+        updated = `${updated}\nmigrations_dir = "src/db/conversations-migrations"`
+      }
+
+      return updated
     }
+
+    let matchedMain = false
+    let matchedPreview = false
 
     // Update the main D1 database binding
     const updatedMain = content.replace(
-      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations")(?:\s+migrations_dir = "[^"]*")?/g,
-      `$1\nmigrations_dir = "src/db/conversations-migrations"\ndatabase_id = "${databaseId}"`
+      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      (block) => {
+        matchedMain = true
+        return withDatabaseId(block)
+      }
     )
 
     // Update the preview environment binding
     const updatedPreview = updatedMain.replace(
-      /(# Reuse the same D1 database for AI agent conversations\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations")(?:\s+migrations_dir = "[^"]*")?/g,
-      `$1\nmigrations_dir = "src/db/conversations-migrations"\ndatabase_id = "${databaseId}"`
+      /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      (block) => {
+        matchedPreview = true
+        return withDatabaseId(block)
+      }
     )
+
+    if (!matchedMain || !matchedPreview) {
+      console.error(
+        `❌ Expected CONVERSATIONS_D1 blocks were not matched in wrangler.toml for database_id ${databaseId}`
+      )
+      return false
+    }
 
     writeFileSync(WRANGLER_TOML_PATH, updatedPreview, 'utf-8')
     console.log(`✅ Updated wrangler.toml with database_id: ${databaseId}`)
@@ -254,17 +288,16 @@ async function main() {
   console.log(`║  Database ID: ${createResult.databaseId!.padEnd(42)}║`)
   console.log(`╠════════════════════════════════════════════════════════════╣`)
   console.log(`║  Next Steps:                                                ║`)
+  console.log(`║  1. Set AGENT_CONVERSATION_PERSISTENCE=true                 ║`)
+  console.log(`║  2. Set AGENT_CONVERSATION_STORE=d1                         ║`)
   console.log(
-    `║  1. Enable feature flag: NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true ║`
+    `║  3. Set auth provider: NEXT_PUBLIC_AUTH_PROVIDER=clerk       ║`
   )
   console.log(
-    `║  2. Set auth provider: NEXT_PUBLIC_AUTH_PROVIDER=clerk       ║`
+    `║  4. Deploy: bun run cf:deploy                                ║`
   )
   console.log(
-    `║  3. Deploy: bun run cf:deploy                                ║`
-  )
-  console.log(
-    `║  4. Test the /agents page with conversation persistence        ║`
+    `║  5. Test the /agents page with conversation persistence       ║`
   )
   console.log(`╚════════════════════════════════════════════════════════════╝`)
 }

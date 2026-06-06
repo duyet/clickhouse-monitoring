@@ -23,6 +23,7 @@
     "test:e2e:headless": "cypress run --e2e",
     "test:component": "cypress open --component",
     "test:component:headless": "cypress run --component",
+    "smoke-test": "bun ../../scripts/smoke-test.ts --base-url https://dash-tsr.chmonitor.dev",
     "verify-deploy": "bun scripts/verify-deploy.ts"
   },
   "dependencies": {
