@@ -160,7 +160,7 @@ server {
 
     # Set after your auth module populates $remote_user
     proxy_set_header X-Forwarded-User $remote_user;
-    proxy_set_header X-Chm-Proxy-Secret "a-long-random-secret";
+    proxy_set_header X-Chm-Proxy-Secret "$chm_proxy_secret";  # inject via env/secrets manager, not hardcoded
 
     location / {
         proxy_pass http://chmonitor;

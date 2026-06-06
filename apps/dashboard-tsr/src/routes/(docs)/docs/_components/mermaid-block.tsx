@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 let mermaidIdCounter = 0
 
@@ -13,10 +13,13 @@ let mermaidIdCounter = 0
 export function MermaidBlock({ chart }: { chart: string }) {
   const [svg, setSvg] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
-  const idRef = useRef(`docs-mermaid-${mermaidIdCounter++}`)
 
   useEffect(() => {
     let cancelled = false
+    // Reset per render attempt so a prior failure or stale SVG never sticks
+    // when the `chart` prop changes.
+    setFailed(false)
+    setSvg(null)
 
     async function render() {
       try {
@@ -31,10 +34,10 @@ export function MermaidBlock({ chart }: { chart: string }) {
           securityLevel: 'strict',
         })
 
-        const { svg: rendered } = await mermaid.render(
-          idRef.current,
-          chart.trim()
-        )
+        // Generate the id on the client, inside the effect, to avoid an
+        // SSR/client hydration mismatch from the module-global counter.
+        const id = `docs-mermaid-${mermaidIdCounter++}`
+        const { svg: rendered } = await mermaid.render(id, chart.trim())
         if (!cancelled) setSvg(rendered)
       } catch {
         if (!cancelled) setFailed(true)

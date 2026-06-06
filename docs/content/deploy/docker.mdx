@@ -249,7 +249,7 @@ The health sweep runs at `GET /api/cron/health-sweep`. On Docker, call it from a
 -e CRON_SECRET='a-random-secret'
 ```
 
-Call the endpoint with `Authorization: Bearer <CRON_SECRET>` or `?secret=<CRON_SECRET>`.
+Call the endpoint with `Authorization: Bearer <CRON_SECRET>`. Prefer the header over a query string to avoid the secret appearing in server logs.
 
 ### Branding
 

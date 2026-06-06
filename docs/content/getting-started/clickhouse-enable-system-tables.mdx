@@ -202,5 +202,5 @@ clickhouse-client --query \
 System log tables can grow large. Useful levers:
 
 - **`max_size_rows`**: Caps the table size (default ~1M rows). Rows are dropped when the limit is hit.
-- **TTL**: Attach a TTL to prune old rows automatically. Example: `ALTER TABLE system.query_log MODIFY TTL event_date + INTERVAL 30 DAY`.
+- **TTL**: Configure a TTL to prune old rows automatically. This is set in `config.xml` (or a file in `config.d/`) under the relevant log block — for example, `<ttl>event_date + INTERVAL 30 DAY DELETE</ttl>`. Direct `ALTER TABLE` on system tables is generally restricted.
 - **`collect_interval_milliseconds`**: Higher values mean less frequent metric collection. `60000` (1 minute) is a reasonable default for most deployments.

@@ -157,7 +157,7 @@ docker run -d \
 
 ## Authentication for `authenticated` features
 
-Gating a feature with `access = "authenticated"` requires an auth provider. Set one of:
+Gating UI features with `access = "authenticated"` requires a user auth provider (for example, Clerk). Set one of:
 
 **Clerk:**
 
@@ -170,7 +170,7 @@ CLERK_SECRET_KEY=sk_live_your_key
 
 > Legacy Next.js app: use `NEXT_PUBLIC_AUTH_PROVIDER` and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` instead of the `VITE_*` names.
 
-**Agent API token (agent APIs only):**
+**Agent API token (agent API endpoints only — does not provide UI-level user authentication):**
 
 ```bash
 AGENT_API_TOKEN=your-shared-token

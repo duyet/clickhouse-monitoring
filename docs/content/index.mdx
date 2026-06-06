@@ -1,6 +1,6 @@
 # Introduction
 
-chmonitor is a static, client-side ClickHouse monitoring dashboard. It reads from ClickHouse `system.*` tables and renders query performance, storage, cluster health, and operational metrics directly in the browser. No server-side data processing; no database writes except optional self-tracking events.
+chmonitor is a client-rendered ClickHouse monitoring dashboard. The core dashboard reads from ClickHouse `system.*` tables and renders query performance, storage, cluster health, and operational metrics directly in the browser. No SSR of your ClickHouse data; no database writes except optional self-tracking events.
 
 It also ships an AI agent that can answer natural-language questions about your cluster, and an MCP server that exposes monitoring tools to external AI clients.
 

@@ -40,7 +40,7 @@ chmonitor can write dashboard pageview events to a ClickHouse table (`system.mon
 If you enable this, the monitoring user needs write access to that table:
 
 ```sql
-GRANT SELECT, INSERT, ALTER, CREATE, DROP, TRUNCATE
+GRANT SELECT, INSERT
   ON your_database.monitoring_events
   TO monitoring;
 ```
@@ -60,7 +60,7 @@ CLICKHOUSE_PASSWORD=secret-a,secret-b
 CLICKHOUSE_NAME=prod-a,prod-b
 ```
 
-All four variables must have the same number of entries. Position N across all four maps to host index N.
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be a single shared value or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host index N.
 
 ## Recommended ClickHouse profile
 

@@ -114,8 +114,8 @@ Pre-built prompts for common workflows: `health-check`, `slow-query-analysis`, `
 ## Security
 
 - **Read-only.** All tools run read-only queries. The server never mutates data.
-- **Auth required in production.** When `NODE_ENV=production` or `CHM_API_KEY_SECRET` is set, unauthenticated requests are rejected.
-- **Fail closed.** If auth is required but `CHM_API_KEY_SECRET` is unset, the endpoint returns `503` rather than serving open requests.
+- **Auth required in production.** When `NODE_ENV=production` or `CHM_API_KEY_SECRET` is set, unauthenticated requests are rejected. The MCP endpoint accepts either a `chm_` API key (`CHM_API_KEY_SECRET`) or a Clerk OAuth bearer token (`CHM_AUTH_PROVIDER=clerk`). See the [Authentication](#authentication) section above.
+- **Fail closed.** If auth is required, `CHM_API_KEY_SECRET` is unset, and no auth provider (`CHM_AUTH_PROVIDER`) is configured, the endpoint returns `503` rather than serving open requests.
 - **Open in development.** With `NODE_ENV` not set to `production` and no `CHM_API_KEY_SECRET`, the endpoint is open. Keep it on a trusted network.
 - **Shared credentials.** Queries use the dashboard's configured ClickHouse user. Visibility is bounded by that user's grants.
 

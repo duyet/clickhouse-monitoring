@@ -15,7 +15,7 @@ Set `CLICKHOUSE_HOST` to a comma-separated list of host URLs. Position N across 
 | `CLICKHOUSE_PASSWORD` | `pass1,pass2` |
 | `CLICKHOUSE_NAME` | `Production,Staging` |
 
-All four must have the same number of comma-separated values. `CLICKHOUSE_NAME` is optional — if omitted, hosts are labeled by their index (Host 0, Host 1, …).
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_NAME` is optional — if omitted, hosts are labeled by their index (Host 0, Host 1, …). For credentials, you can provide a single shared value (applied to all hosts) or one value per host position.
 
 The URL parameter `?host=0` targets the first host, `?host=1` the second, and so on. The dashboard defaults to `?host=0` on first load.
 

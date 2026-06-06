@@ -54,7 +54,7 @@ Review each section before exposing chmonitor to a team or the internet.
 - [ ] If using a server-side conversation store (postgres, clickhouse, D1), include it in your backup schedule.
 - [ ] For D1 on Cloudflare, use `wrangler d1 export` to back up.
 - [ ] For postgres, use your database provider's backup feature.
-- [ ] `memory` and `local` stores are ephemeral — no backup needed, but history is lost on restart.
+- [ ] `memory` and `local` (browser localStorage) stores are ephemeral — no backup needed, but history is lost on restart or when browser data is cleared.
 
 ## Network and deployment
 

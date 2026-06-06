@@ -348,13 +348,15 @@ Set the webhook and secret:
 ```yaml
 # in ConfigMap
 HEALTH_ALERT_ENABLED: "true"
-HEALTH_ALERT_WEBHOOK_URL: "https://hooks.slack.com/services/..."
 HEALTH_ALERT_MIN_SEVERITY: "warning"
 ```
 
 ```bash
+# Add CRON_SECRET and HEALTH_ALERT_WEBHOOK_URL to the existing chmonitor-auth secret (safe to re-run)
 kubectl create secret generic chmonitor-auth \
-  --from-literal=CRON_SECRET='a-random-secret'
+  --from-literal=CRON_SECRET='a-random-secret' \
+  --from-literal=HEALTH_ALERT_WEBHOOK_URL='https://hooks.slack.com/services/...' \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 ### Branding

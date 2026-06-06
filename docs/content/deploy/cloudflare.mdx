@@ -278,12 +278,12 @@ The Worker calls `GET /api/cron/health-sweep` every 5 minutes. Protect the endpo
 
 ```bash
 wrangler secret put CRON_SECRET
+wrangler secret put HEALTH_ALERT_WEBHOOK_URL
 ```
 
 ```toml
 [vars]
 HEALTH_ALERT_ENABLED = "true"
-HEALTH_ALERT_WEBHOOK_URL = "https://hooks.slack.com/services/..."
 HEALTH_ALERT_MIN_SEVERITY = "warning"
 ```
 

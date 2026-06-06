@@ -41,6 +41,8 @@ location / {
 
 The value of `X-Chm-Proxy-Secret` must match the `CHM_PROXY_AUTH_SECRET` you configured on the server.
 
+> **Production note:** do not hardcode the secret value in your nginx config files. Load it at deploy time using environment variable substitution (`envsubst`), a secrets manager (e.g., HashiCorp Vault Agent), or a configuration management tool, and exclude the config from source control.
+
 ## Kubernetes ingress example
 
 For k8s ingress with an external auth service, add the secret header in your ingress annotation or auth proxy config:
@@ -50,6 +52,8 @@ nginx.ingress.kubernetes.io/configuration-snippet: |
   proxy_set_header X-Forwarded-User $http_x_auth_request_user;
   proxy_set_header X-Chm-Proxy-Secret "the-same-long-random-secret";
 ```
+
+> **Production note:** store the secret in a Kubernetes Secret and inject it into your auth proxy or ingress config at runtime rather than hardcoding it in YAML manifests that may be committed to source control. Example: `kubectl create secret generic chm-proxy-secret --from-literal=value=<secret>`, then reference it as an environment variable in your proxy container.
 
 ## Notes
 

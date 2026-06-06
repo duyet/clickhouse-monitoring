@@ -30,7 +30,7 @@ Required. Set at least `CLICKHOUSE_HOST`.
 | `CLICKHOUSE_PASSWORD` | `""` | Comma-separated passwords, one per host. |
 | `CLICKHOUSE_NAME` | — | Comma-separated display labels shown in the host selector. |
 
-Position N across all four variables maps to host index N. All four must have the same number of comma-separated values.
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be either a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host index N.
 
 See [Multiple Hosts](/docs/advanced/multiple-hosts) and [Custom Name](/docs/advanced/custom-name).
 
@@ -137,7 +137,7 @@ Trust a reverse proxy that already authenticated the user. Either mechanism belo
 | `CHM_PROXY_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header the proxy sends containing the shared secret. |
 | `CHM_PROXY_AUTH_HEADER` | `X-Forwarded-User` | Header the proxy sends containing the authenticated user identity. |
 
-> Without `CHM_PROXY_AUTH_SECRET`, any client can forge `X-Forwarded-User` on a publicly-reachable deployment.
+> When `CHM_PROXY_AUTH_SECRET` is set, the identity header (`X-Forwarded-User` by default) is honored only when the request also carries a matching shared-secret header (constant-time compared). Without `CHM_PROXY_AUTH_SECRET`, the entire trusted-header mechanism is disabled and identity headers are ignored.
 
 ---
 
