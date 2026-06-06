@@ -464,4 +464,17 @@ export default defineConfig({
     ],
   },
   plugins: [ssrClientOnlyStub(), tailwindcss(), ...runtimePlugins],
+  build: {
+    // Cloudflare Workers V8 runs ES2022+ natively; avoids needless downleveling.
+    target: 'esnext',
+  },
+  optimizeDeps: {
+    // Pre-bundle heavy deps to speed cold dev-server start.
+    include: [
+      '@clickhouse/client-web',
+      'lucide-react',
+      'recharts',
+      'lru-cache',
+    ],
+  },
 })
