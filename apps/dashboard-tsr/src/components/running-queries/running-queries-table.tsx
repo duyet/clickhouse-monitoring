@@ -45,7 +45,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useLayoutView } from '@/hooks/use-layout-view'
 import { cn } from '@/lib/utils'
 
 // Re-exported so sibling modules can keep importing the row type from this
@@ -81,10 +81,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   // Card view leads on phones (the wide metric table is unreadable in a scroll
   // box), table on desktop — with a toggle so either is reachable anywhere.
-  // `null` follows the breakpoint until the user explicitly picks a view.
-  const isMobile = useIsMobile()
-  const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
-  const view = userView ?? (isMobile ? 'cards' : 'table')
+  const [view, setView] = useLayoutView()
   // Expansion is keyed by a stable row key; `query_id` still drives actions.
   // A row stays open across refreshes and re-sorts as long as that underlying
   // identifier remains stable.
@@ -291,7 +288,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           <div className="h-5 w-px bg-border" />
 
           {/* Table / cards view */}
-          <ViewToggle active={view} onChange={setUserView} />
+          <ViewToggle active={view} onChange={setView} />
 
           {/* Column visibility */}
           <ColumnVisibilityMenu
@@ -314,7 +311,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
       {view === 'cards' ? (
         /* Card list — SQL-first, the default on phones. */
         <div
-          className="flex flex-col gap-3 p-3"
+          className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3"
           data-testid="running-queries-cards"
         >
           {visible.map((d) => (

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback, useMemo, useState } from 'react'
 import { DetailField } from '@/components/query-tables/detail-field'
 import { exportCsv } from '@/components/query-tables/export-csv'
@@ -978,12 +979,32 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   )
   const [sortKey, setSortKey] = useState<SortKey>('duration')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const layoutParam = searchParams.get('layout')
+
   // Card view leads on phones (the wide metric table is unreadable in a scroll
   // box), table on desktop — with a toggle so either is reachable anywhere.
-  // `null` follows the breakpoint until the user explicitly picks a view.
   const isMobile = useIsMobile()
-  const [userView, setUserView] = useState<'table' | 'cards' | null>(null)
-  const view = userView ?? (isMobile ? 'cards' : 'table')
+  const view = useMemo<'table' | 'cards'>(() => {
+    if (layoutParam === 'card') return 'cards'
+    if (layoutParam === 'table') return 'table'
+    return isMobile ? 'cards' : 'table'
+  }, [layoutParam, isMobile])
+
+  const handleViewChange = useCallback(
+    (newView: 'table' | 'cards') => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (newView === 'cards') {
+        params.set('layout', 'card')
+      } else {
+        params.set('layout', 'table')
+      }
+      router.replace(`${pathname}?${params.toString()}`)
+    },
+    [searchParams, router, pathname]
+  )
   // Expansion is keyed by a stable row key; `query_id` still drives actions.
   // A row stays open across refreshes and re-sorts as long as that underlying
   // identifier remains stable.
@@ -1204,7 +1225,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
           <div className="h-5 w-px bg-border" />
 
           {/* Table / cards view */}
-          <ViewToggle active={view} onChange={setUserView} />
+          <ViewToggle active={view} onChange={handleViewChange} />
 
           {/* Column visibility */}
           <DropdownMenu>
@@ -1247,7 +1268,7 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
       {view === 'cards' ? (
         /* Card list — SQL-first, the default on phones. */
         <div
-          className="flex flex-col gap-3 p-3"
+          className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3"
           data-testid="running-queries-cards"
         >
           {visible.map((d) => (
