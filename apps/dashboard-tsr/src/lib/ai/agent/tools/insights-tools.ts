@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 import { formatDuration } from '@/lib/utils'
 
 const QUERY_BASE = `SELECT

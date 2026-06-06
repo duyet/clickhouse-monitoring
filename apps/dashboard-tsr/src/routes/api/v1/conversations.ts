@@ -27,6 +27,7 @@ import { ApiErrorType } from '@/lib/api/types'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 import { autoMigrate } from '@/lib/migration/auto-migrate'
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/conversations', method: 'GET' }
@@ -70,6 +71,19 @@ async function handleGet(request: Request): Promise<Response> {
   try {
     // Run pending migrations on first request
     await autoMigrate()
+
+    // Guard: conversation persistence must be explicitly enabled
+    if (!isFeatureEnabled('conversationDb')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.PermissionError,
+          message: 'Conversation storage is not enabled.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        501,
+        ROUTE_CONTEXT_GET
+      )
+    }
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -176,6 +190,19 @@ async function handlePost(request: Request): Promise<Response> {
   try {
     // Run pending migrations on first request
     await autoMigrate()
+
+    // Guard: conversation persistence must be explicitly enabled
+    if (!isFeatureEnabled('conversationDb')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.PermissionError,
+          message: 'Conversation storage is not enabled.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        501,
+        ROUTE_CONTEXT_POST
+      )
+    }
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()

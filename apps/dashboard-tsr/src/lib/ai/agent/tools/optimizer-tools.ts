@@ -1,7 +1,8 @@
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { extractReferencedTables, validateAgentSql } from './sql-analysis'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createOptimizerTools(hostId: number) {
   return {

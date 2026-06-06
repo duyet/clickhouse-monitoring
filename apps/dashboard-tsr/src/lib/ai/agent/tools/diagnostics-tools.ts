@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import {
   extractReferencedTables,
@@ -10,7 +12,6 @@ import {
   validateAgentSql,
 } from './sql-analysis'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 type Severity = 'info' | 'warning' | 'critical'
 type Confidence = 'confirmed' | 'suspected'

@@ -5,11 +5,11 @@
  * across tool category files.
  */
 
+import { z } from 'zod'
 import type { DataFormat } from '@clickhouse/client'
 
 import { fetchData } from '@chm/clickhouse-client'
 import { validateSqlQuery } from '@chm/sql-builder'
-import { z } from 'zod/v3'
 
 /**
  * Resolve the effective host ID from tool input and default.

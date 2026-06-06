@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import {
   hostIdSchema,
   readOnlyQuery,
@@ -5,7 +7,6 @@ import {
   resolveHostId,
 } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createComparisonTools(hostId: number) {
   return {

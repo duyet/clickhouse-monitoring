@@ -26,6 +26,7 @@ import { ApiErrorType } from '@/lib/api/types'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 import { autoMigrate } from '@/lib/migration/auto-migrate'
 
 const ROUTE_CONTEXT_GET = { route: '/api/v1/conversations/$id', method: 'GET' }
@@ -62,6 +63,19 @@ async function handleGet(id: string): Promise<Response> {
 
   try {
     await autoMigrate()
+
+    // Guard: conversation persistence must be explicitly enabled
+    if (!isFeatureEnabled('conversationDb')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.PermissionError,
+          message: 'Conversation storage is not enabled.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        501,
+        ROUTE_CONTEXT_GET
+      )
+    }
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -196,6 +210,19 @@ async function handlePut(request: Request, id: string): Promise<Response> {
 
   try {
     await autoMigrate()
+
+    // Guard: conversation persistence must be explicitly enabled
+    if (!isFeatureEnabled('conversationDb')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.PermissionError,
+          message: 'Conversation storage is not enabled.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        501,
+        ROUTE_CONTEXT_PUT
+      )
+    }
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
@@ -370,6 +397,19 @@ async function handleDelete(id: string): Promise<Response> {
 
   try {
     await autoMigrate()
+
+    // Guard: conversation persistence must be explicitly enabled
+    if (!isFeatureEnabled('conversationDb')) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.PermissionError,
+          message: 'Conversation storage is not enabled.',
+          details: { timestamp: new Date().toISOString() },
+        },
+        501,
+        ROUTE_CONTEXT_DELETE
+      )
+    }
 
     // Resolve authenticated user (or guest)
     const userId = await resolveUserId()
