@@ -25,7 +25,7 @@ import type {
 } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { lazy, useMemo, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { format } from 'sql-formatter'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -38,8 +38,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { apiFetch } from '@/lib/swr/api-fetch'
 import { activateOnEnterOrSpace } from '@/lib/a11y'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
