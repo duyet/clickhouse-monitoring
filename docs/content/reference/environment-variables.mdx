@@ -1,38 +1,38 @@
 # Environment Variables
 
-Reference of all supported environment variables, grouped by category.
+Full reference of every supported environment variable, grouped by category.
 
-> **Client var prefix differs by app.** Browser-exposed (client) variables are
-> **build-time inlined** and the prefix depends on which dashboard you run:
->
-> | App | Client prefix | Read via |
-> |---|---|---|
-> | `apps/dashboard` (Next.js, legacy) | `NEXT_PUBLIC_*` | `process.env.NEXT_PUBLIC_*` |
-> | `apps/dashboard-tsr` (TanStack Start) | `VITE_*` | `import.meta.env.VITE_*` |
->
-> Same variable, different prefix — e.g. `NEXT_PUBLIC_AUTH_PROVIDER` ↔
-> `VITE_AUTH_PROVIDER`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` ↔
-> `VITE_CLERK_PUBLISHABLE_KEY`. The tables below list the legacy `NEXT_PUBLIC_*`
-> names; for the TanStack app substitute the `VITE_` prefix. Worker `[vars]` are
-> runtime-only and never reach the client, so these MUST be set at build time
-> (CI build step / `vite.config.ts`). Authoritative TanStack reference:
-> [`apps/dashboard-tsr/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/dashboard-tsr/.env.example).
+---
+
+## Client variable prefix by app
+
+Browser-exposed variables are **build-time inlined**. The prefix depends on which app you run:
+
+| App | Client prefix | Example |
+|---|---|---|
+| `apps/dashboard-tsr` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
+| `apps/dashboard` (Next.js, legacy) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
+
+The tables below use `VITE_*`. If you run the legacy Next.js app, substitute `NEXT_PUBLIC_` wherever you see `VITE_`. Server-side variables (`CLICKHOUSE_*`, `CHM_*`, `LLM_*`, `CLERK_SECRET_KEY`, etc.) are the same in both apps.
+
+Authoritative example: [`apps/dashboard-tsr/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/dashboard-tsr/.env.example).
 
 ---
 
 ## ClickHouse Connection
 
-Required. At minimum set `CLICKHOUSE_HOST`.
+Required. Set at least `CLICKHOUSE_HOST`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CLICKHOUSE_HOST` | — (required) | Comma-separated ClickHouse host URLs. |
-| `CLICKHOUSE_USER` | `default` | Comma-separated usernames. |
-| `CLICKHOUSE_PASSWORD` | `""` | Comma-separated passwords. |
-| `CLICKHOUSE_NAME` | — | Comma-separated custom labels shown in the host selector. |
+| `CLICKHOUSE_HOST` | — (required) | Comma-separated ClickHouse host URLs, e.g. `http://ch-1:8123,http://ch-2:8123`. |
+| `CLICKHOUSE_USER` | `default` | Comma-separated usernames, one per host. |
+| `CLICKHOUSE_PASSWORD` | `""` | Comma-separated passwords, one per host. |
+| `CLICKHOUSE_NAME` | — | Comma-separated display labels shown in the host selector. |
 
-Each position across the comma-separated values maps to the same host index.
-All four vars must have the same number of values.
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be either a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host index N.
+
+See [Multiple Hosts](/docs/advanced/multiple-hosts) and [Custom Name](/docs/advanced/custom-name).
 
 ---
 
@@ -41,38 +41,34 @@ All four vars must have the same number of values.
 | Variable | Default | Description |
 |---|---|---|
 | `CLICKHOUSE_MAX_EXECUTION_TIME` | `60` | Query timeout in seconds. |
-| `CLICKHOUSE_TZ` | server default | Time zone for date/time formatting. |
-| `NEXT_QUERY_CACHE_TTL` | `3600` | Server-side query cache TTL in seconds. |
-| `CLICKHOUSE_DATABASE` | `system` | Database for app-owned tables (events, dashboards). |
-| `EVENTS_TABLE_NAME` | `system.monitoring_events` | Full override for the self-tracking events table. |
+| `CLICKHOUSE_TZ` | server default | Time zone for date/time display. |
+| `NEXT_QUERY_CACHE_TTL` | `3600` | Server-side query-result cache TTL in seconds. |
+| `CLICKHOUSE_DATABASE` | `system` | Database used for app-owned tables (self-tracking events, dashboards). |
+| `EVENTS_TABLE_NAME` | `system.monitoring_events` | Full table name override for self-tracking events. |
 
 ### Connection Pool
 
 | Variable | Default | Description |
 |---|---|---|
-| `CLICKHOUSE_POOL_SIZE` | `10` | Max concurrent ClickHouse clients per host config. |
-| `CLICKHOUSE_POOL_TIMEOUT` | `300000` | Idle client timeout in ms (5 min). |
-| `CLICKHOUSE_POOL_CLEANUP_INTERVAL` | `60000` | Stale-client cleanup interval in ms (1 min). |
+| `CLICKHOUSE_POOL_SIZE` | `10` | Max concurrent ClickHouse clients per host. |
+| `CLICKHOUSE_POOL_TIMEOUT` | `300000` | Idle client timeout in milliseconds (5 min). |
+| `CLICKHOUSE_POOL_CLEANUP_INTERVAL` | `60000` | Stale-client cleanup interval in milliseconds (1 min). |
 
 ---
 
-## Health Alerting (Cron Sweep)
+## Health Alerting
 
-The autonomous health sweep (`GET /api/cron/health-sweep`, triggered by the
-Cloudflare Cron Trigger every 5 minutes) runs the same health checks as the
-Health dashboard over **all** configured hosts and dispatches webhook alerts —
-even when no browser tab is open. Unlike the in-app alert settings (stored
-per-browser in localStorage), the cron sweep reads its configuration from env.
+The cron sweep (`GET /api/cron/health-sweep`, Cloudflare Cron Trigger every 5 minutes) runs health checks over all hosts and can post webhook alerts without a browser tab open. See [Environment Variables — Health Alerting](/docs/reference/environment-variables#health-alerting) in context.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CRON_SECRET` | — | Shared secret guarding `/api/cron/health-sweep`. Sent as `Authorization: Bearer <secret>` or `?secret=`. When unset, the endpoint is open. |
-| `HEALTH_ALERT_ENABLED` | `false` | Set to `true` to POST webhook alerts. When `false`, checks still run but no alert is sent. |
-| `HEALTH_ALERT_WEBHOOK_URL` | — | Slack/Discord-compatible webhook URL. Required for alerts to dispatch. |
-| `HEALTH_ALERT_MIN_SEVERITY` | `warning` | Minimum severity to alert on: `warning` (warning + critical) or `critical` (critical only). |
+| `CRON_SECRET` | — | Shared secret guarding `/api/cron/health-sweep`. Send as `Authorization: Bearer <secret>`. When unset, the endpoint is open. |
+| `HEALTH_ALERT_ENABLED` | `false` | Set `true` to POST webhook alerts. Checks run regardless; alerts only fire when `true`. |
+| `HEALTH_ALERT_WEBHOOK_URL` | — | Slack- or Discord-compatible webhook URL. Required for alerts to be dispatched. |
+| `HEALTH_ALERT_MIN_SEVERITY` | `warning` | Minimum severity to alert: `warning` (warning + critical) or `critical` (critical only). |
 
 ```bash
-# Example: alert to Slack on warning-or-worse, every 5 minutes
+# Alert Slack on warning-or-worse
 CRON_SECRET=a-long-random-string
 HEALTH_ALERT_ENABLED=true
 HEALTH_ALERT_WEBHOOK_URL=https://hooks.slack.com/services/T000/B000/XXXX
@@ -83,170 +79,193 @@ HEALTH_ALERT_MIN_SEVERITY=warning
 
 ## Feature Permissions
 
-All features are **public and enabled by default**. Override only what needs
-different behavior.
+All features are public and enabled by default. Override only what needs different behavior.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CHM_CONFIG_FILE` | — | Path to TOML/YAML config file for feature overrides. |
-| `CHM_DISABLED_FEATURES` | — | Comma-separated feature ids to disable. |
+| `CHM_CONFIG_FILE` | — | Path to TOML or YAML config file for feature overrides. |
+| `CHM_DISABLED_FEATURES` | — | Comma-separated feature ids to disable entirely. |
 | `CHM_AUTH_REQUIRED_FEATURES` | — | Comma-separated feature ids that require authentication. |
-| `CHM_FEATURE_{ID}_ACCESS` | `public` | Per-feature access level: `public`, `guest`, `authenticated`. |
-| `CHM_FEATURE_{ID}_ENABLED` | `true` | Per-feature enabled/disabled flag. |
+| `CHM_FEATURE_{ID}_ACCESS` | `public` | Per-feature access: `public`, `guest` (alias for public), or `authenticated`. |
+| `CHM_FEATURE_{ID}_ENABLED` | `true` | Per-feature enabled flag: `true` or `false`. |
 
-Replace `{ID}` with an uppercase feature id: `AGENT`, `TABLES`, `METRICS`,
-`SETTINGS`, `ACTIONS`, `MCP`, `PEERDB`, `INSIGHTS`, `SECURITY`, `LOGS`,
-`CLUSTER`, `OPERATIONS`, `DASHBOARD`, `OVERVIEW`, `QUERIES`, `HEALTH`, `DOCS`,
-`ABOUT`.
+Replace `{ID}` with an uppercase feature id: `OVERVIEW`, `AGENT`, `INSIGHTS`, `HEALTH`, `QUERIES`, `TABLES`, `METRICS`, `DASHBOARD`, `SECURITY`, `LOGS`, `SETTINGS`, `CLUSTER`, `OPERATIONS`, `ACTIONS`, `MCP`, `DOCS`, `ABOUT`, `PEERDB`.
 
 ```bash
-# Examples
 CHM_FEATURE_AGENT_ACCESS=authenticated
 CHM_FEATURE_METRICS_ENABLED=false
-CHM_FEATURE_SETTINGS_ACCESS=authenticated
+CHM_DISABLED_FEATURES=settings,insights
 ```
 
-See the [Feature Permissions](/docs/advanced/feature-permissions) guide for
-full details.
+See [Feature Permissions](/docs/advanced/feature-permissions) for config-file examples and precedence details.
 
 ---
 
 ## Authentication
 
-The active server-side auth provider is chosen by `CHM_AUTH_PROVIDER`. See the
-[Authentication](/docs/reference/authentication) reference for the full model
-(public, API key, Clerk, and reverse-proxy methods).
+The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authentication](/docs/authentication) for the full model.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CHM_AUTH_PROVIDER` | `none` | Server auth provider: `none`, `clerk`, `proxy`. |
-| `NEXT_PUBLIC_AUTH_PROVIDER` | `none` | Client-side auth provider (mirror `CHM_AUTH_PROVIDER`). |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). |
-| `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). |
-| `CHM_API_KEY_SECRET` | — | Shared secret for `chm_` API keys (`/api/v1/auth/api-key` + MCP auth). When set, API-key auth is always on alongside the provider. |
+| `CHM_AUTH_PROVIDER` | `none` | Server auth provider: `none`, `clerk`, or `proxy`. |
+| `VITE_AUTH_PROVIDER` | `none` | Client-side mirror of `CHM_AUTH_PROVIDER`. Set to the same value. Build-time. |
+| `CHM_API_KEY_SECRET` | — | Shared secret for `chm_` API keys. When set, API-key auth is always on alongside the active provider. Issue keys at `/api/v1/auth/api-key`. |
+
+### Clerk (`CHM_AUTH_PROVIDER=clerk`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). Build-time — must be set before `bun run build`. |
+| `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). Runtime only. Never expose to the browser. |
 
 ### Reverse proxy (`CHM_AUTH_PROVIDER=proxy`)
 
-Trust a reverse proxy that already authenticated the user. Either mechanism
-below authenticates a request; whichever succeeds first wins.
+Trust a reverse proxy that already authenticated the user. Either mechanism below can authenticate a request.
+
+**Cloudflare Access JWT:**
 
 | Variable | Default | Description |
 |---|---|---|
 | `CHM_CF_ACCESS_TEAM_DOMAIN` | — | Cloudflare Access team URL (`https://<team>.cloudflareaccess.com`). Enables `Cf-Access-Jwt-Assertion` JWT verification. |
 | `CHM_CF_ACCESS_AUD` | — | Access application AUD tag the JWT must carry. |
-| `CHM_PROXY_AUTH_SECRET` | — | Shared secret. When set, a trusted identity header is honored only if the request also presents this secret (constant-time compared). Set via `wrangler secret put`. |
-| `CHM_PROXY_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header the proxy sets to the shared secret. |
-| `CHM_PROXY_AUTH_HEADER` | `X-Forwarded-User` | Header the proxy sets to the authenticated user identity. |
 
-> Without `CHM_PROXY_AUTH_SECRET`, the trusted-header mechanism is **disabled** —
-> any client could forge `X-Forwarded-User` on a publicly-reachable worker.
+**Trusted header:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_PROXY_AUTH_SECRET` | — | Shared secret. When set, the identity header is honored only if this secret is also present (constant-time compare). Without it, the trusted-header mechanism is **disabled**. |
+| `CHM_PROXY_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header the proxy sends containing the shared secret. |
+| `CHM_PROXY_AUTH_HEADER` | `X-Forwarded-User` | Header the proxy sends containing the authenticated user identity. |
+
+> When `CHM_PROXY_AUTH_SECRET` is set, the identity header (`X-Forwarded-User` by default) is honored only when the request also carries a matching shared-secret header (constant-time compared). Without `CHM_PROXY_AUTH_SECRET`, the entire trusted-header mechanism is disabled and identity headers are ignored.
 
 ---
 
 ## AI Agent / LLM Provider
 
-The AI agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
+The agent uses an OpenAI-compatible API. Set `LLM_API_KEY` to enable it. Keep all LLM keys server-side — never prefix them with `VITE_`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `LLM_API_KEY` | — | Provider API key. |
-| `LLM_API_BASE` | `https://openrouter.ai/api/v1` | API base URL. |
-| `LLM_MODEL` | `openrouter:openrouter/free` | Model identifier. |
+| `LLM_API_KEY` | — | Provider API key (fallback when no provider-specific key is set). |
+| `LLM_API_BASE` | `https://openrouter.ai/api/v1` | OpenAI-compatible API base URL. |
+| `LLM_MODEL` | `openrouter:openrouter/free` | Model identifier in `provider:modelId` form. |
+| `LLM_EXTRA_MODELS` | — | Additional model picker entries. Format: `provider:modelId[|contextLength][|description]`, comma-separated. Providers: `openrouter`, `nvidia`, `anyrouter`. |
 
-### Provider-Specific
+### Provider-specific keys
+
+Provider-specific keys take priority over the generic `LLM_API_KEY` / `LLM_API_BASE`.
+
+| Variable | Description |
+|---|---|
+| `OPENROUTER_API_KEY` | OpenRouter API key. |
+| `OPENROUTER_API_BASE` | OpenRouter base URL. |
+| `OPENROUTER_REFERER` | HTTP referer sent to OpenRouter (for rankings). |
+| `OPENROUTER_APP_NAME` | App name sent to OpenRouter (for rankings). |
+| `OPENROUTER_MODELS_API` | OpenRouter models list endpoint (default `https://openrouter.ai/api/v1/models`). |
+| `NVIDIA_API_KEY` | NVIDIA NIM API key. |
+| `NVIDIA_API_BASE` | NVIDIA NIM base URL. |
+| `ANYROUTER_API_KEY` | AnyRouter API key. |
+| `ANYROUTER_API_BASE` | AnyRouter base URL. |
+
+### Agent behavior
 
 | Variable | Default | Description |
 |---|---|---|
-| `ANYROUTER_API_KEY` | — | AnyRouter API key. |
-| `ANYROUTER_API_BASE` | — | AnyRouter API base URL. |
-| `OPENROUTER_API_KEY` | — | OpenRouter API key. |
-| `OPENROUTER_API_BASE` | — | OpenRouter API base URL. |
-| `OPENROUTER_REFERER` | — | OpenRouter referer header for rankings. |
-| `OPENROUTER_APP_NAME` | — | OpenRouter app name for rankings. |
-| `OPENROUTER_MODELS_API` | `https://openrouter.ai/api/v1/models` | OpenRouter models list endpoint. |
-| `NVIDIA_API_KEY` | — | NVIDIA NIM API key. |
-| `NVIDIA_API_BASE` | — | NVIDIA NIM API base URL. |
+| `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API (`POST /api/v1/agent`). Accepted when `CHM_FEATURE_AGENT_ACCESS=authenticated`. |
+| `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enable kill-query, optimize, and other write actions. Keep `false` unless users are trusted. |
 
-### Agent Behaviour
-
-| Variable | Default | Description |
-|---|---|---|
-| `AGENT_API_TOKEN` | — | Shared token for agent API Bearer auth. |
-| `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enables kill-query, optimize, and other write actions. |
+See [AI Agent — Configuration](/docs/ai-agent/configuration) for full details.
 
 ---
 
 ## Conversation Store
 
+Agent conversations default to browser localStorage. Enable server-side persistence with `AGENT_CONVERSATION_PERSISTENCE=true`.
+
 | Variable | Default | Description |
 |---|---|---|
-| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enables server-side agent conversation persistence. |
+| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enable server-side conversation persistence. |
 | `AGENT_CONVERSATION_STORE` | `auto` | Backend: `auto`, `agentstate`, `d1`, `durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. |
-| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `false` | Deprecated alias for `AGENT_CONVERSATION_PERSISTENCE=true`. |
-| `AGENTSTATE_API_KEY` | — | AgentState API key. Required for `agentstate`; must start with `as_live_`. |
-| `AGENTSTATE_API_BASE` | `https://agentstate.app/api` | AgentState API base URL. |
-| `CONVERSATIONS_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the optional `CONVERSATIONS_D1` binding. Required to enable D1-backed conversation storage in deployed environments. |
-| `AGENT_CONVERSATIONS_D1_DATABASE_ID` | — | Alias accepted by deploy prep for `CONVERSATIONS_D1_DATABASE_ID`. |
-| `AGENT_CONVERSATIONS_DO_BINDING` | `AGENT_CONVERSATIONS_DO` | Durable Object binding used by `durable-object`. |
-| `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` | `${CLICKHOUSE_DATABASE}.agent_conversations` | ClickHouse table for `clickhouse` store. In `auto`, ClickHouse is tried only when this is explicitly set. |
-| `CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE` | `true` | Create the ClickHouse conversation table at runtime if missing. |
-| `DATABASE_URL` | — | PostgreSQL connection string for `postgres`. |
-| `POSTGRES_URL` | — | Alternative PostgreSQL connection string. |
-| `POSTGRES_PRISMA_URL` | — | Prisma-specific PostgreSQL connection string. |
 
-See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage) for
-setup commands, backend permissions, and fallback behavior.
+**AgentState backend:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `AGENTSTATE_API_KEY` | — | AgentState API key. Must start with `as_live_`. |
+| `AGENTSTATE_API_BASE` | `https://agentstate.app/api` | AgentState API base URL. |
+
+**Cloudflare D1 backend:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `CONVERSATIONS_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the `CONVERSATIONS_D1` binding. |
+| `AGENT_CONVERSATIONS_D1_DATABASE_ID` | — | Alias for `CONVERSATIONS_D1_DATABASE_ID`. |
+
+**Cloudflare Durable Object backend:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `AGENT_CONVERSATIONS_DO_BINDING` | `AGENT_CONVERSATIONS_DO` | Durable Object binding name. |
+
+**ClickHouse backend:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` | `${CLICKHOUSE_DATABASE}.agent_conversations` | ClickHouse table for conversation storage. In `auto` mode, ClickHouse is tried only when this is explicitly set. |
+| `CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE` | `true` | Create the table at runtime if it does not exist. |
+
+**PostgreSQL backend:**
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string. |
+| `POSTGRES_URL` | Alternative PostgreSQL connection string. |
+| `POSTGRES_PRISMA_URL` | Prisma-specific PostgreSQL connection string. |
+
+See [Conversation History — Backends](/docs/ai-agent/conversation-history/backends) for setup and fallback behavior.
 
 ---
 
 ## PeerDB Monitoring
 
-Optional, view-only. Set `PEERDB_API_URL` to enable the **PeerDB** section
-(Mirrors and Peers) in the sidebar. When unset, the section shows a
-"not configured" state and the proxy returns `503`.
+Optional. Set `PEERDB_API_URL` to enable the PeerDB section (Mirrors and Peers) in the sidebar.
 
 | Variable | Default | Description |
 |---|---|---|
-| `PEERDB_API_URL` | — | Base URL of the PeerDB REST API. For the PeerDB **UI** (NextAuth), include the `/api` suffix — e.g. `https://peerdb.example.com/api` — since it proxies `/api/v1/*` to the flow-api. For a raw **flow-api**, use the bare origin — e.g. `http://localhost:8113`. |
-| `PEERDB_PASSWORD` | — | PeerDB UI/API password. Sent as HTTP Basic with an empty username (`base64(":" + password)`). Leave empty if the API has no auth. Server-side only — never exposed to the browser. |
-| `PEERDB_CACHE_TTL_MS` | `10000` | TTL for the server-side response cache (ms). Set `0` to disable. |
-| `PEERDB_CACHE_MAX_ENTRIES` | `500` | Max cached responses before oldest entries are evicted. |
-| `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream PeerDB request timeout (ms). |
+| `PEERDB_API_URL` | — | PeerDB REST API base URL. For the PeerDB UI (NextAuth), include `/api` suffix — e.g. `https://peerdb.example.com/api`. For the raw flow-api, use the bare origin — e.g. `http://localhost:8113`. |
+| `PEERDB_PASSWORD` | — | PeerDB password. Sent as HTTP Basic with an empty username. Server-side only. |
+| `PEERDB_CACHE_TTL_MS` | `10000` | Server-side response cache TTL in milliseconds. Set `0` to disable. |
+| `PEERDB_CACHE_MAX_ENTRIES` | `500` | Max cached PeerDB responses before oldest are evicted. |
+| `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream PeerDB request timeout in milliseconds. |
 
-CHM proxies only a **read-only allowlist** of PeerDB endpoints
-(`app/api/v1/peerdb/[...slug]`); mutating endpoints (create/drop/pause,
-alert config, maintenance) are rejected with `403`.
+chmonitor proxies only a read-only allowlist of PeerDB endpoints; mutating operations (create/drop/pause, alert config) are rejected with `403`.
 
 ```bash
-# Example: PeerDB UI behind NextAuth
+# PeerDB UI behind NextAuth
 PEERDB_API_URL=https://peerdb.example.com/api
 PEERDB_PASSWORD=your-peerdb-ui-password
 
-# Example: raw flow-api (no auth)
+# Raw flow-api (no auth)
 PEERDB_API_URL=http://localhost:8113
-```
-
-For local development without a PeerDB instance, run the bundled mock:
-
-```bash
-bun run peerdb:mock                                  # serves :8113
-PEERDB_API_URL=http://localhost:8113 bun run dev
 ```
 
 ---
 
 ## Analytics & Branding
 
+All client-side, all build-time. `VITE_*` for TanStack app; `NEXT_PUBLIC_*` for legacy Next.js.
+
 | Variable | Default | Description |
 |---|---|---|
-| `NEXT_PUBLIC_TITLE_SHORT` | `ClickHouse` | Browser tab title (short form). |
-| `NEXT_PUBLIC_LOGO` | — | Custom logo URL (header branding). |
-| `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | — | Max results in autocomplete dropdowns. |
-| `NEXT_PUBLIC_MEASUREMENT_ID` | — | Google Analytics measurement ID (`G-...`). |
-| `NEXT_PUBLIC_SELINE_ENABLED` | `false` | Enable Seline analytics. |
-| `NEXT_PUBLIC_VERCEL_ANALYTICS` | `false` | Enable Vercel Analytics. |
-| `NEXT_PUBLIC_POSTHOG_KEY` | — | PostHog project API key. |
-| `NEXT_PUBLIC_POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog host URL. |
+| `VITE_TITLE_SHORT` | `ClickHouse` | Browser tab title (short form). |
+| `VITE_LOGO` | — | Custom logo URL shown in the header. |
+| `VITE_AUTOCOMPLETE_LIMIT` | — | Max results in autocomplete dropdowns. |
+| `VITE_MEASUREMENT_ID` | — | Google Analytics measurement ID (`G-...`). |
+| `VITE_SELINE_ENABLED` | `false` | Enable Seline analytics. |
+| `VITE_VERCEL_ANALYTICS` | `false` | Enable Vercel Analytics. |
+| `VITE_POSTHOG_KEY` | — | PostHog project API key. |
+| `VITE_POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog ingest host URL. |
 
 ---
 
@@ -254,30 +273,35 @@ PEERDB_API_URL=http://localhost:8113 bun run dev
 
 | Variable | Default | Description |
 |---|---|---|
-| `NODE_ENV` | `development` | Runtime environment (`development`, `production`, `test`). |
+| `NODE_ENV` | `development` | Runtime environment: `development`, `production`, `test`. |
 | `ENABLE_CLOUDFLARE` | `false` | Enable Cloudflare-specific build configuration. |
 | `CLOUDFLARE_WORKERS` | — | Set to `1` when running on Cloudflare Workers. |
-| `CF_PAGES` | — | Set by Cloudflare Pages at runtime. |
+| `CF_PAGES` | — | Set automatically by Cloudflare Pages at runtime. |
 | `MINIFLARE` | — | Set to `1` when running locally with Miniflare. |
 | `DOCS_CONTENT_ROOT` | — | Override docs content source directory. |
 
-### Build-Time
+### Build-time only
 
-These are injected at build time for the About page:
+Injected at build time for the About page.
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_GIT_SHA` | Current commit SHA. |
-| `NEXT_PUBLIC_GIT_REF` | Current git branch or tag. |
-| `NEXT_PUBLIC_BUILD_TIMESTAMP` | ISO build timestamp. |
-| `NEXT_PUBLIC_CI` | Set to `true` in CI environments. |
+| `VITE_GIT_SHA` | Current commit SHA. |
+| `VITE_GIT_REF` | Current git branch or tag. |
+| `VITE_BUILD_TIMESTAMP` | ISO build timestamp. |
+| `VITE_CI` | Set to `true` in CI environments. |
 
 ---
 
 ## Legacy / Migration
 
-| Variable | Default | Description |
-|---|---|---|
-| `CLICKHOUSE_CACHE_TAG` | — | Legacy cache tag override (prefer `NEXT_QUERY_CACHE_TTL`). |
-| `DATABASE_URL` | — | Migration / conversation store database URL. |
-| `POSTGRES_URL` | — | Migration / conversation store database URL (fallback). |
+| Variable | Notes |
+|---|---|
+| `NEXT_PUBLIC_AUTH_PROVIDER` | Renamed to `VITE_AUTH_PROVIDER` in v0.3. Old name still works as a fallback. |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Renamed to `VITE_CLERK_PUBLISHABLE_KEY` in v0.3. |
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | Deprecated alias for `AGENT_CONVERSATION_PERSISTENCE=true`. |
+| `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | Renamed to `VITE_AUTOCOMPLETE_LIMIT` in v0.3. |
+| `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | Renamed to `VITE_RUNNING_QUERIES_REFRESH_MS` in v0.3. |
+| `CLICKHOUSE_EXCLUDE_USER_DEFAULT` | Comma-separated usernames excluded from history-queries by default. |
+
+See [Migrate to v0.3](/docs/migrating/v0-3) for the full rename list.

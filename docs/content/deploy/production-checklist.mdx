@@ -1,71 +1,65 @@
 # Production Checklist
 
-Use this checklist before exposing chmonitor to a team or the public
-internet.
+Review each section before exposing chmonitor to a team or the internet.
 
-## ClickHouse Access
+## ClickHouse user and grants
 
-- Use a dedicated monitoring user.
-- Grant only the actions you want available from the UI.
-- Set `CLICKHOUSE_MAX_EXECUTION_TIME` so runaway dashboard queries stop quickly.
-- Keep ClickHouse credentials in deployment secrets, not source code.
+- [ ] Create a dedicated monitoring user — do not use `default` or an admin account.
+- [ ] Grant `SELECT` on `system.*` tables only. The dashboard is read-only by default.
+- [ ] If you enable the kill-query action, also grant `KILL QUERY`.
+- [ ] Set `CLICKHOUSE_MAX_EXECUTION_TIME` to a safe limit (e.g. `30`) so runaway dashboard queries stop quickly.
+- [ ] Store `CLICKHOUSE_PASSWORD` in a secret (Docker secret, k8s Secret, Cloudflare Worker secret, Vercel env) — never in source code or a ConfigMap.
+- [ ] Prefer HTTPS for ClickHouse Cloud and any public endpoint. Keep private endpoints behind your own network.
 
-## Application Access
+## Authentication — do not leave fully public
 
-- Require authentication for agent, MCP, settings, and action features.
-- Keep `CHM_API_KEY_SECRET` set when exposing `/api/mcp`.
-- Avoid putting secrets in `NEXT_PUBLIC_` variables.
-- Disable features that your team does not operate yet.
+- [ ] Choose an auth provider: `none` is only safe on a private network with no agent or MCP access.
+- [ ] If you use `CHM_AUTH_PROVIDER=none`, restrict network access so the app is not reachable from the internet.
+- [ ] For team deployments, use Clerk or a trusted-header proxy provider.
+- [ ] Set `CHM_API_KEY_SECRET` whenever you expose `/api/mcp`. MCP clients send long-lived tokens — require an API key.
+- [ ] Rotate `CHM_API_KEY_SECRET` and `CHM_PROXY_AUTH_SECRET` if they are ever exposed. Redeploy after rotating.
+- [ ] Never put `CLERK_SECRET_KEY`, `LLM_API_KEY`, or `CHM_API_KEY_SECRET` in a `VITE_*` or `NEXT_PUBLIC_*` variable — those are baked into browser JS.
 
-## Network
+## Feature permissions — gate sensitive features
 
-- Prefer HTTPS for ClickHouse Cloud and public ClickHouse endpoints.
-- Keep private ClickHouse endpoints behind your own trusted network path.
-- Verify the app can reach ClickHouse from the deployment runtime, not just from
-  your laptop.
+- [ ] Gate the agent behind authentication: `CHM_FEATURE_AGENT_ACCESS=authenticated`.
+- [ ] Gate settings: `CHM_FEATURE_SETTINGS_ACCESS=authenticated` or `CHM_FEATURE_SETTINGS_ENABLED=false`.
+- [ ] Gate MCP: `CHM_FEATURE_MCP_ACCESS=authenticated`.
+- [ ] Disable features your team does not use: `CHM_DISABLED_FEATURES=actions,peerdb`.
+- [ ] Review which features are visible to unauthenticated users. Default is all public.
 
-## Deployment
+## AI agent
 
-Run the same checks before shipping:
+- [ ] Keep `AGENT_ENABLE_CONTROL_TOOLS=false` (default) unless you trust all authenticated users to kill queries and optimize tables.
+- [ ] Keep `LLM_API_KEY` server-side only — never in a client env var.
+- [ ] Set `AGENT_API_TOKEN` if you want to gate programmatic access to `/api/v1/agent`.
+- [ ] The agent uses the configured ClickHouse user's grants. A read-only user limits what the agent can do.
+- [ ] Set spending / rate limits on your LLM provider to cap runaway agent costs.
 
-```bash
-bun run lint
-bun run build
-bun run test
-```
+## Health alerting
 
-For Cloudflare:
+- [ ] Set `CRON_SECRET` to protect the `/api/cron/health-sweep` endpoint.
+- [ ] Set `HEALTH_ALERT_ENABLED=true` and `HEALTH_ALERT_WEBHOOK_URL` (Slack or Discord) for proactive alerts.
+- [ ] Choose `HEALTH_ALERT_MIN_SEVERITY=warning` or `critical` depending on alert volume.
+- [ ] Verify the cron trigger reaches the endpoint (Cloudflare Cron Trigger, k8s CronJob, or external cron).
 
-Ensure `.env.local` contains `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and
-`CLICKHOUSE_PASSWORD`. Add `CLICKHOUSE_NAME` when you want custom host names.
-For multi-host deployments, use comma-separated values in the same order across
-all four variables.
+## Query timeout and pool
 
-```bash
-bun run cf:build
-bun run cf:deploy
-bun run cf:health
-```
+- [ ] Set `CLICKHOUSE_MAX_EXECUTION_TIME` below your infrastructure's request timeout (30 s is a safe default).
+- [ ] Tune `CLICKHOUSE_POOL_SIZE` to match expected concurrent dashboard users.
+- [ ] Set `NEXT_QUERY_CACHE_TTL` to a value that balances freshness and query load (default `3600` s).
 
-For Docker:
+## Conversation store backups
 
-Ensure `.env.local` contains `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and
-`CLICKHOUSE_PASSWORD`. Add `CLICKHOUSE_NAME` when you want custom host names.
-For multi-host deployments, use comma-separated values in the same order across
-all four variables.
+- [ ] If using a server-side conversation store (postgres, clickhouse, D1), include it in your backup schedule.
+- [ ] For D1 on Cloudflare, use `wrangler d1 export` to back up.
+- [ ] For postgres, use your database provider's backup feature.
+- [ ] `memory` and `local` (browser localStorage) stores are ephemeral — no backup needed, but history is lost on restart or when browser data is cleared.
 
-```bash
-docker compose up -d
-bun run docker:health
-```
+## Network and deployment
 
-## Operations
-
-- Record where secrets are stored and who can rotate them.
-- Keep a rollback path for the previous image, Worker version, or deployment.
-- Watch app logs after deploy for ClickHouse connection errors.
-- Re-run the dependency audit after package updates:
-
-```bash
-bun audit
-```
+- [ ] Verify the app can reach ClickHouse from the deployment runtime, not just from your laptop.
+- [ ] Use HTTPS in front of chmonitor when exposing to a team (TLS termination at nginx, Cloudflare, or your load balancer).
+- [ ] Record where secrets are stored and who can rotate them.
+- [ ] Keep a rollback path: previous Docker tag, Helm release revision, or Worker version.
+- [ ] Watch app logs after deploy for ClickHouse connection errors or auth failures.

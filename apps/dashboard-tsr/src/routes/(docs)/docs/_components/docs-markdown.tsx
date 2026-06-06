@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 import { rewriteDocsHref, rewriteDocsImageSrc, slugify } from '../_lib/shared'
+import { MermaidBlock } from './mermaid-block'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -24,6 +25,17 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          code: ({ className, children, ...props }) => {
+            const language = /language-(\w+)/.exec(className ?? '')?.[1]
+            if (language === 'mermaid') {
+              return <MermaidBlock chart={String(children)} />
+            }
+            return (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            )
+          },
           a: ({ href, children }) => {
             const resolvedHref = rewriteDocsHref(href)
             const isExternal = resolvedHref?.startsWith('http')

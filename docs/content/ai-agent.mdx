@@ -1,368 +1,61 @@
 # AI Agent
 
-The AI Agent turns natural language into ClickHouse insights. Ask a question in
-plain English and the agent plans a series of tool calls — running read-only
-SQL, inspecting `system.*` tables, comparing hosts, spotting issues — then
-summarizes the findings and can render charts inline.
+The AI Agent turns natural language into ClickHouse insights. Ask a question and the agent plans a series of read-only tool calls — querying system tables, inspecting schema, comparing hosts, spotting anomalies — then streams back a concise answer with optional inline charts.
 
-The agent connects through the **same configured ClickHouse host and user** as
-the rest of the dashboard, so its visibility is limited by the grants you give
-that user. By default it only runs read-only queries.
+The agent connects through the **same ClickHouse host and user** as the rest of the dashboard. Its visibility is bounded by the grants on that user. By default it only runs read-only queries. Keep control tools off and use a restricted ClickHouse user for safe exposure.
 
-> Open the agent at `/agents` (use the host selector or `?host=0` to pick a
-> host). It is available on any deployment that has an LLM provider configured.
+## What it can do
 
-## How It Works
-
-1. You send a message (optionally targeting a specific `hostId`).
-2. The agent calls one or more **tools** to gather evidence — each tool is a
-   purpose-built, version-aware query against ClickHouse system tables.
-3. When a question needs deeper expertise, the agent loads a **skill** — a
-   bundled expert guide — to inform its analysis before answering.
-4. It streams back a concise answer, shows the SQL it ran, and suggests
-   follow-ups or visualizations.
-
-The agent runs in a bounded tool loop: it keeps calling tools until it has
-enough to answer, then stops. Destructive actions (kill query, optimize) are
-disabled unless explicitly enabled (see [Configuration](#configuration)).
-
-## Workflow Harness
-
-For multi-step tasks — incident investigations, health reports, cross-host
-comparisons, or any "find and fix" request — the agent runs a lightweight
-**planning harness**. It lays out an ordered checklist of steps up front, then
-updates it after each step so you can follow along live in the chat.
-
-### Dynamic workflows
-
-The agent ships a set of **dynamic workflow templates** — data-driven runbooks it
-can launch with `start_workflow` and then adapt at runtime:
-
-| Workflow | Purpose |
+| Category | What the agent covers |
 |---|---|
-| `incident-investigation` | Triage a reported problem to a root cause. |
-| `health-check` | Full cluster health sweep. |
-| `query-optimization` | Analyze and speed up a slow query. |
-| `capacity-planning` | Forecast storage and resource needs. |
-| `replication-triage` | Diagnose replication lag or failover. |
-| `migration-safety` | Assess a schema change before applying it. |
+| Schema exploration | List databases, tables, columns; discover data sources relevant to a topic |
+| Query analysis | Running, slow, failed, and expensive queries; EXPLAIN plans; optimization advice |
+| System health | Server metrics, CPU/memory/disk, error log, crash log, anomaly detection |
+| Storage, merges & mutations | Part sizes, active merges, stuck mutations, historical merge throughput |
+| Replication & cluster | Replication lag, queue, ZooKeeper/Keeper status, cluster topology, DDL queue |
+| Security & audit | Active sessions, login attempts, users and roles |
+| Schema migration safety | Assess ALTER impact, column usage (blast radius), table design recommendations |
+| Comparison & forecasting | Cross-host comparison, time-period comparison, disk capacity forecast |
+| Charts & visualization | Run SQL and render an interactive chart inline |
+| Findings persistence | Record and retrieve structured findings (severity, category, metric, value) |
 
-When a request matches a template, the agent instantiates it into a plan
-(tailoring or extending the steps for the specific table/host) and proceeds. When
-nothing fits, it authors the plan directly with `update_plan`. Workflows are a
-registry, so cluster-specific runbooks can be registered at runtime. As the agent
-learns from intermediate results, it revises the plan — adding, dropping, or
-reordering steps — keeping the workflow checklist live and accurate.
+**Skills** — when a question needs domain depth, the agent loads a bundled expert guide (a skill) before answering. Nine skills cover best practices, query optimization, system tables, troubleshooting, replication, cluster operations, storage, migration patterns, and security hardening. Available skills: `GET /api/v1/agent/skills`.
 
-Each step has a status: `pending`, `in_progress`, or `completed`. Exactly one
-step is in progress at a time, rendered as a checklist with a progress bar:
+**Dynamic workflows** — for multi-step tasks (incident triage, health checks, capacity planning) the agent picks a workflow template and runs it as a live checklist, updating each step as it progresses. Six templates are built in. See [Capabilities](/docs/ai-agent/capabilities) for the full list.
 
-- ✓ completed steps are struck through,
-- the in-progress step is highlighted with a spinner,
-- pending steps wait below.
+## Quick start
 
-This makes the agent's reasoning transparent without slowing it down — simple
-single-step questions skip the plan entirely. The harness is a transparency aid
-layered on top of the tool loop; it does not change which tools run or the
-read-only safety guarantees.
-
-## Context Management
-
-On an unfamiliar host the agent can call `get_context` once to orient itself with
-a single snapshot instead of rediscovering everything query by query. The
-snapshot gathers, in parallel and with graceful degradation:
-
-- **ClickHouse version & uptime** — so queries target the right schema and avoid
-  version-specific column mistakes,
-- **Current user** — the connected ClickHouse user,
-- **Keeper/ZooKeeper availability** — whether replication coordination is configured,
-- **Memory pressure** — tracked vs. OS total/available memory,
-- **Changed settings** — how many settings differ from defaults (with notable names),
-- **Capabilities** — the agent's own tool count, loaded skills, and available workflows.
-
-Any unavailable source (e.g. a host without Keeper) is reported as such rather
-than failing the whole snapshot.
-
-## Configuration
-
-The agent uses an OpenAI-compatible API. At minimum set `LLM_API_KEY`.
+Set at minimum one environment variable:
 
 ```bash
 LLM_API_KEY=your-provider-key
-LLM_API_BASE=https://openrouter.ai/api/v1   # default
-LLM_MODEL=openrouter:openrouter/free        # default
 ```
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `LLM_API_KEY` | — | Provider API key (required). |
-| `LLM_API_BASE` | `https://openrouter.ai/api/v1` | OpenAI-compatible base URL. |
-| `LLM_MODEL` | `openrouter:openrouter/free` | Model identifier. |
-| `LLM_EXTRA_MODELS` | — | Extra models to surface in the model picker (see below). |
-| `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API. |
-| `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enables destructive tools (kill query, optimize). |
-| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enables server-side conversation persistence. |
-| `AGENT_CONVERSATION_STORE` | `auto` | Store backend: `auto`, `agentstate`, `d1`, `durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. |
+Then open `/agents` in the dashboard, pick a host, and start asking questions. The agent uses OpenRouter by default (`https://openrouter.ai/api/v1`) with the free model tier.
 
-### Adding extra models
+For full configuration options see [Configuration](/docs/ai-agent/configuration).
 
-`LLM_EXTRA_MODELS` lets you inject additional models into the picker without
-modifying code. It is a comma-separated list of entries:
+## Child pages
 
-```
-provider:modelId[|contextLength][|description]
-```
+- [Configuration](/docs/ai-agent/configuration) — all env vars, providers, access control
+- [Capabilities](/docs/ai-agent/capabilities) — tool categories, skills, workflow templates, examples
+- [Conversation History](/docs/ai-agent/conversation-history) — how history works, how to enable server persistence
+  - [Store Backends](/docs/ai-agent/conversation-history/backends) — per-backend setup (D1, ClickHouse, Postgres, …)
 
-- **`provider`** — a known provider ID (`openrouter`, `nvidia`, `anyrouter`).
-- **`modelId`** — the model ID passed to the provider (may contain colons, e.g.
-  `qwen/qwen3-coder:free`).
-- **`contextLength`** — optional integer token count; defaults to `128000`.
-- **`description`** — optional display label; defaults to the model ID.
-
-Example:
-
-```bash
-LLM_EXTRA_MODELS="nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B,openrouter:x-ai/grok-2"
-```
-
-Extra models are appended after the built-in registry. If an extra entry uses
-the same `provider:modelId` key as a built-in entry, the built-in entry wins.
-The model picker only shows models whose provider has an API key configured; if
-no provider is configured, all models are shown so the UI is never empty.
-
-For public deployments, require authentication for the agent:
-
-```bash
-CHM_FEATURE_AGENT_ACCESS=authenticated
-```
-
-See [Environment Variables](/docs/reference/environment-variables) and
-[Feature Permissions](/docs/advanced/feature-permissions) for the full list.
-
-### Conversation history
-
-The default history backend is browser localStorage. Enable server persistence
-with:
-
-```bash
-AGENT_CONVERSATION_PERSISTENCE=true
-AGENT_CONVERSATION_STORE=auto
-```
-
-Supported stores are AgentState, Cloudflare D1, SQLite-backed Durable Objects,
-ClickHouse, Postgres, memory, and localStorage. Server stores require
-authenticated user identity; unauthenticated sessions keep local browser
-history. See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage)
-for backend-specific setup and permissions.
-
-## Tools
-
-Tools are the functions the agent calls to gather data. Every tool accepts an
-optional `hostId` (a numeric, 0-based index — `0`, `1`, `2`) and defaults to the
-current host. The agent picks tools automatically; you never call them directly.
-
-### Schema & Exploration
-
-| Tool | Description |
-|---|---|
-| `query` | Execute a read-only SQL query (SELECT, WITH/CTE, DESCRIBE). |
-| `list_databases` | List all databases. |
-| `list_tables` | List tables in a database with sizes and row counts. |
-| `get_table_schema` | Column definitions for a table. |
-| `explore_table_schema` | Schema exploration with relationship discovery. |
-| `discover_data_sources` | Find tables/columns relevant to a topic. |
-
-### Query Analysis
-
-| Tool | Description |
-|---|---|
-| `get_running_queries` | Currently executing queries with elapsed time. |
-| `get_slow_queries` | Slowest completed queries. |
-| `get_failed_queries` | Recent failed queries with error details. |
-| `get_expensive_queries` | Top queries by memory, bytes read, or duration. |
-| `get_query_patterns` | Aggregated query fingerprints with frequency. |
-| `explain_query` | EXPLAIN plan / pipeline / indexes for a query. |
-| `analyze_query_optimization` | Optimization opportunities for a SQL query. |
-| `repair_query` | Self-fix a broken or slow read-only query. |
-| `spot_issues` | Scan recent history for likely problems. |
-
-### System Health
-
-| Tool | Description |
-|---|---|
-| `get_metrics` | Server version, uptime, connections, memory. |
-| `get_system_resources` | CPU, memory, disk, network, thread metrics. |
-| `get_disk_usage` | Per-disk free/total/used percentage. |
-| `get_errors` | Recent system errors with counts. |
-| `get_crash_log` | Server crash history. |
-| `detect_anomalies` | Compare recent vs baseline metrics for anomalies. |
-| `generate_health_report` | Collect all key metrics into one report. |
-| `investigate_incident` | Automated root-cause analysis for an incident. |
-
-### Findings (persistence)
-
-Findings are short, structured records of noteworthy conditions, persisted to
-an app-owned `monitoring_findings` table (MergeTree, 30-day TTL). Writes are
-best-effort and silently no-op on read-only clusters. Also exposed at
-`GET /api/v1/findings`.
-
-| Tool | Description |
-|---|---|
-| `record_finding` | Persist a finding (severity, category, source, title, metric, value). |
-| `list_recent_findings` | List recent findings, newest first; filter by severity and time window. |
-
-### Storage, Merges & Mutations
-
-| Tool | Description |
-|---|---|
-| `get_table_parts` | Part-level sizes, rows, compression ratio. |
-| `get_detached_parts` | Detached parts needing attention. |
-| `get_top_tables_by_size` | Top tables by compressed size. |
-| `get_merge_status` | Active merge operations with progress. |
-| `get_mutations` | Pending and stuck mutations. |
-| `get_merge_performance` | Historical merge throughput. |
-
-### Replication & Cluster
-
-| Tool | Description |
-|---|---|
-| `get_replication_status` | Per-table lag, queue size, leader/readonly. |
-| `get_replication_queue` | Pending replication tasks. |
-| `get_clusters` | Cluster topology: shards, replicas, hosts. |
-| `get_distributed_ddl_queue` | Pending/failed distributed DDL operations. |
-| `get_zookeeper_info` | ZooKeeper/Keeper node data. |
-
-### Security & Audit
-
-| Tool | Description |
-|---|---|
-| `get_active_sessions` | Current sessions with user/client info. |
-| `get_login_attempts` | Recent login successes/failures. |
-| `get_users_and_roles` | Users, roles, and access grants. |
-
-### Schema Migration
-
-| Tool | Description |
-|---|---|
-| `analyze_schema_change` | Assess impact of a proposed ALTER TABLE. |
-| `get_column_usage` | Find queries referencing a column (blast radius). |
-| `recommend_table_design` | Suggest ORDER BY, types, indexes, MVs. |
-
-### Comparison, Insights & Visualization
-
-| Tool | Description |
-|---|---|
-| `compare_time_periods` | Compare metrics between two time periods. |
-| `compare_hosts` | Compare two hosts side-by-side. |
-| `get_query_insights` | Highlight stats: largest scans, peak memory, etc. |
-| `get_table_insights` | Table-level insights: size, rows, compression. |
-| `forecast_capacity` | Forecast days-until-disk-full from 30-day trends. |
-| `query_and_visualize` | Run SQL and return an interactive chart config. |
-
-### Settings, Logs & Navigation
-
-| Tool | Description |
-|---|---|
-| `get_settings` | Server settings changed from defaults. |
-| `get_mergetree_settings` | MergeTree settings changed from defaults. |
-| `get_text_log` | Server log entries by level and pattern. |
-| `get_stack_traces` | Current thread stack traces. |
-| `get_dashboard_pages` | List dashboard pages and routes. |
-| `get_chart_data` | Fetch data from a specific dashboard chart. |
-
-### Control Actions (destructive)
-
-Disabled unless `AGENT_ENABLE_CONTROL_TOOLS=true`. The agent always confirms
-before using them.
-
-| Tool | Description |
-|---|---|
-| `optimize_table` | Trigger `OPTIMIZE TABLE`. |
-| `kill_query` | Kill a running query by id. |
-| `kill_mutation` | Cancel a running mutation on a table. |
-
-### Interaction & Knowledge
-
-| Tool | Description |
-|---|---|
-| `ask_user` | Ask a structured clarifying question. |
-| `load_skill` | Load a specialized expert guide (see Skills below). |
-| `get_context` | Runtime context snapshot: version, user, Keeper, memory, settings, capabilities. |
-| `list_workflows` | List the available dynamic workflow templates. |
-| `start_workflow` | Start a workflow template as a live plan (see Workflow Harness above). |
-| `update_plan` | Create and update a live workflow checklist (see Workflow Harness above). |
-
-## Skills
-
-Skills are bundled expert guides the agent loads on demand to deepen its
-answers. They live in `.agents/skills/<name>/SKILL.md` and are compiled into a
-registry. The agent loads the relevant skill before answering domain questions.
-
-| Skill | Covers |
-|---|---|
-| `clickhouse-best-practices` | Schema design, query tuning, operational guidelines. |
-| `query-optimization` | PREWHERE, JOIN patterns, materialized views, EXPLAIN, indexes. |
-| `system-tables-reference` | Exact columns of `system.processes`, `query_log`, `parts`, `merges`, `replicas`, `metrics`; when to prefer dedicated tools over raw SQL. |
-| `troubleshooting` | OOM, slow merges, stuck mutations, error-code diagnosis. |
-| `replication-guide` | ReplicatedMergeTree, failover, lag diagnosis, Keeper. |
-| `cluster-operations` | Distributed tables, resharding, node management, topology. |
-| `storage-optimization` | Compression codecs, TTL, tiered storage, part management. |
-| `migration-patterns` | Schema migrations, ALTER patterns, zero-downtime changes. |
-| `security-hardening` | RBAC, row policies, quotas, audit logging. |
-
-The available skills are exposed at `GET /api/v1/agent/skills`.
-
-## Examples
-
-Ask questions the way you would ask a teammate:
-
-- **"Which queries are running right now and how long have they been executing?"**
-  The agent calls `get_running_queries` and lists query id, user, elapsed time,
-  and memory, sorted by duration.
-
-- **"What were the 10 slowest queries in the last 24 hours?"**
-  Uses `get_slow_queries`, then offers to `explain_query` on any of them.
-
-- **"Why is the cluster slow right now?"**
-  Loads the `troubleshooting` skill, runs `spot_issues` and `detect_anomalies`,
-  and correlates merges, errors, and expensive queries into a root-cause summary.
-
-- **"Show me query volume per hour over the last day as a chart."**
-  Uses `query_and_visualize` to run the aggregation and render a line chart.
-
-- **"Compare disk usage and query load between host 0 and host 1."**
-  Calls `compare_hosts` with `hostId1: 0` and `hostId2: 1`.
-
-- **"Is it safe to drop the `event_payload` column from `analytics.events`?"**
-  Runs `get_column_usage` to assess blast radius and `analyze_schema_change`
-  to classify the ALTER risk before recommending.
-
-- **"Forecast when our biggest disk will fill up."**
-  Uses `forecast_capacity` on 30-day storage trends.
-
-## API
-
-The agent is also available over HTTP for integrations.
+## HTTP API
 
 ```bash
 curl -X POST https://your-host/api/v1/agent \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $AGENT_API_TOKEN" \
-  -d '{
-    "message": "Which queries are running right now?",
-    "hostId": 0
-  }'
+  -d '{"message": "Which queries are running right now?", "hostId": 0}'
 ```
 
-`hostId` may be a number or a numeric string; it defaults to `0`. List loadable
-skills with `GET /api/v1/agent/skills`.
+`hostId` is a zero-based numeric index; defaults to `0`.
 
-## Security Notes
+## Security
 
-- The agent inherits the configured ClickHouse user's grants — scope that user
-  to read-only system access for safe exposure.
-- Keep destructive control tools off (`AGENT_ENABLE_CONTROL_TOOLS=false`) unless
-  the ClickHouse user is trusted and you intend to allow kill/optimize.
-- Require authentication on public deployments with
-  `CHM_FEATURE_AGENT_ACCESS=authenticated`.
-- Keep LLM keys server-side — never in `NEXT_PUBLIC_` variables.
+- Use a **read-only ClickHouse user** scoped to the system tables the dashboard needs.
+- Keep **control tools off** (`AGENT_ENABLE_CONTROL_TOOLS=false`, the default) unless you trust the user and need kill/optimize.
+- On public deployments, **require authentication**: `CHM_FEATURE_AGENT_ACCESS=authenticated`.
+- Keep LLM keys **server-side** — never in `VITE_*` or `NEXT_PUBLIC_*` variables.
