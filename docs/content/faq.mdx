@@ -1,65 +1,99 @@
 # FAQ
 
-## Which ClickHouse user should I use?
+## Connection issues
 
-Create a dedicated monitoring user. Do not use an admin account for a shared
-dashboard. Start with read-only system-table access, then add grants for actions
-you intentionally enable, such as `KILL QUERY` or `OPTIMIZE`.
+**The dashboard shows a connection error.**
 
-## Why are some pages empty?
+Check that `CLICKHOUSE_HOST` is a full URL including scheme and port, e.g. `http://your-host:8123` or `https://your-host:8443`. Inside Docker, `localhost` points at the container itself — use the ClickHouse service name on the Docker network, or `host.docker.internal` (Mac/Windows) / `172.17.0.1` (Linux) to reach a process on the Docker host.
 
-The page may depend on a ClickHouse system table that is disabled, unavailable
-in your ClickHouse version, or empty on your cluster. Check the system table
-[setup guide](/docs/getting-started/clickhouse-enable-system-tables) and
-confirm the monitoring user can query that table directly.
+**I changed ClickHouse credentials but the dashboard still fails.**
 
-## Why does the dashboard show stale data?
+Restart or redeploy the app after updating credentials. For Cloudflare Workers, run `bun run cf:config` to push the new secrets, then redeploy (`bun run cf:deploy`). The worker connection pool caches credentials at startup.
 
-The app uses SWR in the browser and server-side query caching. Lower
-`NEXT_QUERY_CACHE_TTL` if freshness matters more than ClickHouse load.
+## System tables and empty pages
 
-## Can I monitor multiple clusters?
+**Some pages are empty or show "table not found".**
 
-Yes. Configure comma-separated `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`,
-`CLICKHOUSE_PASSWORD`, and optional `CLICKHOUSE_NAME` values. The host selector
-uses the same index across all four variables.
+The page depends on a ClickHouse system table that is disabled or not present in your version. See [Enable system tables](/docs/getting-started/clickhouse-enable-system-tables) to check which tables are required and how to enable them.
 
-## Should I expose the AI agent publicly?
+**The query thread analysis page is empty.**
 
-The agent is public by default on self-hosted deployments that do not enable
-Clerk. The agent can query ClickHouse with the same grants as the configured
-monitoring user, so evaluate whether your deployment needs restricted access.
+`system.query_thread_log` must be explicitly enabled in ClickHouse config and `log_query_threads=1` must be set in the profile used by the monitoring user. See the [Enable system tables](/docs/getting-started/clickhouse-enable-system-tables) guide.
 
-To require authentication for the agent, set a feature override:
+**ZooKeeper / Keeper pages are missing.**
+
+`system.zookeeper` only exists when ClickHouse Keeper or ZooKeeper is configured. If you don't use a replicated setup, these pages will not show data.
+
+## Authentication
+
+**How do I require login before anyone can use the dashboard?**
+
+Set `CHM_AUTH_PROVIDER=clerk` and configure Clerk keys, then set `CHM_AUTH_REQUIRED_FEATURES=agent,mcp,settings,actions` (or use `CHM_FEATURE_{ID}_ACCESS=authenticated` per feature). See [Authentication](/docs/authentication).
+
+**I want to protect specific features but not the whole dashboard.**
+
+Use per-feature env vars:
 
 ```bash
 CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_FEATURE_MCP_ACCESS=authenticated
 ```
 
-See the [Feature Permissions](/docs/advanced/feature-permissions) guide for
-all restriction options, including MCP and action features.
+**The AI agent is accessible without login. Is that safe?**
 
-## Does the app modify ClickHouse data?
+The agent uses the same ClickHouse grants as the configured monitoring user. If that user is read-only, the agent can only read. If you want to restrict it further, set `CHM_FEATURE_AGENT_ACCESS=authenticated`.
 
-Most pages are read-only. Some actions can modify operational state when the
-ClickHouse user has grants, including kill query, optimize table, and
-self-tracking event writes. Disable or protect those features if you do not want
-operators to trigger them from the UI.
+## Multi-host
 
-## What deployment should I choose?
+**How do I monitor multiple ClickHouse clusters?**
 
-Use Docker for the simplest self-hosted path. Use Cloudflare Workers when you
-want edge hosting and already operate Cloudflare. Use Kubernetes when you need
-the dashboard managed with the rest of your platform workloads.
+Use comma-separated values for all four host variables, in the same order:
 
-## Why does Docker not connect to localhost ClickHouse?
+```bash
+CLICKHOUSE_HOST=https://prod-a:8443,https://prod-b:8443
+CLICKHOUSE_USER=monitoring,monitoring
+CLICKHOUSE_PASSWORD=secret-a,secret-b
+CLICKHOUSE_NAME=prod-a,prod-b
+```
 
-Inside a container, `localhost` points at the container itself. Use the
-ClickHouse service name on a Docker network, or use the host gateway address
-for a ClickHouse server running on the Docker host.
+All four must have the same number of entries. A host selector appears in the UI when more than one host is configured.
 
-## How do I rotate ClickHouse credentials?
+## AI agent
 
-Update the ClickHouse user password first, then update the deployment secret,
-then redeploy or restart the app. For Cloudflare, use `bun run cf:config` or
-update Worker secrets in the dashboard before redeploying.
+**The agent returns errors or doesn't respond.**
+
+Check that `LLM_API_KEY` is set and that `LLM_API_BASE` points at a reachable OpenAI-compatible endpoint. The agent uses `https://openrouter.ai/api/v1` by default. Verify the key works by testing the endpoint directly. Also confirm the feature is not disabled (`CHM_FEATURE_AGENT_ENABLED=false` would silence it).
+
+**The agent can't kill queries or run OPTIMIZE.**
+
+`AGENT_ENABLE_CONTROL_TOOLS` defaults to `false`. Set it to `true` only if you intend to let the agent use those actions, and only when the ClickHouse user has the corresponding grants (`KILL QUERY`, `OPTIMIZE`).
+
+## Conversation persistence
+
+**Agent conversation history disappears after I close the browser.**
+
+By default, history lives in browser `localStorage`. To persist it server-side, set:
+
+```bash
+AGENT_CONVERSATION_PERSISTENCE=true
+AGENT_CONVERSATION_STORE=auto
+```
+
+Then configure a backend store (AgentState, D1, ClickHouse, Postgres). See [Agent Conversation Storage](/docs/advanced/agent-conversation-storage).
+
+## Data freshness
+
+**The dashboard shows stale data.**
+
+The app caches query results. Lower `NEXT_QUERY_CACHE_TTL` (default 3600 seconds) for fresher data at the cost of more ClickHouse queries. In the TanStack app, client-side SWR also revalidates on focus and on a polling interval.
+
+## Deployment
+
+**Which deployment should I use?**
+
+- **Docker** — simplest self-hosted path, works anywhere Docker runs.
+- **Kubernetes** — best when the dashboard is managed alongside your platform workloads.
+- **Cloudflare Workers** — edge hosting, no server to operate, works well with Cloudflare Access for auth.
+- **Vercel / self-host Node** — if you prefer a Node-based platform.
+
+See [Install & Configure](/docs/deploy) for platform-specific guides.

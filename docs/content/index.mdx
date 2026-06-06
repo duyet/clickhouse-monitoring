@@ -1,37 +1,26 @@
-import { Cards } from 'nextra/components'
-import { Rocket, ChartNoAxesCombined } from 'lucide-react'
-
 # Introduction
 
-The simple Next.js dashboard that relies on `system.*` tables to help monitor and provide an overview of your ClickHouse cluster.
+chmonitor is a static, client-side ClickHouse monitoring dashboard. It reads from ClickHouse `system.*` tables and renders query performance, storage, cluster health, and operational metrics directly in the browser. No server-side data processing; no database writes except optional self-tracking events.
 
-Features:
+It also ships an AI agent that can answer natural-language questions about your cluster, and an MCP server that exposes monitoring tools to external AI clients.
 
-- Query monitor: current queries, query history, query resources (memory, parts read, file_open, ...), most expensive queries, most used tables or columns, etc.
-- Cluster monitor: total memory/CPU usage, distributed queue, global settings, mergetree settings, metrics, etc.
-- Tables and parts information: size, row count, compression, part size, etc., at the column level detail.
-- Useful tools: Zookeeper data exploration, query EXPLAIN, kill queries, etc.
-- Visualization metric charts: queries and resource usage, number of merges/mutation, merge performance, query performance, etc.
+## Who it's for
 
-**Demo** (_The ClickHouse server running on my homelab so can be slow sometimes_):
+- **Self-hosting teams** who run ClickHouse on their own infrastructure and need an operational dashboard they can deploy and own.
+- **Operators** who want to inspect running queries, track storage growth, monitor replication lag, or debug merge performance without writing ad-hoc queries by hand.
+- **Platform engineers** who want to integrate ClickHouse monitoring into their existing auth and deployment stack (Docker, Kubernetes, Cloudflare Workers).
 
-- [clickhouse-monitoring.vercel.app](https://clickhouse-monitoring.vercel.app)
-- [clickhouse.duyet.net](https://clickhouse.duyet.net)
+## What it is not
 
-![](../../.github/screenshots/screenshot_1.png)
-![](../../.github/screenshots/screenshot_2.png)
-![](../../.github/screenshots/screenshot_3.png)
-![](../../.github/screenshots/screenshot_4.png)
-![](../../.github/screenshots/screenshot_5.png)
-![](../../.github/screenshots/screenshot_6.png)
-![](../../.github/screenshots/screenshot_7.png)
-![](../../.github/screenshots/screenshot_8.png)
+chmonitor is read-only by default. It does not manage schema, run DDL, or modify ClickHouse configuration. Optional action grants (kill query, optimize table) are off by default.
 
-<Cards>
-  <Cards.Card
-    icon={<ChartNoAxesCombined />}
-    title="Getting Started"
-    href="/getting-started"
-  />
-  <Cards.Card icon={<Rocket />} title="Deployments" href="/deploy" />
-</Cards>
+## Pick your path
+
+| I want to… | Start here |
+|---|---|
+| Get a dashboard running in 5 minutes | [Getting Started](/docs/getting-started) |
+| Install on Docker, Kubernetes, or Cloudflare | [Install & Configure](/docs/deploy) |
+| Add authentication | [Authentication](/docs/authentication) |
+| Understand what pages do what | [Features](/docs/features) |
+| Set up the AI agent | [AI Agent](/docs/ai-agent) |
+| See all environment variables | [Reference](/docs/reference/environment-variables) |
