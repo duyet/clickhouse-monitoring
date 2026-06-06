@@ -268,40 +268,67 @@ img {
 }
 
 /* ── Left sidebar nav ───────────────────────────────────────────────── */
-/* Compact "Home | Dashboard" topbar above the sidebar nav. */
-.sidebar-topbar {
+/* Site nav links in the header (Home, Dashboard). */
+.header__nav {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-  padding: 0 0.6rem 0.85rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
+  gap: 1rem;
+  margin-left: 1.25rem;
+  font-size: 0.875rem;
 }
-.sidebar-topbar__link {
+.header__nav a {
   color: var(--fg-muted);
   font-weight: 500;
 }
-.sidebar-topbar__link:hover {
+.header__nav a:hover {
   color: var(--fg);
 }
-.sidebar-topbar__link:not(:first-child)::before {
-  content: '|';
-  color: var(--fg-subtle);
-  margin-right: 0.6rem;
-  font-weight: 400;
+@media (max-width: 640px) {
+  .header__nav {
+    display: none;
+  }
 }
 .nav-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
 }
-.nav-group__label {
+/* Collapsible category header (a <summary>). */
+summary.nav-group__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--fg-subtle);
   margin: 0 0 0.4rem;
-  padding: 0 0.6rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+summary.nav-group__label::-webkit-details-marker {
+  display: none;
+}
+summary.nav-group__label:hover {
+  color: var(--fg-muted);
+  background: var(--bg-elev);
+}
+summary.nav-group__label::after {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+details.nav-group[open] > summary.nav-group__label::after {
+  transform: rotate(45deg);
 }
 .nav-link {
   display: flex;

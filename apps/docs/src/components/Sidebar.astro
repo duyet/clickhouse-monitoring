@@ -1,5 +1,4 @@
 ---
-import { QUICK_LINKS } from '../config'
 import navData from '../generated/nav.json'
 
 interface Props {
@@ -9,30 +8,23 @@ interface Props {
 const { version, currentSlug } = Astro.props
 const groups = (navData as Record<string, any[]>)[version] ?? []
 const current = `/${currentSlug}`
+const isActiveGroup = (group: any) => group.items?.some((it: any) => it.link === current)
 ---
 
 <nav class="sidebar" aria-label="Documentation navigation">
-  <div class="sidebar-topbar">
-    {
-      QUICK_LINKS.map((l) => (
-        <a class="sidebar-topbar__link" href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
-          {l.label}
-        </a>
-      ))
-    }
-  </div>
-
   {
     groups.map((group) =>
       group.items ? (
-        <div class="nav-group">
-          <p class="nav-group__label">{group.label}</p>
-          {group.items.map((item: any) => (
-            <a class="nav-link" href={item.link} aria-current={item.link === current ? 'page' : undefined}>
-              {item.label}
-            </a>
-          ))}
-        </div>
+        <details class="nav-group" open={isActiveGroup(group)}>
+          <summary class="nav-group__label">{group.label}</summary>
+          <div class="nav-group__items">
+            {group.items.map((item: any) => (
+              <a class="nav-link" href={item.link} aria-current={item.link === current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </details>
       ) : (
         <div class="nav-group">
           <a class="nav-link" href={group.link} aria-current={group.link === current ? 'page' : undefined}>
@@ -43,3 +35,14 @@ const current = `/${currentSlug}`
     )
   }
 </nav>
+
+<script>
+  // Accordion: the active category is expanded on load (server-rendered `open`);
+  // opening another category collapses the rest.
+  const all = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.nav-group'))
+  for (const d of all) {
+    d.addEventListener('toggle', () => {
+      if (d.open) for (const o of all) if (o !== d) o.open = false
+    })
+  }
+</script>

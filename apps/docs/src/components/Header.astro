@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../config'
+import { QUICK_LINKS, SITE } from '../config'
 import Search from './Search.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
@@ -25,6 +25,15 @@ const { version, subpath } = Astro.props
     </svg>
     <span>{SITE.title}</span>
   </a>
+  <nav class="header__nav" aria-label="Site">
+    {
+      QUICK_LINKS.map((l) => (
+        <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
+          {l.label}
+        </a>
+      ))
+    }
+  </nav>
   <div class="header__spacer"></div>
   <div class="header__actions">
     <Search />
