@@ -62,7 +62,7 @@ The cron sweep (`GET /api/cron/health-sweep`, Cloudflare Cron Trigger every 5 mi
 
 | Variable | Default | Description |
 |---|---|---|
-| `CRON_SECRET` | — | Shared secret guarding `/api/cron/health-sweep`. Send as `Authorization: Bearer <secret>` or `?secret=`. When unset, the endpoint is open. |
+| `CRON_SECRET` | — | Shared secret guarding `/api/cron/health-sweep`. Send as `Authorization: Bearer <secret>`. When unset, the endpoint is open. |
 | `HEALTH_ALERT_ENABLED` | `false` | Set `true` to POST webhook alerts. Checks run regardless; alerts only fire when `true`. |
 | `HEALTH_ALERT_WEBHOOK_URL` | — | Slack- or Discord-compatible webhook URL. Required for alerts to be dispatched. |
 | `HEALTH_ALERT_MIN_SEVERITY` | `warning` | Minimum severity to alert: `warning` (warning + critical) or `critical` (critical only). |

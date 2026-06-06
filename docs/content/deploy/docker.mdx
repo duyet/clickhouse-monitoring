@@ -68,7 +68,7 @@ docker run -d --name chmonitor -p 3000:3000 \
 
 #### Multiple hosts
 
-All four variables must have the same number of comma-separated entries. Position N maps to host N.
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host N.
 
 ```bash
 -e CLICKHOUSE_HOST='http://ch1:8123,http://ch2:8123' \

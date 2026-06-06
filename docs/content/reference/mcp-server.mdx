@@ -114,9 +114,8 @@ Pre-built prompts for common workflows: `health-check`, `slow-query-analysis`, `
 ## Security
 
 - **Read-only.** All tools run read-only queries. The server never mutates data.
-- **Auth required in production.** When `NODE_ENV=production` or `CHM_API_KEY_SECRET` is set, unauthenticated requests are rejected. The MCP endpoint accepts either a `chm_` API key (`CHM_API_KEY_SECRET`) or a Clerk OAuth bearer token (`CHM_AUTH_PROVIDER=clerk`). See the [Authentication](#authentication) section above.
-- **Fail closed.** If auth is required, `CHM_API_KEY_SECRET` is unset, and no auth provider (`CHM_AUTH_PROVIDER`) is configured, the endpoint returns `503` rather than serving open requests.
-- **Open in development.** With `NODE_ENV` not set to `production` and no `CHM_API_KEY_SECRET`, the endpoint is open. Keep it on a trusted network.
+- **Auth is opt-in.** The endpoint requires a token only once an auth scheme is configured. It accepts a `chm_` API key (`CHM_API_KEY_SECRET`) or a Clerk OAuth bearer token (`CHM_AUTH_PROVIDER=clerk`). Either scheme alone is sufficient; they can coexist on the same endpoint. When a scheme is configured, a missing or invalid token is rejected with `401`.
+- **Open when nothing is configured.** If neither `CHM_API_KEY_SECRET` nor Clerk is configured, the endpoint serves anonymous requests — regardless of `NODE_ENV`. This is the self-hosted default; close it by configuring either scheme. Keep an unconfigured endpoint on a trusted network.
 - **Shared credentials.** Queries use the dashboard's configured ClickHouse user. Visibility is bounded by that user's grants.
 
 > Do not expose the MCP endpoint publicly without setting `CHM_API_KEY_SECRET`. Anyone with access can read all data the ClickHouse user can see.

@@ -101,7 +101,7 @@ CLICKHOUSE_NAME = "prod"
 
 #### Multiple hosts
 
-All four variables must have the same number of comma-separated entries:
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional:
 
 ```bash
 wrangler secret put CLICKHOUSE_HOST     # https://ch1:8443,https://ch2:8443

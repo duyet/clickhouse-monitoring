@@ -115,7 +115,7 @@ spec:
 
 #### Multiple hosts
 
-All four variables must have the same number of comma-separated entries. Position N maps to host N.
+`CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host N.
 
 ```bash
 kubectl create secret generic chmonitor-clickhouse \
@@ -361,7 +361,17 @@ kubectl create secret generic chmonitor-cron \
 ```
 
 Reference `HEALTH_ALERT_WEBHOOK_URL` from the `chmonitor-cron` secret in the
-Deployment's `envFrom`/`secretKeyRef` the same way as the CronJob above.
+Deployment using an explicit `secretKeyRef` (do not add the whole cron secret
+via `envFrom` — that would also expose `CRON_SECRET` to the app container):
+
+```yaml
+env:
+  - name: HEALTH_ALERT_WEBHOOK_URL
+    valueFrom:
+      secretKeyRef:
+        name: chmonitor-cron
+        key: HEALTH_ALERT_WEBHOOK_URL
+```
 
 ### Branding
 
