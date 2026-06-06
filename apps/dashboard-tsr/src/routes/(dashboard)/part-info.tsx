@@ -5,6 +5,7 @@ import { DatabaseTableSelector } from '@/components/controls/database-table-sele
 import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { AppLink as Link } from '@/components/ui/app-link'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useSearchParams } from '@/lib/next-compat'
 import { partInfoConfig } from '@/lib/query-config/tables/part-info'
 import { useHostId } from '@/lib/swr'
@@ -46,11 +47,12 @@ function PartInfoContent() {
           />
         </Suspense>
       ) : (
-        <div className="bg-card flex h-96 items-center justify-center rounded-lg border">
-          <p className="text-muted-foreground text-sm">
-            Select a database and table to view part information.
-          </p>
-        </div>
+        <EmptyState
+          variant="no-data"
+          title="Select a database and table"
+          description="Choose a database and table above to view part information."
+          className="h-96"
+        />
       )}
     </div>
   )

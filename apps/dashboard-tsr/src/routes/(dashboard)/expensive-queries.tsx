@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { ExpensiveQueriesView } from '@/components/expensive-queries'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 
 /**
  * Most Expensive Queries page.
@@ -13,7 +13,7 @@ import { ChartSkeleton } from '@/components/skeletons'
  */
 function ExpensiveQueriesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ExpensiveQueriesView />
     </Suspense>
   )

@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function PeerDetailSkeleton() {
   return (
-    <div className="flex flex-col gap-6 animate-pulse">
+    <div className="flex flex-col gap-6">
       {/* Title / Header Area */}
       <div className="flex flex-wrap items-center gap-3">
         <Skeleton className="h-4 w-16" />

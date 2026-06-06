@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { replicatedFetchesConfig } from '@/lib/query-config/tables/replicated-fetches'
 
 function ReplicatedFetchesPageContent() {
@@ -16,7 +16,7 @@ function ReplicatedFetchesPageContent() {
 
 function ReplicatedFetchesPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ReplicatedFetchesPageContent />
     </Suspense>
   )

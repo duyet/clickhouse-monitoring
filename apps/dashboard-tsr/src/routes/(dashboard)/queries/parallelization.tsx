@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { parallelizationConfig } from '@/lib/query-config/queries/parallelization'
 
 function ParallelizationContent() {
@@ -16,7 +16,7 @@ function ParallelizationContent() {
 
 function ParallelizationPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <ParallelizationContent />
     </Suspense>
   )

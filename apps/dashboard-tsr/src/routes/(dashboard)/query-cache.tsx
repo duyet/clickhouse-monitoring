@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
-import { ChartSkeleton } from '@/components/skeletons'
+import { PageSkeleton } from '@/components/skeletons'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
 
 function QueryCachePageContent() {
@@ -11,7 +11,7 @@ function QueryCachePageContent() {
 
 function QueryCachePage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<PageSkeleton />}>
       <QueryCachePageContent />
     </Suspense>
   )

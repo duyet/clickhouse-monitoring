@@ -10,7 +10,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
 import { ExplainResult } from '@/components/explain/explain-result'
 import { ErrorAlert } from '@/components/feedback'
-import { ChartSkeleton } from '@/components/skeletons'
+import { TableSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -355,7 +355,7 @@ function ExplainContent() {
         </CardContent>
       </Card>
 
-      {isLoading && <ChartSkeleton />}
+      {isLoading && <TableSkeleton rows={3} />}
 
       {error && (
         <ErrorAlert
@@ -389,7 +389,7 @@ function ExplainContent() {
 
 function ExplainPage() {
   return (
-    <Suspense fallback={<ChartSkeleton />}>
+    <Suspense fallback={<TableSkeleton rows={3} />}>
       <ExplainContent />
     </Suspense>
   )

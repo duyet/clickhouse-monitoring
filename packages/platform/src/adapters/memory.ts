@@ -11,4 +11,8 @@ export class MemoryPlatformBindings implements PlatformBindings {
   getD1Database(_bindingName: string): null {
     return null
   }
+
+  getDurableObjectNamespace(_bindingName: string): null {
+    return null
+  }
 }

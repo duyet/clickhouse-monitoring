@@ -6,7 +6,7 @@
  */
 
 import { error } from '@chm/logger'
-import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { isConversationPersistenceEnabled } from '@/lib/conversation-store/config'
 
 /**
  * Feature flag definitions.
@@ -18,22 +18,18 @@ export const featureFlags = {
   /**
    * Enable persistent database storage for AI agent conversations.
    *
-   * When enabled, conversations are stored in D1 (Cloudflare Workers) or PostgreSQL
-   * instead of localStorage. Requires NEXT_PUBLIC_AUTH_PROVIDER=clerk for user
-   * isolation.
+   * Deprecated compatibility helper. Runtime store selection is controlled by
+   * AGENT_CONVERSATION_PERSISTENCE and AGENT_CONVERSATION_STORE.
    *
    * @default false (unset)
-   * @env NEXT_PUBLIC_FEATURE_CONVERSATION_DB
+   * @env AGENT_CONVERSATION_PERSISTENCE
+   * @env NEXT_PUBLIC_FEATURE_CONVERSATION_DB Deprecated alias
    */
   conversationDb: (): boolean => {
-    if (process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_DB !== 'true') {
-      return false
-    }
-
     try {
-      return isClerkAuthProvider()
+      return isConversationPersistenceEnabled()
     } catch (err) {
-      error('[featureFlags.conversationDb] Auth provider check failed', err)
+      error('[featureFlags.conversationDb] Config check failed', err)
       return false
     }
   },
