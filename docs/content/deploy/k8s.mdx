@@ -334,7 +334,7 @@ spec:
                 - name: CRON_SECRET
                   valueFrom:
                     secretKeyRef:
-                      name: chmonitor-auth
+                      name: chmonitor-cron
                       key: CRON_SECRET
               command:
                 - sh
@@ -352,12 +352,16 @@ HEALTH_ALERT_MIN_SEVERITY: "warning"
 ```
 
 ```bash
-# Add CRON_SECRET and HEALTH_ALERT_WEBHOOK_URL to the existing chmonitor-auth secret (safe to re-run)
-kubectl create secret generic chmonitor-auth \
+# Health-alerting credentials live in their own secret so re-running this
+# never touches chmonitor-auth (which holds CHM_API_KEY_SECRET).
+kubectl create secret generic chmonitor-cron \
   --from-literal=CRON_SECRET='a-random-secret' \
   --from-literal=HEALTH_ALERT_WEBHOOK_URL='https://hooks.slack.com/services/...' \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
+
+Reference `HEALTH_ALERT_WEBHOOK_URL` from the `chmonitor-cron` secret in the
+Deployment's `envFrom`/`secretKeyRef` the same way as the CronJob above.
 
 ### Branding
 
