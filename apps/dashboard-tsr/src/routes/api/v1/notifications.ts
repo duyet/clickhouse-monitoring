@@ -90,40 +90,50 @@ export const Route = createFileRoute('/api/v1/notifications')({
             cluster: string
           }>
 
-          // Step 2: for each cluster check readonly replica count
-          const notifications: Notification[] = []
-
-          for (const { cluster } of clusters) {
-            try {
-              const readonlyResult = await client.query({
-                query: `
+          // Step 2: for each cluster check readonly replica count.
+          // Clusters are independent — fan out concurrently. Each query is
+          // best-effort: a failing cluster yields null and is skipped, so one
+          // failure never rejects the whole batch. Result order matches the
+          // cluster order (Promise.all preserves input order).
+          const perCluster = await Promise.all(
+            clusters.map(async ({ cluster }) => {
+              try {
+                const readonlyResult = await client.query({
+                  query: `
                   SELECT COUNT() as count
                   FROM clusterAllReplicas({cluster: String}, system.replicas)
                   WHERE is_readonly = 1
                 `,
-                format: 'JSONEachRow',
-                query_params: { cluster },
-              })
-              const readonlyData = (await readonlyResult.json()) as Array<{
-                count?: number | string
-              }>
-              const readonlyCount =
-                readonlyData.length > 0 && readonlyData[0].count !== undefined
-                  ? Number(readonlyData[0].count)
-                  : 0
-
-              if (readonlyCount > 0) {
-                notifications.push({
-                  type: 'readonly-tables',
-                  cluster,
-                  count: readonlyCount,
-                  severity: readonlyCount > 10 ? 'critical' : 'warning',
+                  format: 'JSONEachRow',
+                  query_params: { cluster },
                 })
+                const readonlyData = (await readonlyResult.json()) as Array<{
+                  count?: number | string
+                }>
+                const readonlyCount =
+                  readonlyData.length > 0 && readonlyData[0].count !== undefined
+                    ? Number(readonlyData[0].count)
+                    : 0
+
+                if (readonlyCount > 0) {
+                  return {
+                    type: 'readonly-tables',
+                    cluster,
+                    count: readonlyCount,
+                    severity: readonlyCount > 10 ? 'critical' : 'warning',
+                  } satisfies Notification
+                }
+                return null
+              } catch {
+                // Skip clusters that don't support this query
+                return null
               }
-            } catch {
-              // Skip clusters that don't support this query
-            }
-          }
+            })
+          )
+
+          const notifications: Notification[] = perCluster.filter(
+            (n): n is Notification => n !== null
+          )
 
           const totalCount = notifications.length
           const body = {
