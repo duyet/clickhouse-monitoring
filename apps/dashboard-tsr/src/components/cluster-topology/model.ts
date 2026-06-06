@@ -970,11 +970,13 @@ function layoutKeepers(keepers: KeeperNode[]) {
     keepers[0].y = 120
     return
   }
-  // leader on top apex, followers spread on a lower row
-  const leaderIdx = Math.max(
-    0,
-    keepers.findIndex((k) => k.isLeader)
-  )
+  // leader on top apex, followers spread on a lower row.
+  // When no keeper has been elected leader (findIndex === -1), don't crown
+  // keepers[0] as the visual apex — keep a sensible default layout (keepers[0]
+  // sits on top) but the apex node is NOT labeled leader (it has isLeader=false),
+  // so nothing is falsely presented as the elected leader.
+  const rawIdx = keepers.findIndex((k) => k.isLeader)
+  const leaderIdx = rawIdx === -1 ? 0 : rawIdx
   const followers = keepers.filter((_, i) => i !== leaderIdx)
   keepers[leaderIdx].x = cx
   keepers[leaderIdx].y = 100
