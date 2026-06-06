@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { hostIdSchema, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 import {
   type Finding,
   type FindingSeverity,

@@ -1,5 +1,6 @@
+import { z } from 'zod'
+
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 const MAX_OPTIONS = 20
 const MAX_TEXT_LEN = 200

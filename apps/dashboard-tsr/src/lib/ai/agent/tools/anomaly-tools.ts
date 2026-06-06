@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 interface AnomalyCheck {
   name: string
