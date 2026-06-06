@@ -92,11 +92,11 @@ function CopyableValue({
           type="button"
           onClick={handleCopy}
           className={cn(
-            'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy',
+            'font-mono font-medium text-right truncate min-w-0 hover:text-primary cursor-pointer transition-colors inline-flex items-center gap-1 group/copy max-w-full',
             className
           )}
         >
-          <span className="truncate">{value}</span>
+          <span className="truncate flex-1 min-w-0">{value}</span>
           {copied ? (
             <Check className="size-3 text-green-500 shrink-0" strokeWidth={2} />
           ) : (
@@ -154,9 +154,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
   )
   const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
   const [queryCopied, setQueryCopied] = useState(false)
-  const [dialogHeight, setDialogHeight] = useState<string | undefined>(
-    undefined
-  )
+  const [dialogHeight, setDialogHeight] = useState<string | undefined>('85vh')
   const contentRef = useRef<HTMLDivElement>(null)
   const resizeStartRef = useRef<{
     startY: number
@@ -245,7 +243,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
       <DialogContent
         ref={contentRef}
         className="max-w-[95vw] w-[95vw] flex flex-col p-0 pb-6"
-        style={{ height: dialogHeight, maxHeight: '90vh' }}
+        style={{ height: dialogHeight, maxHeight: '95vh' }}
       >
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <div className="flex items-center justify-between gap-4">
@@ -379,8 +377,13 @@ export const ChartZoomDialog = function ChartZoomDialog({
             )}
           </div>
 
-          <TabsContent value="chart" className="flex-1 min-h-0 p-6">
-            <div className="w-full h-full min-h-[300px]">{children}</div>
+          <TabsContent
+            value="chart"
+            className="flex-1 min-h-0 p-6 flex flex-col"
+          >
+            <div className="w-full flex-1 min-h-[350px] relative h-full">
+              <div className="absolute inset-0">{children}</div>
+            </div>
           </TabsContent>
 
           {queryConfig && (

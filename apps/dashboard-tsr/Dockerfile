@@ -42,7 +42,7 @@ RUN BUILD_TARGET=node bun run build:node
 # ── runner ─────────────────────────────────────────────────────────────────
 # The Nitro node-server output is a plain Node bundle — run on node:22-alpine
 # (smaller than the bun image, no runtime deps needed beyond .output).
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 ENV NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0
