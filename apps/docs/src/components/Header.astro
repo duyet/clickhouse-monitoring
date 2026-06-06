@@ -1,7 +1,6 @@
 ---
 import { SITE } from '../config'
 import logo from '../assets/logo.svg'
-import versionsData from '../generated/versions.json'
 import Search from './Search.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
@@ -14,7 +13,7 @@ const { version, subpath } = Astro.props
 ---
 
 <header class="header">
-  <a class="header__brand" href={`/${versionsData.latest}`}>
+  <a class="header__brand" href="/">
     <img src={logo.src} alt="" width="22" height="22" />
     <span>{SITE.title}</span>
   </a>

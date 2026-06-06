@@ -7,7 +7,6 @@ interface Props {
 }
 const { version, subpath } = Astro.props
 const { versions, latest } = versionsData
-const suffix = subpath ? `/${subpath}` : ''
 ---
 
 {
@@ -16,7 +15,7 @@ const suffix = subpath ? `/${subpath}` : ''
       <label class="sr-only" for="version-select">
         Documentation version
       </label>
-      <select id="version-select" data-suffix={suffix}>
+      <select id="version-select" data-subpath={subpath} data-latest={latest}>
         {versions.map((v) => (
           <option value={v} selected={v === version}>
             {v}
@@ -28,7 +27,10 @@ const suffix = subpath ? `/${subpath}` : ''
   ) : (
     <span class="version-switcher" aria-label="Documentation version">
       <select disabled>
-        <option>{version}</option>
+        <option>
+          {version}
+          {version === latest ? ' (latest)' : ''}
+        </option>
       </select>
     </span>
   )
@@ -38,8 +40,13 @@ const suffix = subpath ? `/${subpath}` : ''
   const select = document.getElementById('version-select') as HTMLSelectElement | null
   if (select) {
     select.addEventListener('change', () => {
-      const suffix = select.dataset.suffix ?? ''
-      window.location.href = `/${select.value}${suffix}`
+      const subpath = select.dataset.subpath ?? ''
+      const latest = select.dataset.latest ?? ''
+      const suffix = subpath ? `/${subpath}` : ''
+      // Latest is served at the root (no version prefix); older versions live
+      // under /<version>/. Empty suffix on latest means the site root.
+      window.location.href =
+        select.value === latest ? suffix || '/' : `/${select.value}${suffix}`
     })
   }
 </script>

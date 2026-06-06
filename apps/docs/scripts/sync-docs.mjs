@@ -1,23 +1,24 @@
 // Sync the per-release docs snapshots (docs/versions/<version>/**) into the
-// Astro content collection (apps/docs/src/content/docs/<version>/**), and emit
-// the version manifest, per-version navigation, and Cloudflare redirects.
+// Astro content collection (apps/docs/src/content/docs/**), and emit the version
+// manifest and per-version navigation.
 //
 // Runs as a prebuild step (package.json: `node scripts/sync-docs.mjs && astro
-// build`). Everything it writes under src/ and public/_redirects is a generated
-// artifact and is gitignored. The COMMITTED source of truth is:
+// build`). Everything it writes under src/ is a generated artifact and is
+// gitignored. The COMMITTED source of truth is:
 //   - docs/content/**            the current/working docs
 //   - docs/versions/<v>/**       frozen per-release snapshots (see snapshot-version.mjs)
 //
-// Routing model: every version is served under /<version>/…. The newest version
-// is "latest"; public/_redirects sends `/` and any bare (unversioned) path to
-// the latest version, so old links like docs.chmonitor.dev/getting-started keep
-// working. Internal `/docs/…` links in the markdown are rewritten to the owning
-// version's prefix so navigation stays within a version.
+// Routing model: the NEWEST version ("latest") is served at the site root with
+// no prefix (/getting-started, /deploy/docker, …). Older versions are served
+// under /<version>/…. There are NO redirects — bare paths resolve directly to
+// the latest version's files, so links like docs.chmonitor.dev/getting-started
+// just work. Internal `/docs/…` links in the markdown are rewritten to the
+// owning version's route base so navigation stays within a version.
 //
 // Conversions per file:
 //   - strip `nextra/components` / `lucide-react` imports (legacy authoring)
 //   - first `# Heading` -> frontmatter `title`; remaining `# ` demoted to `## `
-//   - `/docs/X` links   -> `/<version>/X`
+//   - `/docs/X` links   -> `<routeBase>/X`  (routeBase = "" for latest, "/<v>" else)
 //   - local image paths -> raw.githubusercontent.com URLs
 
 import { existsSync } from 'node:fs'
@@ -30,7 +31,6 @@ const REPO_ROOT = resolve(__dirname, '../../..')
 const VERSIONS_DIR = resolve(REPO_ROOT, 'docs/versions')
 const DEST_DIR = resolve(__dirname, '../src/content/docs')
 const GEN_DIR = resolve(__dirname, '../src/generated')
-const PUBLIC_DIR = resolve(__dirname, '../public')
 const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
 const EDIT_BASE = 'https://github.com/duyet/clickhouse-monitoring/edit/main'
 
@@ -86,6 +86,12 @@ function compareVersionsDesc(a, b) {
   return 0
 }
 
+// Build a link from a route base + page subpath, collapsing "" to "/".
+function linkFor(routeBase, subpath) {
+  if (subpath) return `${routeBase}/${subpath}`
+  return routeBase || '/'
+}
+
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true })
   const files = []
@@ -121,12 +127,14 @@ function extractTitle(src, fallback) {
   return { title, body }
 }
 
-// Rewrite `/docs/X` links to the owning version prefix: `/<version>/X`.
-// `/docs` (the docs root) maps to the version root `/<version>`.
-function rewriteDocLinks(src, version) {
+// Rewrite `/docs/X` links to the owning version's route base.
+// latest: `/docs/deploy` -> `/deploy`, `/docs` -> `/`
+// older:  `/docs/deploy` -> `/v0.3/deploy`, `/docs` -> `/v0.3`
+function rewriteDocLinks(src, routeBase) {
   return src.replace(/\]\((\/docs(?:\/[^)#]*)?)((?:#[^)]*)?)\)/g, (_m, path, hash) => {
     const rest = path.replace(/^\/docs/, '')
-    return `](/${version}${rest}${hash})`
+    const target = `${routeBase}${rest}` || '/'
+    return `](${target}${hash})`
   })
 }
 
@@ -141,52 +149,57 @@ function rewriteImages(src, srcFileAbs) {
   })
 }
 
-function slugFromRel(rel) {
+function subpathFromRel(rel) {
   // rel like "getting-started/local.mdx" -> "getting-started/local"
   // "index.mdx" -> "" ; "deploy.mdx" -> "deploy"
   const noExt = rel.replace(/\.mdx?$/, '')
   return noExt === 'index' ? '' : noExt.replace(/\/index$/, '')
 }
 
-async function convertFile(srcFileAbs, versionDir, version) {
+async function convertFile(srcFileAbs, versionDir, version, routeBase) {
   let content = await readFile(srcFileAbs, 'utf8')
   const rel = relative(versionDir, srcFileAbs)
   const fallback = humanize(rel.split('/').pop().replace(/\.mdx?$/, ''))
 
   content = stripImports(content)
   content = rewriteImages(content, srcFileAbs)
-  content = rewriteDocLinks(content, version)
+  content = rewriteDocLinks(content, routeBase)
   const { title, body } = extractTitle(content, fallback)
 
   const editUrl = `${EDIT_BASE}/${posix.normalize(relative(REPO_ROOT, srcFileAbs))}`
-  const slug = slugFromRel(rel)
+  const subpath = subpathFromRel(rel)
+  // Route param consumed by src/pages/[...slug].astro. "" = the site root.
+  const routeSlug = routeBase
+    ? `${version}${subpath ? `/${subpath}` : ''}`
+    : subpath
+
   const frontmatter =
     `---\n` +
     `title: ${JSON.stringify(title)}\n` +
     `editUrl: ${JSON.stringify(editUrl)}\n` +
     `version: ${JSON.stringify(version)}\n` +
-    `slug: ${JSON.stringify(`${version}${slug ? `/${slug}` : ''}`)}\n` +
+    `subpath: ${JSON.stringify(subpath)}\n` +
+    `slug: ${JSON.stringify(routeSlug)}\n` +
     `---\n\n`
 
-  return { out: `${frontmatter}${body.trim()}\n`, slug, title }
+  return { out: `${frontmatter}${body.trim()}\n`, subpath, title }
 }
 
 // Build a grouped sidebar from a version's page list.
-function buildNav(pages, version) {
-  const base = `/${version}`
-  const byPath = new Map(pages.map((p) => [p.slug, p]))
-  const topLevel = pages.filter((p) => p.slug && !p.slug.includes('/'))
+function buildNav(pages, routeBase) {
+  const byPath = new Map(pages.map((p) => [p.subpath, p]))
+  const topLevel = pages.filter((p) => p.subpath && !p.subpath.includes('/'))
   const dirs = new Map() // dir -> [child pages]
   for (const p of pages) {
-    if (!p.slug.includes('/')) continue
-    const dir = p.slug.split('/')[0]
+    if (!p.subpath.includes('/')) continue
+    const dir = p.subpath.split('/')[0]
     if (!dirs.has(dir)) dirs.set(dir, [])
     dirs.get(dir).push(p)
   }
 
   const groups = []
   const index = byPath.get('')
-  if (index) groups.push({ label: index.title || 'Introduction', link: base })
+  if (index) groups.push({ label: index.title || 'Introduction', link: linkFor(routeBase, '') })
 
   const usedTop = new Set()
   const orderedDirs = [
@@ -196,21 +209,23 @@ function buildNav(pages, version) {
 
   for (const dir of orderedDirs) {
     const children = dirs.get(dir)
-    const overview = topLevel.find((p) => p.slug === dir)
-    if (overview) usedTop.add(overview.slug)
+    const overview = topLevel.find((p) => p.subpath === dir)
+    if (overview) usedTop.add(overview.subpath)
     const items = []
-    if (overview) items.push({ label: 'Overview', link: `${base}/${overview.slug}` })
+    if (overview) items.push({ label: 'Overview', link: linkFor(routeBase, overview.subpath) })
     children
-      .map((c) => ({ label: c.title || humanize(c.slug.split('/').pop()), link: `${base}/${c.slug}`, slug: c.slug }))
+      .map((c) => ({
+        label: c.title || humanize(c.subpath.split('/').pop()),
+        link: linkFor(routeBase, c.subpath),
+      }))
       .sort((a, b) => a.label.localeCompare(b.label))
-      .forEach((it) => items.push({ label: it.label, link: it.link }))
+      .forEach((it) => items.push(it))
     groups.push({ label: humanize(dir), items })
   }
 
-  // Top-level pages that aren't a section overview become a "More" group.
   const leftovers = topLevel
-    .filter((p) => !usedTop.has(p.slug))
-    .map((p) => ({ label: p.title || humanize(p.slug), link: `${base}/${p.slug}` }))
+    .filter((p) => !usedTop.has(p.subpath))
+    .map((p) => ({ label: p.title || humanize(p.subpath), link: linkFor(routeBase, p.subpath) }))
     .sort((a, b) => a.label.localeCompare(b.label))
   if (leftovers.length) groups.push({ label: 'More', items: leftovers })
 
@@ -238,24 +253,26 @@ async function main() {
   await rm(DEST_DIR, { recursive: true, force: true })
   await mkdir(DEST_DIR, { recursive: true })
   await mkdir(GEN_DIR, { recursive: true })
-  await mkdir(PUBLIC_DIR, { recursive: true })
 
   const nav = {}
   let total = 0
   for (const version of versionDirs) {
+    const isLatest = version === latest
+    const routeBase = isLatest ? '' : `/${version}`
     const versionDir = join(VERSIONS_DIR, version)
     const files = await walk(versionDir)
     const pages = []
     for (const file of files) {
-      const { out, slug, title } = await convertFile(file, versionDir, version)
+      const { out, subpath, title } = await convertFile(file, versionDir, version, routeBase)
       const rel = relative(versionDir, file).replace(/\.mdx?$/, '.md')
-      const dest = join(DEST_DIR, version, rel)
+      // latest -> src/content/docs/<rel>; older -> src/content/docs/<version>/<rel>
+      const dest = isLatest ? join(DEST_DIR, rel) : join(DEST_DIR, version, rel)
       await mkdir(dirname(dest), { recursive: true })
       await writeFile(dest, out, 'utf8')
-      pages.push({ slug, title })
+      pages.push({ subpath, title })
       total++
     }
-    nav[version] = buildNav(pages, version)
+    nav[version] = buildNav(pages, routeBase)
   }
 
   await writeFile(
@@ -265,18 +282,8 @@ async function main() {
   )
   await writeFile(join(GEN_DIR, 'nav.json'), JSON.stringify(nav, null, 2), 'utf8')
 
-  // Cloudflare _redirects: static assets win over redirects, so versioned
-  // paths (/v0.3/…) are served as files; only unmatched bare paths fall through
-  // to the latest version. Keeps old unversioned links alive.
-  const redirects = [
-    `/            /${latest}/        302`,
-    `/*           /${latest}/:splat   302`,
-    '',
-  ].join('\n')
-  await writeFile(join(PUBLIC_DIR, '_redirects'), redirects, 'utf8')
-
   console.log(
-    `[sync-docs] ${total} page(s) across ${versionDirs.length} version(s); latest=${latest}`
+    `[sync-docs] ${total} page(s) across ${versionDirs.length} version(s); latest=${latest} (served at /)`
   )
 }
 

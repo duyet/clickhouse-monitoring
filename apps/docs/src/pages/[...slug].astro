@@ -5,26 +5,21 @@ import MainLayout from '../layouts/MainLayout.astro'
 export async function getStaticPaths() {
   const entries = await getCollection('docs')
   return entries.map((entry) => ({
-    // entry.data.slug is the fully-qualified "<version>/<path>" route.
-    params: { slug: entry.data.slug },
+    // entry.data.slug is the route: "" -> "/" (latest), else "<path>" (latest)
+    // or "<version>/<path>" (older versions). undefined renders the root.
+    params: { slug: entry.data.slug || undefined },
     props: { entry },
   }))
 }
 
 const { entry } = Astro.props
 const { Content, headings } = await render(entry)
-
-const version = entry.data.version
-// subpath = slug without the leading "<version>/" segment.
-const subpath = entry.data.slug.startsWith(`${version}/`)
-  ? entry.data.slug.slice(version.length + 1)
-  : ''
 ---
 
 <MainLayout
   title={entry.data.title}
-  version={version}
-  subpath={subpath}
+  version={entry.data.version}
+  subpath={entry.data.subpath}
   currentSlug={entry.data.slug}
   editUrl={entry.data.editUrl}
   headings={headings}
