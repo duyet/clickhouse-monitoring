@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import {
   hostIdSchema,
   isValidTableIdentifier,
@@ -5,7 +7,6 @@ import {
   writeQuery,
 } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createControlTools(hostId: number) {
   return {

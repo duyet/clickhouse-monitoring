@@ -1,5 +1,6 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
+import { useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
@@ -26,22 +27,24 @@ export const PageviewsByDeviceChart = function PageviewsByDeviceChart({
   className,
   hostId,
 }: ChartProps) {
+  const [activeTab, setActiveTab] = useState<string>('devices')
+
   const swrTopPages = useChartData<TopPagesRow>({
     chartName: 'top-pages',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: activeTab === 'top-pages' ? 30000 : 0,
   })
 
   const swrDevices = useChartData<DeviceRow>({
     chartName: 'pageviews-by-device',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: activeTab === 'devices' ? 30000 : 0,
   })
 
   const swrCountries = useChartData<CountryRow>({
     chartName: 'pageviews-by-country',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: activeTab === 'countries' ? 30000 : 0,
   })
 
   // Combine loading states
@@ -97,6 +100,7 @@ export const PageviewsByDeviceChart = function PageviewsByDeviceChart({
               id="pageviews-by-device-tabs"
               defaultValue="devices"
               className="overflow-hidden"
+              onValueChange={setActiveTab}
             >
               <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
                 <TabsTrigger

@@ -1,6 +1,7 @@
+import { z } from 'zod'
+
 import { hostIdSchema } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createDashboardTools() {
   return {
