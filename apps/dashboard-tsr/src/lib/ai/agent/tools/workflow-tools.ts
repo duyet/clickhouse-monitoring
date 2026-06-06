@@ -1,7 +1,8 @@
+import { z } from 'zod'
+
 import { getAllWorkflows, getWorkflow } from '../workflows/registry'
 import { buildWorkflowPlan, type WorkflowPlanOutput } from './plan-tools'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 const MAX_STEPS = 20
 const MAX_TITLE_LEN = 140

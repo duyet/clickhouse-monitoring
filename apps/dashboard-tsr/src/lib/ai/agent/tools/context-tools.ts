@@ -1,8 +1,9 @@
+import { z } from 'zod'
+
 import { getAllSkills } from '../skills/dynamic-loader'
 import { getAllWorkflows } from '../workflows/registry'
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 const NOTABLE_SETTINGS_LIMIT = 12
 

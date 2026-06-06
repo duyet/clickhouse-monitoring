@@ -5,9 +5,10 @@
  * before executing DDL operations on production tables.
  */
 
+import { z } from 'zod'
+
 import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
-import { z } from 'zod/v3'
 
 export function createMigrationTools(hostId: number) {
   return {
