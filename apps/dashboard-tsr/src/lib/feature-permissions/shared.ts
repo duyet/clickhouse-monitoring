@@ -17,6 +17,28 @@ export const DEFAULT_FEATURE_STATE: FeatureState = {
   access: DEFAULT_FEATURE_ACCESS,
 }
 
+/**
+ * What an anonymous caller may do, by deployment posture:
+ *
+ *  - `none`                       → read + write   (everyone is authenticated)
+ *  - `clerk` + CHM_CLERK_PUBLIC_READ → read only   (the dash / dash-tsr posture)
+ *  - `clerk` (default) / `proxy`  → nothing        (sign in / proxy-auth required)
+ *
+ * Authenticated callers always get read + write; this only describes the
+ * anonymous baseline. Pure (publicRead passed in) so it is shared by the server
+ * authorize path and the public config endpoint.
+ */
+export function anonymousCapabilities(
+  authProvider: PublicFeaturePermissionConfig['authProvider'],
+  publicRead: boolean
+): { read: boolean; write: boolean } {
+  if (authProvider === 'none') return { read: true, write: true }
+  if (authProvider === 'clerk' && publicRead) {
+    return { read: true, write: false }
+  }
+  return { read: false, write: false }
+}
+
 const FEATURE_ID_SET = new Set<string>(FEATURE_IDS)
 const FEATURE_ACCESS_SET = new Set<string>(FEATURE_ACCESS_VALUES)
 const FEATURE_ACCESS_ALIASES: Record<string, FeatureAccess> = {

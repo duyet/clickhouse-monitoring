@@ -25,6 +25,10 @@ export const FEATURE_IDS = [
 
 export type FeatureId = (typeof FEATURE_IDS)[number]
 
+export const FEATURE_OPERATIONS = ['read', 'write'] as const
+
+export type FeatureOperation = (typeof FEATURE_OPERATIONS)[number]
+
 export interface FeaturePermission {
   feature: FeatureId
   /**
@@ -33,6 +37,27 @@ export interface FeaturePermission {
    * @default public
    */
   defaultAccess?: FeatureAccess
+  /**
+   * Whether this call site READS data or WRITES (mutates the cluster, runs the
+   * AI agent, or executes arbitrary user-supplied SQL). Anonymous callers are
+   * allowed reads only when the deployment grants anonymous read
+   * (`CHM_CLERK_PUBLIC_READ` under clerk, or `auth=none`); writes always require
+   * an authenticated caller. The same feature can be referenced by both a read
+   * permission (e.g. schema browsing) and a write permission (arbitrary query).
+   *
+   * @default read
+   */
+  operation?: FeatureOperation
+}
+
+/**
+ * What an ANONYMOUS (unauthenticated) caller may do, derived from the auth
+ * provider and `CHM_CLERK_PUBLIC_READ`. Authenticated callers can always do
+ * both. Principal-independent, so it is safe to expose in the public config.
+ */
+export interface AnonymousCapabilities {
+  read: boolean
+  write: boolean
 }
 
 export interface FeatureOverride {
@@ -56,4 +81,6 @@ export interface PublicFeaturePermissionConfig {
   principal: Principal
   features: FeatureOverrides
   resolved?: ResolvedFeatureStates
+  /** What anonymous callers may do under this deployment's auth posture. */
+  capabilities?: AnonymousCapabilities
 }

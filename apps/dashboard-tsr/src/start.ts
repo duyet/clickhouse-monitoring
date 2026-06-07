@@ -17,7 +17,11 @@ import { createMiddleware, createStart } from '@tanstack/react-start'
 
 import { env } from 'cloudflare:workers'
 import { clerkMiddleware } from '@clerk/tanstack-react-start/server'
-import { bridgeApiKeyEnv, resolveApiGuard } from '@/lib/auth/api-guard'
+import {
+  bridgeApiKeyEnv,
+  bridgePublicReadEnv,
+  resolveApiGuard,
+} from '@/lib/auth/api-guard'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
 import { withSecurityHeaders } from '@/lib/security-headers'
 
@@ -29,6 +33,7 @@ const apiAuthMiddleware = createMiddleware().server(
     // Bridge the Worker env secret onto process.env so apiKeyAuthEnabled() /
     // verifyApiKey() (which read process.env.CHM_API_KEY_SECRET) can see it.
     bridgeApiKeyEnv(env as Record<string, string | undefined>)
+    bridgePublicReadEnv(env as Record<string, string | undefined>)
 
     const guardResponse = await resolveApiGuard(request)
     if (guardResponse) {

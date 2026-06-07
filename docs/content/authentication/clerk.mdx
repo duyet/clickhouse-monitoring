@@ -46,13 +46,53 @@ See [MCP Server](/docs/reference/mcp-server) for connection details.
 
 ## Gating features to authenticated users
 
-By default, features remain public even with Clerk enabled. To require sign-in for a feature:
+Most features are public even with Clerk enabled. The **AI agent** (`agent`) and
+**control actions** (`actions` — KILL QUERY, OPTIMIZE TABLE) default to
+`authenticated`, so they require sign-in. To change a feature's access:
 
 ```bash
-CHM_FEATURE_AGENT_ACCESS=authenticated
+CHM_FEATURE_AGENT_ACCESS=public          # loosen the agent to public
+CHM_FEATURE_TABLES_ACCESS=authenticated  # require sign-in for tables
 ```
 
 See [Feature Permissions](/docs/advanced/feature-permissions) for all feature ids and options.
+
+## Public read-only mode
+
+By default, Clerk gates **every** `/api/v1/*` request — an anonymous visitor sees
+the dashboard shell but no data (every data call returns `401`). Set
+`CHM_CLERK_PUBLIC_READ` to let anonymous visitors view read-only monitoring
+content while keeping sign-in required for writes:
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+CHM_CLERK_PUBLIC_READ=true   # runtime / Worker var
+```
+
+Access is then split along a **read / write** boundary:
+
+- **Reads** — predefined monitoring data (overview, queries, tables, metrics,
+  charts, schema browsing) — serve to anonymous visitors.
+- **Writes** — the AI agent, control actions (KILL QUERY, OPTIMIZE TABLE), and
+  **arbitrary SQL execution** (SQL Console / explorer query) — still return `401`
+  for anonymous callers. Running attacker-chosen SQL is treated as a write even
+  though it runs read-only, because it is a far more powerful capability than a
+  fixed registry query.
+- API keys (`chm_` bearer tokens) and signed-in Clerk users get full read + write.
+
+### Anonymous capability matrix
+
+| Auth mode | Anonymous read | Anonymous write |
+|---|---|---|
+| `none` | ✅ | ✅ (everyone is authenticated) |
+| `clerk` + `CHM_CLERK_PUBLIC_READ=true` | ✅ | ❌ |
+| `clerk` (default) | ❌ | ❌ |
+| `proxy` | ❌ | ❌ (proxy authenticates upstream) |
+
+The flag only applies to the `clerk` provider — `none` is already fully public and
+`proxy` fronts its own auth. It is off by default, so existing locked-down Clerk
+deployments are unchanged. The client reads these flags from `GET /api/v1/config`
+(`capabilities.read` / `capabilities.write`) to decide what to surface.
 
 ## Related
 

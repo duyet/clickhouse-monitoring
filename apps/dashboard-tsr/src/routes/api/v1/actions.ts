@@ -174,7 +174,10 @@ export const Route = createFileRoute('/api/v1/actions')({
         // dashboard route.
         const permissionResponse = await authorizeFeatureRequest(
           ACTIONS_FEATURE_PERMISSION,
-          request
+          request,
+          // Accept a valid `chm_` API key as authentication so programmatic
+          // clients keep working now that actions defaults to `authenticated`.
+          { allowAgentBearerToken: true }
         )
         if (permissionResponse) return permissionResponse
 

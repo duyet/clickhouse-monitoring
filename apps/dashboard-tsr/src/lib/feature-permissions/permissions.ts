@@ -2,14 +2,32 @@ import type { FeaturePermission } from './types'
 
 export const AGENT_FEATURE_PERMISSION = {
   feature: 'agent',
+  // The AI agent runs queries and (with control tools) mutates the cluster — a
+  // write. defaultAccess keeps the existing frontend gate (AgentAuthGate keys
+  // off access === 'authenticated'); operation classifies it on the read/write
+  // axis so anonymous read-only deployments cannot drive the agent.
+  defaultAccess: 'authenticated',
+  operation: 'write',
 } satisfies FeaturePermission
 
 export const ACTIONS_FEATURE_PERMISSION = {
   feature: 'actions',
+  // Mutating control actions (KILL QUERY, OPTIMIZE TABLE) — a write.
+  defaultAccess: 'authenticated',
+  operation: 'write',
 } satisfies FeaturePermission
 
 export const TABLES_FEATURE_PERMISSION = {
   feature: 'tables',
+} satisfies FeaturePermission
+
+// Arbitrary user-supplied SQL execution (SQL Console, explorer query tab).
+// Same `tables` feature as schema browsing, but classified as a write: running
+// attacker-chosen SQL is a powerful capability distinct from a fixed registry
+// query, so anonymous read-only callers must not reach it.
+export const EXPLORER_QUERY_FEATURE_PERMISSION = {
+  feature: 'tables',
+  operation: 'write',
 } satisfies FeaturePermission
 
 export const OVERVIEW_FEATURE_PERMISSION = {

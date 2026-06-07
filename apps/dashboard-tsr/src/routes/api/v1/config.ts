@@ -202,6 +202,17 @@ function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
   const features = parseEnvFeatureOverrides()
   const resolved = getResolvedFeatureStates(features)
 
+  // What an anonymous caller may do under this posture (mirror shared.ts
+  // anonymousCapabilities; inlined to keep this route self-contained). The
+  // client combines this with its Clerk signed-in state to gate write UI.
+  const publicRead = parseBoolean(readEnv('CHM_CLERK_PUBLIC_READ')) === true
+  const capabilities =
+    authProvider === 'none'
+      ? { read: true, write: true }
+      : authProvider === 'clerk' && publicRead
+        ? { read: true, write: false }
+        : { read: false, write: false }
+
   return {
     authProvider,
     // WORKERD: no server-side Clerk auth() here → always anonymous.
@@ -209,6 +220,7 @@ function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
     principal: 'anonymous',
     features,
     resolved,
+    capabilities,
   }
 }
 

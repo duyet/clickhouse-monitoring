@@ -8,6 +8,7 @@ import type {
 } from './types'
 
 import {
+  anonymousCapabilities,
   getResolvedFeatureStates,
   mergeFeatureOverrides,
   normalizeFeatureAccess,
@@ -210,6 +211,14 @@ function parseEnvFeatureOverrides(): FeatureOverrides {
   return overrides
 }
 
+/** Opt-in anonymous read under clerk (see middleware.ts publicReadEnabled). */
+function publicReadEnabled(): boolean {
+  return (
+    parseBoolean(process.env.CHM_CLERK_PUBLIC_READ, 'CHM_CLERK_PUBLIC_READ') ===
+    true
+  )
+}
+
 function parseEnvAuthProvider(): AuthProvider | undefined {
   const raw =
     process.env.CHM_AUTH_PROVIDER ?? process.env.NEXT_PUBLIC_AUTH_PROVIDER
@@ -289,6 +298,10 @@ export async function getPublicFeaturePermissionConfig(): Promise<PublicFeatureP
     principal,
     features: config.features,
     resolved,
+    capabilities: anonymousCapabilities(
+      config.authProvider,
+      publicReadEnabled()
+    ),
   }
 }
 
@@ -370,10 +383,16 @@ export async function authorizeFeatureRequest(
     )
   }
 
-  if (state.access === 'public') {
+  // Anonymous baseline first (cheap, no Clerk call): a public READ is allowed
+  // when the deployment grants anonymous read. Writes never qualify here.
+  const operation = permission.operation ?? 'read'
+  const caps = anonymousCapabilities(config.authProvider, publicReadEnabled())
+  if (operation === 'read' && state.access === 'public' && caps.read) {
     return null
   }
 
+  // Otherwise require an authenticated caller (Clerk session / bearer token;
+  // `none` authenticates everyone).
   if (await isAuthenticatedRequest(request, config, options)) {
     return null
   }
