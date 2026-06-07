@@ -29,6 +29,12 @@ async function getApiKeyAuthFailure(request: Request) {
   const headerToken = getBearerToken(request.headers.get('authorization'))
 
   if (!headerToken) {
+    // Public read-only mode: let anonymous READ requests through even when
+    // API-key auth is enabled. Writes (agent / actions / arbitrary SQL) still
+    // require a credential — their route handlers enforce auth.
+    if (publicReadEnabled() && !isProtectedWritePath(pathname)) {
+      return null
+    }
     return NextResponse.json({ error: 'API key required' }, { status: 401 })
   }
 
@@ -58,8 +64,24 @@ function isProtectedAgentApiRoute(request: NextRequest) {
   )
 }
 
-function isProtectedActionsRoute(request: NextRequest) {
-  return normalizePathname(request.nextUrl.pathname) === '/api/v1/actions'
+// Write-capability paths: the AI agent, control actions, and arbitrary SQL
+// execution. These must NEVER be opened to anonymous callers by public read-only
+// mode — they stay Clerk-fronted / API-key-gated, and their route handlers run
+// authorizeFeatureRequest() (operation: 'write'). Skipping Clerk for these would
+// also break auth() for *signed-in* users, so the public-read bypasses exclude
+// them on both the API-key layer and the Clerk layer.
+const PROTECTED_WRITE_PATHS = new Set([
+  '/api/v1/agent',
+  '/api/v1/agent/followups',
+  '/api/v1/agent/skills',
+  '/api/v1/agents/config-check',
+  '/api/v1/agents/models',
+  '/api/v1/actions',
+  '/api/v1/explorer/query',
+])
+
+function isProtectedWritePath(pathname: string): boolean {
+  return PROTECTED_WRITE_PATHS.has(normalizePathname(pathname))
 }
 
 /**
@@ -168,13 +190,13 @@ export default async function middleware(
     }
 
     // Public read-only mode: let anonymous read-only /api/v1/* requests skip
-    // Clerk so the per-route feature gate can serve public features. Agent and
-    // actions routes are excluded — they stay Clerk-fronted and authenticated.
+    // Clerk so the per-route feature gate can serve public features. Write paths
+    // (agent / actions / arbitrary SQL) are excluded — they stay Clerk-fronted so
+    // auth() resolves for signed-in users and writes remain authenticated.
     if (
       publicReadEnabled() &&
       pathname.startsWith('/api/v1/') &&
-      !isProtectedAgentApiRoute(request) &&
-      !isProtectedActionsRoute(request)
+      !isProtectedWritePath(pathname)
     ) {
       return NextResponse.next()
     }
