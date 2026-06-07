@@ -47,6 +47,9 @@ const SHARED_VARS = {
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
+  // Public read-only mode: anonymous visitors can view monitoring data; writes
+  // (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
+  CHM_CLERK_PUBLIC_READ: 'true',
 }
 // NOTE: client auth config (auth provider + Clerk publishable key) is NOT a
 // runtime worker var — it is build-time inlined via import.meta.env.VITE_* (see
