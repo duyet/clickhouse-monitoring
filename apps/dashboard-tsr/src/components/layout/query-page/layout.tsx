@@ -78,28 +78,16 @@ export const QueryPageLayout = function QueryPageLayout({
   const hasCharts = relatedCharts.length > 0
   const featureState = resolveFeatureState(queryConfig.permission, config)
 
-  if (queryConfig.permission) {
-    if (!isLoading && !featureState.enabled) {
-      return (
-        <FeatureUnavailable
-          feature={queryConfig.permission.feature}
-          reason="disabled"
-        />
-      )
-    }
-
-    if (
-      !isLoading &&
-      featureState.access === 'authenticated' &&
-      config.principal !== 'authenticated'
-    ) {
-      return (
-        <FeatureUnavailable
-          feature={queryConfig.permission.feature}
-          reason="auth"
-        />
-      )
-    }
+  // Only the `enabled` deployment toggle gates rendering here. Access (public vs
+  // authenticated) is enforced by the backend, not the client — see
+  // lib/feature-permissions/server.ts (the single security boundary).
+  if (queryConfig.permission && !isLoading && !featureState.enabled) {
+    return (
+      <FeatureUnavailable
+        feature={queryConfig.permission.feature}
+        reason="disabled"
+      />
+    )
   }
 
   return (
