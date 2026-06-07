@@ -1,5 +1,6 @@
 import { createRouter as createTanstackRouter } from '@tanstack/react-router'
 
+import { registerStaleChunkReload } from './lib/stale-chunk-reload'
 import { routeTree } from './routeTree.gen'
 
 // Shared router factory consumed by both the server and client entries that
@@ -8,6 +9,9 @@ import { routeTree } from './routeTree.gen'
 // The `Register` augmentation makes every route's params/search types
 // inferable app-wide.
 export function getRouter() {
+  // Recover from stale chunk hashes after a deploy (client-only, idempotent).
+  registerStaleChunkReload()
+
   return createTanstackRouter({
     routeTree,
     scrollRestoration: true,
