@@ -160,13 +160,13 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
           {visitedTabs.has('dependencies') && <DependenciesTab />}
         </TabsContent>
 
-        {/* Query tab: force-mount to preserve editor state */}
-        <TabsContent
-          value="query"
-          className={cn('mt-4', tab !== 'query' && 'hidden flex-none')}
-          forceMount
-        >
-          {visitedTabs.has('query') && <QueryTab />}
+        {/* Query tab: mount only when active. The CodeMirror editor enters an
+            infinite measure loop (ResizeObserver on a 0×0 box) if force-mounted
+            and hidden via display:none, freezing the page on tab switch. The
+            committed query lives in the URL (?q=), so unmounting is lossless for
+            meaningful state. Mirrors the Structure tab. */}
+        <TabsContent value="query" className="mt-4 flex-none">
+          <QueryTab />
         </TabsContent>
       </Tabs>
     </div>
