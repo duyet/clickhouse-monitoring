@@ -20,18 +20,12 @@ export function FeatureRouteGate({ children }: { children: ReactNode }) {
     return children
   }
 
+  // The frontend renders every enabled feature in every auth mode; access
+  // (public vs authenticated) is enforced by the backend, not here — see
+  // isFeatureAllowed and lib/feature-permissions/server.ts (the single security
+  // boundary). So the only route-level gate is the `enabled` deployment toggle.
   if (!state.enabled) {
     return <FeatureUnavailable feature={permission.feature} reason="disabled" />
-  }
-
-  if (
-    state.access === 'authenticated' &&
-    config.principal !== 'authenticated'
-  ) {
-    // Interaction-gated features (e.g. the agent) render their UI for everyone
-    // and prompt for sign-in only when an auth-requiring action is attempted.
-    if (permission.interactionGated) return children
-    return <FeatureUnavailable feature={permission.feature} reason="auth" />
   }
 
   return children
