@@ -55,10 +55,6 @@ export function getPlatformBindings(): PlatformBindings {
 // Shared feature-permission module (pass-through from the real @chm/platform)
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Shared feature-permission module (pass-through from the real @chm/platform)
-// ---------------------------------------------------------------------------
-
 export type {
   FeatureAccess,
   FeatureId,
