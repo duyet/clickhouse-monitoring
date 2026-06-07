@@ -38,6 +38,7 @@ import {
   ShieldIcon,
   SlidersHorizontalIcon,
   SparklesIcon,
+  TerminalIcon,
   Trash2Icon,
   TrendingUpIcon,
   UngroupIcon,
@@ -200,6 +201,14 @@ export const menuItemsConfig: MenuItem[] = [
         icon: TableIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/databases',
         tableCheck: ['system.databases', 'system.tables'],
+      },
+      {
+        title: 'SQL Console',
+        href: '/sql',
+        description:
+          'Run read-only SQL with history, EXPLAIN, query log and scan analysis',
+        icon: TerminalIcon,
+        docs: 'https://clickhouse.com/docs/en/sql-reference/statements/select',
       },
       {
         title: 'Tables Overview',
