@@ -2,6 +2,7 @@
 
 import { LockKeyholeIcon } from 'lucide-react'
 
+import { useClerkIsSignedIn as useClerkIsSignedInImpl } from './use-clerk-is-signed-in'
 import {
   createContext,
   type ReactNode,
@@ -23,6 +24,7 @@ import {
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { AGENT_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { resolveFeatureState } from '@/lib/feature-permissions/shared'
 
 /**
  * Clerk's `SignInButton` requires a mounted `<ClerkProvider />`. Gate it behind
@@ -34,6 +36,17 @@ import { AGENT_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 const ClerkSignInButton:
   | ((props: { children: ReactNode }) => ReactNode)
   | null = isClerkEnabled() ? ClerkSignInButtonImpl : null
+
+/**
+ * Runtime "is the user signed in?" check. Clerk's `useUser()` is the only source
+ * of truth for this — the workerd config endpoint can't run `auth()`, so it always
+ * reports an anonymous principal. Gated behind the same build-time constant: when
+ * Clerk is off there is no sign-in, so the stub returns `true` and no prompt is
+ * ever shown — the backend stays the security boundary.
+ */
+const useClerkIsSignedIn: () => boolean = isClerkEnabled()
+  ? useClerkIsSignedInImpl
+  : () => true
 
 interface AgentAuthGateValue {
   /**
@@ -52,17 +65,26 @@ const AgentAuthGateContext = createContext<AgentAuthGateValue | null>(null)
  * auth-requiring action is attempted.
  */
 export function AgentAuthGate({ children }: { children: ReactNode }) {
-  const { isAllowed, isLoading } = useFeaturePermissions()
+  const { config, isLoading } = useFeaturePermissions()
+  const signedIn = useClerkIsSignedIn()
   const [open, setOpen] = useState(false)
+
+  // Does the agent feature actually require auth in this deployment? (operators
+  // can set CHM_FEATURE_AGENT_ACCESS=public). `signedIn` already accounts for the
+  // auth provider: it is always true when Clerk is disabled (none/proxy), so the
+  // prompt only appears for a Clerk deployment whose visitor is not signed in.
+  const requiresAuth =
+    resolveFeatureState(AGENT_FEATURE_PERMISSION, config).access ===
+    'authenticated'
 
   const ensureAuthed = useCallback(() => {
     // Optimistic while the permission config loads — the server still enforces
-    // auth on /api/v1/agent. Once loaded, gate strictly on the agent feature.
+    // auth on /api/v1/agent regardless.
     if (isLoading) return true
-    if (isAllowed(AGENT_FEATURE_PERMISSION)) return true
+    if (!requiresAuth || signedIn) return true
     setOpen(true)
     return false
-  }, [isAllowed, isLoading])
+  }, [isLoading, requiresAuth, signedIn])
 
   const value = useMemo<AgentAuthGateValue>(
     () => ({ ensureAuthed }),
