@@ -62,6 +62,38 @@ export function bridgeApiKeyEnv(bindings: EnvBindings): void {
   }
 }
 
+/**
+ * Copy CHM_CLERK_PUBLIC_READ from the Worker `env` binding onto `process.env`
+ * so `publicReadEnabled()` (which reads process.env) sees it on workerd.
+ * Idempotent; only sets when present on the binding and not already set.
+ */
+export function bridgePublicReadEnv(bindings: EnvBindings): void {
+  if (typeof process === 'undefined' || !process.env) return
+  const value = bindings.CHM_CLERK_PUBLIC_READ
+  if (
+    value != null &&
+    value !== '' &&
+    process.env.CHM_CLERK_PUBLIC_READ == null
+  ) {
+    process.env.CHM_CLERK_PUBLIC_READ = value
+  }
+}
+
+/**
+ * Opt-in public read-only mode for the Clerk provider.
+ *
+ * When `CHM_CLERK_PUBLIC_READ` is truthy, anonymous `/api/v1/*` requests are
+ * NOT blanket-401'd; the per-route `authorizeFeatureRequest()` becomes the sole
+ * gate. Public features serve data to anonymous visitors, while `authenticated`
+ * features (agent, actions) still 401. Named with the CLERK prefix because it
+ * only relaxes the clerk posture — `none` is already fully open and `proxy`
+ * fronts its own auth.
+ */
+export function publicReadEnabled(): boolean {
+  const raw = process.env.CHM_CLERK_PUBLIC_READ?.trim().toLowerCase()
+  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on'
+}
+
 function jsonError(message: string, status: number): Response {
   return Response.json({ error: message }, { status })
 }
@@ -135,6 +167,11 @@ export async function getApiKeyAuthFailure(
   ) {
     return null
   }
+
+  // Opt-in public read-only mode (clerk only): let anonymous requests through
+  // and defer to each route's authorizeFeatureRequest(). Public features serve
+  // data; agent/actions are `authenticated` and still 401 at the route.
+  if (provider === 'clerk' && publicReadEnabled()) return null
 
   return jsonError('Authentication required', 401)
 }

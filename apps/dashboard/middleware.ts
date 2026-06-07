@@ -58,6 +58,25 @@ function isProtectedAgentApiRoute(request: NextRequest) {
   )
 }
 
+function isProtectedActionsRoute(request: NextRequest) {
+  return normalizePathname(request.nextUrl.pathname) === '/api/v1/actions'
+}
+
+/**
+ * Opt-in public read-only mode for the Clerk provider.
+ *
+ * When `CHM_CLERK_PUBLIC_READ` is truthy, anonymous read-only `/api/v1/*`
+ * requests skip the Clerk middleware so the per-route `authorizeFeatureRequest()`
+ * can serve public features to anonymous visitors. Agent and actions routes are
+ * excluded — they keep fronting Clerk and are `authenticated` per-route, so they
+ * stay login-gated. Named with the CLERK prefix because it only relaxes the
+ * clerk posture (`none` is already fully open).
+ */
+function publicReadEnabled() {
+  const raw = process.env.CHM_CLERK_PUBLIC_READ?.trim().toLowerCase()
+  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on'
+}
+
 function hasPotentialClerkCookie(request: NextRequest) {
   return request.cookies.getAll().some(({ name }) => {
     return (
@@ -146,6 +165,18 @@ export default async function middleware(
     const agentApiPrecheck = await getAgentApiClerkPrecheck(request)
     if (agentApiPrecheck) {
       return agentApiPrecheck
+    }
+
+    // Public read-only mode: let anonymous read-only /api/v1/* requests skip
+    // Clerk so the per-route feature gate can serve public features. Agent and
+    // actions routes are excluded — they stay Clerk-fronted and authenticated.
+    if (
+      publicReadEnabled() &&
+      pathname.startsWith('/api/v1/') &&
+      !isProtectedAgentApiRoute(request) &&
+      !isProtectedActionsRoute(request)
+    ) {
+      return NextResponse.next()
     }
 
     return clerkMiddleware()(request, event)

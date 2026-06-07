@@ -16,6 +16,8 @@ import { debug, error } from '@chm/logger'
 import { validateSqlQuery } from '@chm/sql-builder'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { ApiErrorType } from '@/lib/api/types'
+import { EXPLORER_QUERY_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 const MAX_GET_QUERY_LENGTH = 8_000
 const MAX_POST_QUERY_LENGTH = 100_000
@@ -196,6 +198,16 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
       GET: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
 
+        // Arbitrary SQL execution is a WRITE capability: anonymous read-only
+        // callers (CHM_CLERK_PUBLIC_READ) are blocked; authenticated callers and
+        // API keys pass.
+        const authError = await authorizeFeatureRequest(
+          EXPLORER_QUERY_FEATURE_PERMISSION,
+          request,
+          { allowAgentBearerToken: true }
+        )
+        if (authError) return authError
+
         const { searchParams } = new URL(request.url)
 
         const hostIdRaw = searchParams.get('hostId')
@@ -260,6 +272,14 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
 
       POST: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+
+        // Arbitrary SQL execution is a WRITE capability (see GET handler).
+        const authError = await authorizeFeatureRequest(
+          EXPLORER_QUERY_FEATURE_PERMISSION,
+          request,
+          { allowAgentBearerToken: true }
+        )
+        if (authError) return authError
 
         let body: Record<string, unknown>
         try {

@@ -1,6 +1,8 @@
 # Feature Permissions
 
-Feature permissions let you hide or protect specific dashboard sections without changing application code. All features are public and enabled by default — configure only what needs different behavior.
+Feature permissions let you hide or protect specific dashboard sections without changing application code. Features are enabled and public by default — except the **AI agent** (`agent`) and **control actions** (`actions`), which default to `authenticated`. Configure only what needs different behavior.
+
+Permissions also carry a **read / write** classification. Reads are predefined monitoring data; writes are the AI agent, control actions, and arbitrary SQL execution. Under `auth=clerk` with [`CHM_CLERK_PUBLIC_READ`](/docs/authentication/clerk#public-read-only-mode), anonymous visitors may perform reads but never writes; with `auth=none` everyone may do both.
 
 ---
 

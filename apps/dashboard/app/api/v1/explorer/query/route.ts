@@ -26,7 +26,7 @@ import {
   SUPPORTED_FORMATS,
 } from '@/lib/api/shared/validators/format'
 import { ApiErrorType } from '@/lib/api/types'
-import { TABLES_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
+import { EXPLORER_QUERY_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 export const dynamic = 'force-dynamic'
@@ -182,9 +182,12 @@ export async function GET(request: Request): Promise<Response> {
     ...ROUTE_CONTEXT_BASE,
     method: 'GET',
   }
+  // Arbitrary SQL execution is a WRITE capability: anonymous read-only callers
+  // (CHM_CLERK_PUBLIC_READ) are blocked; authenticated callers and API keys pass.
   const permissionResponse = await authorizeFeatureRequest(
-    TABLES_FEATURE_PERMISSION,
-    request
+    EXPLORER_QUERY_FEATURE_PERMISSION,
+    request,
+    { allowAgentBearerToken: true }
   )
   if (permissionResponse) return permissionResponse
 
@@ -228,9 +231,12 @@ export async function POST(request: Request): Promise<Response> {
     method: 'POST',
   }
 
+  // Arbitrary SQL execution is a WRITE capability: anonymous read-only callers
+  // (CHM_CLERK_PUBLIC_READ) are blocked; authenticated callers and API keys pass.
   const permissionResponse = await authorizeFeatureRequest(
-    TABLES_FEATURE_PERMISSION,
-    request
+    EXPLORER_QUERY_FEATURE_PERMISSION,
+    request,
+    { allowAgentBearerToken: true }
   )
   if (permissionResponse) return permissionResponse
 
