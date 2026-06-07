@@ -21,6 +21,7 @@ import { AgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { AgentRuntimeProvider } from '@/components/assistant-ui/agent-runtime-provider'
 import { Thread } from '@/components/assistant-ui/thread'
 import { ThreadList } from '@/components/assistant-ui/thread-list'
+import { useClerkFirstName as useClerkFirstNameImpl } from '@/components/assistant-ui/use-clerk-first-name'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -39,11 +40,13 @@ import { useHosts } from '@/lib/swr/use-hosts'
  * Clerk's `useUser()` throws unless a `<ClerkProvider />` is mounted, and that
  * provider is only rendered when `isClerkEnabled()` is true (see
  * `components/clerk/clerk-auth-provider.tsx`). Gate the hook behind the same
- * build-time constant so the agents page never calls `useUser()` when Clerk is
- * disabled — same lazy-require pattern as `components/nav-user.tsx`.
+ * build-time constant so the agents page never *calls* `useUser()` when Clerk is
+ * disabled. `isClerkEnabled()` is a build-time constant, so the selected hook is
+ * stable across renders (no conditional-hook violation). The import is inert; a
+ * static ESM import replaces `require()`, undefined in the Vite/ESM runtime.
  */
 const useClerkFirstName: () => string | null = isClerkEnabled()
-  ? require('@/components/assistant-ui/use-clerk-first-name').useClerkFirstName
+  ? useClerkFirstNameImpl
   : () => null
 
 function AgentThreadPageError() {

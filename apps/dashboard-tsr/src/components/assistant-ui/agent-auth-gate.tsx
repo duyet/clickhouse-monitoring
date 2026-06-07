@@ -10,6 +10,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/clerk-sign-in-button'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,16 +26,14 @@ import { AGENT_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 
 /**
  * Clerk's `SignInButton` requires a mounted `<ClerkProvider />`. Gate it behind
- * the build-time `isClerkEnabled()` constant (same lazy-require pattern as
- * `components/nav-user.tsx`) so this never loads Clerk when auth is disabled.
- * When Clerk is off there is no sign-in to offer, so the value is null and the
- * dialog renders without a sign-in action.
+ * the build-time `isClerkEnabled()` constant so it is only rendered when Clerk is
+ * active; when Clerk is off the value is null and the dialog renders without a
+ * sign-in action. The import is inert (the Clerk hook only runs on render), and a
+ * static ESM import replaces `require()`, undefined in the Vite/ESM runtime.
  */
 const ClerkSignInButton:
   | ((props: { children: ReactNode }) => ReactNode)
-  | null = isClerkEnabled()
-  ? require('@/components/clerk/clerk-sign-in-button').ClerkSignInButton
-  : null
+  | null = isClerkEnabled() ? ClerkSignInButtonImpl : null
 
 interface AgentAuthGateValue {
   /**
