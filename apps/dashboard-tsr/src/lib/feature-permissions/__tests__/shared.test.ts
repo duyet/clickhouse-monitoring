@@ -70,17 +70,13 @@ describe('isFeatureAllowed — access is a backend concern (FE renders all enabl
   })
 })
 
-describe('isFeatureAllowed — interactionGated (regression: agent menu)', () => {
-  const agentPerm: FeaturePermission = {
-    feature: 'agent',
-    interactionGated: true,
-  }
+describe('isFeatureAllowed — agent menu visible across deploy postures', () => {
+  const agentPerm: FeaturePermission = { feature: 'agent' }
 
-  // The bug: a fully-static workerd deploy can never report
-  // principal:'authenticated' (no server-side Clerk auth()), so /api/v1/config
-  // always returns 'anonymous'. The agent menu item is interaction-gated and
-  // MUST stay visible for everyone — the send action gates, not the route.
-  // Each row is a deploy posture the agent menu must survive.
+  // Regression: a static workerd deploy can never report principal:'authenticated'
+  // (no server-side Clerk auth()), so /api/v1/config always returns 'anonymous'.
+  // The agent menu must stay visible in every posture — the backend enforces auth
+  // on send, not the client route. Each row is a deploy posture it must survive.
   test.each([
     ['no auth provider, anonymous', 'none', 'anonymous'],
     ['clerk active, anonymous (workerd hard-anonymous)', 'clerk', 'anonymous'],
@@ -99,7 +95,7 @@ describe('isFeatureAllowed — interactionGated (regression: agent menu)', () =>
     ).toBe(true)
   })
 
-  test('interactionGated still hidden when the feature is disabled', () => {
+  test('hidden only when the feature is disabled', () => {
     expect(
       isFeatureAllowed(
         agentPerm,
@@ -109,19 +105,6 @@ describe('isFeatureAllowed — interactionGated (regression: agent menu)', () =>
         })
       )
     ).toBe(false)
-  })
-
-  test('interactionGated wins over access:authenticated (always visible)', () => {
-    expect(
-      isFeatureAllowed(
-        agentPerm,
-        config({
-          authProvider: 'clerk',
-          principal: 'anonymous',
-          features: { agent: { access: 'authenticated' } },
-        })
-      )
-    ).toBe(true)
   })
 })
 

@@ -81,7 +81,7 @@ export function resolveFeatureState(
 
 export function isFeatureAllowed(
   permission: FeaturePermission | undefined,
-  config: PublicFeaturePermissionConfig
+  config: Pick<PublicFeaturePermissionConfig, 'features'>
 ): boolean {
   // The frontend is a pure rendering layer: it shows every ENABLED feature in
   // every auth mode. Access enforcement (public vs authenticated) is the backend's
