@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { stripTrailingFormat } from '@/lib/sql-utils'
 
 // CodeMirror lives here, ALWAYS mounted and visible at the top of the console —
 // never inside the result Tabs and never hidden via display:none. That is the
@@ -111,9 +112,12 @@ export function SqlConsole({
   }
 
   const handleSelectHistory = (sql: string, runIt = false) => {
-    setEditorValue(sql)
+    // Server history comes from system.query_log with the dashboard's output
+    // format appended (e.g. `FORMAT JSONEachRow`); drop it before editing/running.
+    const cleaned = stripTrailingFormat(sql)
+    setEditorValue(cleaned)
     setHistoryOpen(false)
-    if (runIt) run(sql)
+    if (runIt) run(cleaned)
   }
 
   const queryId = result?.queryId ?? null

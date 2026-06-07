@@ -26,7 +26,11 @@ export const ColumnNode = function ColumnNode({
       icon={icon}
       level={level}
       badge={
-        <Badge variant="outline" className="text-xs">
+        <Badge
+          variant="outline"
+          className="block max-w-[8rem] truncate text-xs font-normal"
+          title={type}
+        >
           {type}
         </Badge>
       }

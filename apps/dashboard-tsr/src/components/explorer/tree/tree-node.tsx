@@ -131,8 +131,8 @@ export const TreeNode = function TreeNode({
                   )}
                 />
               ))}
-            <span className="truncate">{label}</span>
-            {badge && <div className="ml-auto">{badge}</div>}
+            <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+            {badge && <div className="ml-auto shrink-0">{badge}</div>}
           </SidebarMenuButton>
         </div>
 

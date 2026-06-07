@@ -16,93 +16,87 @@ import {
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useRef } from 'react'
 
-const darkTheme = EditorView.theme(
-  {
-    '&': {
-      backgroundColor: 'hsl(var(--background))',
-      color: 'hsl(var(--foreground))',
+// The app's design tokens are OKLCH colors (e.g. `--popover: oklch(1 0 0)`),
+// NOT HSL channel triplets. Wrapping them in `hsl(var(--token))` yields an
+// invalid color that the browser drops — which is why the autocomplete
+// dropdown rendered transparent. Reference the tokens directly with
+// `var(--token)`, and use `oklch(from … )` for alpha tints (same pattern as
+// styles.css).
+function buildTheme(dark: boolean) {
+  return EditorView.theme(
+    {
+      '&': {
+        backgroundColor: 'var(--background)',
+        color: 'var(--foreground)',
+      },
+      '.cm-content': {
+        caretColor: 'var(--foreground)',
+        fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+        fontSize: '0.875rem',
+        lineHeight: '1.5',
+      },
+      '.cm-gutters': {
+        backgroundColor: 'var(--muted)',
+        color: 'var(--muted-foreground)',
+        border: 'none',
+      },
+      '.cm-activeLine': {
+        backgroundColor: `oklch(from var(--muted) l c h / ${dark ? 0.5 : 0.3})`,
+      },
+      '.cm-activeLineGutter': {
+        backgroundColor: `oklch(from var(--muted) l c h / ${dark ? 0.8 : 0.5})`,
+      },
+      '.cm-selectionMatch': {
+        backgroundColor: 'oklch(from var(--accent) l c h / 0.3)',
+      },
+      '&.cm-focused .cm-cursor': {
+        borderLeftColor: 'var(--foreground)',
+      },
+      '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
+        backgroundColor: `oklch(from var(--accent) l c h / ${dark ? 0.4 : 0.3})`,
+      },
+      '&.cm-focused': {
+        outline: 'none',
+      },
+      // Tooltips and the autocomplete popup are floating layers with no parent
+      // background, so they MUST set an opaque fill of their own.
+      '.cm-tooltip': {
+        backgroundColor: 'var(--popover)',
+        color: 'var(--popover-foreground)',
+        border: '1px solid var(--border)',
+        borderRadius: '0.375rem',
+        boxShadow:
+          '0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1)',
+      },
+      '.cm-tooltip.cm-tooltip-autocomplete > ul': {
+        backgroundColor: 'var(--popover)',
+        color: 'var(--popover-foreground)',
+        fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+        fontSize: '0.8125rem',
+        maxHeight: '16rem',
+      },
+      '.cm-tooltip.cm-tooltip-autocomplete > ul > li': {
+        padding: '0.125rem 0.5rem',
+      },
+      '.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected]': {
+        backgroundColor: 'var(--accent)',
+        color: 'var(--accent-foreground)',
+      },
+      '.cm-completionIcon': {
+        color: 'var(--muted-foreground)',
+      },
+      '.cm-completionMatchedText': {
+        color: 'var(--primary)',
+        textDecoration: 'none',
+        fontWeight: '600',
+      },
     },
-    '.cm-content': {
-      caretColor: 'hsl(var(--foreground))',
-      fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-      fontSize: '0.875rem',
-      lineHeight: '1.5',
-    },
-    '.cm-gutters': {
-      backgroundColor: 'hsl(var(--muted))',
-      color: 'hsl(var(--muted-foreground))',
-      border: 'none',
-    },
-    '.cm-activeLine': {
-      backgroundColor: 'hsl(var(--muted) / 0.5)',
-    },
-    '.cm-activeLineGutter': {
-      backgroundColor: 'hsl(var(--muted) / 0.8)',
-    },
-    '.cm-selectionMatch': {
-      backgroundColor: 'hsl(var(--accent) / 0.3)',
-    },
-    '&.cm-focused .cm-cursor': {
-      borderLeftColor: 'hsl(var(--foreground))',
-    },
-    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-      backgroundColor: 'hsl(var(--accent) / 0.4)',
-    },
-    '&.cm-focused': {
-      outline: 'none',
-    },
-    '.cm-tooltip': {
-      backgroundColor: 'hsl(var(--popover))',
-      color: 'hsl(var(--popover-foreground))',
-      border: '1px solid hsl(var(--border))',
-    },
-  },
-  { dark: true }
-)
+    { dark }
+  )
+}
 
-const lightTheme = EditorView.theme(
-  {
-    '&': {
-      backgroundColor: 'hsl(var(--background))',
-      color: 'hsl(var(--foreground))',
-    },
-    '.cm-content': {
-      caretColor: 'hsl(var(--foreground))',
-      fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-      fontSize: '0.875rem',
-      lineHeight: '1.5',
-    },
-    '.cm-gutters': {
-      backgroundColor: 'hsl(var(--muted))',
-      color: 'hsl(var(--muted-foreground))',
-      border: 'none',
-    },
-    '.cm-activeLine': {
-      backgroundColor: 'hsl(var(--muted) / 0.3)',
-    },
-    '.cm-activeLineGutter': {
-      backgroundColor: 'hsl(var(--muted) / 0.5)',
-    },
-    '.cm-selectionMatch': {
-      backgroundColor: 'hsl(var(--accent) / 0.3)',
-    },
-    '&.cm-focused .cm-cursor': {
-      borderLeftColor: 'hsl(var(--foreground))',
-    },
-    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-      backgroundColor: 'hsl(var(--accent) / 0.3)',
-    },
-    '&.cm-focused': {
-      outline: 'none',
-    },
-    '.cm-tooltip': {
-      backgroundColor: 'hsl(var(--popover))',
-      color: 'hsl(var(--popover-foreground))',
-      border: '1px solid hsl(var(--border))',
-    },
-  },
-  { dark: false }
-)
+const darkTheme = buildTheme(true)
+const lightTheme = buildTheme(false)
 
 interface SqlEditorProps {
   value: string

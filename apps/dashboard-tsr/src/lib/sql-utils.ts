@@ -86,3 +86,25 @@ export function validateLimit(limit: number | string): number {
 
   return numLimit
 }
+
+/**
+ * Removes a trailing `FORMAT <Name>` clause (and any trailing semicolon) from a
+ * query.
+ *
+ * Queries read back from `system.query_log` were issued by the dashboard with an
+ * output format appended (e.g. `FORMAT JSONEachRow`). When such a query is
+ * loaded into the SQL console editor that clause is noise — the console picks
+ * its own format — and re-running it with a hard-coded `FORMAT` can break the
+ * result parser. The `FORMAT` clause is only valid as the final element of a
+ * ClickHouse query, so stripping the trailing occurrence is safe.
+ *
+ * @param sql - The query text to clean
+ * @returns The query with any trailing FORMAT clause and semicolon removed
+ */
+export function stripTrailingFormat(sql: string): string {
+  if (!sql) return sql
+  return sql
+    .replace(/;\s*$/, '')
+    .replace(/\s+FORMAT\s+[A-Za-z0-9_]+\s*;?\s*$/i, '')
+    .trimEnd()
+}
