@@ -2,21 +2,21 @@ import { LockKeyhole } from 'lucide-react'
 
 import type { ReactNode } from 'react'
 
+import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/clerk-sign-in-button'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 
 /**
  * Clerk's `SignInButton` requires a mounted `<ClerkProvider />`. Gate it behind
- * the build-time `isClerkEnabled()` constant (same lazy-require pattern as
- * `components/assistant-ui/agent-auth-gate.tsx`) so this never loads Clerk when
- * auth is disabled or driven by a non-Clerk provider (`proxy` / `none`).
+ * the build-time `isClerkEnabled()` constant so the button is only rendered when
+ * Clerk is active; with a non-Clerk provider (`proxy` / `none`) it stays null.
+ * The import is inert (the Clerk hook only runs on render), and a static ESM
+ * import replaces `require()`, which is undefined in the Vite/ESM runtime.
  */
 const ClerkSignInButton:
   | ((props: { children: ReactNode }) => ReactNode)
-  | null = isClerkEnabled()
-  ? require('@/components/clerk/clerk-sign-in-button').ClerkSignInButton
-  : null
+  | null = isClerkEnabled() ? ClerkSignInButtonImpl : null
 
 /**
  * Unauthorized first-run surface.

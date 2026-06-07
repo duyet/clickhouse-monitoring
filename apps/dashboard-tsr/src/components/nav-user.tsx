@@ -1,5 +1,6 @@
 import { ChevronsUpDown, ExternalLink, Info, Settings } from 'lucide-react'
 
+import { ClerkNavWrapper as ClerkNavWrapperImpl } from './nav-user/clerk-nav'
 import { useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
@@ -25,10 +26,12 @@ import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 
-// Lazy load Clerk components to avoid hydration issues when Clerk is disabled
-const ClerkNavWrapper = isClerkEnabled()
-  ? require('./nav-user/clerk-nav').ClerkNavWrapper
-  : null
+// Gate the Clerk navigation behind the build-time `isClerkEnabled()` constant.
+// Importing the module is inert (Clerk hooks only run when the component is
+// rendered, which stays gated below); using a static ESM import instead of
+// `require()` keeps this valid in the Vite/TanStack Start (ESM) runtime, where
+// `require` is undefined and previously crashed every page that mounts the shell.
+const ClerkNavWrapper = isClerkEnabled() ? ClerkNavWrapperImpl : null
 
 export function NavUser({
   user,
