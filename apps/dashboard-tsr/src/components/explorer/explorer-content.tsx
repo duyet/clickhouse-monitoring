@@ -1,4 +1,4 @@
-import { ExternalLink, Loader2, SquareTerminal } from 'lucide-react'
+import { ExternalLink, SquareTerminal } from 'lucide-react'
 
 import { DatabaseOverview } from './database-overview'
 import { ExplorerBreadcrumb } from './explorer-breadcrumb'
@@ -10,7 +10,7 @@ import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
 import { QueryTab } from './tabs/query-tab'
 import { StructureTab } from './tabs/structure-tab'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useHostId } from '@/lib/swr'
@@ -46,14 +46,14 @@ function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
     })
   }, [currentTab])
 
-  const markVisited = (tab: ExplorerTab) => {
+  const markVisited = useCallback((tab: ExplorerTab) => {
     setVisitedTabs((prev) => {
       if (prev.has(tab)) return prev
       const next = new Set(prev)
       next.add(tab)
       return next
     })
-  }
+  }, [])
 
   return { visitedTabs, markVisited }
 }
@@ -61,23 +61,17 @@ function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
 export function ExplorerContent({ hostName }: ExplorerContentProps) {
   const hostId = useHostId()
   const { database, table, tab, setTab } = useExplorerState()
-  const [isTabSwitching, setIsTabSwitching] = useState(false)
   const tableKey = database && table ? `${database}.${table}` : null
   const { visitedTabs, markVisited } = useTabVisitTracker(tableKey, tab)
 
-  // Handle tab switching with instant visual feedback
-  const handleTabChange = (value: string) => {
-    if (value === tab) return
-
-    setIsTabSwitching(true)
-    markVisited(value as ExplorerTab)
-    setTab(value as ExplorerTab)
-
-    // Clear switching state after a brief moment
-    requestAnimationFrame(() => {
-      setIsTabSwitching(false)
-    })
-  }
+  const handleTabChange = useCallback(
+    (value: string) => {
+      if (value === tab) return
+      markVisited(value as ExplorerTab)
+      setTab(value as ExplorerTab)
+    },
+    [tab, markVisited, setTab]
+  )
 
   // No database selected and not on query tab — show empty state
   if (!database && tab !== 'query') {
@@ -107,42 +101,14 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
 
       <Tabs id="explorer-tabs" value={tab} onValueChange={handleTabChange}>
         <TabsList>
-          <TabsTrigger value="data" className="gap-2">
-            Data
-            {isTabSwitching && tab === 'data' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="structure" className="gap-2">
-            Structure
-            {isTabSwitching && tab === 'structure' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="ddl" className="gap-2">
-            DDL
-            {isTabSwitching && tab === 'ddl' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="indexes" className="gap-2">
-            Indexes
-            {isTabSwitching && tab === 'indexes' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="dependencies" className="gap-2">
-            Dependencies
-            {isTabSwitching && tab === 'dependencies' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
-          </TabsTrigger>
+          <TabsTrigger value="data">Data</TabsTrigger>
+          <TabsTrigger value="structure">Structure</TabsTrigger>
+          <TabsTrigger value="ddl">DDL</TabsTrigger>
+          <TabsTrigger value="indexes">Indexes</TabsTrigger>
+          <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
           <TabsTrigger value="query" className="gap-2">
             <SquareTerminal className="size-3.5" />
             Query
-            {isTabSwitching && tab === 'query' && (
-              <Loader2 className="size-3 animate-spin" />
-            )}
           </TabsTrigger>
           <Link
             href={partInfoUrl}
