@@ -143,6 +143,12 @@ async function isAuthenticatedRequest(
   config: AppConfig,
   options: { allowAgentBearerToken?: boolean } = {}
 ): Promise<boolean> {
+  // Auth disabled (`none`): there is no sign-in, so every request is authorized.
+  // This makes `authenticated`-access features fully open in `none` mode (the
+  // matrix's "everything open" end state). The backend remains the single
+  // security boundary; it simply has nothing to enforce when auth is off.
+  if (config.authProvider === 'none') return true
+
   if (
     options.allowAgentBearerToken &&
     (await isValidAgentApiBearerToken(request))

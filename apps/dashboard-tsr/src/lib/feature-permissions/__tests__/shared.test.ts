@@ -29,33 +29,44 @@ describe('isFeatureAllowed — defaults', () => {
   })
 })
 
-describe('isFeatureAllowed — access: authenticated', () => {
+describe('isFeatureAllowed — access is a backend concern (FE renders all enabled)', () => {
   const perm: FeaturePermission = { feature: 'agent' }
 
-  test('anonymous principal → not allowed', () => {
+  // The frontend is a pure rendering layer: it no longer gates on access or
+  // principal. Every ENABLED feature renders in every auth mode, and the backend
+  // (server.ts authorizeFeatureRequest) is the single security boundary — it 401s
+  // protected data/actions. So an `authenticated` feature is visible to everyone
+  // on the client; the page renders and the API call enforces.
+  test.each([
+    ['none, anonymous', 'none', 'anonymous'],
+    ['clerk, anonymous (workerd hard-anonymous)', 'clerk', 'anonymous'],
+    ['clerk, signed in', 'clerk', 'authenticated'],
+    ['proxy, anonymous', 'proxy', 'anonymous'],
+  ] as const)('authenticated feature renders — %s', (_label, authProvider, principal) => {
     expect(
       isFeatureAllowed(
         perm,
         config({
-          authProvider: 'clerk',
-          principal: 'anonymous',
+          authProvider:
+            authProvider as PublicFeaturePermissionConfig['authProvider'],
+          principal: principal as PublicFeaturePermissionConfig['principal'],
           features: { agent: { access: 'authenticated' } },
         })
       )
-    ).toBe(false)
+    ).toBe(true)
   })
 
-  test('authenticated principal → allowed', () => {
+  test('disabled wins over access — hidden even when authenticated', () => {
     expect(
       isFeatureAllowed(
         perm,
         config({
           authProvider: 'clerk',
           principal: 'authenticated',
-          features: { agent: { access: 'authenticated' } },
+          features: { agent: { access: 'authenticated', enabled: false } },
         })
       )
-    ).toBe(true)
+    ).toBe(false)
   })
 })
 

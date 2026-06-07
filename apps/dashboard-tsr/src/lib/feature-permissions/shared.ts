@@ -83,27 +83,17 @@ export function isFeatureAllowed(
   permission: FeaturePermission | undefined,
   config: PublicFeaturePermissionConfig
 ): boolean {
-  const state = resolveFeatureState(permission, config)
-  if (!state.enabled) return false
-
-  // Interaction-gated features (e.g. the agent) render their UI for everyone
-  // and prompt sign-in only on the action (see AgentAuthGate). They are always
-  // menu-visible regardless of auth provider or principal — that is the whole
-  // point of the flag and matches the menu.ts contract ("Render the chat UI for
-  // everyone; sign-in is prompted on send, not at the route level").
-  //
-  // NOTE: This intentionally takes precedence over the `access: 'authenticated'`
-  // gate below. In a fully static workerd deploy the server cannot run Clerk's
-  // `auth()`, so /api/v1/config always reports `principal: 'anonymous'`; gating
-  // an interaction-gated feature on principal would hide it from signed-in users
-  // too. Server routes still enforce auth on the actual action.
-  if (permission?.interactionGated) return true
-
-  if (state.access === 'authenticated') {
-    return config.principal === 'authenticated'
-  }
-
-  return true
+  // The frontend is a pure rendering layer: it shows every ENABLED feature in
+  // every auth mode. Access enforcement (public vs authenticated) is the backend's
+  // job — see `authorizeFeatureRequest` in lib/feature-permissions/server.ts, the
+  // single security boundary. A client-side access gate would be both redundant
+  // and unreliable: the workerd config endpoint cannot run Clerk's `auth()`, so it
+  // always reports `principal: 'anonymous'`, which would wrongly hide authenticated
+  // features even from signed-in users. So the only thing that hides a feature on
+  // the client is the `enabled` flag (a deployment toggle, not security). Visitors
+  // who lack access still see the page; protected data/actions return 401 from the
+  // API and the UI surfaces an inline sign-in prompt.
+  return resolveFeatureState(permission, config).enabled
 }
 
 export function getResolvedFeatureStates(

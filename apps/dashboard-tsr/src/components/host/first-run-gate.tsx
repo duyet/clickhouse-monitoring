@@ -1,26 +1,28 @@
 import { FirstRunEmptyState } from './first-run-empty-state'
-import { FirstRunUnauthorizedState } from './first-run-unauthorized-state'
 import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 /**
- * Gates the dashboard content on having at least one configured ClickHouse
- * host. Two first-run surfaces replace the bare, confusing default:
+ * The frontend is a pure rendering layer; the backend is the security boundary
+ * (see lib/feature-permissions/server.ts). So this gate no longer walls the whole
+ * app behind an "Authentication required" screen on a 401/403 — that is not
+ * something the visitor can resolve here, in `none` mode there is no sign-in at
+ * all, and the workerd server can't tell an authenticated principal apart anyway.
+ * Pages render; individual data calls surface their own auth / empty / error
+ * states (and in `none` mode the API allows everything, so they just succeed).
  *
- *  - unauthorized (hosts fetch 401/403) → prompt to sign in
- *  - zero hosts configured (env + browser) → onboarding EmptyState
+ * The one first-run surface we keep is genuine onboarding: zero ClickHouse hosts
+ * configured — and only when that is the real state, not merely an auth failure
+ * that left the host list empty. While hosts are still loading we render children
+ * so existing skeletons / Suspense fallbacks keep showing.
  *
- * While hosts are still loading we render children so existing skeletons /
- * Suspense fallbacks keep showing — we only swap in onboarding once we are
- * certain about the state.
+ * NOTE: `FirstRunUnauthorizedState` is intentionally no longer rendered here. The
+ * component is kept for a possible future inline sign-in prompt rather than a
+ * full-page wall.
  */
 export function FirstRunGate({ children }: { children: React.ReactNode }) {
   const { hosts, isLoading, isUnauthorized } = useMergedHosts()
 
-  if (!isLoading && isUnauthorized) {
-    return <FirstRunUnauthorizedState />
-  }
-
-  if (!isLoading && hosts.length === 0) {
+  if (!isLoading && !isUnauthorized && hosts.length === 0) {
     return <FirstRunEmptyState />
   }
 
