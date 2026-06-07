@@ -11,6 +11,14 @@ Co-Authored-By: duyetbot <bot@duyet.net>
 
 Use semantic commit format with consistent scope for commit messages and PR titles. Keep wording simple.
 
+## PR Workflow
+
+**Always auto-babysit PRs on this project.** After opening any PR, immediately arm
+auto-merge (`gh pr merge --auto --squash`) and babysit it (`/github:babysit-pr`):
+watch CI, fix failures, confirm the merge and production deploy. Do NOT ask the
+user whether to babysit — just do it. Known non-required checks (`e2e-test`,
+`e2e-test-tsr`, `component-test`, `unit-tests`) do not block auto-merge.
+
 ## Project Overview
 
 This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.

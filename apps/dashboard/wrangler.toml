@@ -177,6 +177,9 @@ OPENROUTER_APP_NAME = "chmonitor"
 CHM_AUTH_PROVIDER = "clerk"
 NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
+# Public read-only mode: anonymous visitors can view monitoring data; writes
+# (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
+CHM_CLERK_PUBLIC_READ = "true"
 
 # Clerk authentication (public key is safe to include)
 # Publishable key for Clerk authentication - identifies the Clerk application
@@ -221,6 +224,7 @@ OPENROUTER_APP_NAME = "chmonitor"
 CHM_AUTH_PROVIDER = "clerk"
 NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
+CHM_CLERK_PUBLIC_READ = "true"
 
 # Clerk authentication (public key is safe to include)
 # Test key for preview environment - uses Clerk's test instance

@@ -38,6 +38,9 @@ OPENROUTER_APP_NAME = "chmonitor"
 # import.meta.env.VITE_* (see vite.config.ts CLIENT_ENV).
 CHM_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
+# Public read-only mode: anonymous visitors can view monitoring data; writes
+# (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
+CHM_CLERK_PUBLIC_READ = "true"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Reverse-proxy auth (EXAMPLE — not active; dash-tsr uses `clerk` above).
@@ -92,3 +95,4 @@ OPENROUTER_APP_NAME = "chmonitor"
 # build step sets the pk_test key for preview deploys.
 CHM_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
+CHM_CLERK_PUBLIC_READ = "true"
