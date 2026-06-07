@@ -121,15 +121,16 @@ access = "public"
     ).toBe(true)
   })
 
-  test('hides interaction-gated feature from anonymous when auth is enabled', () => {
-    // The agent renders for everyone but requires sign-in to use. With an auth
-    // provider active and an anonymous visitor, the menu entry must be hidden.
+  test('shows interaction-gated feature to anonymous users even when auth is enabled', () => {
+    // Interaction-gated features (e.g. agent) render their UI for everyone and
+    // gate only the auth-requiring interaction. The menu entry is always visible;
+    // sign-in is prompted on send, not at the route level.
     expect(
       isFeatureAllowed(
         { feature: 'agent', interactionGated: true },
         { authProvider: 'clerk', principal: 'anonymous', features: {} }
       )
-    ).toBe(false)
+    ).toBe(true)
   })
 
   test('shows interaction-gated feature to authenticated users', () => {

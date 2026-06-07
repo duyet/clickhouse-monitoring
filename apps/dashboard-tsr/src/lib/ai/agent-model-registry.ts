@@ -43,7 +43,8 @@ export const FALLBACK_AGENT_MODEL = 'openrouter/free'
  */
 export function resolveDefaultAgentModel(): string {
   if (process.env.ANYROUTER_API_KEY) return DEFAULT_AGENT_MODEL
-  if (process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY) {
+  const legacyKey = process.env.CHM_LLM_API_KEY ?? process.env.LLM_API_KEY
+  if (legacyKey || process.env.OPENROUTER_API_KEY) {
     return FALLBACK_AGENT_MODEL
   }
   // No provider configured — return the preferred default; the caller's

@@ -37,7 +37,7 @@ OPENROUTER_APP_NAME = "chmonitor"
 # publishable key are NOT runtime vars — they are build-time inlined via
 # import.meta.env.VITE_* (see vite.config.ts CLIENT_ENV).
 CHM_AUTH_PROVIDER = "clerk"
-CHM_FEATURE_AGENT_ACCESS = "authenticated"
+CHM_FEATURES = "agent:auth"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Reverse-proxy auth (EXAMPLE — not active; dash-tsr uses `clerk` above).
@@ -91,4 +91,4 @@ OPENROUTER_APP_NAME = "chmonitor"
 # Clerk publishable key are build-time inlined (import.meta.env.VITE_*); the CI
 # build step sets the pk_test key for preview deploys.
 CHM_AUTH_PROVIDER = "clerk"
-CHM_FEATURE_AGENT_ACCESS = "authenticated"
+CHM_FEATURES = "agent:auth"

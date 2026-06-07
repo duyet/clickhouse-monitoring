@@ -13,7 +13,9 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
 export const DEFAULT_MODEL =
-  process.env.LLM_MODEL?.trim() || resolveDefaultAgentModel()
+  process.env.CHM_LLM_MODEL?.trim() ||
+  process.env.LLM_MODEL?.trim() ||
+  resolveDefaultAgentModel()
 
 export const DEFAULT_APP_REFERER = 'https://chmonitor.dev'
 export const DEFAULT_APP_NAME = 'chmonitor'

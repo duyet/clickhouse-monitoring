@@ -53,17 +53,6 @@ export class PeerDBError extends Error {
   }
 }
 
-export function readNonNegativeIntEnv(name: string, fallback: number): number {
-  const raw = process.env[name]?.trim()
-  if (!raw) return fallback
-
-  const parsed = Number(raw)
-  if (!Number.isFinite(parsed)) return fallback
-
-  const normalized = Math.floor(parsed)
-  return normalized >= 0 ? normalized : fallback
-}
-
 /**
  * Server-side fetch against the PeerDB REST API.
  *
@@ -75,12 +64,11 @@ export function readNonNegativeIntEnv(name: string, fallback: number): number {
  * Short-TTL in-memory response cache. Many rows + auto-refresh would otherwise
  * fan out to the PeerDB API repeatedly; caching identical (method+path+body)
  * reads for a few seconds collapses bursts and refresh cycles into one upstream
- * call. TTL is tunable via PEERDB_CACHE_TTL_MS (default 10s; 0 disables).
+ * call. TTL is 10s (0 disables).
  */
-const CACHE_TTL_MS = readNonNegativeIntEnv('PEERDB_CACHE_TTL_MS', 10_000)
-const CACHE_MAX_ENTRIES = readNonNegativeIntEnv('PEERDB_CACHE_MAX_ENTRIES', 500)
-const FETCH_TIMEOUT_MS =
-  readNonNegativeIntEnv('PEERDB_FETCH_TIMEOUT_MS', 10_000) || 10_000
+const CACHE_TTL_MS = 10_000
+const CACHE_MAX_ENTRIES = 500
+const FETCH_TIMEOUT_MS = 10_000
 const responseCache = new Map<string, { at: number; value: unknown }>()
 
 /**

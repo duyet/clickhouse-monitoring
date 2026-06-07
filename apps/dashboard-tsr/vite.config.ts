@@ -35,16 +35,24 @@ function git(cmd: string): string {
 // Only PUBLIC vars live here — never a runtime secret (security boundary).
 const e = process.env
 const CLIENT_ENV = {
+  VITE_CHM_AUTH_PROVIDER:
+    e.VITE_CHM_AUTH_PROVIDER ??
+    e.VITE_AUTH_PROVIDER ??
+    e.NEXT_PUBLIC_AUTH_PROVIDER ??
+    'clerk',
+  VITE_CHM_CLERK_PUBLISHABLE_KEY:
+    e.VITE_CHM_CLERK_PUBLISHABLE_KEY ??
+    e.VITE_CLERK_PUBLISHABLE_KEY ??
+    e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+    'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
+  // Legacy names kept so code still reading VITE_AUTH_PROVIDER /
+  // VITE_CLERK_PUBLISHABLE_KEY continues to work during migration.
   VITE_AUTH_PROVIDER:
     e.VITE_AUTH_PROVIDER ?? e.NEXT_PUBLIC_AUTH_PROVIDER ?? 'clerk',
   VITE_CLERK_PUBLISHABLE_KEY:
     e.VITE_CLERK_PUBLISHABLE_KEY ??
     e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
     'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
-  VITE_FEATURE_CONVERSATION_DB:
-    e.VITE_FEATURE_CONVERSATION_DB ??
-    e.NEXT_PUBLIC_FEATURE_CONVERSATION_DB ??
-    'true',
   VITE_AUTOCOMPLETE_LIMIT:
     e.VITE_AUTOCOMPLETE_LIMIT ?? e.NEXT_PUBLIC_AUTOCOMPLETE_LIMIT ?? '',
   VITE_RUNNING_QUERIES_REFRESH_MS:

@@ -316,6 +316,7 @@ jobs:
         # key; production (push/release) builds use pk_live. Non-secret public
         # keys mirror wrangler.toml / patch-wrangler-env.ts defaults.
         env:
+          VITE_CHM_AUTH_PROVIDER: clerk
           VITE_AUTH_PROVIDER: clerk
           VITE_CLERK_PUBLISHABLE_KEY: >-
             ${{ github.event_name == 'pull_request'

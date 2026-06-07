@@ -15,21 +15,15 @@
  * - Worker env bindings take precedence over process.env via `readEnv()`.
  */
 
-import type { FeaturePermission } from './types'
+import type { FeatureOverrides, FeaturePermission } from './types'
 
+import { resolveFeatureState } from './shared'
+import { env } from 'cloudflare:workers'
 import {
   mergeFeatureOverrides,
-  normalizeFeatureAccess,
-  normalizeFeatureId,
-  resolveFeatureState,
-} from './shared'
-import {
-  FEATURE_IDS,
-  type FeatureAccess,
-  type FeatureOverride,
-  type FeatureOverrides,
-} from './types'
-import { env } from 'cloudflare:workers'
+  parseFeaturesConfig,
+  parseLegacyFeatureOverrides,
+} from '@chm/platform'
 import { isValidAgentApiBearerToken } from '@/lib/auth/agent-api-token'
 import { parseAuthProvider } from '@/lib/auth/provider'
 
@@ -56,68 +50,18 @@ function readEnv(key: string): string | undefined {
 
 // ---------------------------------------------------------------------------
 // Config resolution (env-only; no file loading).
+// Uses shared parsers from @chm/platform:
+//   - parseFeaturesConfig:  CHM_FEATURES compact format (v0.3)
+//   - parseLegacyFeatureOverrides: CHM_DISABLED_FEATURES, CHM_AUTH_REQUIRED_FEATURES,
+//     and CHM_FEATURE_<ID>_* per-feature vars (backward compat)
 // ---------------------------------------------------------------------------
 
-function parseBoolean(
-  value: string | undefined,
-  name: string
-): boolean | undefined {
-  if (value === undefined || value === '') return undefined
-  const normalized = value.trim().toLowerCase()
-  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true
-  if (['0', 'false', 'no', 'off'].includes(normalized)) return false
-  console.warn(`[feature-permissions] Invalid boolean for ${name}: "${value}"`)
-  return undefined
-}
-
-function splitFeatureList(value: string | undefined): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
 function parseEnvFeatureOverrides(): FeatureOverrides {
-  let overrides: FeatureOverrides = {}
-
-  for (const feature of splitFeatureList(readEnv('CHM_DISABLED_FEATURES'))) {
-    overrides = mergeFeatureOverrides(overrides, {
-      [normalizeFeatureId(feature)]: { enabled: false },
-    })
-  }
-
-  for (const feature of splitFeatureList(
-    readEnv('CHM_AUTH_REQUIRED_FEATURES')
-  )) {
-    overrides = mergeFeatureOverrides(overrides, {
-      [normalizeFeatureId(feature)]: {
-        access: 'authenticated' as FeatureAccess,
-      },
-    })
-  }
-
-  for (const feature of FEATURE_IDS) {
-    const envKey = `CHM_FEATURE_${feature.toUpperCase()}`
-    const enabled = parseBoolean(
-      readEnv(`${envKey}_ENABLED`),
-      `${envKey}_ENABLED`
-    )
-    const accessRaw = readEnv(`${envKey}_ACCESS`)
-    const override: FeatureOverride = {}
-    if (enabled !== undefined) override.enabled = enabled
-    if (accessRaw) {
-      try {
-        override.access = normalizeFeatureAccess(accessRaw)
-      } catch {
-        // ignore invalid values
-      }
-    }
-    if (Object.keys(override).length > 0) {
-      overrides = mergeFeatureOverrides(overrides, { [feature]: override })
-    }
-  }
-
-  return overrides
+  // v0.3 compact format takes priority
+  const primary = parseFeaturesConfig(readEnv('CHM_FEATURES'))
+  // Legacy vars overlay on top
+  const legacy = parseLegacyFeatureOverrides(readEnv)
+  return mergeFeatureOverrides(primary, legacy)
 }
 
 interface AppConfig {

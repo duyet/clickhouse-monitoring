@@ -93,12 +93,12 @@ export interface ResolvedProvider {
  * Resolution order:
  * 1. `provider:model` format → lookup in PROVIDERS registry
  * 2. Legacy (no colon) → detect from model name (free/openrouter prefix → OpenRouter)
- * 3. Fallback → generic OpenAI-compatible with LLM_API_KEY / LLM_API_BASE
+ * 3. Fallback → generic OpenAI-compatible with CHM_LLM_API_KEY / CHM_LLM_API_BASE
  *
  * Credential cascade:
- * - OpenRouter/legacy API key: provider-specific env var → LLM_API_KEY
+ * - OpenRouter/legacy API key: provider-specific env var → CHM_LLM_API_KEY → LLM_API_KEY
  * - Other explicit provider API keys: provider-specific env var
- * - Base URL: provider-specific env var → provider default
+ * - Base URL: provider-specific env var → CHM_LLM_API_BASE → LLM_API_BASE → provider default
  */
 export function resolveProvider(id: string): ResolvedProvider {
   const { provider: providerId, model } = parseModelId(id)
@@ -111,17 +111,21 @@ export function resolveProvider(id: string): ResolvedProvider {
       model.startsWith('openrouter/')
     return {
       providerId: 'openrouter',
-      apiKey: process.env.LLM_API_KEY || '',
-      baseURL: process.env.LLM_API_BASE || 'https://openrouter.ai/api/v1',
+      apiKey: process.env.CHM_LLM_API_KEY ?? process.env.LLM_API_KEY ?? '',
+      baseURL:
+        process.env.CHM_LLM_API_BASE ??
+        process.env.LLM_API_BASE ??
+        'https://openrouter.ai/api/v1',
       sdk: isOpenRouter ? 'openrouter' : 'openai',
       isOpenRouter,
     }
   }
 
   const config = PROVIDERS[providerId]
+  const legacyApiKey = process.env.CHM_LLM_API_KEY ?? process.env.LLM_API_KEY
   const apiKey =
     process.env[config.apiKeyEnvVar] ||
-    (providerId === 'openrouter' ? process.env.LLM_API_KEY || '' : '')
+    (providerId === 'openrouter' ? legacyApiKey || '' : '')
   const baseURL =
     (config.baseURLEnvVar && process.env[config.baseURLEnvVar]) ||
     config.baseURL
@@ -141,13 +145,14 @@ export function resolveProvider(id: string): ResolvedProvider {
  */
 export function isProviderConfigured(providerId: string): boolean {
   const config = PROVIDERS[providerId]
+  const legacyApiKey = process.env.CHM_LLM_API_KEY ?? process.env.LLM_API_KEY
   if (!config) {
     // Unknown providers fall through to legacy openrouter path → uses LLM_API_KEY.
-    return Boolean(process.env.LLM_API_KEY)
+    return Boolean(legacyApiKey)
   }
   return Boolean(
     process.env[config.apiKeyEnvVar] ||
-      (providerId === 'openrouter' ? process.env.LLM_API_KEY : undefined)
+      (providerId === 'openrouter' ? legacyApiKey : undefined)
   )
 }
 

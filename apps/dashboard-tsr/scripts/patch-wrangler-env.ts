@@ -46,7 +46,7 @@ const SHARED_VARS = {
   OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
-  CHM_FEATURE_AGENT_ACCESS: 'authenticated',
+  CHM_FEATURES: 'agent:auth',
 }
 // NOTE: client auth config (auth provider + Clerk publishable key) is NOT a
 // runtime worker var — it is build-time inlined via import.meta.env.VITE_* (see

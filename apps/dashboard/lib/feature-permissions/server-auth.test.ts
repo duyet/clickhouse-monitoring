@@ -268,16 +268,13 @@ describe('environment variable feature overrides', () => {
     }
   })
 
-  test('invalid per-feature enabled value throws', async () => {
+  test('invalid per-feature enabled value is silently ignored', async () => {
+    // Lenient parsing: invalid boolean values are skipped rather than throwing,
+    // so a typo in CHM_FEATURE_AGENT_ENABLED doesn't crash the app.
     process.env.CHM_FEATURE_AGENT_ENABLED = 'maybe'
-    try {
-      await getAppFeaturePermissionConfig()
-      expect.unreachable('Should have thrown')
-    } catch (err) {
-      expect((err as AppFeaturePermissionConfigError).message).toContain(
-        'Invalid boolean'
-      )
-    }
+    const config = await getAppFeaturePermissionConfig()
+    // 'maybe' is not a valid boolean → override is skipped → default enabled=true
+    expect(config.features.agent?.enabled).toBeUndefined()
   })
 })
 

@@ -60,4 +60,38 @@ export function resetPlatformBindings(): void {
   instance = null
 }
 
+export type { EnvReader } from './env'
+export type {
+  FeatureAccess,
+  FeatureId,
+  FeatureOverride,
+  FeatureOverrides,
+  FeaturePermission,
+  FeatureState,
+  Principal,
+  PublicFeaturePermissionConfig,
+  ResolvedFeatureStates,
+} from './feature-permissions'
 export type { PlatformBindings } from './types'
+
+// Shared env utilities (v0.3)
+export { createEnvReader, readEnvWithFallback } from './env'
+// Shared feature-permission types and helpers (v0.3)
+export {
+  DEFAULT_FEATURE_ACCESS,
+  DEFAULT_FEATURE_STATE,
+  getDefaultFeatureState,
+  getResolvedFeatureStates,
+  isFeatureAccess,
+  isFeatureAllowed,
+  isFeatureId,
+  mergeFeatureOverrides,
+  normalizeFeatureAccess,
+  normalizeFeatureId,
+  parseBoolean,
+  parseFeaturesConfig,
+  parseLegacyFeatureOverrides,
+  resolveFeatureState,
+  splitEnvList,
+} from './feature-permissions'
+export { FEATURE_ACCESS_VALUES, FEATURE_IDS } from './feature-permissions/types'

@@ -1,20 +1,22 @@
-import type { AuthProvider } from '@/lib/auth/provider'
 import type {
   FeatureOverride,
   FeatureOverrides,
   FeaturePermission,
   Principal,
   PublicFeaturePermissionConfig,
-} from './types'
+} from '@chm/platform'
+import type { AuthProvider } from '@/lib/auth/provider'
 
 import {
+  FEATURE_IDS,
   getResolvedFeatureStates,
   mergeFeatureOverrides,
   normalizeFeatureAccess,
   normalizeFeatureId,
+  parseFeaturesConfig,
+  parseLegacyFeatureOverrides,
   resolveFeatureState,
-} from './shared'
-import { FEATURE_IDS } from './types'
+} from '@chm/platform'
 import { auth } from '@clerk/nextjs/server'
 import { load as parseYaml } from 'js-yaml'
 import { parse as parseToml } from 'smol-toml'
@@ -162,50 +164,13 @@ async function loadConfigFile(): Promise<Partial<AppFeaturePermissionConfig>> {
   }
 }
 
-function splitFeatureList(value: string | undefined): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
 function parseEnvFeatureOverrides(): FeatureOverrides {
-  let overrides: FeatureOverrides = {}
+  // v0.3: CHM_FEATURES compact format (e.g. "agent:auth,peerdb:off")
+  let overrides = parseFeaturesConfig(process.env.CHM_FEATURES)
 
-  for (const feature of splitFeatureList(process.env.CHM_DISABLED_FEATURES)) {
-    const id = normalizeFeatureId(feature)
-    overrides = mergeFeatureOverrides(overrides, {
-      [id]: { enabled: false },
-    })
-  }
-
-  for (const feature of splitFeatureList(
-    process.env.CHM_AUTH_REQUIRED_FEATURES
-  )) {
-    const id = normalizeFeatureId(feature)
-    overrides = mergeFeatureOverrides(overrides, {
-      [id]: { access: 'authenticated' },
-    })
-  }
-
-  for (const feature of FEATURE_IDS) {
-    const envKey = `CHM_FEATURE_${feature.toUpperCase()}`
-    const enabled = parseBoolean(
-      process.env[`${envKey}_ENABLED`],
-      `${envKey}_ENABLED`
-    )
-    const access = process.env[`${envKey}_ACCESS`]
-
-    const override: FeatureOverride = {}
-    if (enabled !== undefined) override.enabled = enabled
-    if (access !== undefined && access !== '') {
-      override.access = normalizeFeatureAccess(access)
-    }
-
-    if (Object.keys(override).length > 0) {
-      overrides = mergeFeatureOverrides(overrides, { [feature]: override })
-    }
-  }
+  // Legacy env vars overlay on top
+  const legacy = parseLegacyFeatureOverrides((key) => process.env[key])
+  overrides = mergeFeatureOverrides(overrides, legacy)
 
   return overrides
 }
