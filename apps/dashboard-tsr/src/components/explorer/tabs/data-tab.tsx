@@ -10,7 +10,7 @@ import {
 import type { ApiError, ApiResponse } from '@/lib/api/types'
 
 import { useExplorerState } from '../hooks/use-explorer-state'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -136,8 +136,11 @@ export function DataTab() {
 
   const rows = response?.data || []
 
-  // Generate columns dynamically from data
-  const columns = (() => {
+  // Generate columns dynamically from data.
+  // Keyed on the column-name signature so the array is only rebuilt when the
+  // schema changes, not on every data refetch (which would remount all cells).
+  const _columnSchema = Object.keys(rows[0] ?? {}).join(',')
+  const columns = useMemo(() => {
     if (rows.length === 0) return []
     return Object.keys(rows[0]).map((key) =>
       columnHelper.accessor(key, {
@@ -148,7 +151,8 @@ export function DataTab() {
         maxSize: 500,
       })
     )
-  })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_columnSchema])
 
   const table = useReactTable({
     data: rows,

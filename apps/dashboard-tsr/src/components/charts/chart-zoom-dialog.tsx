@@ -45,6 +45,10 @@ import { cn, dedent } from '@/lib/utils'
 
 const BEAUTIFY_STORAGE_KEY = 'chart-zoom-sql-beautify'
 
+// Stable empty context object — avoids new reference on every render which
+// would defeat column-def memoization inside DataTable.
+const EMPTY_TABLE_CONTEXT: Record<string, string> = {}
+
 function getInitialBeautifyState(): boolean {
   if (typeof window === 'undefined') return false
   try {
@@ -392,7 +396,7 @@ export const ChartZoomDialog = function ChartZoomDialog({
               <DataTable
                 data={data as Record<string, unknown>[]}
                 queryConfig={queryConfig}
-                context={{}}
+                context={EMPTY_TABLE_CONTEXT}
                 defaultPageSize={50}
                 showSQL={false}
                 enableColumnFilters={true}

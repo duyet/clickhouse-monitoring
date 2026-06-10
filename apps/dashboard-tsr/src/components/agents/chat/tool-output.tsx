@@ -43,6 +43,10 @@ import {
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
+// Stable empty context object — avoids new reference on every render which
+// would defeat column-def memoization inside DataTable.
+const EMPTY_TABLE_CONTEXT: Record<string, string> = {}
+
 export interface AgentToolPart {
   readonly type: string
   readonly toolCallId: string
@@ -153,7 +157,7 @@ export function ResultTable({
     <DataTable
       data={displayRows}
       queryConfig={queryConfig}
-      context={{}}
+      context={EMPTY_TABLE_CONTEXT}
       defaultPageSize={Math.min(displayRows.length, 25)}
       showSQL={false}
       enableColumnFilters={false}
@@ -218,7 +222,7 @@ function ExpandTableButton({
           <DataTable
             data={rows}
             queryConfig={queryConfig}
-            context={{}}
+            context={EMPTY_TABLE_CONTEXT}
             defaultPageSize={50}
             showSQL={false}
             enableColumnFilters={true}

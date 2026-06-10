@@ -81,6 +81,9 @@ export function useTableData<T = unknown>(
     refetchInterval: resolvedRefetchInterval,
     refetchOnMount: true,
     refetchOnReconnect: true,
+    // Keep previous data visible while re-fetching on host/range changes so the
+    // UI never blanks to a skeleton during transitions.
+    placeholderData: (prev) => prev,
   })
 
   const dataArray = data?.data ?? []

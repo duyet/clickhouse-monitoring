@@ -441,7 +441,10 @@ export function DataTable<
 
   // Combine special columns with data columns:
   // [expand?, select?, ...columnDefs]
-  const finalColumnDefs = (() => {
+  // Memoized so the array reference is stable across re-renders caused by data
+  // refetches — without this, TanStack Table sees a new columns array every
+  // render and remounts cells, causing visible flash.
+  const finalColumnDefs = useMemo(() => {
     const cols: ColumnDef<TData, unknown>[] = []
     if (expandable) cols.push(expandColumn as ColumnDef<TData, unknown>)
     if (enableRowSelection) cols.push(selectionColumn)
@@ -449,7 +452,8 @@ export function DataTable<
       ...cols,
       ...(columnDefs as ColumnDef<TData, unknown>[]),
     ] as ColumnDef<TData, TValue>[]
-  })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnDefs, expandable, enableRowSelection])
 
   // Compose the effective column order. Saved orders in localStorage only
   // contain data columns (predating utility columns like `__expand`/`select`),

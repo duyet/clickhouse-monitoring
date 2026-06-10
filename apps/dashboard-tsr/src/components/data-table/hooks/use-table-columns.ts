@@ -38,7 +38,6 @@ export function useTableColumns<
   // Add `ctx.` prefix to all keys (memoized to prevent recalculation)
   // Use JSON.stringify for stable comparison - context is a small object
   // and referential equality fails when callers create inline objects.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const _contextKey = useMemo(() => JSON.stringify(context), [context])
   const contextWithPrefix = useMemo(
     () =>
@@ -49,8 +48,10 @@ export function useTableColumns<
         }),
         {} as Record<string, string>
       ),
+    // Use the stringified key so this is value-stable even when the caller
+    // recreates the context object reference each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [context]
+    [_contextKey]
   )
 
   // Column definitions for the table (memoized to prevent recalculation)
