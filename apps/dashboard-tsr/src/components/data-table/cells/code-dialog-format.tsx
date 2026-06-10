@@ -221,7 +221,7 @@ function QueryPlanPanel({
     queryFn: () => explainFetcher(hostId, cleanQuery),
     enabled: isExplainable,
     staleTime: 30_000,
-    refetchInterval: 30_000,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: false,
   })

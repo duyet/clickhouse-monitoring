@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -10,15 +10,15 @@ type NetworkStatus = 'online' | 'offline' | 'checking'
  */
 export const NetworkStatusBanner = function NetworkStatusBanner() {
   const [status, setStatus] = useState<NetworkStatus>('checking')
-  const [wasOffline, setWasOffline] = useState(false)
+  const wasOfflineRef = useRef(false)
 
   useEffect(() => {
     // Initial check
     const updateStatus = () => {
       const isOnline = navigator.onLine
       setStatus(isOnline ? 'online' : 'offline')
-      if (isOnline && wasOffline) {
-        setWasOffline(false)
+      if (isOnline && wasOfflineRef.current) {
+        wasOfflineRef.current = false
         // Trigger a page reload when coming back online
         window.location.reload()
       }
@@ -29,7 +29,7 @@ export const NetworkStatusBanner = function NetworkStatusBanner() {
     // Listen for online/offline events
     const handleOnline = () => {
       setStatus('online')
-      setWasOffline(true)
+      wasOfflineRef.current = true
     }
 
     const handleOffline = () => {
@@ -43,7 +43,7 @@ export const NetworkStatusBanner = function NetworkStatusBanner() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [wasOffline])
+  }, [])
 
   // Only show banner when offline
   if (status === 'online' || status === 'checking') {
