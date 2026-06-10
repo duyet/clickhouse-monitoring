@@ -336,6 +336,7 @@ jobs:
           CLICKHOUSE_HOST: ${{ secrets.CLICKHOUSE_HOST }}
           CLICKHOUSE_USER: ${{ secrets.CLICKHOUSE_USER }}
           CLICKHOUSE_NAME: ${{ secrets.CLICKHOUSE_NAME }}
+          OPENROUTER_REFERER: ${{ secrets.OPENROUTER_REFERER }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             bun scripts/patch-wrangler-env.ts --env preview
