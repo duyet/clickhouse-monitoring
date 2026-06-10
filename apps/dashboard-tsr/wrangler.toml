@@ -30,7 +30,7 @@ CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:@preset/chmonitor"
-OPENROUTER_REFERER = "http://localhost:3000"
+OPENROUTER_REFERER = "https://chmonitor.dev"
 OPENROUTER_APP_NAME = "chmonitor"
 # Server-side auth provider (runtime). The CLIENT auth provider + Clerk
 # publishable key are NOT runtime vars — they are build-time inlined via
@@ -86,7 +86,7 @@ CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
-OPENROUTER_REFERER = "http://localhost:3000"
+OPENROUTER_REFERER = "https://chmonitor.dev"
 OPENROUTER_APP_NAME = "chmonitor"
 
 # Server-side auth provider for preview (runtime). Client auth provider + the
