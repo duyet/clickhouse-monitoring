@@ -36,14 +36,22 @@ if (!existsSync(JSON_PATH)) {
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 
 // --- Shared vars (keep in sync with wrangler.toml) ---
+// Private homelab topology (ClickHouse host/user/name) is read from the
+// environment at deploy time and falls back to public localhost defaults. CI
+// injects the real values from repo secrets (see the "Patch wrangler config"
+// step in .github/workflows/cloudflare.yml); the committed defaults keep the
+// public repo free of any private info.
+// OPENROUTER_REFERER is the OpenRouter/AnyRouter attribution header (HTTP-Referer
+// for app-ranking on their leaderboards) — not sensitive. It defaults to the
+// public product domain so every LLM call attributes back to chmonitor; forks
+// can override via env.
 const SHARED_VARS = {
-  CLICKHOUSE_HOST:
-    'https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net',
-  CLICKHOUSE_USER: 'duyet,monitoring',
-  CLICKHOUSE_NAME: 'duet-ubuntu,duyet-agent',
+  CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || 'http://localhost:8123',
+  CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || 'default',
+  CLICKHOUSE_NAME: process.env.CLICKHOUSE_NAME || 'localhost',
   CLICKHOUSE_MAX_EXECUTION_TIME: '60',
   CLOUDFLARE_WORKERS: '1',
-  OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
+  OPENROUTER_REFERER: process.env.OPENROUTER_REFERER || 'https://chmonitor.dev',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
