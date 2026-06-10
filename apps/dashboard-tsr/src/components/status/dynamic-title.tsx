@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from '@/lib/next-compat'
+import { visibilityAwareInterval } from '@/lib/swr/config'
 
 const BASE_TITLE = 'chmonitor'
 const WARNING_PREFIX = '⚠️ '
@@ -126,7 +127,7 @@ export function DynamicTitle() {
   const { data } = useQuery<HealthzResponse>({
     queryKey: ['/api/healthz'],
     queryFn: () => fetcher('/api/healthz'),
-    refetchInterval: 60_000,
+    refetchInterval: visibilityAwareInterval(60_000),
     refetchOnWindowFocus: false,
     retry: 2,
   })
