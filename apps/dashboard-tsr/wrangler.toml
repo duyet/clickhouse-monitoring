@@ -25,7 +25,7 @@ pattern = "dash-tsr.chmonitor.dev"
 custom_domain = true
 
 [vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net"
 CLICKHOUSE_USER = "duyet,monitoring"
 CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
@@ -81,7 +81,7 @@ custom_domain = true
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
+CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net"
 CLICKHOUSE_USER = "duyet,monitoring"
 CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
