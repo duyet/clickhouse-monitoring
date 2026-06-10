@@ -5,6 +5,39 @@ the migration target that replaces the Next.js app in `apps/dashboard`. Live at
 **[dash-tsr.chmonitor.dev](https://dash-tsr.chmonitor.dev)** (preview:
 `preview.dash-tsr.chmonitor.dev` on PRs).
 
+## Deploy your own
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard-tsr)
+
+Click the button above to deploy your own instance to Cloudflare Workers. You will be prompted to connect your Cloudflare account and set the required environment variables.
+
+### Required variables
+
+| Variable | Purpose |
+|---|---|
+| `CLICKHOUSE_HOST` | ClickHouse URL(s). Comma-separated for multi-host (e.g. `https://ch1:8443,https://ch2:8443`) |
+| `CLICKHOUSE_USER` | Username(s). Single value or one per host, comma-separated |
+| `CLICKHOUSE_PASSWORD` | Password(s). Single value or one per host, comma-separated |
+
+### Optional variables
+
+| Variable | Purpose |
+|---|---|
+| `CLICKHOUSE_NAME` | Friendly display name(s) for each host, comma-separated |
+| `CLICKHOUSE_MAX_EXECUTION_TIME` | Query timeout in seconds (default: `60`) |
+| `VITE_AUTH_PROVIDER` | Auth mode: `none` (default) or `clerk` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (`pk_...`). Required when `VITE_AUTH_PROVIDER=clerk` |
+| `CLERK_SECRET_KEY` | Clerk server secret (`sk_...`). Required when auth provider is `clerk` |
+| `CHM_AUTH_PROVIDER` | Server-side auth mirror of `VITE_AUTH_PROVIDER` (`none` / `clerk` / `proxy`) |
+| `CHM_API_KEY_SECRET` | Enables Bearer-token auth on `/api/v1/*` |
+| `LLM_API_KEY` | AI provider key (OpenRouter, AnyRouter, etc.) |
+| `LLM_API_BASE` | AI provider base URL (e.g. `https://openrouter.ai/api/v1`) |
+| `LLM_MODEL` | Model to use (e.g. `openrouter/free`, `anyrouter/free`) |
+| `OPENROUTER_API_KEY` | OpenRouter API key (alternative to `LLM_API_KEY`) |
+| `ANYROUTER_API_KEY` | AnyRouter API key (alternative to `LLM_API_KEY`) |
+
+`VITE_*` variables are baked into the browser bundle at build time; `CLICKHOUSE_*` and secret keys are runtime Worker variables set via `wrangler secret put` or the Cloudflare dashboard.
+
 88 page routes and 53 API routes cover the full feature set: real-time cluster
 metrics, query/merge/mutation monitoring, a database explorer, ClickHouse Keeper
 views, log inspection, and an AI agent — all served as a fast static shell with
@@ -99,7 +132,7 @@ vars come from the Worker binding / `process.env`.
 | `CLICKHOUSE_MAX_EXECUTION_TIME` | | Query timeout (default 60s) |
 | `VITE_AUTH_PROVIDER` / `CHM_AUTH_PROVIDER` | | `none` (default) \| `clerk` \| `proxy` |
 | `CHM_API_KEY_SECRET` | | Enables API-key auth on `/api/v1/*` |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | | When auth provider is `clerk` |
+| `VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | | When auth provider is `clerk` |
 | `LLM_API_KEY` / `LLM_API_BASE` / `LLM_MODEL` | | AI agent (OpenRouter/AnyRouter-compatible) |
 
 ### Security headers
