@@ -1,6 +1,6 @@
 import type { YAxisScale } from '@/types/charts'
 
-import { createContext, use, useEffect, useState } from 'react'
+import { createContext, use, useCallback, useMemo, useState } from 'react'
 
 const LOCAL_STORAGE_KEY = 'chart-log-scale-preference'
 
@@ -63,29 +63,28 @@ export function ChartScaleProvider({
     initialScale ?? getInitialScale
   )
 
-  // Sync with localStorage on mount
-  useEffect(() => {
-    if (!initialScale) {
-      setScaleState(getInitialScale())
-    }
-  }, [initialScale])
-
-  const setScale = (newScale: YAxisScale) => {
+  const setScale = useCallback((newScale: YAxisScale) => {
     setScaleState(newScale)
     saveScale(newScale)
-  }
+  }, [])
 
-  const toggleScale = () => {
-    const newScale = scale === 'linear' ? 'log' : 'linear'
-    setScale(newScale)
-  }
+  const toggleScale = useCallback(() => {
+    setScaleState((prev) => {
+      const newScale = prev === 'linear' ? 'log' : 'linear'
+      saveScale(newScale)
+      return newScale
+    })
+  }, [])
 
-  const value: ChartScaleContextValue = {
-    scale,
-    isLogScale: scale === 'auto' || scale === 'log',
-    toggleScale,
-    setScale,
-  }
+  const value = useMemo<ChartScaleContextValue>(
+    () => ({
+      scale,
+      isLogScale: scale === 'auto' || scale === 'log',
+      toggleScale,
+      setScale,
+    }),
+    [scale, toggleScale, setScale]
+  )
 
   return (
     <ChartScaleContext.Provider value={value}>
