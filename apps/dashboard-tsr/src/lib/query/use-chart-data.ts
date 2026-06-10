@@ -105,6 +105,9 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     refetchInterval: resolvedRefetchInterval,
     refetchOnMount: true,
     refetchOnReconnect: true,
+    // Keep previous data visible while re-fetching on host/range changes so the
+    // UI never blanks to a skeleton during transitions.
+    placeholderData: (prev) => prev,
     retry: (failureCount, err) => {
       if (
         'status' in err &&

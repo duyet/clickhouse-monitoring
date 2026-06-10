@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -74,19 +74,26 @@ export function ResultTable({
   rows: RowData[]
   emptyMessage?: string
 }) {
-  const columns =
-    rows.length === 0
-      ? []
-      : Object.keys(rows[0]).map((key) =>
-          columnHelper.accessor((r) => r[key], {
-            id: key,
-            header: key,
-            cell: (info) => <ExpandableCell value={info.getValue()} />,
-            size: 220,
-            minSize: 80,
-            maxSize: 600,
-          })
-        )
+  // Keyed on the column-name signature so the array is only rebuilt when the
+  // schema changes, not on every data refetch (which would remount all cells).
+  const _columnSchema = Object.keys(rows[0] ?? {}).join(',')
+  const columns = useMemo(
+    () =>
+      rows.length === 0
+        ? []
+        : Object.keys(rows[0]).map((key) =>
+            columnHelper.accessor((r) => r[key], {
+              id: key,
+              header: key,
+              cell: (info) => <ExpandableCell value={info.getValue()} />,
+              size: 220,
+              minSize: 80,
+              maxSize: 600,
+            })
+          ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [_columnSchema]
+  )
 
   const table = useReactTable({
     data: rows,
