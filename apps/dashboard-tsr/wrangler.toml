@@ -4,8 +4,7 @@
 # the @cloudflare/vite-plugin produces the worker bundle + client asset
 # manifest at build time, so no explicit [assets] block is required.
 #
-# NOTE: no real ClickHouse hosts/credentials are committed here (public repo).
-# Runtime vars/secrets are injected per environment at deploy time.
+# Public defaults only — real hosts/users are injected per-environment at deploy time via CI secrets.
 
 name = "chmonitor-dash-tsr"
 main = "@tanstack/react-start/server-entry"
@@ -25,13 +24,13 @@ pattern = "dash-tsr.chmonitor.dev"
 custom_domain = true
 
 [vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:@preset/chmonitor"
-OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_REFERER = "http://localhost:3000"
 OPENROUTER_APP_NAME = "chmonitor"
 # Server-side auth provider (runtime). The CLIENT auth provider + Clerk
 # publishable key are NOT runtime vars — they are build-time inlined via
@@ -81,13 +80,13 @@ custom_domain = true
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
-OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_REFERER = "http://localhost:3000"
 OPENROUTER_APP_NAME = "chmonitor"
 
 # Server-side auth provider for preview (runtime). Client auth provider + the

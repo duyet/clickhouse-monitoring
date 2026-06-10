@@ -141,7 +141,7 @@ export function AgentThreadPage() {
             <AgentSettingsSidebar
               open={rightSidebarOpen}
               onClose={() => setRightSidebarOpen(false)}
-              hostName={clusterName ?? 'duyet-agent'}
+              hostName={clusterName ?? 'default'}
             />
           </div>
         </AgentRuntimeProvider>

@@ -37,13 +37,12 @@ const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 
 // --- Shared vars (keep in sync with wrangler.toml) ---
 const SHARED_VARS = {
-  CLICKHOUSE_HOST:
-    'https://duet-ubuntu.dingo-mora.ts.net:8443,https://openclaw.dingo-mora.ts.net',
-  CLICKHOUSE_USER: 'duyet,monitoring',
-  CLICKHOUSE_NAME: 'duet-ubuntu,duyet-agent',
+  CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || 'http://localhost:8123',
+  CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || 'default',
+  CLICKHOUSE_NAME: process.env.CLICKHOUSE_NAME || 'localhost',
   CLICKHOUSE_MAX_EXECUTION_TIME: '60',
   CLOUDFLARE_WORKERS: '1',
-  OPENROUTER_REFERER: 'https://clickhouse.duyet.net',
+  OPENROUTER_REFERER: 'http://localhost:3000',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
