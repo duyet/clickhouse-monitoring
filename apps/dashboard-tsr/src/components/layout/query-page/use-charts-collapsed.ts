@@ -6,7 +6,7 @@
  * The state is shared across all pages using QueryPageLayout.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const OLD_CHARTS_COLLAPSED_KEY = 'clickhouse-monitor-charts-collapsed'
 const CHARTS_ROWS_KEY = 'clickhouse-monitor-chart-rows'
@@ -72,13 +72,9 @@ function persistState(state: ChartsRowsState): void {
 export function useChartsCollapsed(
   _rowCount?: number
 ): UseChartsCollapsedReturn {
-  // Start with default state to match SSR
-  const [state, setState] = useState<ChartsRowsState>(DEFAULT_STATE)
-
-  // Load from localStorage after hydration to avoid mismatch
-  useEffect(() => {
-    setState(loadFromStorage())
-  }, [])
+  const [state, setState] = useState<ChartsRowsState>(() =>
+    typeof window !== 'undefined' ? loadFromStorage() : DEFAULT_STATE
+  )
 
   const toggleCollapsed = () => {
     setState((prev) => {

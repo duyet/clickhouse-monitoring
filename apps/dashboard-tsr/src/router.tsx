@@ -20,6 +20,8 @@ export function getRouter() {
     // ~55-60 ms TTFB to every page load; `'never'` strips it so routes resolve
     // without the round-trip.
     trailingSlash: 'never',
+    // Preload route data and code on hover/focus so navigations feel instant.
+    defaultPreload: 'intent',
   })
 }
 

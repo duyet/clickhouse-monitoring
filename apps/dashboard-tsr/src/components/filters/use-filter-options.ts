@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { FilterFieldOption } from '@/lib/filters/types'
 
 import { apiFetch } from '@/lib/swr/api-fetch'
+import { visibilityAwareInterval } from '@/lib/swr/config'
 
 interface FilterOptionsResponse {
   options: { value: string; count: number }[]
@@ -38,7 +39,7 @@ export function useFilterOptions(
     },
     enabled,
     staleTime: 60_000,
-    refetchInterval: 300_000,
+    refetchInterval: visibilityAwareInterval(300_000),
     refetchOnWindowFocus: false,
     retry: 2,
   })

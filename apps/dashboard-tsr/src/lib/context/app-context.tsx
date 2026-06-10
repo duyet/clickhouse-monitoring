@@ -6,18 +6,15 @@ import {
   type SetStateAction,
   use,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from 'react'
-import { usePathname } from '@/lib/next-compat'
 
 export interface ContextValue {
   interval: ClickHouseInterval
   setInterval?: Dispatch<SetStateAction<ClickHouseInterval>>
   reloadInterval: number | null
   setReloadInterval: Dispatch<SetStateAction<number | null>>
-  pathname: string
 }
 
 export const Context = createContext<ContextValue | undefined>(undefined)
@@ -71,13 +68,9 @@ export const AppProvider = ({
   // persisted to localStorage so the user's choice survives reloads.
   // setReloadInterval(null) to stop it.
   const defaultReloadInterval = reloadIntervalSecond * 1000
-  const [reloadInterval, setReloadIntervalState] = useState<number | null>(
-    defaultReloadInterval
+  const [reloadInterval, setReloadIntervalState] = useState<number | null>(() =>
+    readInitialReloadInterval(defaultReloadInterval)
   )
-
-  useEffect(() => {
-    setReloadIntervalState(readInitialReloadInterval(defaultReloadInterval))
-  }, [defaultReloadInterval])
 
   const setReloadInterval: Dispatch<SetStateAction<number | null>> =
     useCallback((action) => {
@@ -91,17 +84,14 @@ export const AppProvider = ({
       })
     }, [])
 
-  const pathname = usePathname()
-
   const value = useMemo<ContextValue>(
     () => ({
       interval,
       setInterval,
       reloadInterval,
       setReloadInterval,
-      pathname,
     }),
-    [interval, reloadInterval, setReloadInterval, pathname]
+    [interval, reloadInterval, setReloadInterval]
   )
 
   return <Context.Provider value={value}>{children}</Context.Provider>
