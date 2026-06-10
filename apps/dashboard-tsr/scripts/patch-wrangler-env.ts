@@ -36,13 +36,18 @@ if (!existsSync(JSON_PATH)) {
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 
 // --- Shared vars (keep in sync with wrangler.toml) ---
+// Deployment-specific values (ClickHouse host/user/name, OpenRouter referer)
+// are read from the environment at deploy time and fall back to public
+// localhost defaults. CI injects the real values from repo secrets (see the
+// "Patch wrangler config" step in .github/workflows/cloudflare.yml); the
+// committed defaults keep the public repo free of any private homelab info.
 const SHARED_VARS = {
   CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || 'http://localhost:8123',
   CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || 'default',
   CLICKHOUSE_NAME: process.env.CLICKHOUSE_NAME || 'localhost',
   CLICKHOUSE_MAX_EXECUTION_TIME: '60',
   CLOUDFLARE_WORKERS: '1',
-  OPENROUTER_REFERER: 'http://localhost:3000',
+  OPENROUTER_REFERER: process.env.OPENROUTER_REFERER || 'http://localhost:3000',
   OPENROUTER_APP_NAME: 'chmonitor',
   CHM_AUTH_PROVIDER: 'clerk',
   CHM_FEATURE_AGENT_ACCESS: 'authenticated',
