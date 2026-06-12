@@ -137,12 +137,13 @@ jobs:
         run: bun run turbo run build
 
       - name: Upload WASM artifact
-        if: ${{ inputs.job-type == 'build' && matrix.clickhouse-version == '24.5' }}
+        if: ${{ inputs.job-type == 'build' && !inputs.skip-rust }}
         uses: actions/upload-artifact@v4
         with:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
           retention-days: 3
+          overwrite: true
 
       # === Docker Build ===
       - name: Set up QEMU
