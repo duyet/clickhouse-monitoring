@@ -6,14 +6,16 @@
  * Verifies the sidebar menu renders with key sections and that
  * clicking a nav link updates the URL while preserving the host parameter.
  *
- * The app uses shadcn/ui Sidebar which renders <div data-sidebar="sidebar-inner">
- * (not a <nav> element), so selectors target the sidebar container directly.
+ * The app uses shadcn/ui Sidebar which renders a <div> with two attributes:
+ * data-sidebar="sidebar" and data-slot="sidebar-inner". Selectors target this
+ * container via data-sidebar="sidebar" (not <nav> — there is no nav element).
  * Links use TanStack Router's Link component with `to` + `search` props which
  * renders the correct href (e.g. /running-queries?host=0) on the <a> element.
  */
 
-// Sidebar links live inside the shadcn/ui Sidebar container (a <div>, not <nav>).
-const SIDEBAR = '[data-sidebar="sidebar-inner"]'
+// Sidebar links live inside the shadcn/ui Sidebar inner container.
+// The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
+const SIDEBAR = '[data-sidebar="sidebar"]'
 
 describe('Sidebar navigation', () => {
   beforeEach(() => {

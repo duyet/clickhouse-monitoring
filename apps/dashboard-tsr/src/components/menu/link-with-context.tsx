@@ -7,7 +7,6 @@ import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { usePathname } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { prefetchRoute } from '@/lib/swr/prefetch'
-import { buildUrl } from '@/lib/url/url-builder'
 
 export const HostPrefixedLink = ({
   href,
@@ -27,16 +26,12 @@ export const HostPrefixedLink = ({
   const hostId = useHostId()
   const queryClient = useQueryClient()
 
-  // Build URL with host query parameter using utility
-  const url = buildUrl(href, { host: String(hostId) })
-
-  // Split into pathname + search for TanStack Router's `to`/`search` props.
   // TanStack Router's `href` option is for external URLs only; internal links
-  // must use `to` so the rendered <a> element gets the correct href attribute.
-  const [toPath, searchStr] = url.split('?')
-  const searchParams = searchStr
-    ? Object.fromEntries(new URLSearchParams(searchStr))
-    : {}
+  // must use `to` + `search` so the rendered <a> element gets the correct href.
+  // Pass `host` as a number to match the root route's validateSearch schema —
+  // string values get JSON-encoded ("%220%22") which produces 404s during prerender.
+  const toPath = href.split('?')[0]
+  const searchParams = { host: hostId }
 
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)
