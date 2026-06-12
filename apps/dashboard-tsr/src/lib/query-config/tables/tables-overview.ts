@@ -24,7 +24,7 @@ export const tablesOverviewConfig: QueryConfig = {
                 format('{}.{}', database, \`table\`) AS \`table\`,
                 sum(rows) AS total_rows,
                 formatReadableQuantity(total_rows) AS readable_total_rows,
-                round((100 * total_rows) / max(total_rows) OVER ()) AS pct_total_rows,
+                round((100 * total_rows) / nullIf(max(total_rows) OVER (), 0)) AS pct_total_rows,
                 max(modification_time) AS latest_modification,
 
                 sum(data_compressed_bytes) AS compressed,
@@ -32,30 +32,30 @@ export const tablesOverviewConfig: QueryConfig = {
                 round(uncompressed / nullIf(compressed, 0), 2) AS compr_rate,
                 formatReadableSize(compressed) AS readable_compressed,
                 formatReadableSize(uncompressed) AS readable_uncompressed,
-                round((100 * compressed) / max(compressed) OVER ()) AS pct_compressed,
-                round((100 * uncompressed) / max(uncompressed) OVER ()) AS pct_uncompressed,
-                round((100 * compr_rate) / max(compr_rate) OVER ()) AS pct_compr_rate,
+                round((100 * compressed) / nullIf(max(compressed) OVER (), 0)) AS pct_compressed,
+                round((100 * uncompressed) / nullIf(max(uncompressed) OVER (), 0)) AS pct_uncompressed,
+                round((100 * compr_rate) / nullIf(max(compr_rate) OVER (), 0)) AS pct_compr_rate,
 
                 avg(data_compressed_bytes) AS avg_part_size_compressed,
                 avg(data_uncompressed_bytes) AS avg_part_size_uncompressed,
                 formatReadableSize(avg_part_size_compressed) AS readable_avg_part_size_compressed,
                 formatReadableSize(avg_part_size_uncompressed) AS readable_avg_part_size_uncompressed,
-                round((100 * avg_part_size_compressed) / max(avg_part_size_compressed) OVER ()) AS pct_avg_part_size_compressed,
-                round((100 * avg_part_size_uncompressed) / max(avg_part_size_uncompressed) OVER ()) AS pct_avg_part_size_uncompressed,
+                round((100 * avg_part_size_compressed) / nullIf(max(avg_part_size_compressed) OVER (), 0)) AS pct_avg_part_size_compressed,
+                round((100 * avg_part_size_uncompressed) / nullIf(max(avg_part_size_uncompressed) OVER (), 0)) AS pct_avg_part_size_uncompressed,
 
                 max(data_compressed_bytes) AS max_part_size_compressed,
                 max(data_uncompressed_bytes) AS max_part_size_uncompressed,
                 formatReadableSize(max_part_size_compressed) AS readable_max_part_size_compressed,
                 formatReadableSize(max_part_size_uncompressed) AS readable_max_part_size_uncompressed,
-                round((100 * max_part_size_compressed) / max(max_part_size_compressed) OVER ()) AS pct_max_part_size_compressed,
-                round((100 * max_part_size_uncompressed) / max(max_part_size_uncompressed) OVER ()) AS pct_max_part_size_uncompressed,
+                round((100 * max_part_size_compressed) / nullIf(max(max_part_size_compressed) OVER (), 0)) AS pct_max_part_size_compressed,
+                round((100 * max_part_size_uncompressed) / nullIf(max(max_part_size_uncompressed) OVER (), 0)) AS pct_max_part_size_uncompressed,
 
                 sum(primary_key_bytes_in_memory) AS primary_keys_size,
                 formatReadableSize(primary_keys_size) AS readable_primary_keys_size,
-                round((100 * primary_keys_size) / max(primary_keys_size) OVER ()) AS pct_primary_keys_size,
+                round((100 * primary_keys_size) / nullIf(max(primary_keys_size) OVER (), 0)) AS pct_primary_keys_size,
                 any(engine) AS engine,
                 count() AS parts_count,
-                round((100 * parts_count) / max(parts_count) OVER ()) AS pct_parts_count
+                round((100 * parts_count) / nullIf(max(parts_count) OVER (), 0)) AS pct_parts_count
             FROM system.parts AS parts
             WHERE active
             GROUP BY 1

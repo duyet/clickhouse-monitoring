@@ -16,15 +16,15 @@ export const projectionsConfig: QueryConfig = {
           (sum(data_uncompressed_bytes) AS usize) AS uncompressed,
           formatReadableSize(compressed) AS readable_compressed,
           formatReadableSize(uncompressed) AS readable_uncompressed,
-          round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
-          round(100 * uncompressed / max(uncompressed) OVER ()) AS pct_uncompressed,
+          round(100 * compressed / nullIf(max(compressed) OVER (), 0)) AS pct_compressed,
+          round(100 * uncompressed / nullIf(max(uncompressed) OVER (), 0)) AS pct_uncompressed,
           round(uncompressed / nullIf(compressed, 0), 2) AS compr_rate,
-          round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate,
+          round(100 * compr_rate / nullIf(max(compr_rate) OVER (), 0)) AS pct_compr_rate,
           sum(rows) AS rows,
           formatReadableQuantity(rows) AS readable_rows,
-          round(100 * rows / max(rows) OVER ()) AS pct_rows,
+          round(100 * rows / nullIf(max(rows) OVER (), 0)) AS pct_rows,
           count() AS part_count,
-          round(100 * part_count / max(part_count) OVER ()) AS pct_part_count
+          round(100 * part_count / nullIf(max(part_count) OVER (), 0)) AS pct_part_count
       FROM system.projection_parts
       WHERE active
       GROUP BY

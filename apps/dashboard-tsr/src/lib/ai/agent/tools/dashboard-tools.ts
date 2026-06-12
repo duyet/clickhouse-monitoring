@@ -72,7 +72,7 @@ export function createDashboardTools() {
 
     get_chart_data: dynamicTool({
       description:
-        'Fetch chart data for a named chart. Provides guidance on how to retrieve data using the query tool.',
+        'Does not fetch chart data directly. Returns a static guidance message advising to use the query tool with appropriate SQL to retrieve the underlying data for a named chart.',
       inputSchema: z.object({
         chartName: z.string().describe('Name of the chart to fetch data for'),
         hostId: hostIdSchema,

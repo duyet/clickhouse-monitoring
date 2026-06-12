@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import type { Header } from '@tanstack/react-table'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,22 +26,31 @@ export const ColumnHeaderDropdown = function ColumnHeaderDropdown({
 }: ColumnHeaderDropdownProps) {
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false)
+  const reopenTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  // Clear any pending re-open timeout on unmount
+  useEffect(() => {
+    return () => clearTimeout(reopenTimeoutRef.current)
+  }, [])
 
   const column = header.column
   const canSort = column.getCanSort()
 
+  // Close and re-open dropdown to force re-render with new sort
+  const reopenDropdown = () => {
+    setOpen(false)
+    clearTimeout(reopenTimeoutRef.current)
+    reopenTimeoutRef.current = setTimeout(() => setOpen(true), 0)
+  }
+
   const handleSortAsc = (_e: React.MouseEvent) => {
     column.toggleSorting(false)
-    // Close and re-open dropdown to force re-render with new sort
-    setOpen(false)
-    setTimeout(() => setOpen(true), 0)
+    reopenDropdown()
   }
 
   const handleSortDesc = (_e: React.MouseEvent) => {
     column.toggleSorting(true)
-    // Close and re-open dropdown to force re-render with new sort
-    setOpen(false)
-    setTimeout(() => setOpen(true), 0)
+    reopenDropdown()
   }
 
   const handleResetSort = (e: React.MouseEvent) => {
