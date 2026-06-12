@@ -64,65 +64,10 @@ jobs:
       - name: Validate dependency boundaries
         run: bun run depcruise
 
-  # Build WASM natively on amd64 — WASM is platform-independent
-  build-wasm:
-    name: build-wasm
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Bun Cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-v1-
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.94.0
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Cargo
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rust/monitor-core/target
-          key: wasm-cargo-${{ runner.os }}-${{ hashFiles('rust/monitor-core/Cargo.lock', 'rust/monitor-core/Cargo.toml') }}
-          restore-keys: |
-            wasm-cargo-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build WASM
-        run: bun run wasm:build
-
-      - name: Upload WASM artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: wasm-output
-          path: |
-            packages/clickhouse-client/src/wasm/generated/monitor_core.js
-            packages/clickhouse-client/src/wasm/generated/monitor_core.d.ts
-            packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm
-          retention-days: 1
-
   # PRs: amd64 only for fast feedback (~3-5 min)
   build-docker-pr:
     name: build-docker-pr
     if: github.event_name == 'pull_request'
-    needs: [build-wasm]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
@@ -135,7 +80,6 @@ jobs:
   build-docker-amd64:
     name: build-docker-amd64
     if: github.event_name != 'pull_request'
-    needs: [build-wasm]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
