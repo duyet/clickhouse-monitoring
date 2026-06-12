@@ -1,6 +1,6 @@
 # Agent capabilities
 
-The agent has ~44 tools organized into categories. You never call tools directly — the agent picks and chains them automatically. This page summarizes what is available and what you can ask.
+The agent has 60+ tools organized into categories. You never call tools directly — the agent picks and chains them automatically. This page summarizes what is available and what you can ask.
 
 ## Tool categories
 
@@ -8,6 +8,7 @@ The agent has ~44 tools organized into categories. You never call tools directly
 |---|---|---|
 | Schema & exploration | Databases, tables, columns, data source discovery | `list_tables`, `get_table_schema`, `discover_data_sources` |
 | Query analysis | Running, slow, failed, expensive queries; EXPLAIN; optimization | `get_running_queries`, `get_slow_queries`, `explain_query`, `analyze_query_optimization` |
+| Diagnostics & optimization | Query optimization advice, index recommendations, table insights | `optimize_query`, `get_table_insights`, `analyze_query_performance` |
 | System health | Server metrics, CPU/memory/disk, errors, crash log, anomalies | `get_metrics`, `get_system_resources`, `detect_anomalies`, `generate_health_report` |
 | Findings persistence | Record and retrieve structured monitoring findings | `record_finding`, `list_recent_findings` |
 | Storage, merges & mutations | Part sizes, active merges, stuck mutations, merge throughput | `get_table_parts`, `get_merge_status`, `get_mutations` |
@@ -16,6 +17,7 @@ The agent has ~44 tools organized into categories. You never call tools directly
 | Schema migration | ALTER impact assessment, column usage, table design | `analyze_schema_change`, `get_column_usage`, `recommend_table_design` |
 | Comparison & forecasting | Cross-host, time-period, capacity forecast | `compare_hosts`, `compare_time_periods`, `forecast_capacity` |
 | Charts & visualization | Run SQL and return an interactive chart | `query_and_visualize` |
+| Reports & dashboards | Health reports, incident reports, dashboard navigation | `generate_report`, `navigate_to_dashboard` |
 | Settings & logs | Changed server settings, text log, stack traces | `get_settings`, `get_text_log`, `get_stack_traces` |
 | Control actions | Kill query/mutation, optimize table (disabled by default) | `kill_query`, `kill_mutation`, `optimize_table` |
 | Interaction & knowledge | Skills, workflows, context snapshot, clarifying questions | `load_skill`, `start_workflow`, `get_context` |
