@@ -29,6 +29,8 @@ ENV NODE_ENV=production \
     BUILD_TARGET=node
 # packages/ is needed at build time for the @chm/* source aliases (../../).
 COPY packages/ /app/packages/
+# tsconfig.base.json lives at the repo root and is extended by apps/dashboard-tsr/tsconfig.json.
+COPY tsconfig.base.json /app/tsconfig.base.json
 COPY apps/dashboard-tsr/ /app/apps/dashboard-tsr/
 COPY --from=deps /app/apps/dashboard-tsr/node_modules /app/apps/dashboard-tsr/node_modules
 WORKDIR /app/apps/dashboard-tsr
