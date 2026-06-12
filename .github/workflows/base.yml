@@ -137,7 +137,7 @@ jobs:
         run: bun run turbo run build
 
       - name: Upload WASM artifact
-        if: ${{ inputs.job-type == 'build' && matrix.clickhouse-version == fromJSON(inputs.clickhouse-versions)[0] }}
+        if: ${{ inputs.job-type == 'build' && matrix.clickhouse-version == '24.5' }}
         uses: actions/upload-artifact@v4
         with:
           name: wasm-output
