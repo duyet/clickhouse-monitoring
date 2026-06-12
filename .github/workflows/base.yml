@@ -142,7 +142,7 @@ jobs:
         with:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
-          retention-days: 1
+          retention-days: 3
 
       # === Docker Build ===
       - name: Set up QEMU
