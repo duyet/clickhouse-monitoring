@@ -333,6 +333,9 @@ async function isAuthenticatedRequest(
   config: AppFeaturePermissionConfig,
   options: { allowAgentBearerToken?: boolean } = {}
 ): Promise<boolean> {
+  // Auth disabled (`none`): every request is authorized.
+  if (config.authProvider === 'none') return true
+
   if (
     options.allowAgentBearerToken &&
     (await isValidAgentApiBearerToken(request))
