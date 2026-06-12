@@ -136,6 +136,14 @@ jobs:
         if: ${{ inputs.job-type == 'build' }}
         run: bun run turbo run build
 
+      - name: Upload WASM artifact
+        if: ${{ inputs.job-type == 'build' }}
+        uses: actions/upload-artifact@v8
+        with:
+          name: wasm-output
+          path: packages/clickhouse-client/src/wasm/generated
+          retention-days: 1
+
       # === Docker Build ===
       - name: Set up QEMU
         if: ${{ inputs.job-type == 'docker' }}
