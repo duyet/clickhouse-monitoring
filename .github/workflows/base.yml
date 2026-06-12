@@ -143,7 +143,6 @@ jobs:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
           retention-days: 3
-          overwrite: true
 
       # === Docker Build ===
       - name: Set up QEMU
