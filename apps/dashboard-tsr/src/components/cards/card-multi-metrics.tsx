@@ -69,12 +69,13 @@ export const CardMultiMetrics = function CardMultiMetrics({
           </div>
         )}
 
-        {items.map((item) => {
+        {items.map((item, i) => {
           const percent =
             item.target > 0 ? (item.current / item.target) * 100 : 0
           const clampedPercent = Math.min(100, Math.max(0, percent))
+          // Index suffix keeps the fallback unique when readables repeat.
           const key =
-            item.label ?? `${item.currentReadable}-${item.targetReadable}`
+            item.label ?? `${item.currentReadable}-${item.targetReadable}-${i}`
 
           return (
             <div key={key} className="flex items-center gap-2 text-sm">

@@ -73,7 +73,7 @@ export const ChartZookeeperSummaryTable = function ChartZookeeperSummaryTable({
             {dataArray.map((row) => (
               <TableRow key={row.metric}>
                 {Object.entries(row).map(([key, value]) => {
-                  return <TableCell key={key}>{value || ''} </TableCell>
+                  return <TableCell key={key}>{value ?? ''} </TableCell>
                 })}
               </TableRow>
             ))}
