@@ -68,6 +68,7 @@ jobs:
   build-docker-pr:
     name: build-docker-pr
     if: github.event_name == 'pull_request'
+    needs: [build]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker
@@ -80,6 +81,7 @@ jobs:
   build-docker-amd64:
     name: build-docker-amd64
     if: github.event_name != 'pull_request'
+    needs: [build]
     uses: ./.github/workflows/base.yml
     with:
       job-type: docker

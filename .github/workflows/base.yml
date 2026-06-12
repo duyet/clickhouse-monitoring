@@ -109,9 +109,9 @@ jobs:
 
       - name: Download pre-built WASM
         if: ${{ inputs.skip-rust }}
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
-          name: wasm-output
+          name: wasm-output-0
           path: packages/clickhouse-client/src/wasm/generated
 
       - name: Next.js Cache
@@ -140,7 +140,7 @@ jobs:
         if: ${{ inputs.job-type == 'build' }}
         uses: actions/upload-artifact@v4
         with:
-          name: wasm-output
+          name: wasm-output-${{ strategy.job-index }}
           path: packages/clickhouse-client/src/wasm/generated
           retention-days: 3
 
