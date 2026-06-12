@@ -14,12 +14,12 @@ describe('Sidebar navigation', () => {
 
   it('renders the sidebar with navigation sections', () => {
     // The sidebar should contain recognizable section labels
-    cy.get('nav').should('exist')
+    cy.get('[role="complementary"]').should('exist')
   })
 
   it('preserves host parameter when clicking a sidebar link', () => {
     // Find a sidebar link that isn't the current page (overview)
-    cy.get('nav a[href*="host="]')
+    cy.get('[role="complementary"] a[href*="host="]')
       .not('[href*="/overview"]')
       .first()
       .then(($link) => {
@@ -31,14 +31,14 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    cy.get('nav a[href*="/running-queries"]').first().click()
+    cy.get('[role="complementary"] a[href*="/running-queries"]').first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
   })
 
   it('navigates to clusters via sidebar', () => {
-    cy.get('nav a[href*="/clusters"]').first().click()
+    cy.get('[role="complementary"] a[href*="/clusters"]').first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
