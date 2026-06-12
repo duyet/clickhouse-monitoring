@@ -247,6 +247,7 @@ export const diskUsageChangeConfig: QueryConfig = {
       AND modification_time >= now() - INTERVAL {baseline_hours: UInt32} HOUR
     GROUP BY disk_name, database, table, modification_time
     ORDER BY modification_time ASC, total_bytes DESC
+    LIMIT 10000
   `,
   columns: [
     'timestamp',

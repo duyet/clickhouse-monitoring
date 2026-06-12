@@ -39,7 +39,6 @@ export const mergesConfig: QueryConfig = {
   ],
   columnFormats: {
     table: ColumnFormat.ColoredBadge,
-    query: ColumnFormat.Code,
     elapsed: ColumnFormat.Duration,
     is_mutation: ColumnFormat.Boolean,
     num_parts: ColumnFormat.BackgroundBar,

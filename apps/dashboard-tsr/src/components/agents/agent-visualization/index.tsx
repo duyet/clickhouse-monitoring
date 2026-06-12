@@ -3,7 +3,7 @@
 import { BarChart3Icon, DownloadIcon } from 'lucide-react'
 
 import type { QueryConfig } from '@/types/query-config'
-import type { AgentVisualizationProps, ChartType, VizConfig } from './types'
+import type { AgentVisualizationProps, ChartType } from './types'
 
 import { ChartControls } from './chart-controls'
 import {

@@ -5,25 +5,34 @@
  *
  * Verifies the sidebar menu renders with key sections and that
  * clicking a nav link updates the URL while preserving the host parameter.
+ *
+ * The app uses shadcn/ui Sidebar which renders a <div> with two attributes:
+ * data-sidebar="sidebar" and data-slot="sidebar-inner". Selectors target this
+ * container via data-sidebar="sidebar" (not <nav> — there is no nav element).
+ * Links use TanStack Router's Link component with `to` + `search` props which
+ * renders the correct href (e.g. /running-queries?host=0) on the <a> element.
  */
+
+// Sidebar links live inside the shadcn/ui Sidebar inner container.
+// The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
+const SIDEBAR = '[data-sidebar="sidebar"]'
 
 describe('Sidebar navigation', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0')
   })
 
-  it('renders the sidebar with navigation sections', () => {
-    // The sidebar should contain recognizable section labels
-    cy.get('nav').should('exist')
+  it('renders the sidebar with navigation links', () => {
+    cy.get(SIDEBAR).should('exist')
+    cy.get(`${SIDEBAR} a`).should('have.length.greaterThan', 0)
   })
 
   it('preserves host parameter when clicking a sidebar link', () => {
     // Find a sidebar link that isn't the current page (overview)
-    cy.get('nav a[href*="host="]')
+    cy.get(`${SIDEBAR} a[href*="host="]`)
       .not('[href*="/overview"]')
       .first()
       .then(($link) => {
-        const href = $link.attr('href')
         cy.wrap($link).click()
         cy.url().should('include', 'host=0')
         // URL should have changed from /overview
@@ -32,14 +41,14 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    cy.get('nav a[href*="/running-queries"]').first().click()
+    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
   })
 
   it('navigates to clusters via sidebar', () => {
-    cy.get('nav a[href*="/clusters"]').first().click()
+    cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')

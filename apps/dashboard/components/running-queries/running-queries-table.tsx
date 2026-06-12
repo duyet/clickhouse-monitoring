@@ -24,7 +24,7 @@ import {
 import { toast } from 'sonner'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { DetailField } from '@/components/query-tables/detail-field'
 import { exportCsv } from '@/components/query-tables/export-csv'
 import { formatDuration } from '@/components/query-tables/format-duration'
@@ -956,6 +956,12 @@ interface RunningQueriesTableProps {
   rows: RunningQueryRow[]
 }
 
+function resolveView(param: string | null, mobile: boolean): 'table' | 'cards' {
+  if (param === 'card') return 'cards'
+  if (param === 'table') return 'table'
+  return mobile ? 'cards' : 'table'
+}
+
 /**
  * RunningQueriesTable — a dense, sortable, responsive table of in-flight
  * ClickHouse queries.
@@ -987,14 +993,23 @@ export const RunningQueriesTable = memo(function RunningQueriesTable({
   // Card view leads on phones (the wide metric table is unreadable in a scroll
   // box), table on desktop — with a toggle so either is reachable anywhere.
   const isMobile = useIsMobile()
-  const view = useMemo<'table' | 'cards'>(() => {
-    if (layoutParam === 'card') return 'cards'
-    if (layoutParam === 'table') return 'table'
-    return isMobile ? 'cards' : 'table'
+
+  // Derive the view from the URL param or mobile breakpoint. Kept in local
+  // state so toggle clicks take effect immediately without waiting for the
+  // router to reflect the new searchParam value in useSearchParams.
+  const [view, setView] = useState<'table' | 'cards'>(() =>
+    resolveView(layoutParam, isMobile)
+  )
+
+  // Keep in sync when the URL param or viewport class changes externally
+  // (e.g. browser back/forward nav, or a resize crossing the mobile breakpoint).
+  useEffect(() => {
+    setView(resolveView(layoutParam, isMobile))
   }, [layoutParam, isMobile])
 
   const handleViewChange = useCallback(
     (newView: 'table' | 'cards') => {
+      setView(newView)
       const params = new URLSearchParams(searchParams.toString())
       if (newView === 'cards') {
         params.set('layout', 'card')

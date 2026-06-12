@@ -1,18 +1,11 @@
 /**
- * MCP-to-AI-SDK Tool Adapter
+ * MCP Tool Adapter (Backward Compatibility Shim)
  *
- * Delegates to modular tool category files in ./tools/
- * Each category file exports a factory function returning tools for that domain.
+ * This file maintains backward compatibility after the refactor that replaced
+ * the monolithic mcp-tool-adapter.ts with a modular tools system.
+ * Existing code and documentation reference this path, so we keep it as a re-export.
  */
 
 import 'server-only'
 
-import { createAllTools } from './tools'
-
-/**
- * Create AI SDK tools from modular tool definitions.
- * Signature unchanged for backward compatibility.
- */
-export function createMcpTools(hostId: number, includeControlTools = false) {
-  return createAllTools(hostId, includeControlTools)
-}
+export { createAllTools as createMcpTools } from './tools'

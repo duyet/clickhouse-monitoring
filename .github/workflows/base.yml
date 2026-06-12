@@ -109,7 +109,7 @@ jobs:
 
       - name: Download pre-built WASM
         if: ${{ inputs.skip-rust }}
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
@@ -135,6 +135,14 @@ jobs:
       - name: Build App
         if: ${{ inputs.job-type == 'build' }}
         run: bun run turbo run build
+
+      - name: Upload WASM artifact
+        if: ${{ inputs.job-type == 'build' && !inputs.skip-rust }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-output
+          path: packages/clickhouse-client/src/wasm/generated
+          retention-days: 3
 
       # === Docker Build ===
       - name: Set up QEMU

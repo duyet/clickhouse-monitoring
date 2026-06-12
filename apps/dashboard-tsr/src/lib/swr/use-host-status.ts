@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { apiFetch } from './api-fetch'
+import { visibilityAwareInterval } from './config'
 
 /** API response format for host status */
 type HostStatusApiResponse = {
@@ -80,12 +81,7 @@ export function useHostStatus(
     enabled: hostId !== null && !isBrowserConnection,
     staleTime: 10000,
     refetchInterval:
-      refreshInterval > 0
-        ? () =>
-            typeof document !== 'undefined' && document.hidden
-              ? false
-              : (refreshInterval as number)
-        : (refreshInterval as any),
+      refreshInterval > 0 ? visibilityAwareInterval(refreshInterval) : false,
     refetchOnWindowFocus: revalidateOnFocus,
     refetchOnReconnect: true,
   })

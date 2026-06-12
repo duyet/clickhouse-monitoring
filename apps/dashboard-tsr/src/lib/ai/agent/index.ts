@@ -5,4 +5,4 @@
  */
 
 export { createClickHouseAgent } from './clickhouse-agent'
-export { createMcpTools } from './mcp-tool-adapter'
+export { createAllTools as createMcpTools } from './tools'

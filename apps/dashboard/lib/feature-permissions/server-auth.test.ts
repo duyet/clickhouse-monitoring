@@ -83,9 +83,24 @@ describe('authorizeFeatureRequest', () => {
     expect(result).toBeNull()
   })
 
-  test('returns 401 for authenticated-only feature without auth', async () => {
+  test('allows authenticated-only feature when authProvider is none (everything open)', async () => {
+    // authProvider 'none' means no auth system is configured: every request is
+    // treated as authorized, regardless of CHM_AUTH_REQUIRED_FEATURES. The
+    // feature guard cannot challenge the caller because there is no login flow.
     resetEnv()
     process.env.CHM_AUTH_REQUIRED_FEATURES = 'agent'
+    // authProvider defaults to 'none' when CHM_AUTH_PROVIDER is unset
+    const result = await authorizeFeatureRequest(
+      { feature: 'agent' },
+      new Request('http://localhost/')
+    )
+    expect(result).toBeNull()
+  })
+
+  test('returns 401 for authenticated-only feature without auth (clerk mode)', async () => {
+    resetEnv()
+    process.env.CHM_AUTH_REQUIRED_FEATURES = 'agent'
+    process.env.CHM_AUTH_PROVIDER = 'clerk'
     const result = await authorizeFeatureRequest(
       { feature: 'agent' },
       new Request('http://localhost/')

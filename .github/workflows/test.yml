@@ -64,7 +64,7 @@ jobs:
         run: bun run test:packages
 
       - name: Upload Bun coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: ./apps/dashboard/coverage/lcov.info,./coverage/lcov.info
           flags: bun

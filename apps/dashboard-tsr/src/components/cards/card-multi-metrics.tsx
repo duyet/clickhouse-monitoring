@@ -53,10 +53,7 @@ export const CardMultiMetrics = function CardMultiMetrics({
   const showLabels = items.length > 0 && (currentLabel || targetLabel)
 
   return (
-    <div
-      className={cn('flex flex-col gap-3', className)}
-      aria-description="card-metrics"
-    >
+    <div className={cn('flex flex-col gap-3', className)}>
       {primary && (
         <div className="text-xl font-semibold leading-tight">{primary}</div>
       )}
@@ -76,9 +73,12 @@ export const CardMultiMetrics = function CardMultiMetrics({
           const percent =
             item.target > 0 ? (item.current / item.target) * 100 : 0
           const clampedPercent = Math.min(100, Math.max(0, percent))
+          // Index suffix keeps the fallback unique when readables repeat.
+          const key =
+            item.label ?? `${item.currentReadable}-${item.targetReadable}-${i}`
 
           return (
-            <div key={i} className="flex items-center gap-2 text-sm">
+            <div key={key} className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground truncate flex-1 min-w-0">
                 {item.currentReadable}
               </span>

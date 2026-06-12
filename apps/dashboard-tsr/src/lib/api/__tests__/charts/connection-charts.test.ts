@@ -8,7 +8,7 @@ describe('connectionCharts', () => {
     expect(entries.length).toBeGreaterThan(0)
   })
 
-  describe.each(entries)('chart "%s"', (name, builder) => {
+  describe.each(entries)('chart "%s"', (_name, builder) => {
     test('returns an object with a query property', () => {
       const result = builder({})
       expect(result).toBeDefined()

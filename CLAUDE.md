@@ -21,7 +21,7 @@ user whether to babysit — just do it. Known non-required checks (`e2e-test`,
 
 ## Project Overview
 
-This is a Next.js 15 (React 19) ClickHouse monitoring dashboard that provides real-time insights into ClickHouse clusters through system tables. The application connects to ClickHouse instances and displays metrics, query performance, table information, and cluster health.
+This is a monorepo ClickHouse monitoring dashboard. The primary app is `apps/dashboard-tsr` (TanStack Start), which is replacing `apps/dashboard` (Next.js 15 / React 19) per the migration roadmap. The application connects to ClickHouse instances and provides real-time insights into clusters through system tables — metrics, query performance, table information, and cluster health.
 
 ## Claude Skills
 
@@ -234,6 +234,8 @@ skill (`.agents/skills/*/SKILL.md`), or an agent env var, update
 `docs/content/ai-agent.mdx` in the same change so the docs do not drift.
 
 ## Architecture
+
+> **NOTE:** The architecture below describes `apps/dashboard` (legacy Next.js). For `apps/dashboard-tsr` (TanStack Start, primary), see `apps/dashboard-tsr/CLAUDE.md` or `docs/PRD.md` §10.2.
 
 ### Core Technologies
 
@@ -735,94 +737,8 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 - Build mode: `output: 'standalone'` (hybrid static + API)
 - Deploy to Cloudflare Workers: `npx wrangler login` then `bun run cf:deploy`
 
-## AI Agents (LangGraph)
+## AI Agents
 
-This application includes AI-powered agents for natural language queries and intelligent analysis, built on LangGraph.
+The agent subsystem lives within each app at `lib/ai/agent/` and is built on the **Vercel AI SDK** (not LangGraph). The canonical implementation is in `apps/dashboard-tsr/src/lib/ai/agent/`, with 29 tool categories (schema, query, diagnostics, anomaly, cluster, visualization, etc.) assembled by `tools/index.ts`. Agent prompts are in `lib/ai/agent/prompts/`, skills in `lib/ai/agent/skills/`, and workflows in `lib/ai/agent/workflows/`.
 
-### Environment Variables
-
-Add to `.env.local`:
-
-```bash
-# LangGraph Agent Configuration
-LLM_API_KEY=your-openrouter-api-key
-LLM_API_BASE=https://openrouter.ai/api/v1  # OpenRouter supports multiple providers
-LLM_MODEL=openrouter/free                   # Auto-routes to a working free model
-```
-
-### Agent Architecture
-
-```
-lib/agents/
-├── state.ts           # AgentState schema definition
-├── graph.ts           # LangGraph workflow definition
-├── nodes/             # Individual agent nodes
-│   ├── text-to-sql.ts # Natural language to SQL
-│   ├── analysis.ts    # Query analysis
-│   └── anomaly.ts     # Anomaly detection
-├── tools/             # Tools for agent use
-│   ├── clickhouse.ts  # Query execution tools
-│   └── schema.ts      # Schema introspection
-└── prompts/           # LLM prompt templates
-    └── text-to-sql.ts
-```
-
-### Common Tasks
-
-#### Adding a New Agent Node
-
-1. Create node function in `lib/agents/nodes/`:
-
-```typescript
-// lib/agents/nodes/my-agent.ts
-import { AgentState } from '../state'
-
-export async function myAgentNode(
-  state: typeof AgentState.State
-): Promise<Partial<AgentState>> {
-  const { messages, hostId } = state
-
-  // Process input and return state updates
-  return {
-    messages: [
-      {
-        role: 'assistant',
-        content: 'Response here'
-      }
-    ]
-  }
-}
-```
-
-2. Register in `lib/agents/graph.ts`:
-
-```typescript
-import { myAgentNode } from './nodes/my-agent'
-
-workflow.addNode('my-agent', myAgentNode)
-```
-
-#### Modifying Agent Prompts
-
-Prompts are in `lib/agents/prompts/`. Edit the prompt templates to change agent behavior:
-
-```typescript
-// lib/agents/prompts/text-to-sql.ts
-export const TEXT_TO_SQL_PROMPT = `You are a ClickHouse SQL expert...
-// Modify the prompt text here
-```
-
-#### Extending the Chat Interface
-
-The chat interface uses SSE streaming for real-time responses. To extend:
-
-1. Add new tools to `lib/agents/tools/`
-2. Update the prompt to include tool descriptions
-3. Handle new response types in the UI
-
-See `docs/agents/` for detailed API reference and examples.
-
-### Documentation
-
-- **Feature Guide**: `docs/agents/feature-guide.md` - User-facing documentation
-- **API Reference**: `docs/agents/api-reference.md` - Developer guide
+For the agent environment variables and configuration, see `apps/dashboard-tsr/src/lib/ai/agent/` or `docs/content/ai-agent.mdx`.

@@ -8,9 +8,9 @@
 
 import type { ProviderOptions } from '@ai-sdk/provider-utils'
 
-import { createMcpTools } from './mcp-tool-adapter'
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
 import { DEFAULT_MODEL, resolveAgentChatModel } from './provider-chat-model'
+import { createAllTools } from './tools'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
 function filterTools<T extends Record<string, unknown>>(
@@ -50,7 +50,7 @@ export function createClickHouseAgent(options: {
     includeControlTools = false,
   } = options
 
-  const allTools = createMcpTools(hostId, includeControlTools)
+  const allTools = createAllTools(hostId, includeControlTools)
   const tools = filterTools(allTools, disabledTools)
   const hasTools = Object.keys(tools).length > 0
   const { model: modelInstance } = resolveAgentChatModel({

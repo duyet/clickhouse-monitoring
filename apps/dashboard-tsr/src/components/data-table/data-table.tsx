@@ -444,6 +444,7 @@ export function DataTable<
   // Memoized so the array reference is stable across re-renders caused by data
   // refetches — without this, TanStack Table sees a new columns array every
   // render and remounts cells, causing visible flash.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: expandColumn/selectionColumn are recreated each render; including them would defeat the memo
   const finalColumnDefs = useMemo(() => {
     const cols: ColumnDef<TData, unknown>[] = []
     if (expandable) cols.push(expandColumn as ColumnDef<TData, unknown>)
@@ -452,7 +453,6 @@ export function DataTable<
       ...cols,
       ...(columnDefs as ColumnDef<TData, unknown>[]),
     ] as ColumnDef<TData, TValue>[]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnDefs, expandable, enableRowSelection])
 
   // Compose the effective column order. Saved orders in localStorage only

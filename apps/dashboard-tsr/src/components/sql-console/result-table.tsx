@@ -77,6 +77,7 @@ export function ResultTable({
   // Keyed on the column-name signature so the array is only rebuilt when the
   // schema changes, not on every data refetch (which would remount all cells).
   const _columnSchema = Object.keys(rows[0] ?? {}).join(',')
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the column-name signature so columns only rebuild on schema changes, not every refetch
   const columns = useMemo(
     () =>
       rows.length === 0
@@ -91,7 +92,6 @@ export function ResultTable({
               maxSize: 600,
             })
           ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [_columnSchema]
   )
 

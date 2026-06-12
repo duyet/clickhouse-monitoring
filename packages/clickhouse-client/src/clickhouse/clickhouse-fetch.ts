@@ -309,9 +309,10 @@ export const fetchData = async <
     }
     // Table not found errors
     else if (
-      errorMessage.toLowerCase().includes('table') &&
-      errorMessage.toLowerCase().includes('not') &&
-      errorMessage.toLowerCase().includes('exist')
+      (errorMessage.toLowerCase().includes('table') &&
+        errorMessage.toLowerCase().includes('not') &&
+        errorMessage.toLowerCase().includes('exist')) ||
+      errorMessage.toLowerCase().includes('unknown table')
     ) {
       errorType = 'table_not_found'
     }
@@ -573,9 +574,10 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
     }
     // Table not found errors
     else if (
-      errorMessage.toLowerCase().includes('table') &&
-      errorMessage.toLowerCase().includes('not') &&
-      errorMessage.toLowerCase().includes('exist')
+      (errorMessage.toLowerCase().includes('table') &&
+        errorMessage.toLowerCase().includes('not') &&
+        errorMessage.toLowerCase().includes('exist')) ||
+      errorMessage.toLowerCase().includes('unknown table')
     ) {
       errorType = 'table_not_found'
     }
