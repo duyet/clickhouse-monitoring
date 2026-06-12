@@ -7,7 +7,6 @@ import { isMenuItemActive } from '@/lib/menu/breadcrumb'
 import { usePathname } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { prefetchRoute } from '@/lib/swr/prefetch'
-import { buildUrl } from '@/lib/url/url-builder'
 
 export const HostPrefixedLink = ({
   href,
@@ -27,8 +26,12 @@ export const HostPrefixedLink = ({
   const hostId = useHostId()
   const queryClient = useQueryClient()
 
-  // Build URL with host query parameter using utility
-  const url = buildUrl(href, { host: String(hostId) })
+  // TanStack Router's `href` option is for external URLs only; internal links
+  // must use `to` + `search` so the rendered <a> element gets the correct href.
+  // Pass `host` as a number to match the root route's validateSearch schema —
+  // string values get JSON-encoded ("%220%22") which produces 404s during prerender.
+  const toPath = href.split('?')[0]
+  const searchParams = { host: hostId }
 
   // Check if this link is active
   const isActive = isMenuItemActive(href, pathname)
@@ -45,7 +48,9 @@ export const HostPrefixedLink = ({
 
   return (
     <Link
-      href={url}
+      // biome-ignore lint/suspicious/noExplicitAny: TanStack Router `to` expects a route path union and `search` must satisfy the route's schema; casting through `any` lets us pass runtime-determined paths and search params from menu config without scattering ts-ignore comments.
+      to={toPath as any}
+      search={searchParams as any}
       className={className}
       data-active={isActive ? 'true' : undefined}
       aria-current={isActive ? 'page' : undefined}
