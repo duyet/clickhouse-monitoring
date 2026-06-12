@@ -34,6 +34,7 @@ export function useTableData<T = unknown>(
   // Serialize searchParams so the memo key is value-stable even when a parent
   // recreates the object each render (inline literal / derived state).
   const searchParamsKey = searchParams ? JSON.stringify(searchParams) : ''
+  // biome-ignore lint/correctness/useExhaustiveDependencies: searchParams is read inside but keyed via the value-stable searchParamsKey
   const url = useMemo(() => {
     const params = new URLSearchParams()
     if (hostId !== undefined) params.append('hostId', String(hostId))

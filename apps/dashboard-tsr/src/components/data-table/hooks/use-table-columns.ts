@@ -39,6 +39,7 @@ export function useTableColumns<
   // Use JSON.stringify for stable comparison - context is a small object
   // and referential equality fails when callers create inline objects.
   const _contextKey = useMemo(() => JSON.stringify(context), [context])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the stringified context so the memo is value-stable even when callers recreate the object each render
   const contextWithPrefix = useMemo(
     () =>
       Object.entries(context).reduce(
@@ -48,9 +49,6 @@ export function useTableColumns<
         }),
         {} as Record<string, string>
       ),
-    // Use the stringified key so this is value-stable even when the caller
-    // recreates the context object reference each render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [_contextKey]
   )
 

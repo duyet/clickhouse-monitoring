@@ -155,10 +155,12 @@ describe('formatRelativeTime', () => {
   })
 
   test('today → "today at ..."', () => {
-    // 3 hours ago is still today unless very early morning; guard by hour.
+    // 3 hours ago crosses midnight when the test runs early in the day,
+    // so assert the branch matching the actual calendar day.
     const ts = Date.now() - 3 * 3600_000
     const out = formatRelativeTime(ts)
-    expect(out === 'today at ' || out.startsWith('today at ')).toBe(true)
+    const sameDay = new Date(ts).getDate() === new Date().getDate()
+    expect(out.startsWith(sameDay ? 'today at ' : 'yesterday at ')).toBe(true)
   })
 
   test('older than a week → a short date', () => {
