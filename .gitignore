@@ -98,3 +98,4 @@ packages/clickhouse-client/src/wasm/generated/*
 .wrangler
 .antigravitycli
 .cf-stub-backup/
+.agent-loop/
