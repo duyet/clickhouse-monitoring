@@ -13,8 +13,7 @@ import {
 
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
-import { useMemo, useState } from 'react'
-import { format } from 'sql-formatter'
+import { useEffect, useMemo, useState } from 'react'
 import { highlightCode } from '@/components/ai-elements/code-block'
 import { HLJS_TOKEN_CLASSES } from '@/components/ai-elements/hljs-token-classes'
 import {
@@ -32,6 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatSql } from '@/lib/sql-format'
 import { cn, dedent, formatDuration } from '@/lib/utils'
 
 interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
@@ -63,22 +63,6 @@ function saveBeautifyState(value: boolean) {
     localStorage.setItem(STORAGE_KEY, String(value))
   } catch {
     // Ignore storage errors
-  }
-}
-
-/** Format SQL with ClickHouse dialect */
-function formatSQL(sql: string): string {
-  try {
-    return format(sql, {
-      language: 'sql',
-      keywordCase: 'upper',
-      identifierCase: 'preserve',
-      tabWidth: 2,
-      linesBetweenQueries: 2,
-    })
-  } catch {
-    // If formatting fails, return dedented original
-    return dedent(sql)
   }
 }
 
@@ -170,7 +154,28 @@ export function RequestInfoContent({
       metadata.queryId ||
       metadata.api)
 
-  const displaySQL = sql ? (isBeautified ? formatSQL(sql) : dedent(sql)) : ''
+  // Show raw (dedented) SQL right away; when beautify is on, swap in the
+  // lazily-formatted result once the sql-formatter chunk loads. Keeps the
+  // displayed query stable (no flash) and falls back to raw SQL on error.
+  const [displaySQL, setDisplaySQL] = useState(sql ? dedent(sql) : '')
+
+  useEffect(() => {
+    if (!sql) {
+      setDisplaySQL('')
+      return
+    }
+    if (!isBeautified) {
+      setDisplaySQL(dedent(sql))
+      return
+    }
+    let cancelled = false
+    formatSql(sql).then((formatted) => {
+      if (!cancelled) setDisplaySQL(formatted)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [sql, isBeautified])
 
   const highlightedHtml = useMemo(() => {
     if (!displaySQL) return ''

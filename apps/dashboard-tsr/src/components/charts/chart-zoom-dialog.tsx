@@ -18,8 +18,7 @@ import type { StaleError } from '@/lib/swr'
 import type { ChartDataPoint } from '@/types/chart-data'
 import type { QueryConfig } from '@/types/query-config'
 
-import { useRef, useState } from 'react'
-import { format } from 'sql-formatter'
+import { useEffect, useRef, useState } from 'react'
 import {
   CodeBlock,
   CodeBlockCopyButton,
@@ -41,6 +40,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatSql } from '@/lib/sql-format'
 import { cn, dedent } from '@/lib/utils'
 
 const BEAUTIFY_STORAGE_KEY = 'chart-zoom-sql-beautify'
@@ -55,20 +55,6 @@ function getInitialBeautifyState(): boolean {
     return localStorage.getItem(BEAUTIFY_STORAGE_KEY) === 'true'
   } catch {
     return false
-  }
-}
-
-function formatSQL(sql: string): string {
-  try {
-    return format(sql, {
-      language: 'sql',
-      keywordCase: 'upper',
-      identifierCase: 'preserve',
-      tabWidth: 2,
-      linesBetweenQueries: 2,
-    })
-  } catch {
-    return dedent(sql)
   }
 }
 
@@ -174,8 +160,8 @@ export const ChartZoomDialog = function ChartZoomDialog({
 
   const handleQueryCopy = async () => {
     if (!sql) return
-    const displaySQL = isBeautified ? formatSQL(sql) : dedent(sql)
-    await navigator.clipboard.writeText(displaySQL)
+    const text = isBeautified ? await formatSql(sql) : dedent(sql)
+    await navigator.clipboard.writeText(text)
     setQueryCopied(true)
     setTimeout(() => setQueryCopied(false), 2000)
   }
@@ -238,7 +224,30 @@ export const ChartZoomDialog = function ChartZoomDialog({
       metadata.queryId ||
       metadata.api)
 
-  const displaySQL = sql ? (isBeautified ? formatSQL(sql) : dedent(sql)) : ''
+  // Raw (dedented) SQL is shown immediately; when beautify is on we swap in the
+  // lazily-formatted version once the formatter chunk loads and resolves. This
+  // keeps the displayed query stable (no flashing to empty) while the import
+  // happens, and formatSql falls back to raw SQL on any error.
+  const rawSQL = sql ? dedent(sql) : ''
+  const [displaySQL, setDisplaySQL] = useState(rawSQL)
+
+  useEffect(() => {
+    if (!sql) {
+      setDisplaySQL('')
+      return
+    }
+    if (!isBeautified) {
+      setDisplaySQL(dedent(sql))
+      return
+    }
+    let cancelled = false
+    formatSql(sql).then((formatted) => {
+      if (!cancelled) setDisplaySQL(formatted)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [sql, isBeautified])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
