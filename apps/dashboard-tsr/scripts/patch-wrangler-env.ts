@@ -40,11 +40,10 @@ const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 // environment at deploy time and falls back to public localhost defaults. CI
 // injects the real values from repo secrets (see the "Patch wrangler config"
 // step in .github/workflows/cloudflare.yml); the committed defaults keep the
-// public repo free of any private info.
+// public repo free of any private homelab info.
 // OPENROUTER_REFERER is the OpenRouter/AnyRouter attribution header (HTTP-Referer
 // for app-ranking on their leaderboards) — not sensitive. It defaults to the
-// public product domain so every LLM call attributes back to chmonitor; forks
-// can override via env.
+// deployment's canonical URL.
 const SHARED_VARS = {
   CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || 'http://localhost:8123',
   CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || 'default',
