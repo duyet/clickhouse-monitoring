@@ -296,6 +296,16 @@ const stub = new Proxy(noop, {
   get(_t, p) {
     if (p === '__esModule') return true
     if (p === 'default') return stub
+    // Array-destructured hook results (e.g. \`const [n, setN, onChange] =
+    // useNodesState(...)\` in dependency-graph.tsx) require the stub to be
+    // iterable, or prerender throws "is not a function or its return value is
+    // not iterable". Yield a bounded number of stubs: enough for any hook
+    // tuple, finite so an accidental spread can't hang the build.
+    if (p === Symbol.iterator) {
+      return function* () {
+        for (let i = 0; i < 8; i++) yield stub
+      }
+    }
     if (typeof p === 'symbol') return undefined
     return stub
   },
@@ -358,7 +368,16 @@ const isNode = process.env.BUILD_TARGET === 'node'
 // production Docker build does NOT set this flag, so prod still prerenders.
 const skipPrerender = process.env.CHM_SKIP_PRERENDER === '1'
 const startConfig = {
-  prerender: { enabled: !skipPrerender, crawlLinks: !skipPrerender },
+  prerender: {
+    enabled: !skipPrerender,
+    crawlLinks: !skipPrerender,
+    // HostPrefixedLink renders real hrefs like `/queries?host=0` (#1558), which
+    // the crawler picks up. The plugin's withTrailingSlash() appends "/" AFTER
+    // the query string (`/queries?host=0/`) → 404 → build failure. Query-string
+    // variants prerender the same HTML shell as their base path (data loads
+    // client-side), and every base path is already crawled — skip them.
+    filter: (page: { path: string }) => !page.path.includes('?'),
+  },
   spa: { enabled: true },
 }
 
