@@ -43,7 +43,7 @@ export function DataTableFacetedFilter({
   if (!filters.length) return null
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"

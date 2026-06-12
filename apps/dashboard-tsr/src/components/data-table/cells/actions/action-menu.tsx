@@ -40,7 +40,7 @@ function ActionMenuComponent<TData extends RowData, TValue>({
   actions,
 }: ActionMenuProps<TData, TValue>) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"

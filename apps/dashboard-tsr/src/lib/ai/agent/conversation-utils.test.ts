@@ -12,7 +12,14 @@ import {
   saveConversations,
   upsertConversation,
 } from './conversation-utils'
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  setSystemTime,
+  test,
+} from 'bun:test'
 
 // ── In-memory localStorage shim (bun has no DOM by default) ──
 class MemoryStorage {
@@ -155,12 +162,24 @@ describe('formatRelativeTime', () => {
   })
 
   test('today → "today at ..."', () => {
-    // 3 hours ago crosses midnight when the test runs early in the day,
-    // so assert the branch matching the actual calendar day.
-    const ts = Date.now() - 3 * 3600_000
-    const out = formatRelativeTime(ts)
-    const sameDay = new Date(ts).getDate() === new Date().getDate()
-    expect(out.startsWith(sameDay ? 'today at ' : 'yesterday at ')).toBe(true)
+    // Pin the clock to mid-afternoon so "3 hours ago" never crosses midnight.
+    setSystemTime(new Date(2026, 5, 12, 15, 0, 0))
+    try {
+      const out = formatRelativeTime(Date.now() - 3 * 3600_000)
+      expect(out.startsWith('today at ')).toBe(true)
+    } finally {
+      setSystemTime()
+    }
+  })
+
+  test('yesterday → "yesterday at ..."', () => {
+    setSystemTime(new Date(2026, 5, 12, 15, 0, 0))
+    try {
+      const out = formatRelativeTime(Date.now() - 26 * 3600_000)
+      expect(out.startsWith('yesterday at ')).toBe(true)
+    } finally {
+      setSystemTime()
+    }
   })
 
   test('older than a week → a short date', () => {

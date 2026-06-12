@@ -1,23 +1,25 @@
 # Agent capabilities
 
-The agent has 60+ tools organized into categories. You never call tools directly — the agent picks and chains them automatically. This page summarizes what is available and what you can ask.
+The agent has 60 tools organized into categories (63 when control tools are enabled). You never call tools directly — the agent picks and chains them automatically. This page summarizes what is available and what you can ask.
 
 ## Tool categories
 
 | Category | What it covers | Example tools |
 |---|---|---|
 | Schema & exploration | Databases, tables, columns, data source discovery | `list_tables`, `get_table_schema`, `discover_data_sources` |
-| Query analysis | Running, slow, failed, expensive queries; EXPLAIN; optimization | `get_running_queries`, `get_slow_queries`, `explain_query`, `analyze_query_optimization` |
-| Diagnostics & optimization | Query optimization advice, index recommendations, table insights | `optimize_query`, `get_table_insights`, `analyze_query_performance` |
-| System health | Server metrics, CPU/memory/disk, errors, crash log, anomalies | `get_metrics`, `get_system_resources`, `detect_anomalies`, `generate_health_report` |
+| Query analysis | Running, slow, failed, expensive queries; query patterns; EXPLAIN | `get_running_queries`, `get_slow_queries`, `get_expensive_queries`, `get_query_patterns`, `explain_query` |
+| Diagnostics & optimization | Issue scans, query optimization analysis, broken-query repair | `spot_issues`, `analyze_query_optimization`, `repair_query` |
+| System health | Server metrics, CPU/memory/disk, errors, crash log, anomalies | `get_metrics`, `get_system_resources`, `get_errors`, `get_crash_log`, `detect_anomalies` |
+| Query & table insights | Aggregated performance insights for query patterns and tables | `get_query_insights`, `get_table_insights` |
 | Findings persistence | Record and retrieve structured monitoring findings | `record_finding`, `list_recent_findings` |
-| Storage, merges & mutations | Part sizes, active merges, stuck mutations, merge throughput | `get_table_parts`, `get_merge_status`, `get_mutations` |
+| Storage, merges & mutations | Part sizes, table sizes, active merges, stuck mutations, merge throughput | `get_table_parts`, `get_top_tables_by_size`, `get_merge_status`, `get_merge_performance`, `get_mutations` |
 | Replication & cluster | Lag, queue, ZooKeeper/Keeper, topology, DDL queue | `get_replication_status`, `get_clusters`, `get_zookeeper_info` |
 | Security & audit | Sessions, login attempts, users and roles | `get_active_sessions`, `get_login_attempts`, `get_users_and_roles` |
 | Schema migration | ALTER impact assessment, column usage, table design | `analyze_schema_change`, `get_column_usage`, `recommend_table_design` |
 | Comparison & forecasting | Cross-host, time-period, capacity forecast | `compare_hosts`, `compare_time_periods`, `forecast_capacity` |
+| Incident response | Symptom-driven investigation with root-cause correlation | `investigate_incident` |
 | Charts & visualization | Run SQL and return an interactive chart | `query_and_visualize` |
-| Reports & dashboards | Health reports, incident reports, dashboard navigation | `generate_report`, `navigate_to_dashboard` |
+| Reports & dashboards | Health reports, dashboard page listing | `generate_health_report`, `get_dashboard_pages` |
 | Settings & logs | Changed server settings, text log, stack traces | `get_settings`, `get_text_log`, `get_stack_traces` |
 | Control actions | Kill query/mutation, optimize table (disabled by default) | `kill_query`, `kill_mutation`, `optimize_table` |
 | Interaction & knowledge | Skills, workflows, context snapshot, clarifying questions | `load_skill`, `start_workflow`, `get_context` |

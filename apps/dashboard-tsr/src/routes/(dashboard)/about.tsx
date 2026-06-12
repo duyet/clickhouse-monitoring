@@ -91,14 +91,14 @@ function AboutPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Technology Stack</h2>
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">Next.js 16</Badge>
+          <Badge variant="secondary">TanStack Start</Badge>
           <Badge variant="secondary">React 19</Badge>
           <Badge variant="secondary">TypeScript</Badge>
-          <Badge variant="secondary">Tailwind CSS</Badge>
+          <Badge variant="secondary">Vite</Badge>
+          <Badge variant="secondary">Tailwind CSS 4</Badge>
           <Badge variant="secondary">shadcn/ui</Badge>
           <Badge variant="secondary">ClickHouse</Badge>
-          <Badge variant="secondary">SWR</Badge>
-          <Badge variant="secondary">Turbopack</Badge>
+          <Badge variant="secondary">TanStack Query</Badge>
         </div>
       </section>
 

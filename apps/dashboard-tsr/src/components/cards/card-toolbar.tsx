@@ -92,7 +92,7 @@ export const CardToolbar = function CardToolbar({
           alwaysVisible={alwaysVisible}
         />
       )}
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"

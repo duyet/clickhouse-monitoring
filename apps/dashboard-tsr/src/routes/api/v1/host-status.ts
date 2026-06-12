@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
+import { error } from '@chm/logger'
 import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'
 
 const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */\n'
@@ -70,14 +71,14 @@ export const Route = createFileRoute('/api/v1/host-status')({
             success: true,
             data: { version, uptime, hostname },
           })
-        } catch (error) {
-          console.error('Host status API error:', error)
+        } catch (err) {
+          error('[GET /api/v1/host-status] Error:', err)
           return Response.json(
             {
               success: false,
               error:
-                error instanceof Error
-                  ? error.message
+                err instanceof Error
+                  ? err.message
                   : 'Failed to fetch host status',
             },
             { status: 500 }
