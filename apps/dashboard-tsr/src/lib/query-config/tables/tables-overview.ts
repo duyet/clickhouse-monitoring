@@ -29,7 +29,7 @@ export const tablesOverviewConfig: QueryConfig = {
 
                 sum(data_compressed_bytes) AS compressed,
                 sum(data_uncompressed_bytes) AS uncompressed,
-                round(uncompressed / compressed, 2) AS compr_rate,
+                round(uncompressed / nullIf(compressed, 0), 2) AS compr_rate,
                 formatReadableSize(compressed) AS readable_compressed,
                 formatReadableSize(uncompressed) AS readable_uncompressed,
                 round((100 * compressed) / max(compressed) OVER ()) AS pct_compressed,

@@ -8,7 +8,7 @@ export const explorerProjectionsConfig: QueryConfig = {
         name,
         formatReadableSize(sum(data_compressed_bytes)) AS compressed_size,
         formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed_size,
-        round(sum(data_uncompressed_bytes) / sum(data_compressed_bytes), 2) AS compression_ratio,
+        round(sum(data_uncompressed_bytes) / nullIf(sum(data_compressed_bytes), 0), 2) AS compression_ratio,
         formatReadableQuantity(sum(rows)) AS rows,
         count() AS parts
     FROM system.projection_parts

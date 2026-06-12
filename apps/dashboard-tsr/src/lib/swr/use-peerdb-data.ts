@@ -67,7 +67,7 @@ export function usePeerDB<T = unknown>(
 
   const queryClient = useQueryClient()
 
-  const { data, error, isLoading, isFetching, refetch } = useQuery<T, Error>({
+  const { data, error, isLoading, isFetching } = useQuery<T, Error>({
     queryKey: key ?? ['peerdb', 'disabled'],
     queryFn: fetcher,
     enabled: Boolean(key),

@@ -167,11 +167,9 @@ export const TableClient = function TableClient({
   // Memoize context to prevent columnDefs recalculation on every render.
   // Without this, every SWR revalidation cycle triggers full table re-renders
   // because new context object → new contextWithPrefix → new columnDefs → all cells re-render.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // biome-ignore lint/correctness/useExhaustiveDependencies: JSON.stringify gives value-stable deps when callers pass an inline literal
   const context = useMemo(
     () => ({ ...searchParams, hostId: String(hostId) }),
-    // JSON.stringify gives value-stable deps when callers pass an inline literal.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(searchParams), hostId]
   )
 

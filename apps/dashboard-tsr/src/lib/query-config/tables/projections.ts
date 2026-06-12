@@ -18,7 +18,7 @@ export const projectionsConfig: QueryConfig = {
           formatReadableSize(uncompressed) AS readable_uncompressed,
           round(100 * compressed / max(compressed) OVER ()) AS pct_compressed,
           round(100 * uncompressed / max(uncompressed) OVER ()) AS pct_uncompressed,
-          round(uncompressed / compressed, 2) AS compr_rate,
+          round(uncompressed / nullIf(compressed, 0), 2) AS compr_rate,
           round(100 * compr_rate / max(compr_rate) OVER ()) AS pct_compr_rate,
           sum(rows) AS rows,
           formatReadableQuantity(rows) AS readable_rows,

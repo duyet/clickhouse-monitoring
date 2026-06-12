@@ -23,7 +23,6 @@ describe('Sidebar navigation', () => {
       .not('[href*="/overview"]')
       .first()
       .then(($link) => {
-        const href = $link.attr('href')
         cy.wrap($link).click()
         cy.url().should('include', 'host=0')
         // URL should have changed from /overview
