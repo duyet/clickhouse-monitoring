@@ -4,7 +4,6 @@
     "tsconfig.base.json",
     "biome.json",
     "bun.lock",
-    "rust/monitor-core/**",
     "scripts/**"
   ],
   "tasks": {
