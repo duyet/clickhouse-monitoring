@@ -74,7 +74,7 @@ jobs:
       clickhouse-versions: '["25.1"]'
       platforms: linux/amd64
       push-image: false
-      skip-rust: true
+      skip-rust: false
 
   # Main/releases: parallel multi-arch builds (~10-15 min total)
   build-docker-amd64:
@@ -87,7 +87,7 @@ jobs:
       platforms: linux/amd64
       push-image: true
       tag-suffix: -amd64
-      skip-rust: true
+      skip-rust: false
 
   # ARM64: cross-compile from AMD64 build artifacts (fast, no QEMU compilation)
   build-docker-arm64:
