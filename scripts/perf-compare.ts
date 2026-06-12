@@ -157,7 +157,7 @@ async function measureRuntime(
       const audits = lh.audits || {}
       lighthouseFcp = audits['first-contentful-paint']?.numericValue
       lighthouseLcp = audits['largest-contentful-paint']?.numericValue
-      lighthouseTti = audits['interactive']?.numericValue
+      lighthouseTti = audits.interactive?.numericValue
       console.log(
         `    FCP=${lighthouseFcp ? fmt(lighthouseFcp) : 'N/A'} LCP=${lighthouseLcp ? fmt(lighthouseLcp) : 'N/A'}`
       )

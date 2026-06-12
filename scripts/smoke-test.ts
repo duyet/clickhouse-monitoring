@@ -79,7 +79,7 @@ async function fetchJSON(
     ...(init?.headers as Record<string, string>),
   }
   if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`
+    headers.Authorization = `Bearer ${authToken}`
   }
   const res = await fetch(url, {
     ...init,
