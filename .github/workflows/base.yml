@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload WASM artifact
         if: ${{ inputs.job-type == 'build' }}
-        uses: actions/upload-artifact@v8
+        uses: actions/upload-artifact@v4
         with:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
