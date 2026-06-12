@@ -18,7 +18,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { format } from 'sql-formatter'
 import { highlightCode } from '@/components/ai-elements/code-block'
 import { AppLink as Link } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
@@ -37,6 +36,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { buildExplorerQueryUrl } from '@/lib/explorer-url'
 import { formatQuery } from '@/lib/format-readable'
+import { formatSql } from '@/lib/sql-format'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
@@ -110,20 +110,6 @@ function escapeHtml(text: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-}
-
-function formatSQL(sql: string): string {
-  try {
-    return format(sql, {
-      language: 'sql',
-      keywordCase: 'upper',
-      identifierCase: 'preserve',
-      tabWidth: 2,
-      linesBetweenQueries: 2,
-    })
-  } catch {
-    return dedent(sql)
-  }
 }
 
 function prepareDialogContent(
@@ -326,7 +312,10 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
     })
   }, [value, options?.hide_query_comment, truncate_length])
 
-  const content = useMemo(() => {
+  // Raw (non-beautified) content is synchronous: dialog text, plus pretty-printed
+  // JSON. SQL beautify is applied separately/async below so the heavy
+  // sql-formatter chunk only loads when the user toggles Beautify on.
+  const baseContent = useMemo(() => {
     if (!open) return ''
 
     let result = prepareDialogContent(value, options?.hide_query_comment)
@@ -339,12 +328,28 @@ export const CodeDialogFormat = memo(function CodeDialogFormat({
       return result
     }
 
-    if (isBeautified && language === 'sql') {
-      return formatSQL(result)
-    }
-
     return result
-  }, [open, value, options?.hide_query_comment, isBeautified, language])
+  }, [open, value, options?.hide_query_comment, language])
+
+  // Display raw content immediately; for SQL + beautify, swap in the formatted
+  // version once the lazily-loaded formatter resolves (falls back to raw on
+  // error). Keeps the code body stable with no flash to empty.
+  const [content, setContent] = useState(baseContent)
+
+  useEffect(() => {
+    if (!(open && isBeautified && language === 'sql' && baseContent)) {
+      setContent(baseContent)
+      return
+    }
+    let cancelled = false
+    formatSql(baseContent).then((formatted) => {
+      if (!cancelled) setContent(formatted)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [open, isBeautified, language, baseContent])
+
   const lineCount = contentLineCount(content)
 
   const highlightedHtml = useMemo(() => {

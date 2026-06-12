@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 
 import type { ReactNode } from 'react'
 
-import { rewriteDocsHref, rewriteDocsImageSrc, slugify } from '../_lib/shared'
+import { rewriteDocsHref, rewriteDocsImageSrc, slugify } from '../-lib/shared'
 import { MermaidBlock } from './mermaid-block'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'

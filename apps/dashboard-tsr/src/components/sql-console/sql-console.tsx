@@ -16,7 +16,6 @@ import { ExplainTab } from './tabs/explain-tab'
 import { QueryLogTab } from './tabs/query-log-tab'
 import { ResultsTab } from './tabs/results-tab'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { format } from 'sql-formatter'
 import { ClientOnly } from '@/components/client-only'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,6 +29,7 @@ import {
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { formatSql } from '@/lib/sql-format'
 
 // CodeMirror lives here, ALWAYS mounted and visible at the top of the console —
 // never inside the result Tabs and never hidden via display:none. That is the
@@ -100,14 +100,19 @@ export function SqlConsole({
 
   const handleRun = (sql?: string) => run(sql)
 
-  const handleFormat = () => {
-    try {
-      setEditorValue(
-        format(editorValue, { language: 'sql', keywordCase: 'upper' })
-      )
-    } catch {
-      // ignore invalid SQL
-    }
+  const handleFormat = async () => {
+    // formatSql falls back to the dedented original on failure, so an invalid
+    // query is left untouched rather than throwing.
+    const formatted = await formatSql(editorValue, {
+      language: 'sql',
+      keywordCase: 'upper',
+      // Preserve the editor's prior behavior (sql-formatter library defaults)
+      // rather than the dialog-oriented helper defaults.
+      identifierCase: 'preserve',
+      tabWidth: 2,
+      linesBetweenQueries: 1,
+    })
+    setEditorValue(formatted)
   }
 
   const handleSelectHistory = (sql: string, runIt = false) => {
