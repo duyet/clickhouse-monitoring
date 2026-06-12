@@ -1,6 +1,6 @@
 'use client'
 
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
 import type { AutocompleteItem } from '@/components/agents/mentions/types'
 
@@ -53,15 +53,21 @@ export function useAutocompleteData() {
   const hostId = useHostId()
 
   // Lazy-load tables list (only fetched when hook is mounted = when @ is first used)
-  const { data: tablesData, isLoading: tablesLoading } = useSWR<{
-    data: TableRow[]
-  }>(
-    hostId != null
-      ? `/api/v1/tables?hostId=${hostId}&limit=${AUTOCOMPLETE_LIMIT}`
-      : null,
-    (url: string) => fetchJson<{ data: TableRow[] }>(url),
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  )
+  const {
+    data: tablesData,
+    isPending: tablesPending,
+    isFetching: tablesFetching,
+  } = useQuery<{ data: TableRow[] }>({
+    queryKey: ['/api/v1/tables', 'autocomplete', hostId, AUTOCOMPLETE_LIMIT],
+    queryFn: () =>
+      fetchJson<{ data: TableRow[] }>(
+        `/api/v1/tables?hostId=${hostId}&limit=${AUTOCOMPLETE_LIMIT}`
+      ),
+    enabled: hostId != null,
+    // SWR dedupingInterval: 60000 → keep results fresh for 60s before refetch.
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  })
 
   const tables: AutocompleteItem[] = (tablesData?.data || []).map((row) => ({
     id: `table-${row.database}-${row.name}`,
@@ -73,17 +79,18 @@ export function useAutocompleteData() {
   }))
 
   // Skills from agent tools metadata (static, loaded once)
-  const { data: skillsData } = useSWR<{
+  const { data: skillsData } = useQuery<{
     data: Array<{ name: string; description: string }>
-  }>(
-    '/api/v1/agent/skills',
-    (url: string) =>
-      fetchJson<{ data: Array<{ name: string; description: string }> }>(url),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 300000,
-    }
-  )
+  }>({
+    queryKey: ['/api/v1/agent/skills'],
+    queryFn: () =>
+      fetchJson<{ data: Array<{ name: string; description: string }> }>(
+        '/api/v1/agent/skills'
+      ),
+    // SWR dedupingInterval: 300000 → effectively static, cache for 5 minutes.
+    staleTime: 300_000,
+    refetchOnWindowFocus: false,
+  })
 
   const skills: AutocompleteItem[] = (skillsData?.data || []).map((skill) => ({
     id: `skill-${skill.name}`,
@@ -99,6 +106,8 @@ export function useAutocompleteData() {
     resources: SYSTEM_RESOURCES,
     skills,
     commands: SLASH_COMMANDS,
-    isLoading: tablesLoading,
+    // Match sibling hooks: only "loading" while a fetch is in flight, so the
+    // disabled state (hostId == null) does not report a stuck loading state.
+    isLoading: tablesPending && tablesFetching,
   }
 }
