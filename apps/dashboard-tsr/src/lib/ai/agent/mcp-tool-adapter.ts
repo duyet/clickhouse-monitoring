@@ -6,6 +6,4 @@
  * Existing code and documentation reference this path, so we keep it as a re-export.
  */
 
-import 'server-only'
-
 export { createAllTools as createMcpTools } from './tools'
