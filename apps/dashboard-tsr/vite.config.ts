@@ -19,8 +19,9 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 //
 // Values come from `process.env.VITE_*` (CI overrides — e.g. the pk_test Clerk
 // key for preview deploys) with non-secret committed defaults that mirror
-// `scripts/patch-wrangler-env.ts`. The Clerk publishable key is a PUBLIC key
-// (already committed in wrangler.toml), so defaulting it here is safe.
+// `scripts/patch-wrangler-env.ts`. The Clerk publishable key has NO committed
+// default — it comes only from the build env so a missing key cleanly disables
+// Clerk (isClerkEnabled() → false) rather than silently re-enabling it.
 function git(cmd: string): string {
   try {
     return execSync(`git ${cmd}`, { encoding: 'utf-8' }).trim()
@@ -37,10 +38,12 @@ const e = process.env
 const CLIENT_ENV = {
   VITE_AUTH_PROVIDER:
     e.VITE_AUTH_PROVIDER ?? e.NEXT_PUBLIC_AUTH_PROVIDER ?? 'clerk',
+  // No committed default: the publishable key comes ONLY from the build env
+  // (CI sets VITE_CLERK_PUBLISHABLE_KEY — pk_test for previews, pk_live for prod;
+  // see .github/workflows/cloudflare.yml). With no key, isClerkEnabled() returns
+  // false and Clerk cleanly disables — the app runs unauthenticated, no crash.
   VITE_CLERK_PUBLISHABLE_KEY:
-    e.VITE_CLERK_PUBLISHABLE_KEY ??
-    e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
-    'pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ',
+    e.VITE_CLERK_PUBLISHABLE_KEY ?? e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '',
   VITE_FEATURE_CONVERSATION_DB:
     e.VITE_FEATURE_CONVERSATION_DB ??
     e.NEXT_PUBLIC_FEATURE_CONVERSATION_DB ??
