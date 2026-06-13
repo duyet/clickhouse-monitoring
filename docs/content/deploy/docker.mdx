@@ -199,7 +199,7 @@ Without `CHM_PROXY_AUTH_SECRET`, the trusted-header provider is disabled. Put ch
 -e AGENT_ENABLE_CONTROL_TOOLS='false'
 ```
 
-Keep `LLM_API_KEY` server-side; never put it in a `VITE_*` or `NEXT_PUBLIC_*` variable.
+Keep `LLM_API_KEY` server-side; never put it in a `VITE_*` variable.
 
 Set `CHM_FEATURE_AGENT_ACCESS=authenticated` to require login before using the agent.
 
@@ -261,7 +261,7 @@ These are build-time variables (inlined at build). They work when running the pr
 -e VITE_MEASUREMENT_ID='G-XXXXXXXXXX'
 ```
 
-`NEXT_PUBLIC_*` is the equivalent prefix for the legacy Next.js app.
+These are inlined at build time — pass them as `-e` flags when building a custom image, not when running the pre-built image.
 
 ## Upgrading
 

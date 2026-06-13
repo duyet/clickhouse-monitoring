@@ -1,6 +1,8 @@
 # Cloudflare Workers
 
-Deploy chmonitor to Cloudflare Workers using the OpenNext adapter. Best for globally cached, serverless hosting with no servers to manage.
+Deploy chmonitor to Cloudflare Workers. Best for globally cached, serverless hosting with no servers to manage.
+
+The TanStack Start app (`apps/dashboard-tsr`) uses the `@cloudflare/vite-plugin` to build a native Cloudflare Workers bundle — no OpenNext adapter required. The deploy script is just `bun run build && wrangler deploy`.
 
 ## One-click deploy
 
@@ -18,20 +20,21 @@ This deploys the `apps/dashboard-tsr` worker (TanStack Start). You will be promp
 
 ```bash
 git clone https://github.com/duyet/clickhouse-monitoring.git
-cd clickhouse-monitoring
+cd clickhouse-monitoring/apps/dashboard-tsr
 bun install
 
-# Put credentials in .env.prod
-cat <<'EOF' > .env.prod
-CLOUDFLARE_API_TOKEN=<your-api-token>
-CLICKHOUSE_HOST=https://clickhouse.example.com:8443
-CLICKHOUSE_USER=monitoring
-CLICKHOUSE_PASSWORD=change-me
-EOF
+# Set credentials and build
+export CLICKHOUSE_HOST=https://clickhouse.example.com:8443
 
-# Push secrets to Worker, then build + deploy + populate cache
-bun run cf:config   # reads .env.prod and runs wrangler secret put
-bun run cf:deploy   # cf:build → wrangler deploy --minify → populateCache remote
+# Build the Cloudflare Workers bundle and deploy
+bun run cf:deploy   # vite build → wrangler deploy
+```
+
+For secrets (ClickHouse password, LLM keys, etc.), use `wrangler secret put`:
+
+```bash
+wrangler secret put CLICKHOUSE_HOST
+wrangler secret put CLICKHOUSE_PASSWORD
 ```
 
 Open your Workers URL or set a custom domain in the Cloudflare dashboard.
@@ -45,7 +48,7 @@ There are two kinds of variables:
 | **Build-time client vars** | CI env / shell before `bun run cf:build` | Browser JS (VITE-inlined) | `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
 | **Runtime Worker vars** | `wrangler.toml` `[vars]` or `wrangler secret put` | Worker process only | `CLICKHOUSE_HOST`, `LLM_API_KEY`, `CLERK_SECRET_KEY` |
 
-`VITE_*` vars are baked into the JS bundle at build time. Setting them in `wrangler.toml [vars]` has no effect — they must be in the environment when `bun run cf:build` runs (e.g. CI secrets). `NEXT_PUBLIC_*` is the equivalent prefix in the legacy Next.js app.
+`VITE_*` vars are baked into the JS bundle at build time. Setting them in `wrangler.toml [vars]` has no effect — they must be in the environment when `bun run build` runs (e.g. CI secrets).
 
 Runtime Worker vars (`wrangler.toml [vars]` and secrets) are never visible in the browser.
 
@@ -55,9 +58,12 @@ Non-secret runtime vars go in `[vars]`:
 
 ```toml
 name = "chmonitor"
-main = ".open-next/worker.js"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
+main = "@tanstack/react-start/server-entry"
+compatibility_date = "2026-05-28"
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
+
+[observability]
+enabled = true
 
 [vars]
 CLICKHOUSE_USER = "monitoring"
@@ -66,11 +72,12 @@ CLICKHOUSE_MAX_EXECUTION_TIME = "30"
 CLICKHOUSE_TZ = "UTC"
 NEXT_QUERY_CACHE_TTL = "3600"
 CLICKHOUSE_POOL_SIZE = "10"
+CLOUDFLARE_WORKERS = "1"
 HEALTH_ALERT_ENABLED = "true"
 HEALTH_ALERT_MIN_SEVERITY = "warning"
 AGENT_CONVERSATION_STORE = "d1"
 AGENT_CONVERSATION_PERSISTENCE = "true"
-CHM_AUTH_PROVIDER = "proxy"
+CHM_AUTH_PROVIDER = "none"
 LLM_API_BASE = "https://openrouter.ai/api/v1"
 LLM_MODEL = "openrouter/free"
 AGENT_ENABLE_CONTROL_TOOLS = "false"
@@ -310,9 +317,9 @@ VITE_POSTHOG_KEY=phc_...
 bun run cf:deploy
 ```
 
-This runs: `cf:build` → `wrangler deploy --minify` → `opennextjs-cloudflare populateCache remote`.
+This runs: `vite build` (produces the Cloudflare Workers bundle) → `wrangler deploy`.
 
-**CI (GitHub Actions):** push to `main` triggers `.github/workflows/cloudflare.yml`. Set `CLOUDFLARE_API_TOKEN` as a repository secret, plus `CLICKHOUSE_*` and any build-time `VITE_*` vars.
+**CI (GitHub Actions):** push to `main` triggers `.github/workflows/cloudflare.yml`. Set `CLOUDFLARE_API_TOKEN` as a repository secret, plus `CLICKHOUSE_*`, and any build-time `VITE_*` vars (e.g. `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY`).
 
 ## Preview locally
 
@@ -326,11 +333,10 @@ The app uses these Cloudflare resources (configured in `wrangler.toml`):
 
 | Binding | Type | Purpose |
 |---|---|---|
-| `NEXT_INC_CACHE_KV` | KV Namespace | Incremental static cache |
-| `NEXT_TAG_CACHE_D1` | D1 Database | Next.js cache tags |
-| `NEXT_INC_CACHE_R2_BUCKET` | R2 Bucket | Large cache objects |
-| `NEXT_CACHE_DO_QUEUE` | Durable Object | Background task queue |
 | `CONVERSATIONS_D1` | D1 Database | Conversation history (optional) |
+| `AGENT_CONVERSATIONS_DO` | Durable Object | Conversation history via Durable Objects (optional) |
+
+The TanStack Start build via `@cloudflare/vite-plugin` does not require KV, R2, or cache-tag bindings. Only conversation-store bindings need to be added if you enable server-side persistence.
 
 ## Upgrading
 

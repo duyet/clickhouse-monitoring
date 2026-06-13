@@ -382,7 +382,7 @@ VITE_TITLE_SHORT=MyCluster
 VITE_LOGO=/logo.png
 ```
 
-`NEXT_PUBLIC_*` is the equivalent prefix for the legacy Next.js app.
+These are inlined at build time — set them in CI when building the image, not as runtime env vars.
 
 ## Health probes
 
