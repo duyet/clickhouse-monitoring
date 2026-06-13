@@ -24,6 +24,8 @@ const CLICKHOUSE_ENV_KEYS = [
   'CLICKHOUSE_PASSWORD',
   'CLICKHOUSE_NAME',
   'CLICKHOUSE_MAX_EXECUTION_TIME',
+  'CLICKHOUSE_DATABASE',
+  'EVENTS_TABLE_NAME',
 ] as const
 
 export type ClickHouseBindings = Record<string, string | undefined>

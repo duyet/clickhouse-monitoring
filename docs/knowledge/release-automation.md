@@ -41,9 +41,40 @@ from conventional commits on `main` — no manual version bumps or tagging.
    never built (this bit v0.2.7, recovered with a manual `workflow_dispatch`).
    It builds multi-arch Docker images
    (`ghcr.io/duyet/clickhouse-monitoring` + `ghcr.io/duyet/chmonitor`), packages
-   standalone + Cloudflare archives + `SHA256SUMS`, generates AI release notes
+   standalone + Cloudflare archives + `SHA256SUMS`, computes a deterministic
+   **release recap** (`scripts/release-recap.mjs`), generates AI release notes
    from `.github/release-notes-prompt.md`, and on any non-patch / breaking bump
    appends `.github/release-migration-prompt.md`.
+
+## Release body layout
+
+`scripts/generate-release-notes.ts` renders the body in this order:
+`AI recap blockquote + grouped changelog` → `## 📊 Release recap` (hard stats) →
+`## 🐳 Docker image` (`docker pull` + `FROM` pin, tag = release version) →
+`## 🔁 Full changelog` (compare link `PREVIOUS_TAG...RELEASE_TAG`) → build footer.
+
+## LLM summary tiers (best-effort, never blocks a release)
+
+`actions/ai-inference@v2` is called in order; the first non-empty response wins:
+
+1. **GitHub Copilot** (`provider: copilot`)
+2. **GitHub Models** (`provider: github-models`)
+3. **AnyRouter** — only when the `ANYROUTER_API_KEY` secret is set:
+   `endpoint: https://anyrouter.dev/api/v1`, model from `vars.ANYROUTER_MODEL`
+   (default `openai/gpt-4o-mini`), with **app-attribution headers per the
+   AnyRouter docs** — `X-AnyRouter-Source: chmonitor`, `X-AnyRouter-Title`,
+   `X-AnyRouter-Version` (= release tag), `X-AnyRouter-Categories: programming-app`.
+
+The prompt asks for a narrative **recap blockquote** (weaving in the recap stats)
+followed by the grouped sections. `models: read` permission is required.
+
+## Release recap stats
+
+`scripts/release-recap.mjs` writes `recap.md` (rendered) + `recap-facts.txt` (fed
+to the LLM): commit / PR counts, day span + pace, day-vs-night split, contributors,
+review comments back and forth, agents involved, and a shoutout to the most active
+AI agent (its comments / reviews / approvals). The same script is shared verbatim
+across the other duyet repos that adopted this pipeline.
 
 ## Versioning rules (release-please config)
 
