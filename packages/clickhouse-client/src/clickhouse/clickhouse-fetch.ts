@@ -283,7 +283,14 @@ export const fetchData = async <
 
     // Extract HTTP status code from fetch errors
     let httpStatusCode: number | undefined
-    const statusMatch = errorMessage.match(/(\d{3})/)
+    // Match 3-digit HTTP status codes (100-599), optionally preceded by "status" or "HTTP" keywords.
+    // Avoid matching ClickHouse internal exception codes (preceded by "Code:").
+    let statusMatch = errorMessage.match(
+      /\b(?:status|HTTP\s+(?:status|error))\s*([1-5]\d{2})\b/i
+    )
+    if (!statusMatch && !errorMessage.includes('Code:')) {
+      statusMatch = errorMessage.match(/\b([1-5]\d{2})\b/)
+    }
     if (statusMatch) {
       httpStatusCode = parseInt(statusMatch[1], 10)
     }
@@ -548,7 +555,14 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
 
     // Extract HTTP status code from fetch errors
     let httpStatusCode: number | undefined
-    const statusMatch = errorMessage.match(/(\d{3})/)
+    // Match 3-digit HTTP status codes (100-599), optionally preceded by "status" or "HTTP" keywords.
+    // Avoid matching ClickHouse internal exception codes (preceded by "Code:").
+    let statusMatch = errorMessage.match(
+      /\b(?:status|HTTP\s+(?:status|error))\s*([1-5]\d{2})\b/i
+    )
+    if (!statusMatch && !errorMessage.includes('Code:')) {
+      statusMatch = errorMessage.match(/\b([1-5]\d{2})\b/)
+    }
     if (statusMatch) {
       httpStatusCode = parseInt(statusMatch[1], 10)
     }
