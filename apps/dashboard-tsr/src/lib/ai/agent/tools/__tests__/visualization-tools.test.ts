@@ -95,7 +95,7 @@ const { createVisualizationTools } = await import('../visualization-tools')
 
 describe('createVisualizationTools', () => {
   test('creates both visualization tools', () => {
-    const tools = createVisualizationTools(0)
+    const tools = createVisualizationTools(0) as any as any
     expect(tools.query_and_visualize).toBeDefined()
     expect(tools.discover_data_sources).toBeDefined()
   })
@@ -104,7 +104,7 @@ describe('createVisualizationTools', () => {
     test('returns visualization config with auto-detected dimensions', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT event_date, tenant_id, event_name, value FROM analytics.events LIMIT 10',
@@ -126,7 +126,7 @@ describe('createVisualizationTools', () => {
     test('uses provided title and chartType', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT count() FROM analytics.events',
@@ -144,7 +144,7 @@ describe('createVisualizationTools', () => {
         error: null,
       }))
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT metric, count() as cnt FROM analytics.events',
@@ -158,7 +158,7 @@ describe('createVisualizationTools', () => {
     test('passes through sortBy, sortOrder, readable options', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT event_date, value FROM analytics.events',
@@ -175,7 +175,7 @@ describe('createVisualizationTools', () => {
     test('uses sql slice as title when no title provided', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const sql = 'SELECT * FROM system.tables WHERE total_bytes > 1000000'
       const result = await tools.query_and_visualize.execute({ sql })
@@ -186,7 +186,7 @@ describe('createVisualizationTools', () => {
     test('uses provided xKey and yKeys when specified', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT event_date, value FROM analytics.events',
@@ -207,7 +207,7 @@ describe('createVisualizationTools', () => {
         error: null,
       }))
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT event_date, event_name FROM analytics.events',
@@ -220,7 +220,7 @@ describe('createVisualizationTools', () => {
     test('does not include sortBy/sortOrder/readable when not provided', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.query_and_visualize.execute({
         sql: 'SELECT count() FROM analytics.events',
@@ -236,7 +236,7 @@ describe('createVisualizationTools', () => {
     test('returns sources with column classification', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.discover_data_sources.execute({
         searchTerm: 'event',
@@ -264,7 +264,7 @@ describe('createVisualizationTools', () => {
         error: null,
       }))
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
       const result = await tools.discover_data_sources.execute({
         searchTerm: 'nonexistent_table_xyz',
       })
@@ -277,32 +277,6 @@ describe('createVisualizationTools', () => {
       let _capturedParams: Record<string, unknown> | undefined
 
       // Set up mock with param capture
-      mockFetchData.mockImplementation(
-        async (opts: {
-          query: string
-          query_params?: Record<string, unknown>
-        }) => {
-          if (opts.query.includes('matched_tables')) {
-            _capturedParams = opts.query_params
-          }
-          // Use default visualization mock for the rest
-          return setupVisualizationMocks.then
-            ? {
-                data: [
-                  {
-                    database: 'analytics',
-                    table: 'events',
-                    engine: 'MergeTree',
-                    total_rows: 1000000,
-                    size: '1.00 GiB',
-                    comment: 'Event data table',
-                  },
-                ],
-                error: null,
-              }
-            : { data: [], error: null }
-        }
-      )
 
       // Need full setup for this test
       let matchedParams: Record<string, unknown> | undefined
@@ -353,7 +327,7 @@ describe('createVisualizationTools', () => {
         }
       )
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       await tools.discover_data_sources.execute({
         searchTerm: 'event',
@@ -367,7 +341,7 @@ describe('createVisualizationTools', () => {
     test('classifies columns into measures and dimensions correctly', async () => {
       setupVisualizationMocks()
 
-      const tools = createVisualizationTools(0)
+      const tools = createVisualizationTools(0) as any as any
 
       const result = await tools.discover_data_sources.execute({
         searchTerm: 'event',

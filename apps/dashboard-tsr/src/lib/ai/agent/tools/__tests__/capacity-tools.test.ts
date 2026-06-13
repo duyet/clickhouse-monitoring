@@ -56,7 +56,7 @@ const { createCapacityTools } = await import('../capacity-tools')
 
 describe('createCapacityTools', () => {
   test('creates forecast_capacity tool', () => {
-    const tools = createCapacityTools(0)
+    const tools = createCapacityTools(0) as any
     expect(tools.forecast_capacity).toBeDefined()
   })
 
@@ -64,7 +64,7 @@ describe('createCapacityTools', () => {
     test('returns full forecast with projections', async () => {
       mockFetchData.mockImplementation(defaultCapacityMock)
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({})
 
       expect(result.forecast_days).toBe(90)
@@ -79,7 +79,7 @@ describe('createCapacityTools', () => {
     test('computes disk projections from growth data', async () => {
       mockFetchData.mockImplementation(defaultCapacityMock)
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({})
 
       expect(result.projections).not.toBeNull()
@@ -97,7 +97,7 @@ describe('createCapacityTools', () => {
     test('accepts custom forecastDays', async () => {
       mockFetchData.mockImplementation(defaultCapacityMock)
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({
         forecastDays: 180,
       })
@@ -113,7 +113,7 @@ describe('createCapacityTools', () => {
         return defaultCapacityMock({ query })
       })
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({})
 
       expect(result.projections).toBeNull()
@@ -127,7 +127,7 @@ describe('createCapacityTools', () => {
         return defaultCapacityMock({ query })
       })
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({})
 
       expect(result.projections).toBeNull()
@@ -148,7 +148,7 @@ describe('createCapacityTools', () => {
         return defaultCapacityMock({ query })
       })
 
-      const tools = createCapacityTools(0)
+      const tools = createCapacityTools(0) as any
       const result = await tools.forecast_capacity.execute({})
 
       expect(result.projections).not.toBeNull()

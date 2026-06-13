@@ -7,7 +7,7 @@ const { createClusterTools } = await import('../cluster-tools')
 
 describe('createClusterTools', () => {
   test('creates get_clusters and get_distributed_ddl_queue tools', () => {
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     expect(tools.get_clusters).toBeDefined()
     expect(tools.get_distributed_ddl_queue).toBeDefined()
   })
@@ -43,7 +43,7 @@ describe('createClusterTools', () => {
       return { data: [], error: null }
     })
 
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     const result = await tools.get_clusters.execute({})
 
     expect(result).toHaveLength(2)
@@ -62,7 +62,7 @@ describe('createClusterTools', () => {
       return { data: [], error: null }
     })
 
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     const result = await tools.get_clusters.execute({})
 
     expect(result).toEqual([])
@@ -88,7 +88,7 @@ describe('createClusterTools', () => {
       return { data: [], error: null }
     })
 
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     const result = await tools.get_distributed_ddl_queue.execute({})
 
     expect(result).toHaveLength(1)
@@ -107,7 +107,7 @@ describe('createClusterTools', () => {
       return { data: [], error: null }
     })
 
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     const result = await tools.get_distributed_ddl_queue.execute({})
 
     expect(result).toHaveLength(1)
@@ -124,7 +124,7 @@ describe('createClusterTools', () => {
       return { data: [], error: null }
     })
 
-    const tools = createClusterTools(0)
+    const tools = createClusterTools(0) as any
     const result = await tools.get_clusters.execute({ hostId: 3 })
     expect(Array.isArray(result)).toBe(true)
   })

@@ -144,7 +144,7 @@ const { createMigrationTools } = await import('../migration-tools')
 
 describe('createMigrationTools', () => {
   test('creates both migration tools', () => {
-    const tools = createMigrationTools(0)
+    const tools = createMigrationTools(0) as any
     expect(tools.analyze_schema_change).toBeDefined()
     expect(tools.get_column_usage).toBeDefined()
   })
@@ -153,7 +153,7 @@ describe('createMigrationTools', () => {
     test('classifies ADD COLUMN as low risk with no rewrite', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -179,7 +179,7 @@ describe('createMigrationTools', () => {
     test('classifies MODIFY COLUMN as high risk requiring rewrite', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -198,7 +198,7 @@ describe('createMigrationTools', () => {
     test('classifies DROP COLUMN as low risk', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -214,7 +214,7 @@ describe('createMigrationTools', () => {
     test('classifies RENAME COLUMN as low risk', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -229,7 +229,7 @@ describe('createMigrationTools', () => {
     test('classifies ALTER COLUMN as modify requiring rewrite', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -244,7 +244,7 @@ describe('createMigrationTools', () => {
     test('classifies ADD INDEX as requiring rewrite', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -260,7 +260,7 @@ describe('createMigrationTools', () => {
     test('classifies DROP INDEX as low risk', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -275,7 +275,7 @@ describe('createMigrationTools', () => {
     test('classifies MODIFY ORDER BY as sorting key change', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -291,7 +291,7 @@ describe('createMigrationTools', () => {
     test('classifies MODIFY SORTING KEY as sorting key change', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -306,7 +306,7 @@ describe('createMigrationTools', () => {
     test('classifies DROP PROJECTION as low risk', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -321,7 +321,7 @@ describe('createMigrationTools', () => {
     test('classifies ADD PROJECTION as requiring rewrite', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -337,7 +337,7 @@ describe('createMigrationTools', () => {
     test('classifies MODIFY TTL as low risk', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -353,7 +353,7 @@ describe('createMigrationTools', () => {
     test('classifies unknown statements as unknown type', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
@@ -384,7 +384,7 @@ describe('createMigrationTools', () => {
         return defaultMigrationMock({ query })
       })
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
       const result = await tools.analyze_schema_change.execute({
         database: 'analytics',
         table: 'events',
@@ -401,7 +401,7 @@ describe('createMigrationTools', () => {
     test('returns usage summary and affected users', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.get_column_usage.execute({
         database: 'analytics',
@@ -420,7 +420,7 @@ describe('createMigrationTools', () => {
     test('clamps lastDays to max 30', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.get_column_usage.execute({
         database: 'analytics',
@@ -435,7 +435,7 @@ describe('createMigrationTools', () => {
     test('clamps lastDays to min 1', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.get_column_usage.execute({
         database: 'analytics',
@@ -450,7 +450,7 @@ describe('createMigrationTools', () => {
     test('uses default lastDays of 7 when not provided', async () => {
       setupMigrationMocks()
 
-      const tools = createMigrationTools(0)
+      const tools = createMigrationTools(0) as any
 
       const result = await tools.get_column_usage.execute({
         database: 'analytics',

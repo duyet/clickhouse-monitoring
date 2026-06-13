@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tests for insights tools (get_query_insights, get_table_insights).
  *

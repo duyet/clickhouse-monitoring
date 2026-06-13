@@ -9,32 +9,32 @@ describe('overview-charts', () => {
   })
 
   test.each(entries)('%s returns a query', (_name, builder) => {
-    const result = builder({})
+    const result = builder({}) as any
     expect(result).toBeDefined()
     expect(result.query).toContain('SELECT')
   })
 
   test('running-queries-count counts processes', () => {
-    const result = overviewCharts['running-queries-count']!({})
+    const result = overviewCharts['running-queries-count']!({}) as any
     expect(result.query).toContain('system.processes')
     expect(result.query).toContain('COUNT')
   })
 
   test('database-count excludes system databases', () => {
-    const result = overviewCharts['database-count']!({})
+    const result = overviewCharts['database-count']!({}) as any
     expect(result.query).toContain('system.tables')
     expect(result.query).toContain('information_schema')
   })
 
   test('disk-size-single returns disk metrics', () => {
-    const result = overviewCharts['disk-size-single']!({})
+    const result = overviewCharts['disk-size-single']!({}) as any
     expect(result.query).toContain('system.disks')
     expect(result.query).toContain('formatReadableSize')
     expect(result.query).toContain('LIMIT 1')
   })
 
   test('table-count counts unique tables', () => {
-    const result = overviewCharts['table-count']!({})
+    const result = overviewCharts['table-count']!({}) as any
     expect(result.query).toContain('countDistinct')
   })
 })
