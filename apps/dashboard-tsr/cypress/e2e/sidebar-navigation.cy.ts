@@ -22,13 +22,13 @@ const SIDEBAR = '[data-sidebar="sidebar"]'
  * Uses the button's text content as a stable target.
  */
 const expandSidebarSection = (sectionTitle: string) => {
-  // Click the collapsible section button to expand its submenu items
-  // Use within() to scope the search to the sidebar for more reliable element selection
+  // Click the collapsible section button to expand its submenu items.
+  // Use closest('button') to handle button text potentially being wrapped in child elements.
   cy.get(SIDEBAR).within(() => {
-    cy.contains('button', sectionTitle).click()
+    cy.contains(sectionTitle).closest('button').click()
   })
-  // Small delay to allow collapsible animation to complete
-  cy.wait(300)
+  // Wait for collapsible animation to complete
+  cy.wait(500)
 }
 
 describe('Sidebar navigation', () => {
