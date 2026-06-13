@@ -55,33 +55,27 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    // Try to find the running-queries link directly; if not found, expand the Queries section
-    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).then(($link) => {
-      if ($link.length === 0) {
-        // Link not visible, expand the Queries section
-        cy.get(SIDEBAR).within(() => {
-          cy.contains(/Queries/).closest('button').click()
-        })
-        cy.wait(500)
-      }
+    // Expand the Queries section to reveal submenu
+    cy.get(SIDEBAR).within(() => {
+      cy.contains(/^Queries$/).closest('button').click()
     })
-    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
+    // Wait for collapsible animation and link rendering
+    cy.wait(800)
+    // Find and click the running-queries link with extended timeout
+    cy.get(`${SIDEBAR} a[href*="/running-queries"]`, { timeout: 10000 }).first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
   })
 
   it('navigates to clusters via sidebar', () => {
-    // Try to find the clusters link directly; if not found, expand the Cluster section
-    cy.get(`${SIDEBAR} a[href*="/clusters"]`).then(($link) => {
-      if ($link.length === 0) {
-        // Link not visible, expand the Cluster section
-        cy.get(SIDEBAR).within(() => {
-          cy.contains(/Cluster/).closest('button').click()
-        })
-        cy.wait(500)
-      }
+    // Expand the Cluster section to reveal submenu
+    cy.get(SIDEBAR).within(() => {
+      cy.contains(/^Cluster$/).closest('button').click()
     })
-    cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
+    // Wait for collapsible animation and link rendering
+    cy.wait(800)
+    // Find and click the clusters link with extended timeout
+    cy.get(`${SIDEBAR} a[href*="/clusters"]`, { timeout: 10000 }).first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
   })
