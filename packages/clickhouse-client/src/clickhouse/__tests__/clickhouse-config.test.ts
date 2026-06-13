@@ -13,6 +13,7 @@ const {
   getClickHouseHosts,
   getClickHouseConfigs,
   getAndValidateClientConfig,
+  redactHostCredentials,
   _resetEnvCache,
 } = await import(
   new URL('../clickhouse-config.ts?test=config', import.meta.url).href
@@ -218,5 +219,31 @@ describe('getAndValidateClientConfig', () => {
 
     expect(() => getAndValidateClientConfig(5)).toThrow('Invalid hostId: 5')
     expect(() => getAndValidateClientConfig(5)).toThrow('Available hosts: 0-0')
+  })
+})
+
+describe('redactHostCredentials', () => {
+  it('should leave host without credentials unchanged', () => {
+    expect(redactHostCredentials('http://localhost:8123')).toBe(
+      'http://localhost:8123/'
+    )
+  })
+
+  it('should redact username and password from http URL', () => {
+    expect(
+      redactHostCredentials('http://admin:secret@clickhouse.prod:8123')
+    ).toBe('http://***:***@clickhouse.prod:8123/')
+  })
+
+  it('should redact credentials from https URL', () => {
+    expect(redactHostCredentials('https://user:pass123@clickhouse.prod')).toBe(
+      'https://***:***@clickhouse.prod/'
+    )
+  })
+
+  it('should handle invalid URLs gracefully', () => {
+    expect(redactHostCredentials('invalid-url-string')).toBe(
+      'invalid-url-string'
+    )
   })
 })

@@ -15,6 +15,23 @@ import { debug, error } from '@chm/logger'
 export { _resetEnvCache }
 
 /**
+ * Redacts username and password credentials from a ClickHouse host URL string
+ */
+export function redactHostCredentials(urlStr: string): string {
+  try {
+    const url = new URL(urlStr)
+    if (url.username || url.password) {
+      url.username = '***'
+      url.password = '***'
+    }
+    return url.toString()
+  } catch {
+    // Fallback regex if URL constructor fails (e.g. for incomplete or relative hosts)
+    return urlStr.replace(/(https?:\/\/)([^:]+):([^@]+)@/, '$1***:***@')
+  }
+}
+
+/**
  * Retrieve a single ClickHouseConfig by hostId, throwing if the id is out of
  * range.  Centralises the "lookup + validate" logic so callers like getClient
  * and fetchExplainAsText don't duplicate it.
@@ -65,7 +82,10 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
       Object.keys(process.env).filter((k) => k.includes('CLICK'))
     )
   } else {
-    debug('[ClickHouse Config] CLICKHOUSE_HOST:', hostEnv)
+    const redactedHostEnv = splitByComma(hostEnv)
+      .map(redactHostCredentials)
+      .join(',')
+    debug('[ClickHouse Config] CLICKHOUSE_HOST:', redactedHostEnv)
     debug('[ClickHouse Config] CLICKHOUSE_USER:', userEnv ? '***' : '(empty)')
     debug(
       '[ClickHouse Config] CLICKHOUSE_PASSWORD:',
@@ -111,7 +131,7 @@ export const getClickHouseConfigs = (): ClickHouseConfig[] => {
 
     debug(`[ClickHouse Config] Host ${index}:`, {
       id: config.id,
-      host: config.host,
+      host: redactHostCredentials(config.host),
       user: config.user,
       hasPassword: !!config.password,
       customName: config.customName,
