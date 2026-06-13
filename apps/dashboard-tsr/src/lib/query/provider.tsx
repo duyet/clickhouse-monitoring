@@ -96,6 +96,21 @@ export function QueryProvider({ children }: QueryProviderProps) {
     }
   }, [])
 
+  // Listen for the custom "swr:revalidate" event to trigger TanStack Query revalidations.
+  // This supports the manual refresh button, auto-refresh countdown, and hotkeys.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleRevalidate = () => {
+      queryClient.invalidateQueries({ type: 'active' })
+    }
+
+    window.addEventListener('swr:revalidate', handleRevalidate)
+    return () => {
+      window.removeEventListener('swr:revalidate', handleRevalidate)
+    }
+  }, [queryClient])
+
   if (!persister) {
     return (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
