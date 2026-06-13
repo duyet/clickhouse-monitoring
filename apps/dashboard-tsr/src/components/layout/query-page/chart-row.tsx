@@ -76,84 +76,86 @@ export const ChartRow = function ChartRow({
 
         {/* Expanded state - charts grid */}
         <CollapsibleContent>
-          <div className="relative group pb-6 overflow-hidden">
-            <div
-              className={cn(
-                'grid gap-3 w-full min-w-0 overflow-hidden items-stretch',
-                // Single chart: full width (1-column grid)
-                chartCount === 1
-                  ? 'grid-cols-1 auto-rows-[minmax(200px,auto)]'
-                  : hasColSpan(charts)
-                    ? 'grid-cols-1 md:grid-cols-10 auto-rows-[minmax(200px,auto)]'
-                    : 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(200px,auto)]'
-              )}
-            >
-              {charts.map((chartConfig, index) => {
-                if (!chartConfig) return null
-
-                // Handle break directive
-                if (
-                  typeof chartConfig === 'string' &&
-                  chartConfig === 'break'
-                ) {
-                  return <div key={`break-${index}`} className="hidden" />
-                }
-
-                // Extract chart name and props
-                const chartName = Array.isArray(chartConfig)
-                  ? chartConfig[0]
-                  : chartConfig
-                const chartProps = Array.isArray(chartConfig)
-                  ? chartConfig[1] || {}
-                  : {}
-
-                // Get colSpan from props (default to full width on mobile, half on desktop)
-                const colSpan = (chartProps as { colSpan?: number }).colSpan
-
-                return (
-                  <div
-                    key={`${chartName}-${index}`}
-                    className={cn(
-                      'h-full min-w-0',
-                      colSpan && `md:col-span-${colSpan}`
-                    )}
-                    style={
-                      colSpan
-                        ? { gridColumn: `span ${colSpan} / span ${colSpan}` }
-                        : undefined
-                    }
-                  >
-                    <div className="flex h-full w-full min-w-0 flex-col">
-                      <Suspense fallback={<ChartSkeleton />}>
-                        <DynamicChart
-                          chartName={chartName}
-                          chartProps={chartProps}
-                        />
-                      </Suspense>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            {/* Hide pill - bottom center, shows on hover */}
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
+          {!isCollapsed && (
+            <div className="relative group pb-6 overflow-hidden">
+              <div
                 className={cn(
-                  'absolute z-50 h-6 px-3 gap-1',
-                  'bottom-2 left-1/2 -translate-x-1/2',
-                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-                  'bg-muted hover:bg-muted/80 text-muted-foreground',
-                  'rounded-full text-xs'
+                  'grid gap-3 w-full min-w-0 overflow-hidden items-stretch',
+                  // Single chart: full width (1-column grid)
+                  chartCount === 1
+                    ? 'grid-cols-1 auto-rows-[minmax(200px,auto)]'
+                    : hasColSpan(charts)
+                      ? 'grid-cols-1 md:grid-cols-10 auto-rows-[minmax(200px,auto)]'
+                      : 'grid-cols-1 md:grid-cols-2 auto-rows-[minmax(200px,auto)]'
                 )}
-                aria-label="Collapse row"
               >
-                <ChevronUpIcon className="size-3" />
-                <span>Hide</span>
-              </Button>
-            </CollapsibleTrigger>
-          </div>
+                {charts.map((chartConfig, index) => {
+                  if (!chartConfig) return null
+
+                  // Handle break directive
+                  if (
+                    typeof chartConfig === 'string' &&
+                    chartConfig === 'break'
+                  ) {
+                    return <div key={`break-${index}`} className="hidden" />
+                  }
+
+                  // Extract chart name and props
+                  const chartName = Array.isArray(chartConfig)
+                    ? chartConfig[0]
+                    : chartConfig
+                  const chartProps = Array.isArray(chartConfig)
+                    ? chartConfig[1] || {}
+                    : {}
+
+                  // Get colSpan from props (default to full width on mobile, half on desktop)
+                  const colSpan = (chartProps as { colSpan?: number }).colSpan
+
+                  return (
+                    <div
+                      key={`${chartName}-${index}`}
+                      className={cn(
+                        'h-full min-w-0',
+                        colSpan && `md:col-span-${colSpan}`
+                      )}
+                      style={
+                        colSpan
+                          ? { gridColumn: `span ${colSpan} / span ${colSpan}` }
+                          : undefined
+                      }
+                    >
+                      <div className="flex h-full w-full min-w-0 flex-col">
+                        <Suspense fallback={<ChartSkeleton />}>
+                          <DynamicChart
+                            chartName={chartName}
+                            chartProps={chartProps}
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* Hide pill - bottom center, shows on hover */}
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    'absolute z-50 h-6 px-3 gap-1',
+                    'bottom-2 left-1/2 -translate-x-1/2',
+                    'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                    'bg-muted hover:bg-muted/80 text-muted-foreground',
+                    'rounded-full text-xs'
+                  )}
+                  aria-label="Collapse row"
+                >
+                  <ChevronUpIcon className="size-3" />
+                  <span>Hide</span>
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+          )}
         </CollapsibleContent>
       </div>
     </Collapsible>
