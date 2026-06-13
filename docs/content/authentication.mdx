@@ -2,7 +2,7 @@
 
 chmonitor has two independent auth layers that work together on every `/api/v1/*` route:
 
-- **Auth provider** — one of `none`, `clerk`, or `proxy`. Controls whether browser sessions are authenticated. Set with `CHM_AUTH_PROVIDER` (server) and `VITE_AUTH_PROVIDER` (client, build-time inlined). Legacy Next.js app uses `NEXT_PUBLIC_AUTH_PROVIDER` instead of `VITE_AUTH_PROVIDER`.
+- **Auth provider** — one of `none`, `clerk`, or `proxy`. Controls whether browser sessions are authenticated. Set with `CHM_AUTH_PROVIDER` (server) and `VITE_AUTH_PROVIDER` (client, build-time inlined).
 - **API key layer** — always active when `CHM_API_KEY_SECRET` is set. Authenticates programmatic clients (MCP, scripts, CI) with signed `chm_` Bearer tokens, independent of the provider.
 
 A request is allowed when either layer accepts it. The only fully public setup is `CHM_AUTH_PROVIDER=none` with no `CHM_API_KEY_SECRET`.

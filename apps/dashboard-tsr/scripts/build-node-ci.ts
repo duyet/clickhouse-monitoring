@@ -7,10 +7,20 @@ const SUCCESS_MARKER = '[prerender] - /'
 const REQUIRED_ARTIFACTS = ['.output/server/index.mjs', '.output/nitro.json']
 const TIMEOUT_MS = 10 * 60 * 1000
 const GRACE_MS = 5_000
+// Prerender stays ON by default (prod/Docker needs the static HTML). Callers
+// that don't need prerendered output (the e2e CI build) opt out by setting
+// CHM_SKIP_PRERENDER=1 in the environment — we inherit it rather than force it.
+//
+// Why this wrapper exists: `BUILD_TARGET=node vite build` finishes writing the
+// full `.output` (and prints "[prerender] Prerendered N pages") but the process
+// never exits — nitro's in-process prerender render server leaves a ref'd
+// socket open (plus worker MessagePorts), so a bare `RUN ... build:node` in
+// Docker hangs until the CI timeout. We detect completion from the prerender
+// marker + the on-disk artifacts, then reap the lingering process group and
+// exit 0.
 const CHILD_ENV = {
   ...process.env,
   BUILD_TARGET: 'node',
-  CHM_SKIP_PRERENDER: '1',
 }
 const WAIT_FOR_PRERENDER_MARKER = CHILD_ENV.CHM_SKIP_PRERENDER !== '1'
 const startedAt = Date.now()
@@ -18,6 +28,7 @@ const startedAt = Date.now()
 let sawSuccessMarker = false
 let settled = false
 let graceTimer: ReturnType<typeof setTimeout> | undefined
+let artifactPoll: ReturnType<typeof setInterval> | undefined
 let recentOutput = ''
 
 const child = spawn('bun', ['run', 'build:node'], {
@@ -50,9 +61,20 @@ function finish(code: number) {
   if (settled) return
   settled = true
   if (graceTimer) clearTimeout(graceTimer)
+  if (artifactPoll) clearInterval(artifactPoll)
   clearTimeout(timeout)
   process.exit(code)
 }
+
+// Completion is level-triggered (artifacts on disk), but our only success
+// SIGNAL from stdout is edge-triggered (the `[prerender] - /` marker lines,
+// which all stream during the crawl-list phase BEFORE rendering writes
+// artifacts). If we only re-checked on marker chunks we'd miss the moment
+// artifacts appear — no more marker lines stream by then. Poll every second so
+// `scheduleSuccessfulShutdown()` re-evaluates `artifactsExist()` until the
+// build's output is on disk, then reaps the lingering process.
+artifactPoll = setInterval(() => scheduleSuccessfulShutdown(), 1_000)
+artifactPoll.unref()
 
 function scheduleSuccessfulShutdown() {
   const hasSuccessSignal = WAIT_FOR_PRERENDER_MARKER

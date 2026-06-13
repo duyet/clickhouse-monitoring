@@ -180,7 +180,7 @@ export AGENT_API_TOKEN='bearer-token-for-agent-api'
 export AGENT_ENABLE_CONTROL_TOOLS='false'
 ```
 
-Keep `LLM_API_KEY` server-side — never set it as `VITE_*` or `NEXT_PUBLIC_*`.
+Keep `LLM_API_KEY` server-side — never set it as a `VITE_*` variable.
 
 ### Conversation store
 
@@ -230,7 +230,7 @@ Branding vars are inlined at build time:
 VITE_TITLE_SHORT=MyCluster VITE_LOGO=/logo.png bun run build
 ```
 
-`NEXT_PUBLIC_*` is the equivalent prefix for the legacy Next.js app.
+These are inlined at build time — set them before running `bun run build`.
 
 ## systemd unit
 

@@ -64,7 +64,6 @@
     "test:agent": "bun --filter dashboard test:agent",
     "docker:health": "docker compose exec app wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1",
     "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs --exclude 'node_modules|\\.next|\\.open-next|dist|\\.turbo|__tests__|\\.test\\.|\\.spec\\.|\\.cy\\.'",
-    "release:notes": "bun scripts/generate-release-notes.ts",
     "build:skills": "bun run scripts/build-skills-registry.ts",
     "preinstall": "npx only-allow bun",
     "prepare": "husky"

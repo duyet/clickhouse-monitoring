@@ -319,83 +319,67 @@ jobs:
             exit 1
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
 
+      # apps/dashboard-tsr is an ISOLATED install (own bun.lock, not in the root
+      # workspace), mirroring the Dockerfile. Install inside the app dir.
       - name: Install dependencies
+        working-directory: apps/dashboard-tsr
         run: bun install --frozen-lockfile
 
-      - name: Build Cloudflare output
+      # Standalone = the Nitro node-server output (.output). Use the build:node:ci
+      # wrapper, NOT a bare vite build: the prerender finishes but the process
+      # never exits (nitro's render server leaves a socket open), so a plain
+      # `bun run build:node` would hang. The wrapper reaps it once artifacts land.
+      - name: Build standalone (Node) output
         env:
-          NEXT_PUBLIC_GIT_SHA: ${{ github.sha }}
-          NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.tag }}
-          NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ github.event.repository.updated_at }}
-          NEXT_PUBLIC_CI: "true"
-        working-directory: apps/dashboard
-        run: bun run cf:build
+          VITE_GIT_SHA: ${{ github.sha }}
+          VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
+          VITE_CI: "true"
+        working-directory: apps/dashboard-tsr
+        run: bun run build:node:ci
+
+      # Cloudflare = the workerd bundle (dist/) from the default vite build. This
+      # target uses @cloudflare/vite-plugin (not nitro) and exits cleanly.
+      - name: Build Cloudflare (Workers) output
+        env:
+          VITE_GIT_SHA: ${{ github.sha }}
+          VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
+          VITE_CI: "true"
+        working-directory: apps/dashboard-tsr
+        run: bunx vite build
 
       - name: Package release archives
         run: |
           TAG="${{ steps.meta.outputs.tag }}"
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
-            apps/dashboard/.next/standalone \
-            apps/dashboard/.next/static \
-            apps/dashboard/public \
-            apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard-tsr/.output \
+            apps/dashboard-tsr/package.json \
+            apps/dashboard-tsr/bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
-            apps/dashboard/.open-next \
-            apps/dashboard/wrangler.toml \
-            apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard-tsr/dist \
+            apps/dashboard-tsr/wrangler.toml \
+            apps/dashboard-tsr/package.json \
+            apps/dashboard-tsr/bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
-      - name: Build AI summary prompt
-        id: ai_prompt
-        env:
-          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
-        run: |
-          PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
-          if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
-          COMMITS="$(git log --pretty=format:'- %s' "$RANGE")"
-          # Render the tracked template prompt (.github/release-notes-prompt.md)
-          # so the changelog style stays consistent and reviewable in-repo.
-          TEMPLATE="$(cat .github/release-notes-prompt.md)"
-          TEMPLATE="${TEMPLATE//\{\{RELEASE_TAG\}\}/$RELEASE_TAG}"
-          TEMPLATE="${TEMPLATE//\{\{RANGE\}\}/$RANGE}"
-          printf '%s' "${TEMPLATE//\{\{COMMITS\}\}/$COMMITS}" > ai-prompt.txt
-          echo "previous_tag=$PREV" >> "$GITHUB_OUTPUT"
-          # Decide whether to append the migration prompt: any non-patch bump
-          # (minor/major changed vs the previous tag) or a breaking commit.
-          CUR="${RELEASE_TAG#v}"; OLD="${PREV#v}"
-          MIGRATION=false
-          if [ -z "$PREV" ] || [ "${CUR%.*}" != "${OLD%.*}" ]; then MIGRATION=true; fi
-          if git log --pretty=format:'%B' "$RANGE" | grep -qE '(^|\W)BREAKING CHANGE|!:'; then MIGRATION=true; fi
-          echo "migration=$MIGRATION" >> "$GITHUB_OUTPUT"
-
-      - name: Generate AI summary
-        id: ai_summary
-        continue-on-error: true
-        uses: actions/ai-inference@v2
+      # Centralized release notes: tiered AI summary (Copilot → GitHub Models →
+      # AnyRouter), recap stats, Docker pull/FROM block, compare link, and the
+      # migration prompt — all from duyet/llm-release-action. It also publishes
+      # the GitHub Release body; we attach the build archives below.
+      - name: Generate & publish release notes
+        uses: duyet/llm-release-action@a44950e3aadd5eeb4d239e843cdd37801bbfc8f7 # v1
         with:
-          prompt-file: ai-prompt.txt
-          system-prompt: 'You are a release-notes assistant. Output only markdown grouped by the headings the prompt specifies, omitting empty sections. Be concise and accurate, and never invent changes that are not in the commit list.'
-          model: openai/gpt-4o
-
-      - name: Generate release notes
-        env:
-          AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
-          PREVIOUS_TAG: ${{ steps.ai_prompt.outputs.previous_tag }}
-        run: bun run --silent release:notes > release-notes.md
-
-      - name: Append migration prompt
-        if: steps.ai_prompt.outputs.migration == 'true'
-        run: |
-          # Paste the tracked, paste-able migration prompt into the release body
-          # so upgraders get the env-migration helper without leaving the release.
-          {
-            echo ""
-            cat .github/release-migration-prompt.md
-          } >> release-notes.md
+          release-tag: ${{ steps.meta.outputs.tag }}
+          project-name: chmonitor
+          docker-image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          docker-extra-image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
+          notes-prompt-file: .github/release-notes-prompt.md
+          system-prompt-file: .github/release-notes-system-prompt.md
+          migration-prompt-file: .github/release-migration-prompt.md
+          anyrouter-source: chmonitor
+          anyrouter-title: CHMonitor
+          anyrouter-api-key: ${{ secrets.ANYROUTER_API_KEY }}
+          anyrouter-model: ${{ vars.ANYROUTER_MODEL || 'openai/gpt-4o-mini' }}
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v7
@@ -408,35 +392,13 @@ jobs:
             release-notes.md
           if-no-files-found: error
 
-      - name: Publish GitHub release
+      - name: Attach build archives to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
-          NEW_NOTES="$(cat release-notes.md)"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            # Keep prior manual notes, but avoid duplicating the generated block
-            # when the release workflow is re-run for the same tag.
-            EXISTING="$(gh release view "$TAG" --json body --jq '.body // ""')"
-            if [ -n "$EXISTING" ] && [ "${EXISTING#"$NEW_NOTES"}" != "$EXISTING" ]; then
-              printf '%s\n' "$EXISTING" > final-notes.md
-            elif [ -n "$EXISTING" ]; then
-              printf '%s\n\n---\n\n%s\n' "$NEW_NOTES" "$EXISTING" > final-notes.md
-            else
-              printf '%s\n' "$NEW_NOTES" > final-notes.md
-            fi
-            gh release edit "$TAG" \
-              --title "$TAG" \
-              --notes-file final-notes.md
-          else
-            gh release create "$TAG" \
-              --title "$TAG" \
-              --notes-file release-notes.md
-          fi
-
           gh release upload "$TAG" \
             "clickhouse-monitor-${TAG}-standalone.tar.gz" \
             "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
             SHA256SUMS \
-            release-notes.md \
             --clobber

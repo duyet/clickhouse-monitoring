@@ -6,6 +6,13 @@ dashboard; lead with user impact, not implementation detail.
 
 ## Output rules
 
+- **Begin with a one-paragraph recap as a Markdown blockquote** (every line
+  starts with "> ") written in an upbeat, narrative "release recap" voice. Weave
+  in the most interesting numbers from the **Release stats** below — the commit
+  and pull-request counts, how many days it took and the daily pace, the
+  day-vs-night working split, how many agents pitched in, and a shoutout to the
+  most active AI agent (with its comments / reviews / approvals). Keep it to 2–4
+  sentences. Then continue with the grouped sections.
 - Group changes under these headings, in this exact order. **Omit any heading
   that would be empty** — never print an empty section.
   - `## ✨ Features`
@@ -33,6 +40,10 @@ dashboard; lead with user impact, not implementation detail.
 
 Release tag: {{RELEASE_TAG}}
 Commit range: {{RANGE}}
+
+## Release stats (for your recap blockquote)
+
+{{RECAP}}
 
 ## Commits
 

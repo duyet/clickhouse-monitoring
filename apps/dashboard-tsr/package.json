@@ -11,6 +11,7 @@
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
     "build:node": "BUILD_TARGET=node vite build",
+    "build:node:ci": "bun scripts/build-node-ci.ts",
     "start:node": "node .output/server/index.mjs",
     "preview": "vite preview",
     "deploy": "bun run build && wrangler deploy",

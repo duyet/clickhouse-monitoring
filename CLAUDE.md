@@ -187,7 +187,6 @@ Build lock errors: remove `.next/lock` and retry.
 - `bun run check` / `bun run check:fix` - Run Biome's full check suite, with optional write mode
 - `bun run lint:fix` - Apply Biome lint fixes
 - `bun run type-check` - Run standalone TypeScript verification
-- `bun run release:notes` - Generate release notes from recent changes
 - `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
 - `bun run test:component:headless` - Run Cypress component tests headless
 - `bun run test:e2e:headless` - Run Cypress e2e tests headless
