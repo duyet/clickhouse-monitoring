@@ -63,14 +63,9 @@ jobs:
       - name: Run workspace package tests with coverage
         run: bun run test:packages
 
-      - name: Bun Cache (TSR)
-        uses: actions/cache@5a3ec84aca86b2a1d5d09f21a43a25ec94be8d7c # v5.4.3
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('apps/dashboard-tsr/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-tsr-v1-
-
+      # No dedicated cache step here: the "Bun Cache" step above already caches
+      # ~/.bun/install/cache for the whole job, so a second cache on the same
+      # path would conflict (per CodeRabbit review).
       - name: Install dashboard-tsr dependencies
         working-directory: apps/dashboard-tsr
         run: bun install --frozen-lockfile
