@@ -1,18 +1,18 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * WASM export to transform a ClickHouse JSON-each-row string into a normalized JSON array.
+ * WASM export returning JsValue directly — avoids JSON string intermediate.
  */
-export function transform_clickhouse_json_each_row_json(input: string): string;
+export function transform_user_event_counts_v2(input: string, time_field: string): any;
 /**
  * WASM export accepting JsValue input and returning JsValue output — zero JSON string overhead.
  * JS side: pass pre-parsed array directly, get result object directly.
  */
 export function transform_user_event_counts_v3(input: any, time_field: string): any;
 /**
- * WASM export returning JsValue directly — avoids JSON string intermediate.
+ * WASM export to transform a ClickHouse JSON-each-row string into a normalized JSON array.
  */
-export function transform_user_event_counts_v2(input: string, time_field: string): any;
+export function transform_clickhouse_json_each_row_json(input: string): string;
 /**
  * Legacy export returning JSON string (kept for backward compat).
  */

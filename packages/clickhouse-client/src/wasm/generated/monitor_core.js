@@ -204,34 +204,28 @@ function takeObject(idx) {
     return ret;
 }
 /**
- * WASM export to transform a ClickHouse JSON-each-row string into a normalized JSON array.
+ * WASM export returning JsValue directly — avoids JSON string intermediate.
  * @param {string} input
- * @returns {string}
+ * @param {string} time_field
+ * @returns {any}
  */
-export function transform_clickhouse_json_each_row_json(input) {
-    let deferred3_0;
-    let deferred3_1;
+export function transform_user_event_counts_v2(input, time_field) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passStringToWasm0(input, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len0 = WASM_VECTOR_LEN;
-        wasm.transform_clickhouse_json_each_row_json(retptr, ptr0, len0);
+        const ptr1 = passStringToWasm0(time_field, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.transform_user_event_counts_v2(retptr, ptr0, len0, ptr1, len1);
         var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
         var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
         var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-        var ptr2 = r0;
-        var len2 = r1;
-        if (r3) {
-            ptr2 = 0; len2 = 0;
-            throw takeObject(r2);
+        if (r2) {
+            throw takeObject(r1);
         }
-        deferred3_0 = ptr2;
-        deferred3_1 = len2;
-        return getStringFromWasm0(ptr2, len2);
+        return takeObject(r0);
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_export4(deferred3_0, deferred3_1, 1);
     }
 }
 
@@ -261,28 +255,34 @@ export function transform_user_event_counts_v3(input, time_field) {
 }
 
 /**
- * WASM export returning JsValue directly — avoids JSON string intermediate.
+ * WASM export to transform a ClickHouse JSON-each-row string into a normalized JSON array.
  * @param {string} input
- * @param {string} time_field
- * @returns {any}
+ * @returns {string}
  */
-export function transform_user_event_counts_v2(input, time_field) {
+export function transform_clickhouse_json_each_row_json(input) {
+    let deferred3_0;
+    let deferred3_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passStringToWasm0(input, wasm.__wbindgen_export, wasm.__wbindgen_export2);
         const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(time_field, wasm.__wbindgen_export, wasm.__wbindgen_export2);
-        const len1 = WASM_VECTOR_LEN;
-        wasm.transform_user_event_counts_v2(retptr, ptr0, len0, ptr1, len1);
+        wasm.transform_clickhouse_json_each_row_json(retptr, ptr0, len0);
         var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
         var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
         var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-        if (r2) {
-            throw takeObject(r1);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr2 = r0;
+        var len2 = r1;
+        if (r3) {
+            ptr2 = 0; len2 = 0;
+            throw takeObject(r2);
         }
-        return takeObject(r0);
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export4(deferred3_0, deferred3_1, 1);
     }
 }
 
