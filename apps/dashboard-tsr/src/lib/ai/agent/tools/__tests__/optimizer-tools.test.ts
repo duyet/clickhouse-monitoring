@@ -24,7 +24,7 @@ const { createOptimizerTools } = await import('../optimizer-tools')
 
 describe('createOptimizerTools', () => {
   test('creates analyze_query_optimization tool', () => {
-    const tools = createOptimizerTools(0)
+    const tools = createOptimizerTools(0) as any
     expect(tools.analyze_query_optimization).toBeDefined()
   })
 
@@ -45,7 +45,7 @@ describe('createOptimizerTools', () => {
     ]
     setupOptimizerMock()
 
-    const tools = createOptimizerTools(0)
+    const tools = createOptimizerTools(0) as any
     const result = await tools.analyze_query_optimization.execute({
       sql: 'SELECT * FROM events WHERE date = today()',
     })
@@ -77,7 +77,7 @@ describe('createOptimizerTools', () => {
     queryStore.schema = []
     setupOptimizerMock()
 
-    const tools = createOptimizerTools(0)
+    const tools = createOptimizerTools(0) as any
     const result = await tools.analyze_query_optimization.execute({
       sql: 'SELECT 1 FROM events',
       database: 'analytics',
@@ -93,7 +93,7 @@ describe('createOptimizerTools', () => {
     queryStore.schema = []
     setupOptimizerMock()
 
-    const tools = createOptimizerTools(0)
+    const tools = createOptimizerTools(0) as any
     const result = await tools.analyze_query_optimization.execute({
       sql: 'SELECT 1',
       hostId: 5,
@@ -109,7 +109,7 @@ describe('createOptimizerTools', () => {
     queryStore.schema = []
     setupOptimizerMock()
 
-    const tools = createOptimizerTools(0)
+    const tools = createOptimizerTools(0) as any
     const result = await tools.analyze_query_optimization.execute({
       sql: 'SELECT 1',
     })

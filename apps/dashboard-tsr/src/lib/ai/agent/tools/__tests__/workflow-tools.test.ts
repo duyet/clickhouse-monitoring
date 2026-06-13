@@ -10,7 +10,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 type AnyExecute = (input: unknown) => Promise<Record<string, unknown>>
 
 function tool(name: 'list_workflows' | 'start_workflow') {
-  const tools = createWorkflowTools()
+  const tools = createWorkflowTools() as any
   return (tools[name] as unknown as { execute: AnyExecute }).execute
 }
 

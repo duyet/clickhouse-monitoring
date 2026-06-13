@@ -9,20 +9,20 @@ describe('dashboard-charts', () => {
   })
 
   test.each(entries)('%s returns a query', (_name, builder) => {
-    const result = builder({})
+    const result = builder({}) as any
     expect(result).toBeDefined()
     expect(result.query).toContain('SELECT')
     expect(result.optional).toBe(true)
   })
 
   test('dashboard-charts queries chart config table', () => {
-    const result = dashboardCharts['dashboard-charts']!({})
+    const result = dashboardCharts['dashboard-charts']!({}) as any
     expect(result.query).toContain('FINAL')
     expect(result.query).toContain('ordering')
   })
 
   test('dashboard-settings queries settings table', () => {
-    const result = dashboardCharts['dashboard-settings']!({})
+    const result = dashboardCharts['dashboard-settings']!({}) as any
     expect(result.query).toContain('FINAL')
   })
 })

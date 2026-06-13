@@ -124,7 +124,7 @@ const { createSchemaTools } = await import('../schema-tools')
 
 describe('createSchemaTools', () => {
   test('creates all schema tools', () => {
-    const tools = createSchemaTools(0)
+    const tools = createSchemaTools(0) as any
     expect(tools.query).toBeDefined()
     expect(tools.list_databases).toBeDefined()
     expect(tools.list_tables).toBeDefined()
@@ -136,7 +136,7 @@ describe('createSchemaTools', () => {
     test('executes validated read-only query', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
 
       const result = await tools.query.execute({
         sql: 'SELECT * FROM system.tables LIMIT 10',
@@ -149,7 +149,7 @@ describe('createSchemaTools', () => {
     test('uses provided hostId', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
 
       const result = await tools.query.execute({
         sql: 'SELECT 1',
@@ -164,7 +164,7 @@ describe('createSchemaTools', () => {
     test('returns list of databases', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.list_databases.execute({})
 
       expect(Array.isArray(result)).toBe(true)
@@ -178,7 +178,7 @@ describe('createSchemaTools', () => {
     test('returns tables for a database', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.list_tables.execute({
         database: 'analytics',
       })
@@ -191,7 +191,7 @@ describe('createSchemaTools', () => {
     test('returns empty tables for empty database', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.list_tables.execute({
         database: 'empty_db',
       })
@@ -216,7 +216,7 @@ describe('createSchemaTools', () => {
         return { data: [], error: null }
       })
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.list_tables.execute({
         database: 'big_db',
       })
@@ -230,7 +230,7 @@ describe('createSchemaTools', () => {
     test('returns column schema for a table', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
 
       const result = await tools.get_table_schema.execute({
         database: 'analytics',
@@ -246,7 +246,7 @@ describe('createSchemaTools', () => {
     test('returns empty for nonexistent table', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
 
       const result = await tools.get_table_schema.execute({
         database: 'analytics',
@@ -262,7 +262,7 @@ describe('createSchemaTools', () => {
     test('mode databases: lists all databases when no params', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.explore_table_schema.execute({})
 
       expect(result.mode).toBe('databases')
@@ -272,7 +272,7 @@ describe('createSchemaTools', () => {
     test('mode tables: lists tables when only database provided', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.explore_table_schema.execute({
         database: 'analytics',
       })
@@ -294,7 +294,7 @@ describe('createSchemaTools', () => {
         error: null,
       }))
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.explore_table_schema.execute({
         database: 'big_db',
       })
@@ -306,7 +306,7 @@ describe('createSchemaTools', () => {
     test('mode schema: returns full schema when database and table provided', async () => {
       setupSchemaMocks()
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.explore_table_schema.execute({
         database: 'analytics',
         table: 'events',
@@ -351,7 +351,7 @@ describe('createSchemaTools', () => {
         }
       )
 
-      const tools = createSchemaTools(0)
+      const tools = createSchemaTools(0) as any
       const result = await tools.explore_table_schema.execute({
         database: 'analytics',
         table: 'events',

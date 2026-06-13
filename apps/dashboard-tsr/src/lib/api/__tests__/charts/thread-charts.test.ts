@@ -9,7 +9,7 @@ describe('thread-charts', () => {
   })
 
   test.each(entries)('%s returns a query', (_name, builder) => {
-    const result = builder({ interval: 'toStartOfHour', lastHours: 24 })
+    const result = builder({ interval: 'toStartOfHour', lastHours: 24 }) as any
     expect(result).toBeDefined()
     expect(result.query).toContain('SELECT')
     expect(result.optional).toBe(true)
@@ -19,7 +19,7 @@ describe('thread-charts', () => {
     const result = threadCharts['thread-utilization']!({
       interval: 'toStartOfHour',
       lastHours: 24,
-    })
+    }) as any
     expect(result.query).toContain('system.query_thread_log')
     expect(result.tableCheck).toBe('system.query_thread_log')
   })
@@ -27,7 +27,7 @@ describe('thread-charts', () => {
   test('parallelization-efficiency buckets threads', () => {
     const result = threadCharts['parallelization-efficiency']!({
       lastHours: 168,
-    })
+    }) as any
     expect(result.query).toContain('thread_bucket')
     expect(result.query).toContain('1 thread')
   })
@@ -36,7 +36,7 @@ describe('thread-charts', () => {
     const result = threadCharts['cpu-time-per-thread']!({
       interval: 'toStartOfHour',
       lastHours: 24,
-    })
+    }) as any
     expect(result.query).toContain('toStartOfHour')
     expect(result.query).toContain('OSCPUVirtualTimeMicroseconds')
   })
