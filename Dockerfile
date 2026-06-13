@@ -36,7 +36,13 @@ COPY --from=deps /app/apps/dashboard-tsr/node_modules /app/apps/dashboard-tsr/no
 WORKDIR /app/apps/dashboard-tsr
 # BUILD_TARGET=node switches vite.config.ts to the Nitro node-server preset,
 # emitting a self-contained bundle at .output/server/index.mjs.
-RUN BUILD_TARGET=node bun run build:node
+#
+# Use the build:node:ci wrapper, NOT a bare `vite build`: the prerender crawl
+# finishes writing `.output` but the process never exits (nitro's in-process
+# render server leaves a ref'd socket open), which would hang `RUN` until the
+# CI/Docker timeout. The wrapper detects completion (prerender marker + on-disk
+# artifacts) and reaps the lingering process group, exiting cleanly.
+RUN bun run build:node:ci
 
 # ── runner ─────────────────────────────────────────────────────────────────
 # The Nitro node-server output is a plain Node bundle — run on node:24-alpine
