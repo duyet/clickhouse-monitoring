@@ -277,6 +277,8 @@ jobs:
           fi
 
           # Health checks
-          curl -sSf http://localhost:3000/ | grep -q "chmonitor"
+          # -L: GET / 307-redirects to /?host=0 (host-defaulting middleware);
+          # follow it so we grep the rendered shell, not the empty redirect body.
+          curl -sSLf http://localhost:3000/ | grep -q "chmonitor"
           curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
           curl -sSf http://localhost:3000/api/version | grep -q "version"
