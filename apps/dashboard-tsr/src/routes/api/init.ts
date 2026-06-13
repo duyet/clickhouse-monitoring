@@ -5,8 +5,6 @@
  * Safe to call repeatedly — the underlying schema logic is idempotent.
  *
  * Ported from apps/dashboard/app/api/init/route.ts.
- * - Per-route feature-permission auth (authorizeFeatureRequest) is DROPPED:
- *   centralized in middleware (#1397).
  * - ErrorLogger replaced with @chm/logger error.
  */
 
@@ -16,6 +14,7 @@ import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
 import { initTrackingTable } from '@/lib/tracking'
 
 export const Route = createFileRoute('/api/init')({
@@ -23,6 +22,10 @@ export const Route = createFileRoute('/api/init')({
     handlers: {
       POST: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+        bridgeApiKeyEnv(env as Record<string, string | undefined>)
+
+        const authFailure = await enforceAuth(request)
+        if (authFailure) return authFailure
 
         const searchParams = new URL(request.url).searchParams
         const hostIdRaw = searchParams.get('hostId')
@@ -48,7 +51,10 @@ export const Route = createFileRoute('/api/init')({
           return Response.json({ message: 'Ok.' })
         } catch (err) {
           error('[/api/init] Handler error', err as Error)
-          return Response.json({ error: String(err) }, { status: 500 })
+          return Response.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+          )
         }
       },
     },
