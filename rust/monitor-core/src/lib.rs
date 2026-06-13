@@ -60,7 +60,7 @@ mod tests {
         assert_eq!(output[0]["large"], json!("9007199254740992"));
         assert_eq!(output[0]["nested"]["value"], json!(-3));
         assert_eq!(output[1]["list"], json!([1, 2.5, "text"]));
-        assert_eq!(output[1]["leading_zero"], json!(1));
+        assert_eq!(output[1]["leading_zero"], json!("001"));
     }
 
     #[test]
