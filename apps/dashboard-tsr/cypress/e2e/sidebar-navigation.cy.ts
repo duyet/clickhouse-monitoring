@@ -17,6 +17,15 @@
 // The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
 const SIDEBAR = '[data-sidebar="sidebar"]'
 
+/**
+ * Expands a collapsible sidebar section by clicking the section button.
+ * Uses the button's text content as a stable target.
+ */
+const expandSidebarSection = (sectionTitle: string) => {
+  // Click the collapsible section button to expand its submenu items
+  cy.get(`${SIDEBAR} [role="button"]:contains("${sectionTitle}")`).first().click()
+}
+
 describe('Sidebar navigation', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0')
@@ -41,8 +50,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    // Running Queries is inside the collapsible "Queries" menu, so expand it first
-    cy.get(`${SIDEBAR} button:has-text("Queries")`).first().click()
+    // Running Queries is inside the collapsible "Queries" menu
+    expandSidebarSection('Queries')
     cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
@@ -50,8 +59,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to clusters via sidebar', () => {
-    // Clusters is inside the collapsible "Cluster" menu, so expand it first
-    cy.get(`${SIDEBAR} button:has-text("Cluster")`).first().click()
+    // Clusters is inside the collapsible "Cluster" menu
+    expandSidebarSection('Cluster')
     cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
