@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Tagging + release creation is owned by release-please (release-please.yml).
+  # We fire on the published release it cuts — not on the tag push — to avoid a
+  # duplicate run for the same version. workflow_dispatch stays for manual builds.
   release:
     types: [published]
   workflow_dispatch:
@@ -356,15 +356,21 @@ jobs:
         run: |
           PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
           if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
-          {
-            echo "Summarize the following git commits into concise, user-facing release notes for chmonitor ${RELEASE_TAG}."
-            echo "Group changes under Features, Fixes, and Other headings using short markdown bullet points."
-            echo "Skip noise such as merge commits, version bumps, and formatting-only changes. Do not invent changes."
-            echo ""
-            echo "Commits:"
-            git log --pretty=format:'- %s' "$RANGE"
-          } > ai-prompt.txt
+          COMMITS="$(git log --pretty=format:'- %s' "$RANGE")"
+          # Render the tracked template prompt (.github/release-notes-prompt.md)
+          # so the changelog style stays consistent and reviewable in-repo.
+          TEMPLATE="$(cat .github/release-notes-prompt.md)"
+          TEMPLATE="${TEMPLATE//\{\{RELEASE_TAG\}\}/$RELEASE_TAG}"
+          TEMPLATE="${TEMPLATE//\{\{RANGE\}\}/$RANGE}"
+          printf '%s' "${TEMPLATE//\{\{COMMITS\}\}/$COMMITS}" > ai-prompt.txt
           echo "previous_tag=$PREV" >> "$GITHUB_OUTPUT"
+          # Decide whether to append the migration prompt: any non-patch bump
+          # (minor/major changed vs the previous tag) or a breaking commit.
+          CUR="${RELEASE_TAG#v}"; OLD="${PREV#v}"
+          MIGRATION=false
+          if [ -z "$PREV" ] || [ "${CUR%.*}" != "${OLD%.*}" ]; then MIGRATION=true; fi
+          if git log --pretty=format:'%B' "$RANGE" | grep -qE '(^|\W)BREAKING CHANGE|!:'; then MIGRATION=true; fi
+          echo "migration=$MIGRATION" >> "$GITHUB_OUTPUT"
 
       - name: Generate AI summary
         id: ai_summary
@@ -372,7 +378,7 @@ jobs:
         uses: actions/ai-inference@v2
         with:
           prompt-file: ai-prompt.txt
-          system-prompt: 'You are a release-notes assistant. Output only markdown bullet points grouped by category. Be concise and accurate, and never invent changes that are not in the commit list.'
+          system-prompt: 'You are a release-notes assistant. Output only markdown grouped by the headings the prompt specifies, omitting empty sections. Be concise and accurate, and never invent changes that are not in the commit list.'
           model: openai/gpt-4o
 
       - name: Generate release notes
@@ -380,6 +386,16 @@ jobs:
           AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
           PREVIOUS_TAG: ${{ steps.ai_prompt.outputs.previous_tag }}
         run: bun run --silent release:notes > release-notes.md
+
+      - name: Append migration prompt
+        if: steps.ai_prompt.outputs.migration == 'true'
+        run: |
+          # Paste the tracked, paste-able migration prompt into the release body
+          # so upgraders get the env-migration helper without leaving the release.
+          {
+            echo ""
+            cat .github/release-migration-prompt.md
+          } >> release-notes.md
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v7
