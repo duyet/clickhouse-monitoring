@@ -9,9 +9,14 @@ mock.module('cloudflare:workers', () => ({
   },
 }))
 
-const mockFetchData = mock(async () => {
-  return { data: [], error: null }
-})
+const mockFetchData = mock(
+  async (_args: {
+    query: string
+  }): Promise<{
+    data: unknown[] | null
+    error: unknown
+  }> => ({ data: [], error: null })
+)
 
 mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,
@@ -57,7 +62,9 @@ describe('menu-counts API GET handler', () => {
     const response = await handler(request)
     expect(response.status).toBe(200)
 
-    const body = await response.json()
+    const body = (await response.json()) as {
+      data: { counts: Record<string, number | null> }
+    }
     expect(body.data).toHaveProperty('counts')
     expect(body.data.counts['tables-explorer']).toBe(5)
     expect(body.data.counts['tables-overview']).toBe(10)
@@ -68,8 +75,8 @@ describe('menu-counts API GET handler', () => {
 
     // Assert that exactly 2 queries were executed: system.tables check and the combined query
     expect(mockFetchData.mock.calls.length).toBe(2)
-    expect(mockFetchData.mock.calls[0][0].query).toContain('database, name')
-    expect(mockFetchData.mock.calls[1][0].query).toContain('AS')
+    expect(mockFetchData.mock.calls[0]?.[0]?.query).toContain('database, name')
+    expect(mockFetchData.mock.calls[1]?.[0]?.query).toContain('AS')
   })
 
   test('falls back to sequential loop when combined query fails', async () => {
@@ -100,7 +107,9 @@ describe('menu-counts API GET handler', () => {
     const response = await handler(request)
     expect(response.status).toBe(200)
 
-    const body = await response.json()
+    const body = (await response.json()) as {
+      data: { counts: Record<string, number | null> }
+    }
     expect(body.data.counts['tables-explorer']).toBe(42)
 
     // Verify it executed more queries because of fallback loop
