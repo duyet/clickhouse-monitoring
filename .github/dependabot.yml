@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned-by-SHA references fresh (e.g. duyet/llm-release-action).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
