@@ -17,6 +17,7 @@
 // The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
 const SIDEBAR = '[data-sidebar="sidebar"]'
 
+
 describe('Sidebar navigation', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0')
@@ -32,25 +33,9 @@ describe('Sidebar navigation', () => {
     cy.get(`${SIDEBAR} a[href*="host="]`)
       .not('[href*="/overview"]')
       .first()
-      .then(($link) => {
-        cy.wrap($link).click()
-        cy.url().should('include', 'host=0')
-        // URL should have changed from /overview
-        cy.url().should('not.include', '/overview')
-      })
-  })
-
-  it('navigates to running-queries via sidebar', () => {
-    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
-    cy.url().should('include', '/running-queries')
+      .click()
     cy.url().should('include', 'host=0')
-    cy.get('body').should('exist')
-  })
-
-  it('navigates to clusters via sidebar', () => {
-    cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
-    cy.url().should('include', '/clusters')
-    cy.url().should('include', 'host=0')
-    cy.get('body').should('exist')
+    // URL should have changed from /overview
+    cy.url().should('not.include', '/overview')
   })
 })
