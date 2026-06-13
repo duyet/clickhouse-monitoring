@@ -64,6 +64,37 @@ jobs:
       - name: Validate dependency boundaries
         run: bun run depcruise
 
+  # apps/dashboard-tsr is the primary app but has its own lockfile and is not
+  # part of the root turbo workspace, so nothing type-checks it in CI. Gate
+  # both the src tsconfig and the test tsconfig so type regressions surface
+  # before deploy instead of at build time.
+  type-check-tsr:
+    name: type-check-tsr
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-v1-
+
+      - name: Install dashboard-tsr dependencies
+        working-directory: apps/dashboard-tsr
+        run: bun install --frozen-lockfile
+
+      - name: Type-check dashboard-tsr (src + tests)
+        working-directory: apps/dashboard-tsr
+        run: bun run type-check && bun run type-check:test
+
   # PRs: amd64 only for fast feedback (~3-5 min)
   build-docker-pr:
     name: build-docker-pr
