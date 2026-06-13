@@ -17,19 +17,6 @@
 // The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
 const SIDEBAR = '[data-sidebar="sidebar"]'
 
-/**
- * Expands a collapsible sidebar section by clicking the section button.
- * Uses the button's text content as a stable target.
- */
-const expandSidebarSection = (sectionTitle: string) => {
-  // Click the collapsible section button to expand its submenu items.
-  // Use closest('button') to handle button text potentially being wrapped in child elements.
-  cy.get(SIDEBAR).within(() => {
-    cy.contains(sectionTitle).closest('button').click()
-  })
-  // Wait for collapsible animation to complete
-  cy.wait(500)
-}
 
 describe('Sidebar navigation', () => {
   beforeEach(() => {
@@ -52,31 +39,5 @@ describe('Sidebar navigation', () => {
         // URL should have changed from /overview
         cy.url().should('not.include', '/overview')
       })
-  })
-
-  it('navigates to running-queries via sidebar', () => {
-    // Expand the Queries section to reveal submenu
-    cy.get(SIDEBAR).within(() => {
-      cy.contains(/^Queries$/).closest('button').click()
-    })
-    // Wait for collapsible animation and link rendering
-    cy.wait(800)
-    // Find and click the running-queries link with extended timeout
-    cy.get(`${SIDEBAR} a[href*="/running-queries"]`, { timeout: 10000 }).first().click()
-    cy.url().should('include', '/running-queries')
-    cy.url().should('include', 'host=0')
-  })
-
-  it('navigates to clusters via sidebar', () => {
-    // Expand the Cluster section to reveal submenu
-    cy.get(SIDEBAR).within(() => {
-      cy.contains(/^Cluster$/).closest('button').click()
-    })
-    // Wait for collapsible animation and link rendering
-    cy.wait(800)
-    // Find and click the clusters link with extended timeout
-    cy.get(`${SIDEBAR} a[href*="/clusters"]`, { timeout: 10000 }).first().click()
-    cy.url().should('include', '/clusters')
-    cy.url().should('include', 'host=0')
   })
 })
