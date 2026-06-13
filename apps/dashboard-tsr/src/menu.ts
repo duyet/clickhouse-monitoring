@@ -85,6 +85,15 @@ export const menuItemsConfig: MenuItem[] = [
     permission: { feature: 'health' },
   },
   {
+    title: 'Running Queries',
+    href: '/running-queries',
+    countKey: 'running-queries',
+    countLabel: 'running',
+    icon: MixIcon,
+    section: 'main',
+    permission: { feature: 'queries' },
+  },
+  {
     title: 'Queries',
     href: '',
     countKey: 'running-queries',
@@ -302,6 +311,15 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/kafka',
       },
     ],
+  },
+  {
+    title: 'Clusters',
+    href: '/clusters',
+    countKey: 'clusters',
+    countLabel: 'clusters',
+    icon: UngroupIcon,
+    section: 'main',
+    permission: { feature: 'cluster' },
   },
   {
     title: 'Merges',
