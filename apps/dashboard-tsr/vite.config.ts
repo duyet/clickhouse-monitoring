@@ -376,7 +376,14 @@ const startConfig = {
     // the query string (`/queries?host=0/`) → 404 → build failure. Query-string
     // variants prerender the same HTML shell as their base path (data loads
     // client-side), and every base path is already crawled — skip them.
-    filter: (page: { path: string }) => !page.path.includes('?'),
+    //
+    // Hash-anchor hrefs (docs in-page links like `/docs/x#section`) are crawled
+    // the same way, but a literal `#` in the request path matches NO route and
+    // the prerender render hangs forever (no timeout) — this stalled the whole
+    // Docker build crawl indefinitely. Anchors are client-side only and render
+    // the identical shell as their already-crawled base path, so skip them too.
+    filter: (page: { path: string }) =>
+      !page.path.includes('?') && !page.path.includes('#'),
   },
   spa: { enabled: true },
 }
