@@ -21,8 +21,10 @@
 // Environment Detection
 // ============================================================================
 
-const isDevelopment = process.env.NODE_ENV === 'development'
-const debugEnabled = process.env.DEBUG === 'true'
+const isDevelopment =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+const debugEnabled =
+  typeof process !== 'undefined' && process.env?.DEBUG === 'true'
 
 // ============================================================================
 // Types
