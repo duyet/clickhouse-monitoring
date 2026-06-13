@@ -1,0 +1,45 @@
+# Path-based PR auto-labeling (actions/labeler v5). Labels must already exist in
+# the repo; see the label set created alongside this file.
+
+'app: dashboard-tsr':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/dashboard-tsr/**'
+
+'app: dashboard (legacy)':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/dashboard/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '**/*.mdx'
+          - 'README.md'
+          - 'CHANGELOG.md'
+
+'area: ci':
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+'area: deploy':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'deploy/**'
+          - 'Dockerfile'
+          - 'docker-compose.yml'
+
+'area: rust':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'rust/**'
+          - 'packages/clickhouse-client/src/wasm/**'
+
+'area: packages':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/**'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/package.json'
+          - 'bun.lock'

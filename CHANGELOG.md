@@ -1,6 +1,50 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+All notable changes to this project are documented in this file. Versioned
+entries are generated automatically by [release-please](.github/workflows/release-please.yml)
+from conventional commits; the `Unreleased` section below is a human-curated
+preview of the next release.
+
+## [Unreleased] — v0.3 preview
+
+> **v0.3 rebuilds the dashboard on TanStack Start.** Full upgrade steps:
+> [Migrate to v0.3](docs/content/migrating/v0-3.mdx) ·
+> What's new: [Release notes](docs/content/releases/v0-3.mdx).
+
+### 💥 Breaking Changes
+
+- **Runtime app switched from Next.js to TanStack Start** (`apps/dashboard-tsr`
+  replaces `apps/dashboard` as the primary app). Same features, routes, and
+  ClickHouse setup.
+- **Browser env vars renamed `NEXT_PUBLIC_*` → `VITE_*`** (build-time inlined).
+  The old `NEXT_PUBLIC_*` names still work as a compatibility fallback, so the
+  rename is recommended but not required.
+- **Docker entrypoint changed** from `node server.js` (OpenNext standalone) to
+  `node server/index.mjs` (Nitro node-server). Port `3000` and the
+  `/api/healthz` healthcheck are unchanged.
+
+### 🔧 Environment Changes
+
+| Old (v0.2) | New (v0.3) | Notes |
+|---|---|---|
+| `NEXT_PUBLIC_AUTH_PROVIDER` | `VITE_AUTH_PROVIDER` | client; server uses `CHM_AUTH_PROVIDER` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `VITE_CLERK_PUBLISHABLE_KEY` | client, build-time |
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | `VITE_FEATURE_CONVERSATION_DB` | client, build-time |
+| `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | `VITE_AUTOCOMPLETE_LIMIT` | client, build-time |
+| `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | `VITE_RUNNING_QUERIES_REFRESH_MS` | client, build-time |
+| `CLICKHOUSE_*`, `CHM_*`, `CLERK_SECRET_KEY`, `*_API_KEY` | _unchanged_ | server vars |
+
+New optional vars: `CHM_AUTH_PROVIDER` (`none\|clerk\|proxy`), `CHM_API_KEY_SECRET`,
+`CHM_CF_ACCESS_TEAM_DOMAIN` + `CHM_CF_ACCESS_AUD`, `CHM_PROXY_AUTH_SECRET`,
+`HEALTH_ALERT_ENABLED` + `HEALTH_ALERT_WEBHOOK_URL`,
+`AGENT_CONVERSATION_PERSISTENCE` + `AGENT_CONVERSATION_STORE`.
+
+### 🤖 Migrate with an AI assistant
+
+Paste your config into any AI assistant with the prompt in
+[`.github/release-migration-prompt.md`](.github/release-migration-prompt.md)
+(also published in every breaking-change GitHub Release and in the
+[README](README.md#upgrading-to-v03)).
 
 ## [0.2.7](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.6...v0.2.7) (2026-06-13)
 
