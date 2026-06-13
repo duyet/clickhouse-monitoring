@@ -41,6 +41,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
+    // Running Queries is inside the collapsible "Queries" menu, so expand it first
+    cy.get(`${SIDEBAR} button:has-text("Queries")`).first().click()
     cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
@@ -48,6 +50,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to clusters via sidebar', () => {
+    // Clusters is inside the collapsible "Cluster" menu, so expand it first
+    cy.get(`${SIDEBAR} button:has-text("Cluster")`).first().click()
     cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
