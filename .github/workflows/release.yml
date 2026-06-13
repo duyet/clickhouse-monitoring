@@ -288,6 +288,11 @@ jobs:
     needs: docker-manifest
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # Optional AnyRouter fallback for the LLM release-notes summary. The job
+      # silently skips it when the secret is absent.
+      ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
+      ANYROUTER_MODEL: ${{ vars.ANYROUTER_MODEL || 'openai/gpt-4o-mini' }}
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
     steps:
@@ -349,6 +354,17 @@ jobs:
             bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
+      - name: Build release recap
+        id: recap
+        continue-on-error: true
+        env:
+          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
+          if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
+          RANGE="$RANGE" PREVIOUS_TAG="$PREV" node scripts/release-recap.mjs
+
       - name: Build AI summary prompt
         id: ai_prompt
         env:
@@ -357,11 +373,13 @@ jobs:
           PREV="$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null || git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')"
           if [ -n "$PREV" ]; then RANGE="$PREV..HEAD"; else RANGE="HEAD"; fi
           COMMITS="$(git log --pretty=format:'- %s' "$RANGE")"
+          RECAP="$( [ -f recap-facts.txt ] && cat recap-facts.txt || echo 'unavailable' )"
           # Render the tracked template prompt (.github/release-notes-prompt.md)
           # so the changelog style stays consistent and reviewable in-repo.
           TEMPLATE="$(cat .github/release-notes-prompt.md)"
           TEMPLATE="${TEMPLATE//\{\{RELEASE_TAG\}\}/$RELEASE_TAG}"
           TEMPLATE="${TEMPLATE//\{\{RANGE\}\}/$RANGE}"
+          TEMPLATE="${TEMPLATE//\{\{RECAP\}\}/$RECAP}"
           printf '%s' "${TEMPLATE//\{\{COMMITS\}\}/$COMMITS}" > ai-prompt.txt
           echo "previous_tag=$PREV" >> "$GITHUB_OUTPUT"
           # Decide whether to append the migration prompt: any non-patch bump
@@ -372,20 +390,80 @@ jobs:
           if git log --pretty=format:'%B' "$RANGE" | grep -qE '(^|\W)BREAKING CHANGE|!:'; then MIGRATION=true; fi
           echo "migration=$MIGRATION" >> "$GITHUB_OUTPUT"
 
-      - name: Generate AI summary
-        id: ai_summary
+      # LLM-generated summary. Tiered providers, each best-effort so the release
+      # never fails on inference: GitHub Copilot → GitHub Models → AnyRouter
+      # (the AnyRouter tier only runs when an ANYROUTER_API_KEY secret is set).
+      - name: AI summary (GitHub Copilot)
+        id: ai_copilot
         continue-on-error: true
         uses: actions/ai-inference@v2
         with:
-          prompt-file: ai-prompt.txt
-          system-prompt: 'You are a release-notes assistant. Output only markdown grouped by the headings the prompt specifies, omitting empty sections. Be concise and accurate, and never invent changes that are not in the commit list.'
+          provider: copilot
           model: openai/gpt-4o
+          prompt-file: ai-prompt.txt
+          system-prompt-file: .github/release-notes-system-prompt.md
+
+      - name: AI summary (GitHub Models)
+        id: ai_models
+        if: ${{ steps.ai_copilot.outputs.response == '' }}
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          provider: github-models
+          model: openai/gpt-4o
+          prompt-file: ai-prompt.txt
+          system-prompt-file: .github/release-notes-system-prompt.md
+
+      - name: AI summary (AnyRouter fallback)
+        id: ai_anyrouter
+        if: ${{ steps.ai_copilot.outputs.response == '' && steps.ai_models.outputs.response == '' && env.ANYROUTER_API_KEY != '' }}
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          endpoint: https://anyrouter.dev/api/v1
+          token: ${{ secrets.ANYROUTER_API_KEY }}
+          model: ${{ env.ANYROUTER_MODEL }}
+          prompt-file: ai-prompt.txt
+          system-prompt-file: .github/release-notes-system-prompt.md
+          # App attribution per AnyRouter docs: stable source slug + title +
+          # release version + a valid marketplace category.
+          custom-headers: |
+            {
+              "X-AnyRouter-Source": "chmonitor",
+              "X-AnyRouter-Title": "CHMonitor",
+              "X-AnyRouter-Version": "${{ steps.meta.outputs.tag }}",
+              "X-AnyRouter-Categories": "programming-app"
+            }
+
+      - name: Resolve AI summary
+        id: ai_summary
+        env:
+          COPILOT_FILE: ${{ steps.ai_copilot.outputs.response-file }}
+          MODELS_FILE: ${{ steps.ai_models.outputs.response-file }}
+          ANYROUTER_FILE: ${{ steps.ai_anyrouter.outputs.response-file }}
+        run: |
+          if [ -n "$COPILOT_FILE" ] && [ -s "$COPILOT_FILE" ]; then
+            cp "$COPILOT_FILE" ai-summary.md; PROVIDER=copilot
+          elif [ -n "$MODELS_FILE" ] && [ -s "$MODELS_FILE" ]; then
+            cp "$MODELS_FILE" ai-summary.md; PROVIDER=github-models
+          elif [ -n "$ANYROUTER_FILE" ] && [ -s "$ANYROUTER_FILE" ]; then
+            cp "$ANYROUTER_FILE" ai-summary.md; PROVIDER=anyrouter
+          else
+            : > ai-summary.md; PROVIDER=
+          fi
+          echo "provider=$PROVIDER" >> "$GITHUB_OUTPUT"
 
       - name: Generate release notes
         env:
-          AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
+          AI_PROVIDER: ${{ steps.ai_summary.outputs.provider }}
           PREVIOUS_TAG: ${{ steps.ai_prompt.outputs.previous_tag }}
-        run: bun run --silent release:notes > release-notes.md
+          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+          DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          DOCKER_EXTRA_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
+        run: |
+          export AI_SUMMARY="$(cat ai-summary.md)"
+          export RECAP_MD="$( [ -f recap.md ] && cat recap.md || echo '' )"
+          bun run --silent release:notes > release-notes.md
 
       - name: Append migration prompt
         if: steps.ai_prompt.outputs.migration == 'true'
@@ -439,4 +517,5 @@ jobs:
             "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
             SHA256SUMS \
             release-notes.md \
+            recap.md \
             --clobber
