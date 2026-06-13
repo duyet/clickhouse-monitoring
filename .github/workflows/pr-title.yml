@@ -1,0 +1,36 @@
+name: PR Title
+
+# Squash-merges use the PR title as the commit message, and release-please reads
+# those commits to bump the version and group the changelog. An invalid title is
+# silently dropped from the release, so validate it against the SAME
+# commitlint.config.js the local husky hook uses — one source of truth.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-title:
+    name: conventional-title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Validate PR title is a conventional commit
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Validating PR title: $PR_TITLE"
+          echo "$PR_TITLE" | bunx --bun commitlint --config commitlint.config.js

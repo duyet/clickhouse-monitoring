@@ -3,7 +3,13 @@
 [![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
 [![All-time uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fduyet%2Fuptime%2FHEAD%2Fapi%2Fclickhouse-monitoring-vercel-app%2Fuptime.json)](https://duyet.github.io/uptime/history/clickhouse-monitoring-vercel-app)
 
-A modern Next.js 15 dashboard that provides real-time insights into ClickHouse clusters through system tables. Features static site generation with client-side data fetching for optimal performance and CDN caching.
+A modern dashboard (TanStack Start, as of **v0.3**) that provides real-time insights into ClickHouse clusters through system tables. Every page is pre-rendered at build time with client-side data fetching for optimal performance and CDN caching.
+
+> **Upgrading from v0.2?** v0.3 rebuilds the app on TanStack Start. ClickHouse
+> connection vars are unchanged; browser vars move from `NEXT_PUBLIC_*` to
+> `VITE_*` (old names still work as a fallback). See
+> **[Upgrading to v0.3](#upgrading-to-v03)** below or the full
+> [Migrate to v0.3](https://duyet.github.io/clickhouse-monitoring/migrating/v0-3) guide.
 
 <p align="center">
   <strong>Live:</strong> <a href="https://dash.chmonitor.dev/?ref=github">dash.chmonitor.dev</a> | <a href="https://chmonitor.dev/?ref=github">chmonitor.dev</a> | <a href="#screenshots">Screenshots</a>
@@ -138,6 +144,59 @@ Tagged releases are built by GitHub Actions from tags matching `v*`. The release
 - generated release notes with CLI command usage, Docker tags, deployment steps, and checksums
 
 For repeatable Docker deploys, prefer the versioned image tag from the release page instead of `latest`.
+
+## Upgrading to v0.3
+
+v0.3 rebuilds the dashboard on **TanStack Start**. Features, routes, and
+ClickHouse setup carry over unchanged. The only env change is the browser
+variable prefix, and the old names keep working:
+
+| Concern | v0.2 (Next.js) | v0.3 (TanStack Start) |
+|---|---|---|
+| Browser var prefix | `NEXT_PUBLIC_*` | `VITE_*` _(old names still work)_ |
+| Auth provider (client) | `NEXT_PUBLIC_AUTH_PROVIDER` | `VITE_AUTH_PROVIDER` |
+| Clerk key (client) | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `VITE_CLERK_PUBLISHABLE_KEY` |
+| Auth provider (server) | derived from client var | `CHM_AUTH_PROVIDER` (`none\|clerk\|proxy`) |
+| Docker entrypoint | `node server.js` | `node server/index.mjs` |
+| ClickHouse vars | `CLICKHOUSE_HOST/USER/PASSWORD/NAME` | **unchanged** |
+
+`VITE_*` vars are **build-time inlined** — set them when building the image/Worker,
+not only at runtime. Full per-platform steps:
+[Migrate to v0.3](https://duyet.github.io/clickhouse-monitoring/migrating/v0-3).
+
+### Migrate your config with an AI assistant
+
+Paste your current configuration (`.env`, `docker-compose.yml`, Helm
+`values.yaml`, or a k8s manifest) into any AI assistant with the prompt below.
+It applies the v0.3 rename rules and returns the migrated config plus a summary
+of what changed. This same prompt ships in every breaking-change GitHub Release
+and is kept in sync from [`.github/release-migration-prompt.md`](.github/release-migration-prompt.md).
+
+```text
+You are migrating a chmonitor deployment from v0.2 (Next.js) to v0.3 (TanStack Start).
+Here is my current environment (.env / docker-compose / wrangler / k8s manifest):
+
+<PASTE YOUR ENV HERE>
+
+Rewrite it for v0.3 applying EXACTLY these rules, and output the migrated config
+plus a short list of what you changed:
+
+1. Rename every client var prefix NEXT_PUBLIC_ -> VITE_. Specifically:
+   NEXT_PUBLIC_AUTH_PROVIDER          -> VITE_AUTH_PROVIDER
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY  -> VITE_CLERK_PUBLISHABLE_KEY
+   NEXT_PUBLIC_FEATURE_CONVERSATION_DB-> VITE_FEATURE_CONVERSATION_DB
+   (any other NEXT_PUBLIC_X -> VITE_X). The old names still work as a fallback.
+2. Add server-side auth var CHM_AUTH_PROVIDER (none|clerk|proxy) mirroring the
+   client provider. It is authoritative on the server; keep VITE_AUTH_PROVIDER too.
+3. Do NOT rename server vars: CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD,
+   CLICKHOUSE_NAME, CLICKHOUSE_MAX_EXECUTION_TIME, CLERK_SECRET_KEY, *_API_KEY — keep as-is.
+4. VITE_* vars are build-time inlined: ensure they are present at image/Worker BUILD
+   time (Docker build-args or CI build env), not only at container runtime.
+5. If this is a Docker deployment, change the container start command from
+   `node server.js` to `node server/index.mjs`. Port 3000 and the /api/healthz
+   healthcheck are unchanged.
+6. Flag anything that has no v0.3 equivalent instead of silently dropping it.
+```
 
 ## Documentation
 
