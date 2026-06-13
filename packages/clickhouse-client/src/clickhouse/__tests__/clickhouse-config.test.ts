@@ -225,7 +225,7 @@ describe('getAndValidateClientConfig', () => {
 describe('redactHostCredentials', () => {
   it('should leave host without credentials unchanged', () => {
     expect(redactHostCredentials('http://localhost:8123')).toBe(
-      'http://localhost:8123/'
+      'http://localhost:8123'
     )
   })
 
@@ -238,6 +238,24 @@ describe('redactHostCredentials', () => {
   it('should redact credentials from https URL', () => {
     expect(redactHostCredentials('https://user:pass123@clickhouse.prod')).toBe(
       'https://***:***@clickhouse.prod/'
+    )
+  })
+
+  it('should redact password-only credentials (:pass@)', () => {
+    expect(redactHostCredentials('https://:secret@clickhouse.prod:8123')).toBe(
+      'https://:***@clickhouse.prod:8123/'
+    )
+  })
+
+  it('should redact username-only credentials (user@)', () => {
+    expect(redactHostCredentials('https://user@clickhouse.prod:8123')).toBe(
+      'https://***@clickhouse.prod:8123/'
+    )
+  })
+
+  it('should redact credentials from URL without protocol', () => {
+    expect(redactHostCredentials('admin:secret@clickhouse.prod:8123')).toBe(
+      '***:***@clickhouse.prod:8123'
     )
   })
 

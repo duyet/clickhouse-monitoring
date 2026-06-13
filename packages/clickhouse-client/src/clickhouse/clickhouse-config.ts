@@ -18,17 +18,33 @@ export { _resetEnvCache }
  * Redacts username and password credentials from a ClickHouse host URL string
  */
 export function redactHostCredentials(urlStr: string): string {
+  // Fast-path: no '@' means no credentials to redact.
+  if (!urlStr.includes('@')) {
+    return urlStr
+  }
   try {
     const url = new URL(urlStr)
-    if (url.username || url.password) {
-      url.username = '***'
-      url.password = '***'
+    // Only trust the parse result for http/https — other inputs (e.g.
+    // "admin:secret@host") are silently parsed with "admin:" as the scheme
+    // and no username/password, so we fall through to the regex path.
+    if (url.protocol === 'http:' || url.protocol === 'https:') {
+      if (url.username) url.username = '***'
+      if (url.password) url.password = '***'
+      return url.toString()
     }
-    return url.toString()
   } catch {
-    // Fallback regex if URL constructor fails (e.g. for incomplete or relative hosts)
-    return urlStr.replace(/(https?:\/\/)([^:]+):([^@]+)@/, '$1***:***@')
+    // URL constructor threw — fall through to regex below.
   }
+  // Fallback for URLs without a recognized protocol (e.g. "admin:secret@host:8123").
+  // Handles user:pass@, :pass@ (password-only), and user@ (username-only).
+  return urlStr.replace(
+    /(?:(https?:\/\/))?([^:@]*)(?::([^@]*))?@/,
+    (_, proto, user, pass) => {
+      const redactedUser = user ? '***' : ''
+      const redactedPass = pass !== undefined ? ':***' : ''
+      return `${proto ?? ''}${redactedUser}${redactedPass}@`
+    }
+  )
 }
 
 /**
