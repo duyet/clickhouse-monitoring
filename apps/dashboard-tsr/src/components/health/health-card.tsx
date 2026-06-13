@@ -23,7 +23,8 @@ function StatusDot({ status }: { status: HealthStatus }) {
         status === 'loading' && 'bg-muted animate-pulse',
         status === 'error' && 'bg-muted'
       )}
-      aria-label={status}
+      role="img"
+      aria-label={`Status: ${status}`}
     />
   )
 }
