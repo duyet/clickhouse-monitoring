@@ -6,8 +6,6 @@
  * Skips if the last cleanup happened within QUERY_CLEANUP_MAX_DURATION_SECONDS.
  *
  * Ported from apps/dashboard/app/api/clean/route.ts.
- * - Per-route feature-permission auth (authorizeFeatureRequest) is DROPPED:
- *   centralized in middleware (#1397).
  * - ErrorLogger replaced with @chm/logger debug/error.
  */
 
@@ -18,6 +16,7 @@ import { getClient } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { EVENTS_TABLE } from '@/lib/app-tables'
+import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = () => process.env.CLICKHOUSE_USER || ''
@@ -166,6 +165,10 @@ export const Route = createFileRoute('/api/clean')({
     handlers: {
       POST: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+        bridgeApiKeyEnv(env as Record<string, string | undefined>)
+
+        const authFailure = await enforceAuth(request)
+        if (authFailure) return authFailure
 
         const searchParams = new URL(request.url).searchParams
         const hostIdRaw = searchParams.get('hostId')
@@ -191,7 +194,7 @@ export const Route = createFileRoute('/api/clean')({
         } catch (err) {
           error('[/api/clean] Handler error', err as Error)
           return Response.json(
-            { status: false, error: String(err) },
+            { status: false, error: 'Internal server error' },
             { status: 500 }
           )
         }

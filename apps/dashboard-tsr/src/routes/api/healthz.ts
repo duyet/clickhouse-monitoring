@@ -6,6 +6,7 @@ import { env } from 'cloudflare:workers'
 // @clickhouse/client (node:os/node:stream/TCP) — excluded from the worker
 // bundle in vite.config.ts.
 import { getClient } from '@chm/clickhouse-client'
+import { error as logError } from '@chm/logger'
 import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'
 
 // Mirrors @chm/clickhouse-client getClickHouseConfigs(), but sources the
@@ -63,12 +64,13 @@ export const Route = createFileRoute('/api/healthz')({
                 latencyMs: Date.now() - start,
               }
             } catch (err) {
+              logError('[/api/healthz] host check failed', err as Error)
               return {
                 host: config.host,
                 name: config.customName,
                 status: 'down' as const,
                 latencyMs: Date.now() - start,
-                error: err instanceof Error ? err.message : String(err),
+                error: 'Connection failed',
               }
             }
           })

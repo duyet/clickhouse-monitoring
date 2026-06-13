@@ -17,9 +17,27 @@
 - **Priority**: P3
 - **Effort**: S
 - **Risk**: LOW
-- **Depends on**: none
+- **Depends on**: **015** (decommission legacy Next.js dashboard) + removal of the runtime shim
 - **Category**: tech-debt
 - **Planned at**: commit `3fba89acc`, 2026-06-13
+- **State**: BLOCKED (2026-06-14)
+
+> **BLOCKED — under-scoped.** A pre-flight grep for `QueryConfigVariant` (the type,
+> not the noisy `variants:` cva property) found two live consumers outside this
+> plan's in-scope list:
+>
+> 1. **Runtime shim** — `packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts`
+>    (~L227–245) reads `queryConfig.variants` and routes it through
+>    `selectQueryVariantSemver(...)`. This is live runtime code, not a type or test.
+> 2. **Legacy app** — `apps/dashboard/types/query-config.ts` still imports and
+>    re-exports `QueryConfigVariant` from `@chm/sql-builder` and declares
+>    `variants?: QueryConfigVariant[]`. Removing the export breaks its typecheck.
+>
+> Removing the type per this plan would break the build. Before this plan can run:
+> delete the runtime shim in `clickhouse-fetch.ts` (after confirming no deployed
+> config ships a `variants` array), and complete plan 015 (decommission
+> `apps/dashboard`). Expand the in-scope list to include `clickhouse-fetch.ts`
+> when unblocking.
 
 ## Why this matters
 

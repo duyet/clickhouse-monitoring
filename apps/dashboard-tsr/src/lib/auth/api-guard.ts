@@ -177,6 +177,48 @@ export async function getApiKeyAuthFailure(
 }
 
 /**
+ * Enforce auth for a single request, regardless of path prefix.
+ *
+ * Same logic as `getApiKeyAuthFailure` minus the `/api/v1/` prefix gate and
+ * minus the key-issuance exemption. Use this to protect non-`/api/v1/` state-
+ * changing endpoints (e.g. `/api/clean`, `/api/init`, `/api/pageview`).
+ *
+ * Returns a 401/403 Response on failure, or `null` to allow the request.
+ * When provider is `none` AND API-key auth is off, always returns `null`
+ * (anonymous is allowed — public dashboard).
+ *
+ * `bridgeApiKeyEnv` must have been called by the caller (start.ts) before
+ * invoking this, so the env binding is visible to process.env-based helpers on
+ * Workers.
+ */
+export async function enforceAuth(request: Request): Promise<Response | null> {
+  // Public passthrough when the dashboard is fully open.
+  if (getAuthProvider() === 'none' && !apiKeyAuthEnabled()) return null
+
+  // 1. Programmatic clients: a valid `chm_` Bearer token.
+  const headerToken = getBearerToken(request.headers.get('authorization'))
+  if (headerToken) {
+    const result = await verifyApiKey(headerToken)
+    if (result.valid) return null
+  }
+
+  // 2. The active auth provider (clerk session, proxy identity, …).
+  const provider = getAuthProvider()
+  if (
+    provider !== 'none' &&
+    (await resolveServerAuthProvider(provider).authenticateRequest(request))
+      .authenticated
+  ) {
+    return null
+  }
+
+  // Opt-in public read-only mode (clerk only).
+  if (provider === 'clerk' && publicReadEnabled()) return null
+
+  return jsonError('Authentication required', 401)
+}
+
+/**
  * Resolve the auth-guard response for a request, or `null` to proceed.
  *
  * Order mirrors the Next middleware:
