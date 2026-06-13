@@ -58,4 +58,4 @@ curl -X POST https://your-host/api/v1/agent \
 - Use a **read-only ClickHouse user** scoped to the system tables the dashboard needs.
 - Keep **control tools off** (`AGENT_ENABLE_CONTROL_TOOLS=false`, the default) unless you trust the user and need kill/optimize.
 - On public deployments, **require authentication**: `CHM_FEATURE_AGENT_ACCESS=authenticated`.
-- Keep LLM keys **server-side** — never in `VITE_*` or `NEXT_PUBLIC_*` variables.
+- Keep LLM keys **server-side** — never in `VITE_*` variables (those are baked into browser JS at build time).
