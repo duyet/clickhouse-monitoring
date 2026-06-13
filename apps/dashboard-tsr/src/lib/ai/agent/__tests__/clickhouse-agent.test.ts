@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, mock, test } from 'bun:test'
 
 // Mock server-only to allow importing server modules in test environment

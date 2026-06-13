@@ -41,10 +41,10 @@ mock.module('@/lib/utils', () => ({
 // Shared mock functions — tests customize via mockImplementation()
 export const mockFetchData = mock(
   async (_params: { query: string; hostId?: number }) => ({
-    data: [],
+    data: [] as any[],
     error: null,
   })
-)
+) as any
 
 mock.module('@chm/clickhouse-client', () => ({
   fetchData: mockFetchData,

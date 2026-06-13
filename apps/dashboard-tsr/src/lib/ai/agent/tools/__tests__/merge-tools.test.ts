@@ -19,7 +19,7 @@ const { createMergeTools } = await import('../merge-tools')
 
 describe('createMergeTools', () => {
   test('creates all merge tools', () => {
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     expect(tools.get_merge_status).toBeDefined()
     expect(tools.get_mutations).toBeDefined()
     expect(tools.get_merge_performance).toBeDefined()
@@ -38,7 +38,7 @@ describe('createMergeTools', () => {
     ]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_merge_status.execute({})
 
     expect(result).toEqual([
@@ -56,7 +56,7 @@ describe('createMergeTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_merge_status.execute({})
 
     expect(result).toEqual([])
@@ -82,7 +82,7 @@ describe('createMergeTools', () => {
     ]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_mutations.execute({})
 
     expect(result).toHaveLength(2)
@@ -93,7 +93,7 @@ describe('createMergeTools', () => {
     queryStore.mutations = [{ database: 'analytics', mutation_id: 'm1' }]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_mutations.execute({ database: 'analytics' })
 
     expect(result).toHaveLength(1)
@@ -104,7 +104,7 @@ describe('createMergeTools', () => {
     queryStore.mutations = [{ mutation_id: 'm1', is_done: 1 }]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_mutations.execute({ isDone: true })
 
     expect(result).toHaveLength(1)
@@ -115,7 +115,7 @@ describe('createMergeTools', () => {
     queryStore.mutations = [{ mutation_id: 'm1' }]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_mutations.execute({ limit: 10 })
 
     expect(result).toHaveLength(1)
@@ -133,7 +133,7 @@ describe('createMergeTools', () => {
     ]
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_merge_performance.execute({})
 
     expect(result).toHaveLength(1)
@@ -145,7 +145,7 @@ describe('createMergeTools', () => {
     queryStore.part_log = []
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_merge_performance.execute({ lastHours: 48 })
 
     expect(result).toEqual([])
@@ -155,7 +155,7 @@ describe('createMergeTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupMergeMocks()
 
-    const tools = createMergeTools(0)
+    const tools = createMergeTools(0) as any
     const result = await tools.get_merge_status.execute({ hostId: 2 })
     expect(Array.isArray(result)).toBe(true)
   })

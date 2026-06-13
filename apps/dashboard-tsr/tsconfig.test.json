@@ -1,0 +1,64 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "@cloudflare/workers-types", "vite/client"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@chm/sql-builder": ["../../packages/sql-builder/src/index.ts"],
+      "@chm/logger": ["../../packages/logger/src/index.ts"],
+      "@chm/clickhouse-client": [
+        "../../packages/clickhouse-client/src/index.ts"
+      ],
+      "@chm/clickhouse-client/runtime/cloudflare-workers": [
+        "../../packages/clickhouse-client/src/runtime/cloudflare-workers.ts"
+      ],
+      "@chm/clickhouse-client/clickhouse-version": [
+        "../../packages/clickhouse-client/src/clickhouse-version.ts"
+      ],
+      "@chm/clickhouse-client/constants": [
+        "../../packages/clickhouse-client/src/clickhouse/constants.ts"
+      ],
+      "@chm/clickhouse-client/table-existence-cache": [
+        "../../packages/clickhouse-client/src/table-existence-cache.ts"
+      ],
+      "@chm/types": ["../../packages/types/src/index.ts"],
+      "@chm/types/*": ["../../packages/types/src/*"],
+      "@chm/mcp-server/http": ["../../packages/mcp-server/src/http.ts"],
+      "@chm/mcp-server/data": [
+        "../../packages/mcp-server/src/data/mcp-tools-data.ts"
+      ],
+      "@chm/mcp-server/auth": ["../../packages/mcp-server/src/auth/index.ts"],
+      "@chm/platform": ["./src/lib/platform-native.ts"],
+      "@modelcontextprotocol/sdk/server/mcp.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.d.ts"
+      ],
+      "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js": [
+        "./node_modules/@modelcontextprotocol/sdk/dist/esm/server/webStandardStreamableHttp.d.ts"
+      ],
+      "zod/v3": ["./node_modules/zod/v3/index.d.ts"],
+      "@clickhouse/client": ["./node_modules/@clickhouse/client"],
+      "@clickhouse/client-web": [
+        "./node_modules/@clickhouse/client-web/dist/index.d.ts"
+      ],
+      "zod": ["./node_modules/zod"],
+      "lru-cache": ["./node_modules/lru-cache"],
+      "lucide-react": ["./node_modules/lucide-react"],
+      "@radix-ui/react-icons": ["./node_modules/@radix-ui/react-icons"],
+      "@radix-ui/react-icons/dist/types": [
+        "./node_modules/@radix-ui/react-icons/dist/types"
+      ],
+      "bun:test": ["./node_modules/bun-types/test.d.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".output",
+    ".wrangler",
+    ".turbo",
+    "coverage",
+    "cypress",
+    "cypress.config.ts"
+  ]
+}
