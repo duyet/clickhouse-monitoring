@@ -326,32 +326,46 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
 
+      # apps/dashboard-tsr is an ISOLATED install (own bun.lock, not in the root
+      # workspace), mirroring the Dockerfile. Install inside the app dir.
       - name: Install dependencies
+        working-directory: apps/dashboard-tsr
         run: bun install --frozen-lockfile
 
-      - name: Build Cloudflare output
+      # Standalone = the Nitro node-server output (.output). Use the build:node:ci
+      # wrapper, NOT a bare vite build: the prerender finishes but the process
+      # never exits (nitro's render server leaves a socket open), so a plain
+      # `bun run build:node` would hang. The wrapper reaps it once artifacts land.
+      - name: Build standalone (Node) output
         env:
-          NEXT_PUBLIC_GIT_SHA: ${{ github.sha }}
-          NEXT_PUBLIC_GIT_REF: ${{ steps.meta.outputs.tag }}
-          NEXT_PUBLIC_BUILD_TIMESTAMP: ${{ github.event.repository.updated_at }}
-          NEXT_PUBLIC_CI: "true"
-        working-directory: apps/dashboard
-        run: bun run cf:build
+          VITE_GIT_SHA: ${{ github.sha }}
+          VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
+          VITE_CI: "true"
+        working-directory: apps/dashboard-tsr
+        run: bun run build:node:ci
+
+      # Cloudflare = the workerd bundle (dist/) from the default vite build. This
+      # target uses @cloudflare/vite-plugin (not nitro) and exits cleanly.
+      - name: Build Cloudflare (Workers) output
+        env:
+          VITE_GIT_SHA: ${{ github.sha }}
+          VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
+          VITE_CI: "true"
+        working-directory: apps/dashboard-tsr
+        run: bunx vite build
 
       - name: Package release archives
         run: |
           TAG="${{ steps.meta.outputs.tag }}"
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
-            apps/dashboard/.next/standalone \
-            apps/dashboard/.next/static \
-            apps/dashboard/public \
-            apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard-tsr/.output \
+            apps/dashboard-tsr/package.json \
+            apps/dashboard-tsr/bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
-            apps/dashboard/.open-next \
-            apps/dashboard/wrangler.toml \
-            apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard-tsr/dist \
+            apps/dashboard-tsr/wrangler.toml \
+            apps/dashboard-tsr/package.json \
+            apps/dashboard-tsr/bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
       - name: Build release recap
