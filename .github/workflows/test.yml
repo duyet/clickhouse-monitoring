@@ -67,15 +67,23 @@ jobs:
         working-directory: apps/dashboard-tsr
         run: bun install --frozen-lockfile
 
-      - name: Run dashboard-tsr unit tests
+      - name: Run dashboard-tsr unit tests with coverage
         working-directory: apps/dashboard-tsr
-        run: bun run test
+        run: bun run test:coverage
 
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
           files: ./apps/dashboard/coverage/lcov.info,./coverage/lcov.info
           flags: bun
+          fail_ci_if_error: true
+          use_oidc: true
+
+      - name: Upload dashboard-tsr coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./apps/dashboard-tsr/coverage/lcov.info
+          flags: dashboard-tsr
           fail_ci_if_error: true
           use_oidc: true
 
