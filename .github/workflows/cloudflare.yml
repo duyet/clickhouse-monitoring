@@ -58,7 +58,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.94.0
+        uses: dtolnay/rust-toolchain@1.100.0
 
       - name: Bun Cache
         uses: actions/cache@v5
@@ -461,7 +461,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.94.0
+        uses: dtolnay/rust-toolchain@1.100.0
 
       - name: Bun Cache
         uses: actions/cache@v5
