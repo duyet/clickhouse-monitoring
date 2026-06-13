@@ -33,11 +33,9 @@ describe('Sidebar navigation', () => {
     cy.get(`${SIDEBAR} a[href*="host="]`)
       .not('[href*="/overview"]')
       .first()
-      .then(($link) => {
-        cy.wrap($link).click()
-        cy.url().should('include', 'host=0')
-        // URL should have changed from /overview
-        cy.url().should('not.include', '/overview')
-      })
+      .click()
+    cy.url().should('include', 'host=0')
+    // URL should have changed from /overview
+    cy.url().should('not.include', '/overview')
   })
 })
