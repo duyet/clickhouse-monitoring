@@ -55,18 +55,32 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    // Running Queries is inside the collapsible "Queries" menu
-    expandSidebarSection('Queries')
-    // Find and click the running-queries link (Cypress retries automatically)
+    // Try to find the running-queries link directly; if not found, expand the Queries section
+    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).then(($link) => {
+      if ($link.length === 0) {
+        // Link not visible, expand the Queries section
+        cy.get(SIDEBAR).within(() => {
+          cy.contains(/Queries/).closest('button').click()
+        })
+        cy.wait(500)
+      }
+    })
     cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
   })
 
   it('navigates to clusters via sidebar', () => {
-    // Clusters is inside the collapsible "Cluster" menu
-    expandSidebarSection('Cluster')
-    // Find and click the clusters link (Cypress retries automatically)
+    // Try to find the clusters link directly; if not found, expand the Cluster section
+    cy.get(`${SIDEBAR} a[href*="/clusters"]`).then(($link) => {
+      if ($link.length === 0) {
+        // Link not visible, expand the Cluster section
+        cy.get(SIDEBAR).within(() => {
+          cy.contains(/Cluster/).closest('button').click()
+        })
+        cy.wait(500)
+      }
+    })
     cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
