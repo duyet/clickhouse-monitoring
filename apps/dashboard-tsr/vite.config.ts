@@ -487,6 +487,12 @@ export default defineConfig({
       '@chm/types',
       '@chm/mcp-server',
       '@clickhouse/client-web',
+      // client-web's runtime dep. Must be bundled alongside it: the node-server
+      // image ships only .output (no node_modules), so a dep left externalized
+      // here is absent at runtime. This was the validate-docker timeout cause
+      // (container running but every route threw
+      // "Cannot find module '@clickhouse/client-common'").
+      '@clickhouse/client-common',
       '@modelcontextprotocol/sdk',
       'lru-cache',
       'zod',
