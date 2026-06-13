@@ -23,7 +23,10 @@ const SIDEBAR = '[data-sidebar="sidebar"]'
  */
 const expandSidebarSection = (sectionTitle: string) => {
   // Click the collapsible section button to expand its submenu items
-  cy.contains(`${SIDEBAR} button`, sectionTitle).first().click()
+  // Use within() to scope the search to the sidebar for more reliable element selection
+  cy.get(SIDEBAR).within(() => {
+    cy.contains('button', sectionTitle).click()
+  })
 }
 
 describe('Sidebar navigation', () => {
