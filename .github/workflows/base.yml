@@ -263,8 +263,18 @@ jobs:
             -e PORT=3000 \
             "$TAG"
 
-          # Wait for container health
-          timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'
+          # Wait for container health. On timeout, dump container logs + state so
+          # a boot hang is diagnosable instead of a bare "exit code 124" with no
+          # clue why / never answered (this step runs under `set -e`).
+          if ! timeout 60 bash -c 'until curl -sSf http://localhost:3000/ > /dev/null 2>&1; do sleep 2; done'; then
+            echo "::error::test-app did not serve http://localhost:3000/ within 60s"
+            docker ps -a --filter name=test-app --format 'table {{.Names}}\t{{.Status}}'
+            docker inspect test-app \
+              --format 'state={{.State.Status}} exitCode={{.State.ExitCode}} startedAt={{.State.StartedAt}} finishedAt={{.State.FinishedAt}} error={{.State.Error}}' 2>/dev/null || true
+            echo '----- docker logs (last 200 lines) -----'
+            docker logs --tail 200 test-app 2>&1 || true
+            exit 1
+          fi
 
           # Health checks
           curl -sSf http://localhost:3000/ | grep -q "chmonitor"
