@@ -323,3 +323,6 @@ jobs:
       - name: Test queries config
         working-directory: apps/dashboard
         run: bun run test:query-config
+
+      - name: Run package integration tests
+        run: bun run test:packages

@@ -14,22 +14,12 @@ const { getClickHouseConfigs } = await import(
 
 // Helper function to check if ClickHouse is available
 async function isClickHouseAvailable(): Promise<boolean> {
-  // Always skip in CI environment to prevent hanging
-  if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
-    return false
-  }
-
   if (!process.env.CLICKHOUSE_HOST) {
     // Skip if no ClickHouse config
     return false
   }
 
   try {
-    // Mock the fetchData call in test environment to prevent hanging
-    if (process.env.NODE_ENV === 'test') {
-      return false
-    }
-
     const { fetchData } = await import(
       new URL(
         '../clickhouse/clickhouse-fetch.ts?test=integration',
