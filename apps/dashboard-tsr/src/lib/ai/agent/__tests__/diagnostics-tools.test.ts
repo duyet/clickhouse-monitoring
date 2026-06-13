@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))

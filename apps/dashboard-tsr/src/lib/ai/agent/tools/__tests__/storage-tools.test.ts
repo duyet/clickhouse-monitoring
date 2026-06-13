@@ -17,7 +17,7 @@ const { createStorageTools } = await import('../storage-tools')
 
 describe('createStorageTools', () => {
   test('creates all storage tools', () => {
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     expect(tools.get_table_parts).toBeDefined()
     expect(tools.get_detached_parts).toBeDefined()
     expect(tools.get_top_tables_by_size).toBeDefined()
@@ -36,7 +36,7 @@ describe('createStorageTools', () => {
     ]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_table_parts.execute({
       database: 'analytics',
       table: 'events',
@@ -51,7 +51,7 @@ describe('createStorageTools', () => {
     queryStore.parts = [{ name: 'active_part', rows: 500 }]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_table_parts.execute({
       database: 'db',
       table: 'tbl',
@@ -66,7 +66,7 @@ describe('createStorageTools', () => {
     queryStore.parts = [{ name: 'p1' }, { name: 'p2' }]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_table_parts.execute({
       database: 'db',
       table: 'tbl',
@@ -81,7 +81,7 @@ describe('createStorageTools', () => {
     queryStore.parts = []
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_table_parts.execute({
       database: 'db',
       table: 'tbl',
@@ -103,7 +103,7 @@ describe('createStorageTools', () => {
     ]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_detached_parts.execute({})
 
     expect(result).toHaveLength(1)
@@ -115,7 +115,7 @@ describe('createStorageTools', () => {
     queryStore.detached = [{ database: 'analytics', table: 'events' }]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_detached_parts.execute({
       database: 'analytics',
     })
@@ -141,7 +141,7 @@ describe('createStorageTools', () => {
     ]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_top_tables_by_size.execute({})
 
     expect(result).toHaveLength(2)
@@ -153,7 +153,7 @@ describe('createStorageTools', () => {
     queryStore.parts = [{ database: 'db', table: 't1' }]
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_top_tables_by_size.execute({ limit: 5 })
 
     expect(result).toHaveLength(1)
@@ -163,7 +163,7 @@ describe('createStorageTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupStorageMock()
 
-    const tools = createStorageTools(0)
+    const tools = createStorageTools(0) as any
     const result = await tools.get_detached_parts.execute({ hostId: 3 })
     expect(Array.isArray(result)).toBe(true)
   })

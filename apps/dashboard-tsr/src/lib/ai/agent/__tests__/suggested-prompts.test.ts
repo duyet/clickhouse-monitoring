@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getSuggestedPrompts, STARTER_PROMPTS } from '../suggested-prompts'
 import { describe, expect, test } from 'bun:test'
 
@@ -88,7 +89,9 @@ describe('suggested prompts', () => {
       limit: 4,
     } as const
 
-    expect(getSuggestedPrompts(input)).toEqual(getSuggestedPrompts(input))
+    expect(getSuggestedPrompts(input as any)).toEqual(
+      getSuggestedPrompts(input as any)
+    )
   })
 
   test('treats malformed message parts as empty context', () => {

@@ -21,7 +21,7 @@ const { createSecurityTools } = await import('../security-tools')
 
 describe('createSecurityTools', () => {
   test('creates all security tools', () => {
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     expect(tools.get_active_sessions).toBeDefined()
     expect(tools.get_login_attempts).toBeDefined()
     expect(tools.get_users_and_roles).toBeDefined()
@@ -34,7 +34,7 @@ describe('createSecurityTools', () => {
     ]
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_active_sessions.execute({})
 
     expect(result).toEqual([
@@ -46,7 +46,7 @@ describe('createSecurityTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_active_sessions.execute({})
 
     expect(result).toEqual([])
@@ -63,7 +63,7 @@ describe('createSecurityTools', () => {
     ]
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_login_attempts.execute({})
 
     expect(result).toHaveLength(1)
@@ -75,7 +75,7 @@ describe('createSecurityTools', () => {
     queryStore.sessions = [{ user: 'bob' }]
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_login_attempts.execute({
       limit: 10,
       lastHours: 48,
@@ -90,7 +90,7 @@ describe('createSecurityTools', () => {
     queryStore.roles = [{ name: 'admin', storage: 'local directory' }]
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_users_and_roles.execute({})
 
     expect(result.users).toEqual([{ name: 'default', storage: 'users.xml' }])
@@ -103,7 +103,7 @@ describe('createSecurityTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_users_and_roles.execute({})
 
     expect(result.users).toEqual([])
@@ -114,7 +114,7 @@ describe('createSecurityTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupSecurityMocks()
 
-    const tools = createSecurityTools(0)
+    const tools = createSecurityTools(0) as any
     const result = await tools.get_active_sessions.execute({ hostId: 2 })
     expect(Array.isArray(result)).toBe(true)
   })

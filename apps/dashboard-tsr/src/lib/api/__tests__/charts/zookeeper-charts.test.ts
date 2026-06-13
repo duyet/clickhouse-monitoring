@@ -13,7 +13,7 @@ describe('zookeeperCharts', () => {
   test.each(
     entries
   )('"%s" builder returns valid query result', (_name, builder) => {
-    const result = builder(defaultParams)
+    const result = builder(defaultParams) as any
 
     // Must have a query property
     expect(result).toHaveProperty('query')
@@ -39,17 +39,19 @@ describe('zookeeperCharts', () => {
   })
 
   test('optional charts are marked correctly', () => {
-    expect(zookeeperCharts['zookeeper-exception'](defaultParams).optional).toBe(
-      true
-    )
-    expect(zookeeperCharts['keeper-info-summary'](defaultParams).optional).toBe(
-      true
-    )
     expect(
-      zookeeperCharts['keeper-connection-events']({
-        ...defaultParams,
-        lastHours: 24 * 14,
-      }).optional
+      (zookeeperCharts['zookeeper-exception'](defaultParams) as any).optional
+    ).toBe(true)
+    expect(
+      (zookeeperCharts['keeper-info-summary'](defaultParams) as any).optional
+    ).toBe(true)
+    expect(
+      (
+        zookeeperCharts['keeper-connection-events']({
+          ...defaultParams,
+          lastHours: 24 * 14,
+        }) as any
+      ).optional
     ).toBe(true)
   })
 })

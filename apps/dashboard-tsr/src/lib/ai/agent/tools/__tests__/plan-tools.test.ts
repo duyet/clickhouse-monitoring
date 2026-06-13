@@ -11,14 +11,14 @@ type ExecuteFn = (input: unknown) => Promise<{
 }>
 
 function getExecute() {
-  const tools = createPlanTools()
+  const tools = createPlanTools() as any
   const tool = tools.update_plan as unknown as { execute: ExecuteFn }
   return tool.execute
 }
 
 describe('update_plan', () => {
   test('exposes the update_plan tool', () => {
-    const tools = createPlanTools()
+    const tools = createPlanTools() as any
     expect(tools.update_plan).toBeDefined()
   })
 

@@ -12,7 +12,7 @@ import { ApiErrorType } from '@/lib/api/types'
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function json(res: Response) {
+async function json(res: Response): Promise<any> {
   return res.json()
 }
 

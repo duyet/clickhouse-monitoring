@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tests for agent tools (modular tool system).
  *

@@ -47,7 +47,7 @@ describe('QueryProvider swr:revalidate integration', () => {
     // Trigger the event
     listeners['swr:revalidate'].forEach((cb) =>
       typeof cb === 'function'
-        ? cb()
+        ? (cb as any)()
         : cb.handleEvent(new Event('swr:revalidate'))
     )
 
