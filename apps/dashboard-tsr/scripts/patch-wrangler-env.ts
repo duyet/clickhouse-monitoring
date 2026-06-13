@@ -89,6 +89,37 @@ generated.name = config.name
 generated.routes = config.routes
 generated.vars = config.vars
 
+// --- Patch D1 databases ---
+const conversationsDbId = (
+  process.env.CONVERSATIONS_D1_DATABASE_ID ||
+  process.env.AGENT_CONVERSATIONS_D1_DATABASE_ID ||
+  ''
+).trim()
+
+if (conversationsDbId) {
+  generated.d1_databases = (generated.d1_databases ?? []).map((db: any) => {
+    if (db.binding === 'CONVERSATIONS_D1') {
+      return { ...db, database_id: conversationsDbId }
+    }
+    return db
+  })
+  console.log(
+    `   d1_databases: injected database_id for CONVERSATIONS_D1 (${conversationsDbId})`
+  )
+} else {
+  // Strip CONVERSATIONS_D1 binding if database_id is not provided
+  const beforeCount = (generated.d1_databases ?? []).length
+  generated.d1_databases = (generated.d1_databases ?? []).filter(
+    (db: any) => db.binding !== 'CONVERSATIONS_D1'
+  )
+  const afterCount = (generated.d1_databases ?? []).length
+  if (beforeCount !== afterCount) {
+    console.log(
+      '   d1_databases: removed unprovisioned CONVERSATIONS_D1 binding'
+    )
+  }
+}
+
 // Serve prerendered routes WITHOUT a trailing-slash redirect. The prerender emits
 // dir-style output (dist/client/overview/index.html); CF Workers Assets' default
 // `auto-trailing-slash` 308-redirects /overview -> /overview/, adding ~55 ms TTFB on
