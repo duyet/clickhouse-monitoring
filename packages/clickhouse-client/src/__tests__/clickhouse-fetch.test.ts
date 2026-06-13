@@ -86,6 +86,12 @@ describe('clickhouse-fetch error parsing', () => {
     })
 
     it('should extract HTTP status code from HTTP/1.1 status error messages', async () => {
+      mockClientQuery.mockRejectedValue(new Error('HTTP/1.1 403 Forbidden'))
+      const result = await fetchData({ hostId: 0, query: 'SELECT 1' })
+      expect(result.error?.details?.httpStatusCode).toBe(403)
+    })
+
+    it('should extract HTTP status code from HTTP status keyword messages', async () => {
       mockClientQuery.mockRejectedValue(new Error('HTTP status 403'))
       const result = await fetchData({ hostId: 0, query: 'SELECT 1' })
       expect(result.error?.details?.httpStatusCode).toBe(403)
@@ -95,6 +101,16 @@ describe('clickhouse-fetch error parsing', () => {
       mockClientQuery.mockRejectedValue(new Error('status 502 Bad Gateway'))
       const result = await fetchData({ hostId: 0, query: 'SELECT 1' })
       expect(result.error?.details?.httpStatusCode).toBe(502)
+    })
+
+    it('should extract HTTP status code from HTTP/1.1 status line even when Code: is present', async () => {
+      mockClientQuery.mockRejectedValue(
+        new Error(
+          'ClickHouse exception: Code: 159, DB::Exception: HTTP/1.1 500 Internal Server Error'
+        )
+      )
+      const result = await fetchData({ hostId: 0, query: 'SELECT 1' })
+      expect(result.error?.details?.httpStatusCode).toBe(500)
     })
 
     it('should ignore port numbers or data quantities without HTTP context when Code: is present', async () => {
