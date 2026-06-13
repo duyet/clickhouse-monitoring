@@ -6,13 +6,13 @@ const { createDashboardTools } = await import('../dashboard-tools')
 
 describe('createDashboardTools', () => {
   test('creates get_dashboard_pages and get_chart_data tools', () => {
-    const tools = createDashboardTools()
+    const tools = createDashboardTools() as any
     expect(tools.get_dashboard_pages).toBeDefined()
     expect(tools.get_chart_data).toBeDefined()
   })
 
   test('get_dashboard_pages returns list of pages', async () => {
-    const tools = createDashboardTools()
+    const tools = createDashboardTools() as any
     const result = await tools.get_dashboard_pages.execute({})
 
     expect(Array.isArray(result)).toBe(true)
@@ -34,14 +34,14 @@ describe('createDashboardTools', () => {
   })
 
   test('get_chart_data returns guidance message', async () => {
-    const tools = createDashboardTools()
+    const tools = createDashboardTools() as any
     const result = await tools.get_chart_data.execute({ chartName: 'test' })
 
     expect(result.message).toContain('query tool')
   })
 
   test('get_chart_data ignores input and returns message', async () => {
-    const tools = createDashboardTools()
+    const tools = createDashboardTools() as any
     const result = await tools.get_chart_data.execute({})
 
     expect(result.message).toBeDefined()

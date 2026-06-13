@@ -27,7 +27,7 @@ function setupHealthMock() {
 
 describe('createHealthTools', () => {
   test('creates all health tools', () => {
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     expect(tools.get_metrics).toBeDefined()
     expect(tools.get_system_resources).toBeDefined()
     expect(tools.get_disk_usage).toBeDefined()
@@ -46,7 +46,7 @@ describe('createHealthTools', () => {
     ]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_metrics.execute({})
 
     expect(result.version).toBe('24.1.1')
@@ -60,7 +60,7 @@ describe('createHealthTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_metrics.execute({})
 
     expect(result.version).toBeUndefined()
@@ -76,7 +76,7 @@ describe('createHealthTools', () => {
     ]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_system_resources.execute({})
 
     expect(result.metrics).toEqual([{ metric: 'MemoryTracking', value: 100 }])
@@ -99,7 +99,7 @@ describe('createHealthTools', () => {
     ]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_disk_usage.execute({})
 
     expect(result).toEqual([
@@ -125,7 +125,7 @@ describe('createHealthTools', () => {
     ]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_errors.execute({})
 
     expect(result).toHaveLength(1)
@@ -139,7 +139,7 @@ describe('createHealthTools', () => {
     ]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_crash_log.execute({})
 
     expect(result).toHaveLength(1)
@@ -151,7 +151,7 @@ describe('createHealthTools', () => {
     queryStore.errors = [{ name: 'E1' }, { name: 'E2' }]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_errors.execute({ limit: 1 })
 
     expect(result).toHaveLength(2)
@@ -162,7 +162,7 @@ describe('createHealthTools', () => {
     queryStore.crash = [{ event_time: '2024-01-01' }]
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_crash_log.execute({ limit: 5 })
 
     expect(result).toHaveLength(1)
@@ -172,7 +172,7 @@ describe('createHealthTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupHealthMock()
 
-    const tools = createHealthTools(0)
+    const tools = createHealthTools(0) as any
     const result = await tools.get_disk_usage.execute({ hostId: 3 })
     expect(Array.isArray(result)).toBe(true)
   })

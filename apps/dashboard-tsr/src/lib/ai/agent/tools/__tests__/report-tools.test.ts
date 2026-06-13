@@ -29,7 +29,7 @@ const { createReportTools } = await import('../report-tools')
 
 describe('createReportTools', () => {
   test('creates generate_health_report tool', () => {
-    const tools = createReportTools(0)
+    const tools = createReportTools(0) as any
     expect(tools.generate_health_report).toBeDefined()
   })
 
@@ -48,7 +48,7 @@ describe('createReportTools', () => {
     queryStore.replicas = []
     setupReportMocks()
 
-    const tools = createReportTools(0)
+    const tools = createReportTools(0) as any
     const result = await tools.generate_health_report.execute({})
 
     expect(result.collected_at).toBeDefined()
@@ -78,7 +78,7 @@ describe('createReportTools', () => {
     queryStore.server = [{ version: '24.1.1', uptime_seconds: 100 }]
     setupReportMocks()
 
-    const tools = createReportTools(0)
+    const tools = createReportTools(0) as any
     const result = await tools.generate_health_report.execute({ lastHours: 48 })
 
     expect(result.time_window_hours).toBe(48)
@@ -88,7 +88,7 @@ describe('createReportTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupReportMocks('system.disks')
 
-    const tools = createReportTools(0)
+    const tools = createReportTools(0) as any
     const result = await tools.generate_health_report.execute({})
 
     expect(result.disks).toEqual({ error: 'system.disks query failed' })
@@ -99,7 +99,7 @@ describe('createReportTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupReportMocks()
 
-    const tools = createReportTools(0)
+    const tools = createReportTools(0) as any
     const result = await tools.generate_health_report.execute({ hostId: 3 })
 
     expect(result.time_window_hours).toBe(24)

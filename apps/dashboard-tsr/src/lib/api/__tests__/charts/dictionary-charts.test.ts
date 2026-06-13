@@ -7,7 +7,9 @@ describe('dictionary-charts', () => {
   })
 
   test('dictionary-count queries system.dictionaries', () => {
-    const result = dictionaryCharts['dictionary-count']!({})
+    const result = dictionaryCharts['dictionary-count']!(
+      {}
+    ) as any as any as any
     expect(result).toBeDefined()
     expect(result.query).toContain('SELECT')
     expect(result.query).toContain('system.dictionaries')
@@ -16,7 +18,7 @@ describe('dictionary-charts', () => {
   })
 
   test('dictionary-count groups by status', () => {
-    const result = dictionaryCharts['dictionary-count']!({})
+    const result = dictionaryCharts['dictionary-count']!({}) as any
     expect(result.query).toContain('GROUP BY status')
     expect(result.query).toContain('count()')
   })

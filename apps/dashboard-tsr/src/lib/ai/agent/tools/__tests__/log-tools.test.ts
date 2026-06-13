@@ -17,7 +17,7 @@ const { createLogTools } = await import('../log-tools')
 
 describe('createLogTools', () => {
   test('creates get_text_log and get_stack_traces tools', () => {
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     expect(tools.get_text_log).toBeDefined()
     expect(tools.get_stack_traces).toBeDefined()
   })
@@ -34,7 +34,7 @@ describe('createLogTools', () => {
     ]
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_text_log.execute({})
 
     expect(result).toHaveLength(1)
@@ -46,7 +46,7 @@ describe('createLogTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_text_log.execute({})
 
     expect(result).toEqual([])
@@ -57,7 +57,7 @@ describe('createLogTools', () => {
     queryStore.text_log = [{ level: 'Error', message: 'Out of memory' }]
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_text_log.execute({
       level: 'Error',
       limit: 50,
@@ -74,7 +74,7 @@ describe('createLogTools', () => {
     queryStore.text_log = []
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_text_log.execute({})
 
     expect(result).toEqual([])
@@ -92,7 +92,7 @@ describe('createLogTools', () => {
     ]
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_stack_traces.execute({})
 
     expect(result).toHaveLength(1)
@@ -104,7 +104,7 @@ describe('createLogTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_stack_traces.execute({})
 
     expect(result).toEqual([])
@@ -115,7 +115,7 @@ describe('createLogTools', () => {
     queryStore.stack_trace = [{ thread_id: 1 }, { thread_id: 2 }]
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_stack_traces.execute({ limit: 1 })
 
     expect(result).toHaveLength(2)
@@ -125,7 +125,7 @@ describe('createLogTools', () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     setupLogMock()
 
-    const tools = createLogTools(0)
+    const tools = createLogTools(0) as any
     const result = await tools.get_text_log.execute({ hostId: 2 })
     expect(Array.isArray(result)).toBe(true)
   })

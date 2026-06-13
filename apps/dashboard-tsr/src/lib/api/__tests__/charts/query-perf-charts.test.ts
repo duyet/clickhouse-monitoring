@@ -13,7 +13,7 @@ describe('queryPerfCharts', () => {
   test.each(
     entries
   )('"%s" builder returns valid query result', (_name, builder) => {
-    const result = builder(defaultParams)
+    const result = builder(defaultParams) as any
 
     // Must have a query property
     expect(result).toHaveProperty('query')
@@ -34,7 +34,7 @@ describe('queryPerfCharts', () => {
 
   test('queries reference expected system tables', () => {
     for (const [, builder] of entries) {
-      const result = builder(defaultParams)
+      const result = builder(defaultParams) as any
       // All query-perf charts query query_log
       expect(result.query).toMatch(/query_log/)
     }

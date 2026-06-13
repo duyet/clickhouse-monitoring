@@ -13,7 +13,7 @@ describe('replicationCharts', () => {
   test.each(
     entries
   )('"%s" builder returns valid query result', (_name, builder) => {
-    const result = builder(defaultParams)
+    const result = builder(defaultParams) as any
 
     // Must have a query property
     expect(result).toHaveProperty('query')

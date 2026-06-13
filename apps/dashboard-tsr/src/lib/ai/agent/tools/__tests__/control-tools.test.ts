@@ -11,7 +11,7 @@ const { createControlTools } = await import('../control-tools')
 
 describe('createControlTools', () => {
   test('creates kill_query, optimize_table, kill_mutation tools', () => {
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     expect(tools.kill_query).toBeDefined()
     expect(tools.optimize_table).toBeDefined()
     expect(tools.kill_mutation).toBeDefined()
@@ -30,7 +30,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     const result = await tools.kill_query.execute({ queryId: 'abc-123' })
 
     expect(result).toEqual({ status: 'ok' })
@@ -51,7 +51,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     await tools.kill_query.execute({ queryId: 'q1', hostId: 3 })
 
     expect(writtenQueries[0].hostId).toBe(3)
@@ -70,7 +70,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     const result = await tools.optimize_table.execute({
       database: 'my_db',
       table: 'my_table',
@@ -93,7 +93,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     await tools.optimize_table.execute({
       database: 'my_db',
       table: 'my_table',
@@ -104,7 +104,7 @@ describe('createControlTools', () => {
   })
 
   test('optimize_table rejects invalid table identifier', async () => {
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     expect(
       tools.optimize_table.execute({
         database: 'db; DROP TABLE',
@@ -114,7 +114,7 @@ describe('createControlTools', () => {
   })
 
   test('optimize_table rejects invalid database identifier', async () => {
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     expect(
       tools.optimize_table.execute({
         database: 'valid_db',
@@ -136,7 +136,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(0)
+    const tools = createControlTools(0) as any
     const result = await tools.kill_mutation.execute({
       database: 'analytics',
       table: 'events',
@@ -165,7 +165,7 @@ describe('createControlTools', () => {
       }
     )
 
-    const tools = createControlTools(5)
+    const tools = createControlTools(5) as any
     await tools.kill_mutation.execute({
       database: 'db',
       table: 'tbl',
