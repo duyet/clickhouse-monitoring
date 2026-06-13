@@ -81,6 +81,7 @@ And contains an assertion in the unit tests expecting `"leading_zero":1`:
 
 **In scope** (the only files you should modify):
 - `rust/ch-json/src/lib.rs`
+- `rust/monitor-core/src/lib.rs`
 
 **Out of scope**:
 - Other rust crates or JS-side parser files.
@@ -147,6 +148,21 @@ With:
 ```
 
 **Verify**: Run `cd rust/ch-json && cargo test` to verify that all rust unit tests pass.
+
+### Step 2.5: Update monitor-core tests
+
+Open [lib.rs](file:///Users/duet/project/clickhouse-monitor/rust/monitor-core/src/lib.rs). Around line 63, update the assertion expecting `"leading_zero": 1` to expect it as a string `"001"`.
+
+Replace:
+```rust
+        assert_eq!(output[1]["leading_zero"], json!(1));
+```
+With:
+```rust
+        assert_eq!(output[1]["leading_zero"], json!("001"));
+```
+
+**Verify**: `bun run wasm:test` passes.
 
 ### Step 3: Rebuild the WASM binary
 
