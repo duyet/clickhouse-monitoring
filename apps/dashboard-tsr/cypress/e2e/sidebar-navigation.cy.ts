@@ -17,7 +17,6 @@
 // The element has data-sidebar="sidebar" and data-slot="sidebar-inner".
 const SIDEBAR = '[data-sidebar="sidebar"]'
 
-
 describe('Sidebar navigation', () => {
   beforeEach(() => {
     cy.visit('/overview?host=0')
@@ -33,9 +32,29 @@ describe('Sidebar navigation', () => {
     cy.get(`${SIDEBAR} a[href*="host="]`)
       .not('[href*="/overview"]')
       .first()
-      .click()
+      .then(($link) => {
+        cy.wrap($link).click()
+        cy.url().should('include', 'host=0')
+        // URL should have changed from /overview
+        cy.url().should('not.include', '/overview')
+      })
+  })
+
+  it('navigates to running-queries via sidebar', () => {
+    // Find the visible Running Queries link (handles both sidebar and popover)
+    // Using :visible ensures we only match elements actually visible to the user
+    cy.get('a[href*="/running-queries"]:visible').first().click()
+    cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
-    // URL should have changed from /overview
-    cy.url().should('not.include', '/overview')
+    cy.get('body').should('exist')
+  })
+
+  it('navigates to clusters via sidebar', () => {
+    // Find the visible Clusters link (handles both sidebar and popover)
+    // Using :visible ensures we only match elements actually visible to the user
+    cy.get('a[href*="/clusters"]:visible').first().click()
+    cy.url().should('include', '/clusters')
+    cy.url().should('include', 'host=0')
+    cy.get('body').should('exist')
   })
 })
