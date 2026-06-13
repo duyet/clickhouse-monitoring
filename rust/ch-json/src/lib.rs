@@ -142,9 +142,20 @@ fn is_numeric_string(value: &str) -> bool {
     }
 
     let digits_start = index;
-    while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+    
+    // Check if the first digit is '0'. In JSON numbers, a leading zero is only valid 
+    // if it is the only digit or followed by a decimal point/exponent.
+    if bytes.get(index) == Some(&b'0') {
         index += 1;
+        if index < bytes.len() && bytes[index].is_ascii_digit() {
+            return false; // Leading zero followed by another digit is not a valid JSON number
+        }
+    } else {
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
     }
+    
     if index == digits_start {
         return false;
     }
@@ -194,7 +205,7 @@ mod tests {
         assert!(output.contains(r#""large":"9007199254740992""#));
         assert!(output.contains(r#""value":-3"#));
         assert!(output.contains(r#""list":[1,2.5,"text"]"#));
-        assert!(output.contains(r#""leading_zero":1"#));
+        assert!(output.contains(r#""leading_zero":"001""#));
     }
 
     #[test]

@@ -67,6 +67,17 @@ The file `apps/dashboard-tsr/tsconfig.json` excludes test files:
 **In scope** (the only files you should modify):
 - `apps/dashboard-tsr/tsconfig.test.json` (create)
 - `apps/dashboard-tsr/package.json`
+- `apps/dashboard-tsr/src/lib/query/__tests__/provider.test.tsx`
+- `apps/dashboard-tsr/src/lib/api/__tests__/charts/zookeeper-charts.test.ts`
+- `apps/dashboard-tsr/src/lib/api/__tests__/table-registry.test.ts`
+- `apps/dashboard-tsr/src/lib/api/shared/__tests__/response-builder.test.ts`
+- `apps/dashboard-tsr/src/lib/api/shared/validators/__tests__/request.test.ts`
+- `apps/dashboard-tsr/src/lib/feature-permissions/__tests__/permissions.test.ts`
+- `apps/dashboard-tsr/src/lib/filters/where-builder.test.ts`
+- `apps/dashboard-tsr/src/lib/health/__tests__/audit-prompt.test.ts`
+- `apps/dashboard-tsr/src/routes/api/v1/browser-connections/__tests__/proxy.test.ts`
+- `apps/dashboard-tsr/src/routes/api/v1/data/__tests__/readonly.test.ts`
+- `apps/dashboard-tsr/src/routes/api/v1/data/__tests__/sql-validation.test.ts`
 
 **Out of scope**:
 - Modifications to `apps/dashboard-tsr/tsconfig.json` (retaining the production exclusions is intentional to avoid build pollution).
