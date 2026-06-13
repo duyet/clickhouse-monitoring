@@ -376,8 +376,6 @@ jobs:
           notes-prompt-file: .github/release-notes-prompt.md
           system-prompt-file: .github/release-notes-system-prompt.md
           migration-prompt-file: .github/release-migration-prompt.md
-          anyrouter-source: chmonitor
-          anyrouter-title: CHMonitor
           anyrouter-api-key: ${{ secrets.ANYROUTER_API_KEY }}
           anyrouter-model: ${{ vars.ANYROUTER_MODEL || 'openai/gpt-4o-mini' }}
 
