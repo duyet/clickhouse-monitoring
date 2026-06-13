@@ -61,7 +61,7 @@ describe('write operation classification', () => {
   })
 
   test('schema-browsing tables permission is a read (default operation)', () => {
-    expect(TABLES_FEATURE_PERMISSION.operation).toBeUndefined()
+    expect((TABLES_FEATURE_PERMISSION as any).operation).toBeUndefined()
   })
 })
 

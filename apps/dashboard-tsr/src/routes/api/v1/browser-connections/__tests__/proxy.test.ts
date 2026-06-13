@@ -19,7 +19,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const PROXY_SOURCE = readFileSync(
-  join(import.meta.dir, '..', 'proxy.ts'),
+  join((import.meta as any).dir, '..', 'proxy.ts'),
   'utf-8'
 )
 

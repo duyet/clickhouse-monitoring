@@ -59,7 +59,7 @@ const { createContextTools } = await import('../context-tools')
 type Execute = (input: unknown) => Promise<Record<string, unknown>>
 
 function getExecute(toolCount = 80) {
-  const tools = createContextTools(0, { toolCount })
+  const tools = createContextTools(0, { toolCount }) as any
   return (tools.get_context as unknown as { execute: Execute }).execute
 }
 

@@ -242,7 +242,7 @@ describe('applyFilterPlaceholder', () => {
   const clause = 'WHERE user = {flt_0:String}'
 
   test('replaces the marker in a plain SQL string', () => {
-    const sql = `SELECT * FROM t ${FILTER_PLACEHOLDER}`
+    const sql: string = `SELECT * FROM t ${FILTER_PLACEHOLDER}`
     expect(applyFilterPlaceholder(sql, clause)).toBe(
       `SELECT * FROM t ${clause}`
     )
@@ -253,7 +253,7 @@ describe('applyFilterPlaceholder', () => {
       { sql: `SELECT a FROM t ${FILTER_PLACEHOLDER}` },
       { since: '24.1', sql: `SELECT a, b FROM t ${FILTER_PLACEHOLDER}` },
     ]
-    const out = applyFilterPlaceholder(versioned, clause)
+    const out = applyFilterPlaceholder(versioned as any, clause) as any
     expect(out[0].sql).toContain(clause)
     expect(out[1].sql).toContain(clause)
     expect(out[1].since).toBe('24.1')

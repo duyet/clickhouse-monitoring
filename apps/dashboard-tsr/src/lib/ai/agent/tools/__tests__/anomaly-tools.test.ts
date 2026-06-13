@@ -99,7 +99,7 @@ function setupMetrics(values: {
 
 describe('createAnomalyTools', () => {
   test('creates detect_anomalies tool', () => {
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     expect(tools.detect_anomalies).toBeDefined()
     expect(tools.detect_anomalies.description).toContain('anomalies')
   })
@@ -119,7 +119,7 @@ describe('createAnomalyTools', () => {
     })
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     expect(result.anomalies_found).toBe(0)
@@ -142,7 +142,7 @@ describe('createAnomalyTools', () => {
     })
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     expect(result.anomalies_found).toBeGreaterThanOrEqual(1)
@@ -168,7 +168,7 @@ describe('createAnomalyTools', () => {
     })
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     const mem = result.results.find(
@@ -192,7 +192,7 @@ describe('createAnomalyTools', () => {
     })
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     const mem = result.results.find(
@@ -216,7 +216,7 @@ describe('createAnomalyTools', () => {
     })
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     const vol = result.results.find(
@@ -230,7 +230,7 @@ describe('createAnomalyTools', () => {
     for (const k of Object.keys(queryValues)) delete queryValues[k]
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     expect(result.total_checks).toBe(5)
@@ -244,7 +244,7 @@ describe('createAnomalyTools', () => {
     throwError = true
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({})
 
     expect(result.total_checks).toBe(5)
@@ -261,7 +261,7 @@ describe('createAnomalyTools', () => {
     for (const k of Object.keys(queryValues)) delete queryValues[k]
     setupAnomalyMocks()
 
-    const tools = createAnomalyTools(0)
+    const tools = createAnomalyTools(0) as any
     const result = await tools.detect_anomalies.execute({ hostId: 2 })
     expect(result.total_checks).toBe(5)
   })

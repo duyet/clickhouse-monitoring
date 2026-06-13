@@ -15,12 +15,12 @@ import {
 // Minimal fixtures
 // ---------------------------------------------------------------------------
 
-const minimalCheck: HealthCheckDef = {
+const minimalCheck = {
   id: 'test-check',
   title: 'Test Check',
-}
+} as any
 
-const fullCheck: HealthCheckDef = {
+const fullCheck = {
   id: 'merge-queue-depth',
   title: 'Merge Queue Depth',
   description: 'Number of parts waiting to be merged.',
@@ -37,7 +37,7 @@ const fullCheck: HealthCheckDef = {
       url: 'https://clickhouse.com/docs/operations/system-tables/merges',
     },
   ],
-}
+} as any
 
 function makeInput(
   overrides: Partial<AuditPromptInput> = {}
