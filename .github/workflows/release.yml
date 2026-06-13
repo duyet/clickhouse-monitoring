@@ -367,7 +367,7 @@ jobs:
       # migration prompt — all from duyet/llm-release-action. It also publishes
       # the GitHub Release body; we attach the build archives below.
       - name: Generate & publish release notes
-        uses: duyet/llm-release-action@v1
+        uses: duyet/llm-release-action@a44950e3aadd5eeb4d239e843cdd37801bbfc8f7 # v1
         with:
           release-tag: ${{ steps.meta.outputs.tag }}
           project-name: chmonitor
