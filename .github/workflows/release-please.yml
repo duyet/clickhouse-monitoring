@@ -1,0 +1,39 @@
+name: Release Please
+
+# release-please watches conventional commits landing on main and maintains a
+# standing "chore(release): vX.Y.Z" PR plus the tracked CHANGELOG.md. Merging
+# that PR tags the version and publishes a GitHub Release, which in turn fires
+# release.yml (on: release published) to build images, assets, and regenerate
+# the release body via the LLM template prompt.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

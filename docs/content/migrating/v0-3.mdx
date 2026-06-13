@@ -186,6 +186,48 @@ Browser variables must be present **at build time**. Set them in your CI environ
 
 ---
 
+## Automate it with an AI assistant
+
+Don't want to hand-edit env files? Paste your current configuration (`.env`,
+`docker-compose.yml`, Helm `values.yaml`, or a k8s manifest) into any AI
+assistant together with the prompt below. It applies the v0.3 rename rules and
+returns the migrated config plus a summary of what changed.
+
+```text
+You are migrating a chmonitor deployment from v0.2 (Next.js) to v0.3 (TanStack Start).
+Here is my current environment (.env / docker-compose / wrangler / k8s manifest):
+
+<PASTE YOUR ENV HERE>
+
+Rewrite it for v0.3 applying EXACTLY these rules, and output the migrated config
+plus a short list of what you changed:
+
+1. Rename every client var prefix NEXT_PUBLIC_ -> VITE_. Specifically:
+   NEXT_PUBLIC_AUTH_PROVIDER          -> VITE_AUTH_PROVIDER
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY  -> VITE_CLERK_PUBLISHABLE_KEY
+   NEXT_PUBLIC_FEATURE_CONVERSATION_DB-> VITE_FEATURE_CONVERSATION_DB
+   NEXT_PUBLIC_AUTOCOMPLETE_LIMIT     -> VITE_AUTOCOMPLETE_LIMIT
+   NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS -> VITE_RUNNING_QUERIES_REFRESH_MS
+   (any other NEXT_PUBLIC_X -> VITE_X). The old names still work as a fallback,
+   so keep them if backward compatibility matters; otherwise prefer the new names.
+2. Add server-side auth var CHM_AUTH_PROVIDER (none|clerk|proxy) mirroring the
+   client provider. It is authoritative on the server; keep VITE_AUTH_PROVIDER too
+   so the browser bundle agrees.
+3. Do NOT rename server vars: CLICKHOUSE_HOST, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD,
+   CLICKHOUSE_NAME, CLICKHOUSE_MAX_EXECUTION_TIME, CLERK_SECRET_KEY, *_API_KEY — keep as-is.
+4. VITE_* vars are build-time inlined: ensure they are present at image/Worker BUILD
+   time (Docker build-args or CI build env), not only at container runtime.
+5. If this is a Docker deployment, change the container start command from
+   `node server.js` to `node server/index.mjs`. Port 3000 and the /api/healthz
+   healthcheck are unchanged.
+6. Flag anything that has no v0.3 equivalent instead of silently dropping it.
+```
+
+> This same prompt is published in the v0.3 GitHub release notes, kept in sync
+> from `.github/release-migration-prompt.md`.
+
+---
+
 ## Verify
 
 After upgrading on any platform:
