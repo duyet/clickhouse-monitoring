@@ -25,6 +25,41 @@ type FetchJsonEachRowTextResult = FetchDataResult<never> & {
 }
 
 /**
+ * Extract an HTTP status code (100–599) from a fetch error message.
+ *
+ * Strategy:
+ * 1. Try a keyword-anchored match that handles:
+ *    - "status: 500", "HTTP status 403", "HTTP error 502"
+ *    - Standard HTTP status lines: "HTTP/1.1 500", "HTTP/2 502"
+ * 2. If (1) fails AND the message also contains a ClickHouse "Code:" clause
+ *    that sits at the start of a line or is unaccompanied by HTTP keywords,
+ *    skip the generic digit scan to avoid misidentifying internal error codes.
+ * 3. Otherwise fall back to a generic 3-digit match.
+ */
+function extractHttpStatusCode(errorMessage: string): number | undefined {
+  // Keyword-anchored: matches "status 500", "HTTP status 403", "HTTP/1.1 500", "HTTP/2 502", etc.
+  const keywordMatch = errorMessage.match(
+    /\b(?:status|HTTP(?:\/\d+(?:\.\d+)?)?(?:\s+(?:status|error))?)\s*([1-5]\d{2})\b/i
+  )
+  if (keywordMatch) {
+    return parseInt(keywordMatch[1], 10)
+  }
+
+  // Skip generic digit scan when ClickHouse internal codes are present and no
+  // HTTP keyword was found above, to avoid false positives like "Code: 210".
+  if (errorMessage.includes('Code:')) {
+    return undefined
+  }
+
+  const genericMatch = errorMessage.match(/\b([1-5]\d{2})\b/)
+  if (genericMatch) {
+    return parseInt(genericMatch[1], 10)
+  }
+
+  return undefined
+}
+
+/**
  * Fetch data from ClickHouse with comprehensive error handling
  */
 export const fetchData = async <
@@ -282,11 +317,7 @@ export const fetchData = async <
     let errorType: FetchDataErrorType = 'query_error'
 
     // Extract HTTP status code from fetch errors
-    let httpStatusCode: number | undefined
-    const statusMatch = errorMessage.match(/(\d{3})/)
-    if (statusMatch) {
-      httpStatusCode = parseInt(statusMatch[1], 10)
-    }
+    const httpStatusCode = extractHttpStatusCode(errorMessage)
 
     // SSL/TLS errors (Cloudflare 525/526 as standalone status codes, not
     // digits embedded in larger numbers like "525.00 MiB" or "15251")
@@ -547,11 +578,7 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
     let errorType: FetchDataErrorType = 'query_error'
 
     // Extract HTTP status code from fetch errors
-    let httpStatusCode: number | undefined
-    const statusMatch = errorMessage.match(/(\d{3})/)
-    if (statusMatch) {
-      httpStatusCode = parseInt(statusMatch[1], 10)
-    }
+    const httpStatusCode = extractHttpStatusCode(errorMessage)
 
     // SSL/TLS errors (Cloudflare 525/526 as standalone status codes, not
     // digits embedded in larger numbers like "525.00 MiB" or "15251")
