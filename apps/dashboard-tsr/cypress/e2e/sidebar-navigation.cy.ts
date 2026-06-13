@@ -25,8 +25,10 @@ const expandSidebarSection = (sectionTitle: string) => {
   // Click the collapsible section button to expand its submenu items
   // Use within() to scope the search to the sidebar for more reliable element selection
   cy.get(SIDEBAR).within(() => {
-    cy.contains('button', sectionTitle).click()
+    cy.contains('button', sectionTitle).should('exist').click()
   })
+  // Wait for the collapsible content to render and become visible
+  cy.get('body').should('exist') // Ensure page is ready
 }
 
 describe('Sidebar navigation', () => {
@@ -55,7 +57,8 @@ describe('Sidebar navigation', () => {
   it('navigates to running-queries via sidebar', () => {
     // Running Queries is inside the collapsible "Queries" menu
     expandSidebarSection('Queries')
-    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).first().click()
+    // Wait for the submenu link to be visible after expansion
+    cy.get(`${SIDEBAR} a[href*="/running-queries"]`).should('be.visible').first().click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
@@ -64,7 +67,8 @@ describe('Sidebar navigation', () => {
   it('navigates to clusters via sidebar', () => {
     // Clusters is inside the collapsible "Cluster" menu
     expandSidebarSection('Cluster')
-    cy.get(`${SIDEBAR} a[href*="/clusters"]`).first().click()
+    // Wait for the submenu link to be visible after expansion
+    cy.get(`${SIDEBAR} a[href*="/clusters"]`).should('be.visible').first().click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
