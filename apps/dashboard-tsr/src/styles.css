@@ -133,11 +133,11 @@
    (bg-card/30, bg-card/40, etc.) which are emitted as separate classes
    and would otherwise miss this rule. */
 @layer utilities {
-  button,
-  [role='button'],
-  [data-slot='card'],
-  .bg-card,
-  [class*='bg-card/'] {
+  button:not(:focus-visible),
+  [role='button']:not(:focus-visible),
+  [data-slot='card']:not(:focus-visible),
+  .bg-card:not(:focus-visible),
+  [class*='bg-card/']:not(:focus-visible) {
     box-shadow: none !important;
   }
 }
