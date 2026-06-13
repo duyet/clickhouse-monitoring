@@ -63,6 +63,17 @@ jobs:
       - name: Run workspace package tests with coverage
         run: bun run test:packages
 
+      # No dedicated cache step here: the "Bun Cache" step above already caches
+      # ~/.bun/install/cache for the whole job, so a second cache on the same
+      # path would conflict (per CodeRabbit review).
+      - name: Install dashboard-tsr dependencies
+        working-directory: apps/dashboard-tsr
+        run: bun install --frozen-lockfile
+
+      - name: Run dashboard-tsr unit tests
+        working-directory: apps/dashboard-tsr
+        run: bun run test
+
       - name: Upload Bun coverage to Codecov
         uses: codecov/codecov-action@v7
         with:
