@@ -8,6 +8,9 @@
  * - next/server (userAgent) and @vercel/functions (geolocation) are replaced
  *   with direct header reads — equivalent for Cloudflare Workers.
  * - ErrorLogger replaced with @chm/logger debug/error.
+ *
+ * Auth enforced via enforceAuth() (provider-aware; allows anonymous when
+ * provider=none, matching Next middleware behaviour from the legacy app).
  */
 
 import { createFileRoute } from '@tanstack/react-router'
@@ -17,6 +20,7 @@ import { getClient } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { EVENTS_TABLE } from '@/lib/app-tables'
+import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
 
 /** Trim whitespace and strip trailing slash/question-mark from a URL string. */
 function normalizeUrl(url: string): string {
@@ -28,6 +32,10 @@ export const Route = createFileRoute('/api/pageview')({
     handlers: {
       GET: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+        bridgeApiKeyEnv(env as Record<string, string | undefined>)
+
+        const authFailure = await enforceAuth(request)
+        if (authFailure) return authFailure
 
         const searchParams = new URL(request.url).searchParams
         const rawUrl = searchParams.get('url') || request.headers.get('referer')
@@ -87,7 +95,7 @@ export const Route = createFileRoute('/api/pageview')({
         } catch (err) {
           error('[/api/pageview] PageView insert error', err as Error)
           return Response.json(
-            { error: `Error creating PageView event: ${err}` },
+            { error: 'Internal server error' },
             { status: 500 }
           )
         }
