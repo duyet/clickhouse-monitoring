@@ -194,7 +194,7 @@
     "react-is": "^19.2.6",
     "shadcn": "^4.8.0",
     "start-server-and-test": "^3.0.5",
-    "wrangler": "4.65.0"
+    "wrangler": "^4.97.0"
   },
   "optionalDependencies": {
     "@vercel/analytics": "^2.0.0"
