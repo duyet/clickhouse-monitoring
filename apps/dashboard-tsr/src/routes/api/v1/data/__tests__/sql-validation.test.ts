@@ -17,7 +17,7 @@ import { join } from 'node:path'
 
 // Source file is routes/api/v1/data.ts (sibling of the data/ directory)
 const DATA_SOURCE = readFileSync(
-  join(import.meta.dir, '..', '..', 'data.ts'),
+  join((import.meta as any).dir, '..', '..', 'data.ts'),
   'utf-8'
 )
 

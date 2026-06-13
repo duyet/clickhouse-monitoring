@@ -85,7 +85,7 @@ async function resolveCount(
     : null
 }
 
-async function handler(request: Request): Promise<Response> {
+export async function handler(request: Request): Promise<Response> {
   const requestId = generateRequestId()
 
   try {
@@ -127,17 +127,82 @@ async function handler(request: Request): Promise<Response> {
     bridgeClickHouseEnv(env as Record<string, string | undefined>)
 
     const keys = getAvailableMenuCountKeys()
-    const resolved = await Promise.all(
-      keys.map(async (key) => {
-        const value = await resolveCount(key, hostId, requestId)
-        return [key, value] as const
-      })
-    )
 
+    // 1. Query system.tables to check which optional tables exist
+    const tablesCheckResult = await fetchData({
+      query: `SELECT database, name FROM system.tables WHERE (database = 'system' AND name IN ('distributed_ddl_queue', 'clusters', 'backup_log', 'dictionaries', 'view_refreshes')) OR (name = 'monitoring_events')`,
+      format: 'JSONEachRow',
+      hostId,
+    })
+
+    const existingTables = new Set<string>()
+    if (!tablesCheckResult.error && Array.isArray(tablesCheckResult.data)) {
+      for (const row of tablesCheckResult.data as Array<{
+        database: string
+        name: string
+      }>) {
+        existingTables.add(`${row.database}.${row.name}`)
+        existingTables.add(row.name)
+      }
+    }
+
+    // 2. Build combined subqueries
+    const selectSubqueries: string[] = []
     const counts: Record<string, number | null> = {}
-    for (const [key, value] of resolved) {
-      if (value !== undefined) {
-        counts[key] = value
+
+    for (const key of keys) {
+      const menuCount = getMenuCountQuery(key)
+      if (!menuCount) continue
+
+      if (menuCount.optional && menuCount.tableCheck) {
+        if (!existingTables.has(menuCount.tableCheck)) {
+          // Table doesn't exist: return null without querying it
+          counts[key] = null
+          continue
+        }
+      }
+
+      // Wrap the registry query as a subquery
+      selectSubqueries.push(
+        `(SELECT count FROM (${menuCount.query})) AS \`${key}\``
+      )
+    }
+
+    if (selectSubqueries.length > 0) {
+      const combinedQuery = `SELECT ${selectSubqueries.join(', ')}`
+      const result = await fetchData({
+        query: combinedQuery,
+        format: 'JSONEachRow',
+        hostId,
+      })
+
+      if (result.error) {
+        // Fall back to original resolveCount loop if the combined query fails
+        // (preserves robust error recovery on schema/version mismatches)
+        debug(
+          '[GET /api/v1/menu-counts] Combined query failed. Falling back to loop.',
+          {
+            requestId,
+            error: result.error.message,
+          }
+        )
+        const resolved = await Promise.all(
+          keys.map(async (k) => {
+            const val = await resolveCount(k, hostId, requestId)
+            return [k, val] as const
+          })
+        )
+        for (const [k, val] of resolved) {
+          if (val !== undefined) counts[k] = val
+        }
+      } else {
+        const data = result.data as Record<string, number | string>[]
+        if (data && data.length > 0) {
+          const row = data[0]
+          for (const key of Object.keys(row)) {
+            counts[key] = Number(row[key])
+          }
+        }
       }
     }
 

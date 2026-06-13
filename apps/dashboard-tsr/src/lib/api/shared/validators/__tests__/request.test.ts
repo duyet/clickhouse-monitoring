@@ -70,28 +70,28 @@ describe('validateRequiredString', () => {
 
 describe('validateDataRequest', () => {
   test('returns undefined for a fully valid body', () => {
-    const err = validateDataRequest({ query: 'SELECT 1', hostId: 0 })
+    const err = validateDataRequest({ query: 'SELECT 1', hostId: '0' })
     expect(err).toBeUndefined()
   })
 
   test('returns undefined for valid body with explicit format', () => {
     const err = validateDataRequest({
       query: 'SELECT 1',
-      hostId: 1,
+      hostId: '1',
       format: 'JSON',
     })
     expect(err).toBeUndefined()
   })
 
   test('returns ValidationError when query is missing', () => {
-    const err = validateDataRequest({ hostId: 0 })
+    const err = validateDataRequest({ hostId: '0' })
     expect(err).toBeDefined()
     expect(err?.type).toBe(ApiErrorType.ValidationError)
     expect(err?.message).toContain('query')
   })
 
   test('returns ValidationError when query is empty string', () => {
-    const err = validateDataRequest({ query: '', hostId: 0 })
+    const err = validateDataRequest({ query: '', hostId: '0' })
     expect(err).toBeDefined()
     expect(err?.message).toContain('query')
   })
@@ -104,7 +104,7 @@ describe('validateDataRequest', () => {
   })
 
   test('returns ValidationError when hostId is negative', () => {
-    const err = validateDataRequest({ query: 'SELECT 1', hostId: -1 })
+    const err = validateDataRequest({ query: 'SELECT 1', hostId: '-1' })
     expect(err).toBeDefined()
     expect(err?.message).toContain('hostId')
   })
@@ -112,7 +112,7 @@ describe('validateDataRequest', () => {
   test('returns ValidationError when format is unsupported', () => {
     const err = validateDataRequest({
       query: 'SELECT 1',
-      hostId: 0,
+      hostId: '0',
       format: 'XML' as never,
     })
     expect(err).toBeDefined()
@@ -120,7 +120,7 @@ describe('validateDataRequest', () => {
   })
 
   test('query error takes precedence over hostId error', () => {
-    const err = validateDataRequest({ query: '', hostId: -1 })
+    const err = validateDataRequest({ query: '', hostId: '-1' })
     expect(err?.message).toContain('query')
   })
 })

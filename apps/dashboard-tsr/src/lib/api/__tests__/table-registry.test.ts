@@ -24,7 +24,6 @@ function makeConfig(
 ): QueryConfig {
   registered.push(overrides.name)
   return {
-    name: overrides.name,
     sql: 'SELECT 1',
     columns: ['one'],
     ...overrides,

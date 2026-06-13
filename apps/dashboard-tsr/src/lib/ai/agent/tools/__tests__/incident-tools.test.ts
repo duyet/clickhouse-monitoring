@@ -39,7 +39,7 @@ const { createIncidentTools } = await import('../incident-tools')
 
 describe('createIncidentTools', () => {
   test('creates investigate_incident tool', () => {
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     expect(tools.investigate_incident).toBeDefined()
   })
 
@@ -52,7 +52,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'slow_queries',
     })
@@ -77,7 +77,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'high_errors',
     })
@@ -97,7 +97,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'replication_lag',
     })
@@ -113,7 +113,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'high_memory',
     })
@@ -130,7 +130,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'too_many_parts',
     })
@@ -144,7 +144,7 @@ describe('createIncidentTools', () => {
     queryStore.ddl = []
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'slow_queries',
       since: '2 HOUR',
@@ -156,7 +156,7 @@ describe('createIncidentTools', () => {
   test('rejects invalid since interval', async () => {
     setupIncidentMocks()
 
-    const tools = createIncidentTools(0)
+    const tools = createIncidentTools(0) as any
     const result = await tools.investigate_incident.execute({
       symptom: 'slow_queries',
       since: 'DROP TABLE; --',

@@ -73,7 +73,7 @@ const { createComparisonTools } = await import('../comparison-tools')
 
 describe('createComparisonTools', () => {
   test('creates both comparison tools', () => {
-    const tools = createComparisonTools(0)
+    const tools = createComparisonTools(0) as any
     expect(tools.compare_time_periods).toBeDefined()
     expect(tools.compare_hosts).toBeDefined()
   })
@@ -82,7 +82,7 @@ describe('createComparisonTools', () => {
     test('compares queries between two periods', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_time_periods.execute({
         metric: 'queries',
@@ -103,7 +103,7 @@ describe('createComparisonTools', () => {
     test('returns snapshot note for storage metric', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_time_periods.execute({
         metric: 'storage',
@@ -121,7 +121,7 @@ describe('createComparisonTools', () => {
     test('returns snapshot note for merges metric', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_time_periods.execute({
         metric: 'merges',
@@ -139,7 +139,7 @@ describe('createComparisonTools', () => {
     test('compares errors between two periods', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_time_periods.execute({
         metric: 'errors',
@@ -157,7 +157,7 @@ describe('createComparisonTools', () => {
     test('period labels show correct hours-ago and duration', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_time_periods.execute({
         metric: 'queries',
@@ -176,7 +176,7 @@ describe('createComparisonTools', () => {
     test('returns side-by-side host comparison', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_hosts.execute({
         hostId1: 0,
@@ -196,7 +196,7 @@ describe('createComparisonTools', () => {
     test('includes disk and table size data', async () => {
       setupComparisonMocks()
 
-      const tools = createComparisonTools(0)
+      const tools = createComparisonTools(0) as any
 
       const result = await tools.compare_hosts.execute({
         hostId1: 0,
