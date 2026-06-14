@@ -5,6 +5,36 @@ entries are generated automatically by [release-please](.github/workflows/releas
 from conventional commits; the `Unreleased` section below is a human-curated
 preview of the next release.
 
+## [0.2.8](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.7...v0.2.8) (2026-06-13)
+
+
+### ✨ Features
+
+* **release:** tiered LLM notes (Copilot→Models→AnyRouter), recap stats, docker pin ([#1582](https://github.com/duyet/clickhouse-monitoring/issues/1582)) ([3009f99](https://github.com/duyet/clickhouse-monitoring/commit/3009f994a9c73f3a018ddae6f148a7a8bce9103b))
+
+
+### 🐛 Bug Fixes
+
+* add Running Queries and Clusters as top-level sidebar items ([#1569](https://github.com/duyet/clickhouse-monitoring/issues/1569)) ([74fc5eb](https://github.com/duyet/clickhouse-monitoring/commit/74fc5eb6f2dae1a7bfe931cac07d0d57470c7bde))
+* **api:** enforce auth on clean/init/pageview endpoints and sanitize error responses ([#1602](https://github.com/duyet/clickhouse-monitoring/issues/1602)) ([9b9d239](https://github.com/duyet/clickhouse-monitoring/commit/9b9d2398bba240573de50977a83be313e2ba0f99))
+* **clickhouse-client:** harden http status code regex in clickhouse-fetch ([#1578](https://github.com/duyet/clickhouse-monitoring/issues/1578)) ([0d27e33](https://github.com/duyet/clickhouse-monitoring/commit/0d27e33811e223c4d5a3e569e3dd1a95f8218530))
+* **clickhouse-client:** redact inline credentials from host config debug logs ([#1581](https://github.com/duyet/clickhouse-monitoring/issues/1581)) ([6d0609b](https://github.com/duyet/clickhouse-monitoring/commit/6d0609b5a3cbf442730ed2cd2880200810e3ee78))
+* **dashboard-tsr:** bridge CLICKHOUSE_DATABASE and EVENTS_TABLE_NAME on workers ([#1576](https://github.com/duyet/clickhouse-monitoring/issues/1576)) ([8096672](https://github.com/duyet/clickhouse-monitoring/commit/80966727cf779cd2731b375261d7eb0e3e85adef))
+* **dashboard-tsr:** fix a11y violations in health, dashboard, and menu ([#1588](https://github.com/duyet/clickhouse-monitoring/issues/1588)) ([5340ce8](https://github.com/duyet/clickhouse-monitoring/commit/5340ce8b477510c51c28737b1c5123dd73dc70e1))
+* **dashboard-tsr:** listen for swr:revalidate event to refresh TanStack Query cache ([#1579](https://github.com/duyet/clickhouse-monitoring/issues/1579)) ([7927f18](https://github.com/duyet/clickhouse-monitoring/commit/7927f18fd6dd831861bb2757c477ff06fb0084c6))
+* **dashboard-tsr:** skip hash-anchor URLs in prerender crawl to unblock Docker build ([#1583](https://github.com/duyet/clickhouse-monitoring/issues/1583)) ([f001263](https://github.com/duyet/clickhouse-monitoring/commit/f001263953dbb4c459b4b84de6b2bec1d6273494))
+* **dashboard-tsr:** type menu-counts test to unblock type-check:test ([#1605](https://github.com/duyet/clickhouse-monitoring/issues/1605)) ([850162e](https://github.com/duyet/clickhouse-monitoring/commit/850162e2fe6d56f62731c7adef787ea2bfb39449))
+* **e2e:** expand collapsible menu sections before checking sidebar links ([#1568](https://github.com/duyet/clickhouse-monitoring/issues/1568)) ([cc6cdbd](https://github.com/duyet/clickhouse-monitoring/commit/cc6cdbd33ea75a7abfedde6659e2a3a5ea23f340))
+* **logger:** safely guard process.env access for browser and serverless runtimes ([#1589](https://github.com/duyet/clickhouse-monitoring/issues/1589)) ([36f3b1d](https://github.com/duyet/clickhouse-monitoring/commit/36f3b1d357e138fecb7b342636f7828eeded8da5))
+* **rust/ch-json:** prevent normalization of numeric strings with leading zeros ([#1590](https://github.com/duyet/clickhouse-monitoring/issues/1590)) ([eb9a091](https://github.com/duyet/clickhouse-monitoring/commit/eb9a091d9ba39dc3204083458caaee84af94a88e))
+* **validate-docker:** bundle @clickhouse/client-common + follow root redirect ([#1604](https://github.com/duyet/clickhouse-monitoring/issues/1604)) ([6d280d9](https://github.com/duyet/clickhouse-monitoring/commit/6d280d9d74cc0d56d5779b754c502e6b113965ef))
+
+
+### ⚡ Performance
+
+* **dashboard-tsr:** optimize menu counts endpoint to use single batched query ([#1591](https://github.com/duyet/clickhouse-monitoring/issues/1591)) ([dff6ed4](https://github.com/duyet/clickhouse-monitoring/commit/dff6ed4b531424f969bff5181ad7aa68f2a7715a))
+* **dashboard-tsr:** unmount collapsed chart rows to stop background polling ([#1580](https://github.com/duyet/clickhouse-monitoring/issues/1580)) ([1400632](https://github.com/duyet/clickhouse-monitoring/commit/14006320758aef09b3485b5d99d4d9dabbda2e3b))
+
 ## [Unreleased] — v0.3 preview
 
 > **v0.3 rebuilds the dashboard on TanStack Start.** Full upgrade steps:
