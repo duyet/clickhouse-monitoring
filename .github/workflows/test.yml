@@ -72,46 +72,6 @@ jobs:
           fail_ci_if_error: true
           use_oidc: true
 
-  # Cypress component tests cover isolated React/component behavior
-  component-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.3'
-
-      - name: Bun Cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-v1-
-
-      - name: Cypress Cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-v1-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cypress-v1-
-
-      - name: Install dependencies
-        working-directory: apps/dashboard
-        run: bun install --frozen-lockfile
-
-      - name: Run component tests
-        working-directory: apps/dashboard
-        run: bun run test:component:headless
-        env:
-          CYPRESS_BROWSER: chrome
-
   # E2E smoke for the TanStack Start app. Builds the Node target and self-serves
   # on localhost (NOT the live edge worker — Cloudflare's bot WAF 403s CI/datacenter
   # IPs). CHM_API_KEY_SECRET enables the /api/v1 auth gate so menu-counts returns

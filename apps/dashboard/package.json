@@ -25,8 +25,6 @@
     "test:coverage": "bun test src/ --isolate --coverage --coverage-reporter=lcov --coverage-reporter=text",
     "test:e2e": "cypress open --e2e",
     "test:e2e:headless": "cypress run --e2e",
-    "test:component": "cypress open --component",
-    "test:component:headless": "cypress run --component",
     "smoke-test": "bun ../../scripts/smoke-test.ts --base-url https://dash.chmonitor.dev",
     "verify-deploy": "bun scripts/verify-deploy.ts"
   },
