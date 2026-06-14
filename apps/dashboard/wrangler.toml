@@ -20,6 +20,26 @@ binding = "CONVERSATIONS_D1"
 database_name = "clickhouse-monitor-conversations"
 migrations_dir = "./src/db/conversations-migrations"
 
+# Durable Object migrations.
+# The legacy Next.js worker (same name, chmonitor-dash) registered two SQLite
+# Durable Objects: DOQueueHandler (OpenNext queue) and AgentConversationDurableObject
+# (agent chat history). The TanStack Start app uses neither — conversations now
+# live in CONVERSATIONS_D1 — so deploying over the existing worker requires an
+# explicit delete-class migration (Cloudflare refuses to silently drop a DO).
+# v1/v2 are the legacy worker's already-applied history (kept so wrangler can
+# sequence v3 after them); v3 removes both classes.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+[[migrations]]
+tag = "v2-agent-conversations"
+new_sqlite_classes = ["AgentConversationDurableObject"]
+
+[[migrations]]
+tag = "v3-drop-legacy-next-dos"
+deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Production: custom domain for the dashboard. The TanStack Start app is now the
 # official dashboard, having replaced the legacy Next.js app (#1392).
@@ -88,6 +108,20 @@ custom_domain = true
 binding = "CONVERSATIONS_D1"
 database_name = "clickhouse-monitor-conversations"
 migrations_dir = "./src/db/conversations-migrations"
+
+# DO migrations are not inherited by named environments — repeat the chain that
+# drops the legacy preview worker's Durable Objects (see top-level note).
+[[env.preview.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+[[env.preview.migrations]]
+tag = "v2-agent-conversations"
+new_sqlite_classes = ["AgentConversationDurableObject"]
+
+[[env.preview.migrations]]
+tag = "v3-drop-legacy-next-dos"
+deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
 
 # Vars must be explicitly set per environment (not inherited from top-level)
 [env.preview.vars]
