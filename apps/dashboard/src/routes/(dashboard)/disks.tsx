@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { DisksBento } from '@/components/disks/disks-bento'
 import { createPage } from '@/lib/create-page'
+import { pageOgHead } from '@/lib/og'
 import { diskSpaceConfig } from '@/lib/query-config/system/disks'
 
 const DisksPage = createPage({
@@ -14,4 +15,5 @@ const DisksPage = createPage({
 
 export const Route = createFileRoute('/(dashboard)/disks')({
   component: DisksPage,
+  head: () => pageOgHead('disks'),
 })

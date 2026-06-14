@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 import { replicasConfig } from '@/lib/query-config/tables/replicas'
 
 function ReplicasPageContent() {
@@ -19,4 +20,5 @@ function ReplicasPage() {
 
 export const Route = createFileRoute('/(dashboard)/replicas')({
   component: ReplicasPage,
+  head: () => pageOgHead('replicas'),
 })

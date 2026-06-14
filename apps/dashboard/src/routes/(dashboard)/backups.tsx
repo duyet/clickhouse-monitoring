@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 import { backupsConfig } from '@/lib/query-config/more/backups'
 
 function BackupsPageContent() {
@@ -19,4 +20,5 @@ function BackupsPage() {
 
 export const Route = createFileRoute('/(dashboard)/backups')({
   component: BackupsPage,
+  head: () => pageOgHead('backups'),
 })

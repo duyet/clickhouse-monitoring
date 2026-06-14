@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
 
 function QueryCachePageContent() {
@@ -19,4 +20,5 @@ function QueryCachePage() {
 
 export const Route = createFileRoute('/(dashboard)/query-cache')({
   component: QueryCachePage,
+  head: () => pageOgHead('query-cache'),
 })
