@@ -47,4 +47,6 @@ jobs:
         if: steps.release.outputs.release_created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run release.yml -f tag=${{ steps.release.outputs.tag_name }}
+        # No checkout precedes this step (release-please-action works via the
+        # API), so gh has no local repo to infer. Pass -R explicitly.
+        run: gh workflow run release.yml -R ${{ github.repository }} -f tag=${{ steps.release.outputs.tag_name }}
