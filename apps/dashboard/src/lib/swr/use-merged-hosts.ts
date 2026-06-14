@@ -33,6 +33,7 @@ export function useMergedHosts() {
     connections: dbConnections,
     isLoading: dbLoading,
     featureEnabled: dbFeatureEnabled,
+    isSignedIn: dbAuthReady,
   } = useUserConnections()
 
   const mergedHosts: MergedHostInfo[] = [
@@ -46,7 +47,7 @@ export function useMergedHosts() {
         source: 'browser',
       })
     ),
-    ...(dbFeatureEnabled
+    ...(dbFeatureEnabled && dbAuthReady
       ? dbConnections.map(
           (c): MergedHostInfo => ({
             id: c.hostId,
@@ -65,7 +66,8 @@ export function useMergedHosts() {
     error,
     // Only the env-host fetch can be unauthorized; browser connections are local.
     isUnauthorized: Boolean(isUnauthorized),
-    isLoading: isLoading || !mounted || (dbFeatureEnabled && dbLoading),
+    isLoading:
+      isLoading || !mounted || (dbFeatureEnabled && dbAuthReady && dbLoading),
     getConnectionByHostId,
   }
 }

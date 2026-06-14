@@ -10,10 +10,10 @@ import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-h
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
+import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
+import { resolveConnectionUserId } from '@/lib/connection-store/auth'
 import { resolveConnectionStore } from '@/lib/connection-store/resolve-store'
 import { getUserConnectionsServerConfig } from '@/lib/connection-store/server-feature'
-import { ConnectionStoreError } from '@/lib/connection-store/types'
-import { resolveUserId } from '@/lib/conversation-store/auth'
 
 const ROUTE_PATCH = {
   route: '/api/v1/user-connections/$id',
@@ -70,7 +70,7 @@ async function handlePatch(
   }
 
   try {
-    const userId = await resolveUserId()
+    const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
     const hasCredentialUpdate =
       typeof body.password === 'string' &&
@@ -101,14 +101,7 @@ async function handlePatch(
       updatedAt: updated.updatedAt,
     })
   } catch (error) {
-    if (error instanceof ConnectionStoreError) {
-      return createApiErrorResponse(
-        { type: ApiErrorType.PermissionError, message: error.message },
-        error.code === 'NOT_FOUND' ? 404 : 500,
-        ROUTE_PATCH
-      )
-    }
-    throw error
+    return mapConnectionApiError(error, ROUTE_PATCH)
   }
 }
 
@@ -125,19 +118,12 @@ async function handleDelete(connectionId: string): Promise<Response> {
   }
 
   try {
-    const userId = await resolveUserId()
+    const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
     await store.delete(userId, connectionId)
     return createSuccessResponse({ deleted: true })
   } catch (error) {
-    if (error instanceof ConnectionStoreError) {
-      return createApiErrorResponse(
-        { type: ApiErrorType.PermissionError, message: error.message },
-        error.code === 'NOT_FOUND' ? 404 : 500,
-        ROUTE_DELETE
-      )
-    }
-    throw error
+    return mapConnectionApiError(error, ROUTE_DELETE)
   }
 }
 

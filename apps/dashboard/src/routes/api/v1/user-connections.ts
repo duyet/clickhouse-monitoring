@@ -6,47 +6,20 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
+import type { CreateUserConnectionInput } from '@/lib/connection-store/types'
+
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
 import { queryConnection } from '@/lib/connection-query/connection-client'
+import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
+import { resolveConnectionUserId } from '@/lib/connection-store/auth'
 import { resolveConnectionStore } from '@/lib/connection-store/resolve-store'
 import { getUserConnectionsServerConfig } from '@/lib/connection-store/server-feature'
-import {
-  ConnectionStoreError,
-  type CreateUserConnectionInput,
-} from '@/lib/connection-store/types'
-import { resolveUserId } from '@/lib/conversation-store/auth'
 
 const ROUTE_GET = { route: '/api/v1/user-connections', method: 'GET' }
 const ROUTE_POST = { route: '/api/v1/user-connections', method: 'POST' }
-
-function mapStoreError(error: unknown, context: typeof ROUTE_GET): Response {
-  if (error instanceof ConnectionStoreError) {
-    const status =
-      error.code === 'UNAUTHORIZED'
-        ? 401
-        : error.code === 'NOT_FOUND'
-          ? 404
-          : error.code === 'NOT_CONFIGURED'
-            ? 501
-            : 500
-    return createApiErrorResponse(
-      { type: ApiErrorType.PermissionError, message: error.message },
-      status,
-      context
-    )
-  }
-  return createApiErrorResponse(
-    {
-      type: ApiErrorType.QueryError,
-      message: error instanceof Error ? error.message : 'Unknown error',
-    },
-    500,
-    context
-  )
-}
 
 async function handleGet(): Promise<Response> {
   if (!getUserConnectionsServerConfig().dbStorageEnabled) {
@@ -61,7 +34,7 @@ async function handleGet(): Promise<Response> {
   }
 
   try {
-    const userId = await resolveUserId()
+    const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
     const connections = await store.list(userId)
     return createSuccessResponse(
@@ -77,7 +50,7 @@ async function handleGet(): Promise<Response> {
       }))
     )
   } catch (error) {
-    return mapStoreError(error, ROUTE_GET)
+    return mapConnectionApiError(error, ROUTE_GET)
   }
 }
 
@@ -160,7 +133,7 @@ async function handlePost(request: Request): Promise<Response> {
   }
 
   try {
-    const userId = await resolveUserId()
+    const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
     const input: CreateUserConnectionInput = {
       name: name.trim(),
@@ -180,7 +153,7 @@ async function handlePost(request: Request): Promise<Response> {
       updatedAt: created.updatedAt,
     })
   } catch (error) {
-    return mapStoreError(error, ROUTE_POST)
+    return mapConnectionApiError(error, ROUTE_POST)
   }
 }
 

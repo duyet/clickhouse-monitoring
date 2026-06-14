@@ -5,6 +5,7 @@ import {
   CLERK_PUBLISHABLE_KEY,
   isClerkClientEnabled,
 } from '@/lib/clerk/clerk-client'
+import { UserConnectionsCacheGuard as UserConnectionsCacheGuardImpl } from '@/lib/hooks/user-connections-cache-guard'
 
 // Port of apps/dashboard/components/clerk/clerk-auth-provider.tsx.
 //
@@ -35,6 +36,7 @@ export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
   // keeps the contract self-documenting and decoupled from Clerk's lookup order.
   return (
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+      <UserConnectionsCacheGuardImpl />
       {children}
     </ClerkProvider>
   )

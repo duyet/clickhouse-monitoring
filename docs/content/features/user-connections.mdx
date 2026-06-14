@@ -36,9 +36,12 @@ The Add Host dialog shows an enabled **Save to server** toggle when all requirem
 
 ## Security notes
 
+- **Per-user isolation:** Each connection row is keyed by the signed-in Clerk `userId`. List, read, update, delete, and chart/table proxy routes all resolve auth first and query with `WHERE user_id = ?`. Guessing another user's `connectionId` returns 404 — never their credentials.
+- **Not org-shared:** Connections belong to the individual Clerk account, not the whole organization. Two teammates each see only their own server-stored hosts.
 - Passwords are encrypted with AES-256-GCM before writing to D1/Postgres.
 - API routes return connection metadata only; passwords are never echoed after create.
 - Browser-stored hosts use short-lived session tokens so passwords are not sent on every chart/table request.
+- The client cache for server connections is scoped per Clerk user, cleared on sign-out / account switch, and excluded from persisted localStorage so another login on the same browser cannot flash a prior user's host list.
 - Shared `?host=-1000` URLs only work for the same signed-in user with that connection saved.
 
 ## Related

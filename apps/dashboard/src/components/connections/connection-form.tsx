@@ -30,6 +30,8 @@ interface ConnectionFormProps {
   storageMode?: HostStorageMode
   onStorageModeChange?: (mode: HostStorageMode) => void
   dbStorageEnabled?: boolean
+  /** Server storage is configured but the user must sign in first. */
+  dbStorageRequiresSignIn?: boolean
 }
 
 function isValidUrl(value: string): boolean {
@@ -56,6 +58,7 @@ export function ConnectionForm({
   storageMode = 'browser',
   onStorageModeChange,
   dbStorageEnabled = false,
+  dbStorageRequiresSignIn = false,
 }: ConnectionFormProps) {
   const [form, setForm] = useState<ConnectionFormData>({
     name: initialValues?.name ?? '',
@@ -242,13 +245,19 @@ export function ConnectionForm({
           </div>
           {!dbStorageEnabled && (
             <p className="text-xs text-muted-foreground">
-              Server storage is disabled on this deployment.{' '}
-              <AppLink
-                href="/docs/features/user-connections"
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                Enable user connections
-              </AppLink>
+              {dbStorageRequiresSignIn ? (
+                'Sign in to save connections to the server (synced per account).'
+              ) : (
+                <>
+                  Server storage is disabled on this deployment.{' '}
+                  <AppLink
+                    href="/docs/features/user-connections"
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    Enable user connections
+                  </AppLink>
+                </>
+              )}
             </p>
           )}
         </div>

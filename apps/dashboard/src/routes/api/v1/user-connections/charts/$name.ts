@@ -14,10 +14,10 @@ import {
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { executeConnectionChartQuery } from '@/lib/connection-query/execute-connection-chart'
+import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
+import { resolveConnectionUserId } from '@/lib/connection-store/auth'
 import { resolveConnectionStore } from '@/lib/connection-store/resolve-store'
 import { getUserConnectionsServerConfig } from '@/lib/connection-store/server-feature'
-import { ConnectionStoreError } from '@/lib/connection-store/types'
-import { resolveUserId } from '@/lib/conversation-store/auth'
 
 const ROUTE_CONTEXT = {
   route: '/api/v1/user-connections/charts/$name',
@@ -76,7 +76,7 @@ async function handlePost(
   }
 
   try {
-    const userId = await resolveUserId()
+    const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
     const credentials = await store.getCredentials(userId, body.connectionId)
     if (!credentials) {
@@ -108,21 +108,7 @@ async function handlePost(
 
     return createSuccessResponse(result.data, result.metadata)
   } catch (error) {
-    if (error instanceof ConnectionStoreError) {
-      return createErrorResponse(
-        { type: ApiErrorType.PermissionError, message: error.message },
-        error.code === 'UNAUTHORIZED' ? 401 : 500,
-        ROUTE_CONTEXT
-      )
-    }
-    return createErrorResponse(
-      {
-        type: ApiErrorType.QueryError,
-        message: error instanceof Error ? error.message : 'Chart query failed',
-      },
-      500,
-      ROUTE_CONTEXT
-    )
+    return mapConnectionApiError(error, ROUTE_CONTEXT)
   }
 }
 

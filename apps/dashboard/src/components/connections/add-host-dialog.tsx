@@ -29,10 +29,11 @@ export function AddHostDialog({ open, onOpenChange }: AddHostDialogProps) {
   const { config } = useFeaturePermissions()
   const { addConnection } = useBrowserConnections()
   const { createConnection } = useUserConnectionsMutations()
-  const { refetch: refetchDb } = useUserConnections()
+  const { refetch: refetchDb, isSignedIn } = useUserConnections()
   const [storageMode, setStorageMode] = useState<HostStorageMode>('browser')
 
-  const dbStorageEnabled = config.userConnections?.dbStorageEnabled === true
+  const dbStorageConfigured = config.userConnections?.dbStorageEnabled === true
+  const dbStorageEnabled = dbStorageConfigured && isSignedIn
 
   const handleSave = async (data: ConnectionFormData) => {
     if (storageMode === 'database' && dbStorageEnabled) {
@@ -63,6 +64,7 @@ export function AddHostDialog({ open, onOpenChange }: AddHostDialogProps) {
           storageMode={storageMode}
           onStorageModeChange={setStorageMode}
           dbStorageEnabled={dbStorageEnabled}
+          dbStorageRequiresSignIn={dbStorageConfigured && !isSignedIn}
         />
       </DialogContent>
     </Dialog>
