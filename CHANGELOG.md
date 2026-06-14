@@ -5,6 +5,14 @@ entries are generated automatically by [release-please](.github/workflows/releas
 from conventional commits; the `Unreleased` section below is a human-curated
 preview of the next release.
 
+## [0.2.9](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.8...v0.2.9) (2026-06-14)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** align release docker cache scope + diagnosable container health checks ([#1610](https://github.com/duyet/clickhouse-monitoring/issues/1610)) ([ae78ad9](https://github.com/duyet/clickhouse-monitoring/commit/ae78ad918667dda2f51a2a8347f2402c039c3798))
+* **ci:** pass -R to gh workflow run in release-please ([#1608](https://github.com/duyet/clickhouse-monitoring/issues/1608)) ([da18863](https://github.com/duyet/clickhouse-monitoring/commit/da18863b3132467cbd69fb8ab8450c5478ffb258))
+
 ## [0.2.8](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.7...v0.2.8) (2026-06-13)
 
 
