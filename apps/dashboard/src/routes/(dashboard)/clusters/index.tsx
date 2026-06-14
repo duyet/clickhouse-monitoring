@@ -5,6 +5,7 @@ import { TableSkeleton } from '@/components/skeletons'
 import { TableClient } from '@/components/tables/table-client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { queryConfig } from '@/lib/api/clusters-api'
+import { pageOgHead } from '@/lib/og'
 import { useHostId } from '@/lib/swr'
 
 // Lazy-load the topology SVG — it's a large chunk and must not SSR.
@@ -47,21 +48,5 @@ function ClustersPage() {
 
 export const Route = createFileRoute('/(dashboard)/clusters/')({
   component: ClustersPage,
-  head: () => ({
-    meta: [
-      { title: 'Cluster Topology & Health — chmonitor' },
-      {
-        property: 'og:title',
-        content: 'Cluster Topology & Health — chmonitor',
-      },
-      {
-        property: 'og:image',
-        content: 'https://dash.chmonitor.dev/og-clusters.png',
-      },
-      {
-        name: 'twitter:image',
-        content: 'https://dash.chmonitor.dev/og-clusters.png',
-      },
-    ],
-  }),
+  head: () => pageOgHead('clusters'),
 })

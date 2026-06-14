@@ -9,8 +9,13 @@
  *
  * Run:  bun run og:generate   (alias for `bun run scripts/generate-og-images.ts`)
  *
- * Add or tweak a card by editing the CARDS array below, then re-run and commit.
+ * The 3 app-level cards (landing, docs, dashboard home) live in the CARDS array
+ * below. Per-page dashboard cards are derived from the shared OG registry in
+ * `apps/dashboard/src/lib/og.ts` — add a page there (one entry feeds both this
+ * image and the route <head> meta), then re-run and commit.
  */
+
+import { OG_PAGES } from '../apps/dashboard/src/lib/og'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { Resvg } from '@resvg/resvg-js'
@@ -69,38 +74,15 @@ const CARDS: Card[] = [
       'Real-time insight into clusters via system tables — metrics, query performance and health.',
     domain: 'dash.chmonitor.dev',
   },
-  {
-    out: ['apps/dashboard/public/og-overview.png'],
-    eyebrow: 'OVERVIEW',
-    title: 'Cluster Overview',
-    description:
-      'Connections, queries, merges, replication and system metrics at a glance.',
+  // Per-page dashboard cards are derived from the shared OG registry so the
+  // image text and the route <head> meta never drift. Add a page there, not here.
+  ...Object.entries(OG_PAGES).map(([slug, page]) => ({
+    out: [`apps/dashboard/public/og-${slug}.png`],
+    eyebrow: page.eyebrow,
+    title: page.title,
+    description: page.description,
     domain: 'dash.chmonitor.dev',
-  },
-  {
-    out: ['apps/dashboard/public/og-clusters.png'],
-    eyebrow: 'CLUSTERS',
-    title: 'Cluster Topology & Health',
-    description:
-      'Visualize nodes, shards and replicas with live health across your ClickHouse cluster.',
-    domain: 'dash.chmonitor.dev',
-  },
-  {
-    out: ['apps/dashboard/public/og-explorer.png'],
-    eyebrow: 'EXPLORER',
-    title: 'Database Explorer',
-    description:
-      'Browse databases, tables, columns, dependencies and projections in one tree.',
-    domain: 'dash.chmonitor.dev',
-  },
-  {
-    out: ['apps/dashboard/public/og-agents.png'],
-    eyebrow: 'AI AGENT',
-    title: 'Ask your cluster anything',
-    description:
-      'An AI agent that answers questions about queries, schema, performance and health.',
-    domain: 'dash.chmonitor.dev',
-  },
+  })),
 ]
 
 /** Tiny hyperscript helper so we avoid a JSX toolchain in this standalone script. */

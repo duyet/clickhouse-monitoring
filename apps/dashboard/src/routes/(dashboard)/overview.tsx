@@ -12,6 +12,7 @@ import { OverviewStatusStrip } from '@/components/overview-charts/overview-statu
 import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSearchParams } from '@/lib/next-compat'
+import { pageOgHead } from '@/lib/og'
 import { useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
@@ -299,18 +300,5 @@ function OverviewPage() {
 
 export const Route = createFileRoute('/(dashboard)/overview')({
   component: OverviewPage,
-  head: () => ({
-    meta: [
-      { title: 'Cluster Overview — chmonitor' },
-      { property: 'og:title', content: 'Cluster Overview — chmonitor' },
-      {
-        property: 'og:image',
-        content: 'https://dash.chmonitor.dev/og-overview.png',
-      },
-      {
-        name: 'twitter:image',
-        content: 'https://dash.chmonitor.dev/og-overview.png',
-      },
-    ],
-  }),
+  head: () => pageOgHead('overview'),
 })

@@ -88,6 +88,18 @@ describe('SQL_PATTERNS', () => {
       )
     })
 
+    test('should match RENAME keyword', () => {
+      expect(
+        SQL_PATTERNS.DANGEROUS_KEYWORDS.test('RENAME TABLE old TO new')
+      ).toBe(true)
+    })
+
+    test('should match REPLACE keyword', () => {
+      expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('REPLACE TABLE t1')).toBe(
+        true
+      )
+    })
+
     test('should not match SELECT', () => {
       expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('SELECT * FROM users')).toBe(
         false
@@ -156,6 +168,18 @@ describe('SQL_PATTERNS', () => {
 
     test('should match chained UPDATE', () => {
       expect(SQL_PATTERNS.CHAINED_DANGEROUS.test(';UPDATE t SET')).toBe(true)
+    })
+
+    test('should match chained RENAME', () => {
+      expect(
+        SQL_PATTERNS.CHAINED_DANGEROUS.test('; RENAME TABLE old TO new')
+      ).toBe(true)
+    })
+
+    test('should match chained REPLACE', () => {
+      expect(SQL_PATTERNS.CHAINED_DANGEROUS.test(';REPLACE TABLE t1')).toBe(
+        true
+      )
     })
 
     test('should not match non-chained statements', () => {
@@ -510,6 +534,27 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       expect(() => validateSqlQuery('TRUNCATE TABLE users')).toThrow(
         'Potentially dangerous SQL detected'
       )
+    })
+
+    test('should reject RENAME statements', () => {
+      expect(() => validateSqlQuery('RENAME TABLE old TO new')).toThrow(
+        'Potentially dangerous SQL detected'
+      )
+    })
+
+    test('should reject REPLACE statements', () => {
+      expect(() => validateSqlQuery('REPLACE TABLE t1 (id UInt32)')).toThrow(
+        'Potentially dangerous SQL detected'
+      )
+    })
+
+    test('should reject chained RENAME/REPLACE', () => {
+      expect(() =>
+        validateSqlQuery('SELECT * FROM my_table; RENAME TABLE old TO new')
+      ).toThrow()
+      expect(() =>
+        validateSqlQuery('SELECT * FROM my_table; REPLACE TABLE t1')
+      ).toThrow()
     })
 
     test('should reject case-insensitive DROP', () => {

@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 import { failedQueriesConfig } from '@/lib/query-config/queries/failed-queries'
 
 function FailedQueriesPageContent() {
@@ -19,4 +20,5 @@ function FailedQueriesPage() {
 
 export const Route = createFileRoute('/(dashboard)/failed-queries')({
   component: FailedQueriesPage,
+  head: () => pageOgHead('failed-queries'),
 })
