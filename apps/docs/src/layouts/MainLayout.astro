@@ -64,8 +64,15 @@ const ogImage = new URL('/og.png', Astro.site).toString()
         stored === 'dark' ||
         (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
-      if (localStorage.getItem('sidebar') === 'collapsed')
+      const desktop = window.matchMedia('(min-width: 1024px)').matches
+      if (desktop) {
+        document.documentElement.setAttribute(
+          'data-sidebar',
+          localStorage.getItem('sidebar') === 'collapsed' ? 'collapsed' : 'expanded'
+        )
+      } else {
         document.documentElement.setAttribute('data-sidebar', 'collapsed')
+      }
     </script>
   </head>
   <body>
