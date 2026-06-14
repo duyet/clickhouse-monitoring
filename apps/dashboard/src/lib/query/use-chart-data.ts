@@ -129,7 +129,7 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
         })
         return {
           data: result.data as ChartDataResponse<T>['data'],
-          metadata: (result.metadata ?? {}) as ChartMetadata,
+          metadata: (result.metadata ?? {}) as unknown as ChartMetadata,
         } satisfies ChartDataResponse<T>
       }
 

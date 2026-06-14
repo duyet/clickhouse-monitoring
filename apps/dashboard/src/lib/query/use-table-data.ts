@@ -96,7 +96,8 @@ export function useTableData<T = unknown>(
         })
         return {
           data: result.data,
-          metadata: (result.metadata ?? {}) as TableDataResponse<T>['metadata'],
+          metadata: (result.metadata ??
+            {}) as unknown as TableDataResponse<T>['metadata'],
         } satisfies TableDataResponse<T>
       }
 

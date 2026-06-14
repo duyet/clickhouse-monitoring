@@ -33,12 +33,13 @@ export async function executeConnectionTableConfig<
   const executedSql = await selectSqlForConnection(queryConfig.sql, credentials)
 
   const start = Date.now()
+  const clickhouse_settings: Record<string, string | number> = {
+    ...(timezone ? { session_timezone: timezone } : {}),
+  }
+
   const { data, queryId } = await queryConnection<T>(credentials, executedSql, {
     query_params: queryParams as Record<string, string | number | boolean>,
-    clickhouse_settings: {
-      ...queryConfig.clickhouseSettings,
-      ...(timezone ? { session_timezone: timezone } : {}),
-    },
+    clickhouse_settings,
   })
 
   return {
