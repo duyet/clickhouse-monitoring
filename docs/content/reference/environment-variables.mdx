@@ -10,12 +10,12 @@ Browser-exposed variables are **build-time inlined**. The prefix depends on whic
 
 | App | Client prefix | Example |
 |---|---|---|
-| `apps/dashboard-tsr` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
-| `apps/dashboard` (Next.js, legacy) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
+| `apps/dashboard` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
+| Legacy Next.js (v0.2 and earlier) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
 
-The tables below use `VITE_*`. If you run the legacy Next.js app, substitute `NEXT_PUBLIC_` wherever you see `VITE_`. Server-side variables (`CLICKHOUSE_*`, `CHM_*`, `LLM_*`, `CLERK_SECRET_KEY`, etc.) are the same in both apps.
+The tables below use `VITE_*`. If you are migrating from v0.2, substitute `NEXT_PUBLIC_` wherever you see `VITE_`. Server-side variables (`CLICKHOUSE_*`, `CHM_*`, `LLM_*`, `CLERK_SECRET_KEY`, etc.) are the same.
 
-Authoritative example: [`apps/dashboard-tsr/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/dashboard-tsr/.env.example).
+Authoritative example: [`apps/dashboard/.env.example`](https://github.com/duyet/clickhouse-monitoring/blob/main/apps/dashboard/.env.example).
 
 ---
 

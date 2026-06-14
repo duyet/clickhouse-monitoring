@@ -69,6 +69,10 @@ New optional vars: `CHM_AUTH_PROVIDER` (`none\|clerk\|proxy`), `CHM_API_KEY_SECR
 `HEALTH_ALERT_ENABLED` + `HEALTH_ALERT_WEBHOOK_URL`,
 `AGENT_CONVERSATION_PERSISTENCE` + `AGENT_CONVERSATION_STORE`.
 
+### ✨ Features
+
+- **Promote TanStack Start dashboard to primary, remove legacy Next.js app** ([#1392](https://github.com/duyet/clickhouse-monitoring/issues/1392)).
+
 ### 🤖 Migrate with an AI assistant
 
 Paste your config into any AI assistant with the prompt in

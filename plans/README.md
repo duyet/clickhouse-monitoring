@@ -9,7 +9,7 @@ pruned on 2026-06-14. Only the two remaining open plans are tracked below.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| [015](015-decommission-nextjs-dashboard.md) | Decommission Legacy Next.js Dashboard | P3 | M | completion of migrations | BLOCKED |
+| [015](015-decommission-nextjs-dashboard.md) | Decommission Legacy Next.js Dashboard | P3 | M | completion of migrations | DONE |
 | [018](018-remove-deprecated-variants-query-config.md) | Remove Deprecated variants Property from QueryConfig Type Schema | P3 | S | 015 | BLOCKED |
 
 *Status values: TODO \| IN PROGRESS \| DONE \| BLOCKED (with one-line reason) \| REJECTED (with one-line rationale — finding fixed independently or approach abandoned)*
@@ -17,10 +17,10 @@ pruned on 2026-06-14. Only the two remaining open plans are tracked below.
 ## Dependency notes
 
 - **Plan 015 (Decommission Next.js)** requires 100% parity completion of the TanStack Start page migration roadmap (Phase 4 of the roadmap) to avoid service disruption.
-- **Plan 018 (Remove `variants`)** is coupled to **015**. As written it only scopes type-declaration/test files, but the property still has two live consumers: the runtime backward-compat shim in `packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts` (~L227–245, via `selectQueryVariantSemver`), and the legacy `apps/dashboard/types/query-config.ts`, which still imports/re-exports `QueryConfigVariant` from `@chm/sql-builder`. Removing the type without first deleting the runtime shim and decommissioning the legacy app breaks the build. Execute 018 only after 015 lands (plus removal of the runtime shim).
+- **Plan 018 (Remove `variants`)** was coupled to **015** (now DONE). The legacy `apps/dashboard` (Next.js) has been deleted, removing that consumer. The remaining blocker is the runtime backward-compat shim in `packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts` (~L227–245, via `selectQueryVariantSemver`). Expand the in-scope list to include `clickhouse-fetch.ts` when executing 018.
 
 ## Findings considered and rejected
 
-- **`[ARCH-02]` (Independent dashboard-tsr configuration)**: Rejected. This is a documented, intentional decision in `tsr-migration-roadmap.md` to isolate the Vite 8 toolchain lockfile.
+- **`[ARCH-02]` (Independent dashboard-tsr configuration)**: Rejected. This was a documented, intentional decision during the migration to isolate the Vite 8 toolchain lockfile (see `tsr-migration-roadmap.md`). Now moot — the app is `apps/dashboard`.
 - **`[SEC-02]` (Hardcoded Secrets in `.env.local`)**: Rejected. Storing development keys in local-only, gitignored `.env.local` files is standard development configuration practice; no production secrets are tracked in Git.
-- **`[MIGRATE-02]` (Root Dockerfile builds legacy Next.js app)**: Rejected. Switched to building the primary `apps/dashboard-tsr` app in a recent merge commit `03a3c4461`.
+- **`[MIGRATE-02]` (Root Dockerfile builds legacy Next.js app)**: Rejected. Switched to building the primary `apps/dashboard` (TanStack Start) app in merge commit `03a3c4461`.

@@ -7,11 +7,14 @@ tags: [tanstack-start, migration, cloudflare-workers, vite, dual-target, agent]
 
 # Next.js → TanStack Start migration
 
+> **MIGRATION COMPLETE** (PR #1392 cutover, 2026-06-14). `apps/dashboard-tsr` was
+> renamed to `apps/dashboard`; the legacy Next.js app was deleted. `apps/dashboard`
+> is now the sole dashboard, TanStack Start, serving `dash.chmonitor.dev` via the
+> `chmonitor-dash` worker. The dual-app parallel period is over.
+
 The dashboard was migrated from **Next.js 15 (App Router + OpenNext on Cloudflare)** to
-**TanStack Start** (`@tanstack/react-start` + `@cloudflare/vite-plugin`). The new app
-lives in `apps/dashboard-tsr` and ships beside the original `apps/dashboard` as a
-**parallel app, dark-launched** at `dash-tsr.chmonitor.dev` (the live `dash.chmonitor.dev`
-stays on Next until an explicit route re-point). Epic: #1392.
+**TanStack Start** (`@tanstack/react-start` + `@cloudflare/vite-plugin`). The app now
+lives at `apps/dashboard` (was `apps/dashboard-tsr` during the migration). Epic: #1392.
 
 ## Why / trade-offs
 
@@ -25,9 +28,9 @@ KV/R2/D1 incremental-cache layer**.
 ## Topology
 
 ```
-apps/dashboard-tsr/
+apps/dashboard/
   vite.config.ts        # tanstackStart() + @cloudflare/vite-plugin (CF) | nitro() (Node)
-  wrangler.toml         # name = chmonitor-dash-tsr, routes → dash-tsr.chmonitor.dev
+  wrangler.toml         # name = chmonitor-dash, routes → dash.chmonitor.dev
   scripts/patch-wrangler-env.ts   # re-injects [[routes]]/[vars] the vite plugin strips
   src/
     routes/             # TanStack Router file routes (was app/)
@@ -118,7 +121,7 @@ middleware (#1397, PR #1428) restores that parity.
 - **Pages: 82/82** return matching status on both deployments (`/tmp/compare-prod.sh`).
 - **APIs**: both key-gated (401 to anonymous) once #1428 deploys.
 - Build gate: `bun run build` (`vite build && tsc --noEmit`) must be green; 112 pages
-  prerender. dashboard-tsr is now wired into CI (the `dashboard-tsr` job).
+  prerender. The dashboard is wired into CI (the `dashboard` job).
 
 ### Visual parity — app chrome + theme (was the big gap)
 
@@ -188,14 +191,12 @@ data-dashboard pages** (render-delay collapses), but it's not universal.
 ## Known follow-ups
 
 - **`CLICKHOUSE_PASSWORD` is a per-worker secret** — `wrangler.toml` `[vars]`
-  carry `CLICKHOUSE_HOST`/`USER`/`NAME` (same hosts as the Next prod worker), but
-  the password is injected via `wrangler secret put CLICKHOUSE_PASSWORD` and is
-  **not shared** between the `chmonitor-dash` and `chmonitor-dash-tsr` workers. If
-  `dash-tsr` charts show "Unable to connect to the server" (the `offline`
-  card-error variant) while the data path is code-correct — env bridged via
+  carry `CLICKHOUSE_HOST`/`USER`/`NAME`, but the password is injected via
+  `wrangler secret put CLICKHOUSE_PASSWORD`. If charts show "Unable to connect to
+  the server" while the data path is code-correct — env bridged via
   `bridgeClickHouseEnv`, web client auto-selected by `CLOUDFLARE_WORKERS=1` +
-  `nodejs_compat_populate_process_env` — the first thing to check is that the
-  secret is set on `chmonitor-dash-tsr` (and `--env preview`), then redeploy.
+  `nodejs_compat_populate_process_env` — check that the secret is set on
+  `chmonitor-dash` (and `--env preview`), then redeploy.
   Verify with `bun wrangler secret list` (top-level and `--env preview`).
 - **Surfaced by wiring the chrome (#1433), deferred as separate items:**
   - **Refresh controls are no-ops on TanStack Query.** `HeaderActions`/

@@ -7,7 +7,7 @@
 > in `plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 3fba89acc..HEAD -- packages/sql-builder/src/query-config-types.ts apps/dashboard-tsr/src/lib/query-config/types.ts`
+> **Drift check (run first)**: `git diff --stat 3fba89acc..HEAD -- packages/sql-builder/src/query-config-types.ts apps/dashboard/src/lib/query-config/types.ts`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -43,7 +43,7 @@
 
 The `QueryConfig` type was originally defined with a `variants` property (an array of `QueryConfigVariant`) to handle version-specific query versions. This property has been deprecated in favor of the chronological `sql` array (`VersionedSql[]`) which offers a cleaner version compatibility layout. 
 
-Currently, all SQL query configurations in `apps/dashboard-tsr` have successfully migrated to the new `VersionedSql[]` format, leaving zero active configurations using `variants`. Deleting the deprecated property and its types decreases cognitive load on developers, prevents dead code accretion, and cleans up the type definitions.
+Currently, all SQL query configurations in `apps/dashboard` have successfully migrated to the new `VersionedSql[]` format, leaving zero active configurations using `variants`. Deleting the deprecated property and its types decreases cognitive load on developers, prevents dead code accretion, and cleans up the type definitions.
 
 ## Current state
 
@@ -65,10 +65,10 @@ export interface QueryConfigVariant {
   variants?: QueryConfigVariant[]
 ```
 
-The interface `QueryConfig` in `apps/dashboard-tsr/src/lib/query-config/types.ts` declares:
+The interface `QueryConfig` in `apps/dashboard/src/lib/query-config/types.ts` declares:
 
 ```typescript
-// apps/dashboard-tsr/src/lib/query-config/types.ts:93-97
+// apps/dashboard/src/lib/query-config/types.ts:93-97
   /**
    * @deprecated Use `sql: VersionedSql[]`. Legacy min/max version variants,
    * kept only so ported configs that still use it resolve correctly.
@@ -76,10 +76,10 @@ The interface `QueryConfig` in `apps/dashboard-tsr/src/lib/query-config/types.ts
   variants?: QueryConfigVariant[]
 ```
 
-The interface `QueryConfig` in `apps/dashboard-tsr/src/types/query-config.ts` declares:
+The interface `QueryConfig` in `apps/dashboard/src/types/query-config.ts` declares:
 
 ```typescript
-// apps/dashboard-tsr/src/types/query-config.ts:498-505
+// apps/dashboard/src/types/query-config.ts:498-505
   /**
    * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
    *
@@ -90,7 +90,7 @@ The interface `QueryConfig` in `apps/dashboard-tsr/src/types/query-config.ts` de
   variants?: QueryConfigVariant[]
 ```
 
-No active configs in `dashboard-tsr` use `variants`.
+No active configs in `apps/dashboard` use `variants`.
 
 ## Commands you will need
 
@@ -107,11 +107,11 @@ No active configs in `dashboard-tsr` use `variants`.
 - `packages/sql-builder/src/query-config-types.ts`
 - `packages/sql-builder/src/index.ts`
 - `packages/sql-builder/src/__tests__/query-config-types.test.ts`
-- `apps/dashboard-tsr/src/lib/query-config/types.ts`
-- `apps/dashboard-tsr/src/types/query-config.ts`
+- `apps/dashboard/src/lib/query-config/types.ts`
+- `apps/dashboard/src/types/query-config.ts`
 
 **Out of scope**:
-- Modifications to any SQL config files under `apps/dashboard-tsr/src/lib/query-config/`.
+- Modifications to any SQL config files under `apps/dashboard/src/lib/query-config/`.
 
 ## Git workflow
 
@@ -141,12 +141,12 @@ Open [query-config-types.test.ts](file:///Users/duet/project/clickhouse-monitor/
 
 **Verify**: Run `bun run test:packages` to verify that the sql-builder tests compile and pass successfully.
 
-### Step 3: Remove variants from apps/dashboard-tsr type declarations
+### Step 3: Remove variants from apps/dashboard type declarations
 
-1. Open [types.ts](file:///Users/duet/project/clickhouse-monitor/apps/dashboard-tsr/src/lib/query-config/types.ts). Remove `QueryConfigVariant` from imports (line 20) and delete the `variants` property from the `QueryConfig` interface (lines 93-97).
-2. Open [query-config.ts](file:///Users/duet/project/clickhouse-monitor/apps/dashboard-tsr/src/types/query-config.ts). Remove `QueryConfigVariant` from imports (line 4) and delete the `variants` property from `QueryConfig` interface (lines 498-505).
+1. Open [types.ts](file:///Users/duet/project/clickhouse-monitor/apps/dashboard/src/lib/query-config/types.ts). Remove `QueryConfigVariant` from imports (line 20) and delete the `variants` property from the `QueryConfig` interface (lines 93-97).
+2. Open [query-config.ts](file:///Users/duet/project/clickhouse-monitor/apps/dashboard/src/types/query-config.ts). Remove `QueryConfigVariant` from imports (line 4) and delete the `variants` property from `QueryConfig` interface (lines 498-505).
 
-**Verify**: Run `cd apps/dashboard-tsr && bun run type-check` to verify that the entire dashboard compiles without any type mismatches.
+**Verify**: Run `cd apps/dashboard && bun run type-check` to verify that the entire dashboard compiles without any type mismatches.
 
 ## Test plan
 

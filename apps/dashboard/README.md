@@ -1,79 +1,154 @@
-# chmonitor dashboard (`apps/dashboard`)
+# dashboard — ClickHouse Monitoring (TanStack Start)
 
-The ClickHouse monitoring dashboard — a Next.js 15 (React 19) app that reads
-ClickHouse `system.*` tables to provide real-time insight into queries, merges,
-replication, tables/parts, and cluster health. Deployed to Cloudflare Workers
-as `chmonitor-dash` on **dash.chmonitor.dev** (also `cloud.chmonitor.dev`).
+The ClickHouse monitoring dashboard on **TanStack Start + Cloudflare Workers** —
+the official dashboard (it replaced the legacy Next.js app in v0.3, #1392). Live at
+**[dash.chmonitor.dev](https://dash.chmonitor.dev)** (preview:
+`preview.dash.chmonitor.dev` on PRs).
 
-This is the primary app of the monorepo. It is a member of the root bun
-workspace and shares the pinned dependency tree (see the root
-[`package.json`](../../package.json) `workspaces` field).
+## Deploy your own
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard)
+
+Click the button above to deploy your own instance to Cloudflare Workers. You will be prompted to connect your Cloudflare account and set the required environment variables.
+
+### Required variables
+
+| Variable | Purpose |
+|---|---|
+| `CLICKHOUSE_HOST` | ClickHouse URL(s). Comma-separated for multi-host (e.g. `https://ch1:8443,https://ch2:8443`) |
+| `CLICKHOUSE_USER` | Username(s). Single value or one per host, comma-separated |
+| `CLICKHOUSE_PASSWORD` | Password(s). Single value or one per host, comma-separated |
+
+### Optional variables
+
+| Variable | Purpose |
+|---|---|
+| `CLICKHOUSE_NAME` | Friendly display name(s) for each host, comma-separated |
+| `CLICKHOUSE_MAX_EXECUTION_TIME` | Query timeout in seconds (default: `60`) |
+| `VITE_AUTH_PROVIDER` | Auth mode: `none` (default) or `clerk` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (`pk_...`). Required when `VITE_AUTH_PROVIDER=clerk` |
+| `CLERK_SECRET_KEY` | Clerk server secret (`sk_...`). Required when auth provider is `clerk` |
+| `CHM_AUTH_PROVIDER` | Server-side auth mirror of `VITE_AUTH_PROVIDER` (`none` / `clerk` / `proxy`) |
+| `CHM_API_KEY_SECRET` | Enables Bearer-token auth on `/api/v1/*` |
+| `LLM_API_KEY` | AI provider key (OpenRouter, AnyRouter, etc.) |
+| `LLM_API_BASE` | AI provider base URL (e.g. `https://openrouter.ai/api/v1`) |
+| `LLM_MODEL` | Model to use (e.g. `openrouter/free`, `anyrouter/free`) |
+| `OPENROUTER_API_KEY` | OpenRouter API key (alternative to `LLM_API_KEY`) |
+| `ANYROUTER_API_KEY` | AnyRouter API key (alternative to `LLM_API_KEY`) |
+
+`VITE_*` variables are baked into the browser bundle at build time; `CLICKHOUSE_*` and secret keys are runtime Worker variables set via `wrangler secret put` or the Cloudflare dashboard.
+
+88 page routes and 53 API routes cover the full feature set: real-time cluster
+metrics, query/merge/mutation monitoring, a database explorer, ClickHouse Keeper
+views, log inspection, and an AI agent — all served as a fast static shell with
+client-side data loading.
+
+## Why TanStack Start (vs the Next app)
+
+Same features, leaner substrate. Versus the former Next.js app (measured, post-merge main):
+
+| | Next.js (v0.2) | TanStack (v0.3) |
+|---|---|---|
+| Worker bundle (gzip) | 2,708 KiB | **1,793 KiB** (−34%, 42% headroom under CF's 3 MiB cap) |
+| Build time | 116 s | **~9 s** |
+| Worker startup | — | **~25 ms** |
+| Dependencies | 142 | 83 |
 
 ## Architecture
 
-Fully static site — no SSR, no middleware, client-side only:
+- **Static-first.** Every route is prerendered to static HTML at build (fast
+  first paint, served from the Cloudflare edge), with a SPA fallback for any
+  non-crawled route. Dynamic data loads client-side via **TanStack Query**
+  against the `/api/v1/*` routes — "fast like SSR" without paying SSR per request.
+- **Worker API.** `src/routes/api/**` run in the Cloudflare Worker (`workerd`)
+  and talk to ClickHouse via `@chm/clickhouse-client`.
+- **Bundle discipline.** Client-only heavy libs (recharts, xyflow, assistant-ui,
+  json-render, codemirror, streamdown, highlight.js, assistant-stream) are
+  **stubbed out of the SSR/worker bundle** in `vite.config.ts` — they only run in
+  lazy client chunks, so they never count against the 3 MiB Worker limit.
+- **Dual build target** from one source: default → Cloudflare Worker;
+  `BUILD_TARGET=node` → a Nitro node-server build (`.output/server`) for Docker.
 
-- `'use client'` pages with client-side redirects (never `redirect()`)
-- [SWR](https://swr.vercel.app) for all data fetching, with caching
-- Query-param routing (`/overview?host=0`), not dynamic routes
-- API routes under `app/api/v1/*` back the SWR hooks
-- Multi-host: every data fetch requires a `hostId`
+## Stack
 
-See the repo-root [`CLAUDE.md`](../../CLAUDE.md) for the full architecture,
-conventions, and query-config reference.
+- TanStack Start (TanStack Router) on Vite, React 19, TypeScript
+- `@cloudflare/vite-plugin` → `workerd` SSR bundle (no OpenNext)
+- TanStack Query (client data fetching/cache), TanStack Table (data grids)
+- Tailwind v4 (`@tailwindcss/vite`, CSS-first), shadcn/ui
+- Deploy: `wrangler deploy` (worker `chmonitor-dash`)
+
+## Features
+
+- **Overview & insights** — cluster KPIs, activity/query/record/traffic stats, charts
+- **Queries** — running, history, failed, common-errors, expensive (by time & memory), explain
+- **Merges & mutations** — merges, merge-performance, mutations, moves, detached-parts
+- **Tables & storage** — explorer (tree browser + DDL/preview/dependencies), disks, backups, dropped-tables, mergetree-settings
+- **Clusters & replication** — clusters, replicas-status, distributed-ddl-queue
+- **ClickHouse Keeper** — overview, connections, watches, logs, info
+- **System** — metrics, asynchronous-metrics, dictionaries, kafka-consumers, logs (text/crashes/stack-traces)
+- **AI** — agent chat (`/agents`, `/ai-chat`) and a remote **MCP** server at `/api/mcp`
 
 ## Develop
 
 ```bash
-cd apps/dashboard
-bun install            # or `bun install` from the repo root
-bun run dev            # http://localhost:3000 (Turbopack)
-bun run build          # production build (includes type checking)
-bun run start          # serve the production build
+bun install            # from the repo root (workspace member)
+bun run dev            # vite dev (generates src/routeTree.gen.ts on first run)
+bun run build          # vite build + tsc --noEmit (type-check)
+bun run test           # bun test src/
+bun run cf:dry-run     # build + wrangler deploy --dry-run (bundle size, no creds)
 ```
 
-From the repo root, `bun run dev` (turbo) starts the dashboard and MCP apps
-together.
-
-## Test & lint
-
-```bash
-bun run test                  # full Bun test suite
-bun run test:unit             # targeted unit tests
-bun run test:query-config     # query-config tests
-bun run test:component:headless   # Cypress component tests
-bun run test:e2e:headless         # Cypress e2e tests
-bun run lint                  # Biome lint
-bun run fmt                   # Biome format
-```
-
-## Environment
-
-Required env vars (via `.env.local` or CI secrets):
-
-| Variable | Purpose |
-|----------|---------|
-| `CLICKHOUSE_HOST` | ClickHouse host(s), comma-separated |
-| `CLICKHOUSE_USER` | ClickHouse user(s), comma-separated |
-| `CLICKHOUSE_PASSWORD` | ClickHouse password(s), comma-separated |
-
-Optional: `CLICKHOUSE_NAME`, `CLICKHOUSE_MAX_EXECUTION_TIME`, `CLERK_SECRET_KEY`,
-LLM API keys (`LLM_API_KEY`, `LLM_API_BASE`, `LLM_MODEL`), and analytics keys.
-See [`CLAUDE.md`](../../CLAUDE.md) for the complete list.
+`src/routeTree.gen.ts` is generated by the `tanstackStart()` plugin and gitignored.
 
 ## Deploy
 
-```bash
-bun run cf:deploy      # build -> wrangler deploy -> populate KV cache
-```
+Production deploys are **automatic on merge to `main`** via
+`.github/workflows/cloudflare.yml` (the `dashboard` job builds and deploys to
+`dash.chmonitor.dev`; PRs deploy to `preview.dash.chmonitor.dev`).
 
-Production deploys also run on push to `main` via GitHub Actions. The MCP
-endpoints (`/api/mcp*`) are served by the separate [`apps/mcp`](../mcp) worker,
-which is split out to keep this worker's bundle small.
-
-## Docker
+Manual deploy:
 
 ```bash
-docker compose up -d   # from the repo root
-bun run docker:health
+export CLOUDFLARE_API_TOKEN=...   # or `wrangler login`
+bun run cf:deploy                 # build + wrangler deploy
+bun scripts/verify-deploy.ts      # post-deploy health check
 ```
+
+Node/Docker target: `bun run build:node` → `bun run start:node`.
+
+## Configure
+
+Runtime vars/secrets are injected per environment (CI secrets or `wrangler secret put`),
+never committed. Client-exposed vars are `VITE_`-prefixed (`import.meta.env`); server
+vars come from the Worker binding / `process.env`.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `CLICKHOUSE_HOST` | ✅ | ClickHouse URL(s), comma-separated for multi-host |
+| `CLICKHOUSE_USER` | ✅ | Username(s) |
+| `CLICKHOUSE_PASSWORD` | ✅ | Password(s) |
+| `CLICKHOUSE_NAME` | | Friendly host name(s) |
+| `CLICKHOUSE_DATABASE` | | Default database |
+| `CLICKHOUSE_MAX_EXECUTION_TIME` | | Query timeout (default 60s) |
+| `VITE_AUTH_PROVIDER` / `CHM_AUTH_PROVIDER` | | `none` (default) \| `clerk` \| `proxy` |
+| `CHM_API_KEY_SECRET` | | Enables API-key auth on `/api/v1/*` |
+| `VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | | When auth provider is `clerk` |
+| `LLM_API_KEY` / `LLM_API_BASE` / `LLM_MODEL` | | AI agent (OpenRouter/AnyRouter-compatible) |
+
+### Security headers
+
+Applied with full coverage: a TanStack Start request middleware
+(`src/lib/security-headers.ts`) sets `X-Content-Type-Options`, `X-Frame-Options`,
+`Referrer-Policy`, and `Permissions-Policy` on **worker/API responses**, and
+`public/_headers` applies the same set to **prerendered static pages** (which are
+served from the edge and bypass the worker).
+
+## Workspace & shared packages
+
+This app is a **root `bun` workspace member** (alongside `apps/mcp`), so its deps
+live in the root `bun.lock`. Run `bun install` from the repo root, or
+`bun --filter dashboard <script>` to target it.
+
+Shared `@chm/*` packages are resolved from **source** (no `workspace:*`): `tsconfig`
+`paths` for `tsc`, `vite.config` `resolve.alias` + `ssr.noExternal` so Vite
+transpiles and bundles them into the worker.

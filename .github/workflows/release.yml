@@ -29,63 +29,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-wasm:
-    name: build-wasm
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
-          fetch-depth: 0
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Bun Cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-v1-
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.94.0
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Cargo
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rust/monitor-core/target
-          key: wasm-cargo-${{ runner.os }}-${{ hashFiles('rust/monitor-core/Cargo.lock', 'rust/monitor-core/Cargo.toml') }}
-          restore-keys: |
-            wasm-cargo-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build WASM
-        run: bun run wasm:build
-
-      - name: Upload WASM artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: wasm-output
-          path: |
-            packages/clickhouse-client/src/wasm/generated/monitor_core.js
-            packages/clickhouse-client/src/wasm/generated/monitor_core.d.ts
-            packages/clickhouse-client/src/wasm/generated/monitor_core_bg.wasm
-          retention-days: 1
-
   build-docker-amd64:
     name: build-docker-amd64
-    needs: [build-wasm]
     runs-on: ubuntu-latest
     # 30min was exactly the cold-build wall time → timed out for v0.2.7/v0.2.8.
     # With the shared warm cache this is ~1min; the headroom only matters if the
@@ -114,12 +59,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download pre-built WASM
-        uses: actions/download-artifact@v8
-        with:
-          name: wasm-output
-          path: packages/clickhouse-client/src/wasm/generated
 
       - name: Extract Docker metadata
         id: meta
@@ -329,10 +268,9 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      # apps/dashboard-tsr is an ISOLATED install (own bun.lock, not in the root
-      # workspace), mirroring the Dockerfile. Install inside the app dir.
+      # apps/dashboard is part of the root bun workspace; the root lockfile owns
+      # its deps. Install at the repo root to hydrate the whole workspace.
       - name: Install dependencies
-        working-directory: apps/dashboard-tsr
         run: bun install --frozen-lockfile
 
       # Standalone = the Nitro node-server output (.output). Use the build:node:ci
@@ -344,7 +282,7 @@ jobs:
           VITE_GIT_SHA: ${{ github.sha }}
           VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
           VITE_CI: "true"
-        working-directory: apps/dashboard-tsr
+        working-directory: apps/dashboard
         run: bun run build:node:ci
 
       # Cloudflare = the workerd bundle (dist/) from the default vite build. This
@@ -354,21 +292,21 @@ jobs:
           VITE_GIT_SHA: ${{ github.sha }}
           VITE_GIT_REF: ${{ steps.meta.outputs.tag }}
           VITE_CI: "true"
-        working-directory: apps/dashboard-tsr
+        working-directory: apps/dashboard
         run: bunx vite build
 
       - name: Package release archives
         run: |
           TAG="${{ steps.meta.outputs.tag }}"
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
-            apps/dashboard-tsr/.output \
-            apps/dashboard-tsr/package.json \
-            apps/dashboard-tsr/bun.lock
+            apps/dashboard/.output \
+            apps/dashboard/package.json \
+            bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
-            apps/dashboard-tsr/dist \
-            apps/dashboard-tsr/wrangler.toml \
-            apps/dashboard-tsr/package.json \
-            apps/dashboard-tsr/bun.lock
+            apps/dashboard/dist \
+            apps/dashboard/wrangler.toml \
+            apps/dashboard/package.json \
+            bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
       # Centralized release notes: tiered AI summary (Copilot → GitHub Models →
