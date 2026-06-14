@@ -14,6 +14,7 @@ import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-co
 import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
+import { UserConnectionsCacheGuard } from '@/lib/hooks/user-connections-cache-guard'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -85,6 +86,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <ThemeProvider>
               <TimeRangeProvider>
                 <QueryProvider>
+                  <UserConnectionsCacheGuard />
                   <BrowserConnectionsProvider>
                     <AppProvider>
                       <FeaturePermissionsProvider>
