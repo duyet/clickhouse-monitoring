@@ -128,9 +128,9 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
           timezone,
         })
         return {
-          data: result.data,
-          metadata: result.metadata as ChartMetadata | undefined,
-        }
+          data: result.data as ChartDataResponse<T>['data'],
+          metadata: (result.metadata ?? {}) as ChartMetadata,
+        } satisfies ChartDataResponse<T>
       }
 
       const response = await apiFetch(url)

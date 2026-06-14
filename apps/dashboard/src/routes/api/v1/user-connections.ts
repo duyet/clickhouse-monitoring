@@ -40,7 +40,7 @@ function mapStoreError(error: unknown, context: typeof ROUTE_GET): Response {
   }
   return createApiErrorResponse(
     {
-      type: ApiErrorType.InternalError,
+      type: ApiErrorType.QueryError,
       message: error instanceof Error ? error.message : 'Unknown error',
     },
     500,

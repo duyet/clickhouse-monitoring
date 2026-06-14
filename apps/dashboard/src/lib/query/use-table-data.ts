@@ -86,7 +86,7 @@ export function useTableData<T = unknown>(
     queryKey,
     queryFn: async () => {
       if (isCustomHost(hostId)) {
-        return fetchTableForHost<T>({
+        const result = await fetchTableForHost<T>({
           queryConfigName,
           hostId,
           hosts,
@@ -94,6 +94,10 @@ export function useTableData<T = unknown>(
           searchParams,
           timezone,
         })
+        return {
+          data: result.data,
+          metadata: (result.metadata ?? {}) as TableDataResponse<T>['metadata'],
+        } satisfies TableDataResponse<T>
       }
 
       const response = await apiFetch(url)
