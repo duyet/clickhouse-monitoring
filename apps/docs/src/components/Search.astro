@@ -4,7 +4,16 @@
 // `astro dev` — the button still opens the dialog but reports unavailability.
 ---
 
-<button class="icon-btn" id="search-open" type="button" aria-label="Search docs">
+<button class="search-pill" id="search-open" type="button" aria-label="Search docs">
+  <svg class="search-pill__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7"></circle>
+    <path d="m21 21-4.3-4.3"></path>
+  </svg>
+  <span class="search-pill__label">Search</span>
+  <span class="search-pill__kbd" aria-hidden="true">⌘K</span>
+</button>
+
+<button class="icon-btn search-icon" id="search-open-mobile" type="button" aria-label="Search docs">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <circle cx="11" cy="11" r="7"></circle>
     <path d="m21 21-4.3-4.3"></path>
@@ -18,18 +27,30 @@
   </p>
 </dialog>
 
+<style>
+  .search-icon {
+    display: inline-flex;
+  }
+  @media (min-width: 1024px) {
+    .search-icon {
+      display: none;
+    }
+  }
+</style>
+
 <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
 
 <script>
-  const openBtn = document.getElementById('search-open')
+  const openBtns = [
+    document.getElementById('search-open'),
+    document.getElementById('search-open-mobile'),
+  ]
   const modal = document.getElementById('search-modal') as HTMLDialogElement | null
   let initialized = false
 
   async function initSearch() {
     if (initialized || !modal) return
     try {
-      // Load the Pagefind UI bundle at runtime (it only exists in the built
-      // site, not in the source tree, so it can't be a static import).
       await new Promise<void>((resolve, reject) => {
         const s = document.createElement('script')
         s.src = '/pagefind/pagefind-ui.js'
@@ -46,18 +67,22 @@
     }
   }
 
-  openBtn?.addEventListener('click', async () => {
+  async function openSearch() {
     await initSearch()
     modal?.showModal()
     setTimeout(() => modal?.querySelector('input')?.focus(), 50)
-  })
+  }
+
+  for (const btn of openBtns) {
+    btn?.addEventListener('click', openSearch)
+  }
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) modal.close()
   })
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault()
-      openBtn?.click()
+      openSearch()
     }
   })
 </script>

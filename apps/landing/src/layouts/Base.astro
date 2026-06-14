@@ -44,6 +44,7 @@ const ogImage = new URL(image, Astro.site).toString()
       --maxw:1140px;
       --shadow-card:0 1px 2px rgba(9,9,11,.04), 0 1px 0 rgba(9,9,11,.02);
       --shadow-float:0 24px 60px -28px rgba(9,9,11,.30), 0 8px 24px -16px rgba(9,9,11,.18);
+      --shadow-glow:0 0 120px -20px rgba(249,115,22,.35);
     }
     *{margin:0;padding:0;box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -55,6 +56,7 @@ const ogImage = new URL(image, Astro.site).toString()
       -webkit-font-smoothing:antialiased;
       line-height:1.5;
     }
+
     a{color:inherit;text-decoration:none}
     .mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
     .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
@@ -92,17 +94,19 @@ const ogImage = new URL(image, Astro.site).toString()
     .nav-toggle{display:none}
 
     /* ── hero ── */
-    .hero{padding:44px 0 66px;text-align:center;position:relative;overflow:hidden}
+    .hero{padding:52px 0 72px;text-align:center;position:relative;overflow:hidden}
     .hero::before{content:"";position:absolute;inset:0;z-index:-1;
       background:
-        radial-gradient(900px 380px at 50% -120px, rgba(249,115,22,.10), transparent 70%),
-        radial-gradient(700px 320px at 50% -60px, rgba(245,158,11,.08), transparent 70%);}
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(249,115,22,.14), transparent 65%),
+        radial-gradient(ellipse 60% 40% at 80% 10%, rgba(245,158,11,.08), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 15% 20%, rgba(16,185,129,.05), transparent 50%);}
     .pill{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 14px 0 11px;border:1px solid var(--border);
       border-radius:999px;font-size:12.5px;font-weight:500;color:var(--fg-soft);background:#fff;box-shadow:var(--shadow-card);white-space:nowrap}
     .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,.16)}
     .pill .tag{font-weight:600;color:var(--muted-fg)}
-    h1.hero-title{font-size:clamp(38px,5.6vw,64px);line-height:1.04;letter-spacing:-.03em;font-weight:680;font-weight:700;
-      margin:22px auto 0;max-width:16ch;text-wrap:balance}
+    h1.hero-title{font-size:clamp(38px,5.6vw,64px);line-height:1.04;letter-spacing:-.03em;font-weight:700;
+      margin:22px auto 0}
+    .hero-line{display:block}
     h1.hero-title .accent{background:linear-gradient(120deg,#f59e0b,#f97316);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
     .hero-sub{margin:22px auto 0;max-width:60ch;font-size:18.5px;color:var(--muted-fg);text-wrap:pretty}
     .hero-actions{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:30px;flex-wrap:wrap}
@@ -112,21 +116,12 @@ const ogImage = new URL(image, Astro.site).toString()
     .hero-meta svg{width:14px;height:14px;color:var(--emerald)}
 
     /* ── browser frame ── */
-    .shot{margin-top:54px;position:relative}
-    .browser{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;position:relative;
-      box-shadow:var(--shadow-float)}
     .browser-bar{display:flex;align-items:center;gap:14px;height:42px;padding:0 14px;background:#fbfbfc;border-bottom:1px solid var(--border-soft)}
     .lights{display:flex;gap:7px}
     .lights i{width:11px;height:11px;border-radius:50%;display:block}
     .lights i:nth-child(1){background:#ff5f57}
     .lights i:nth-child(2){background:#febc2e}
     .lights i:nth-child(3){background:#28c840}
-    .url{flex:1;display:flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:7px;
-      background:#fff;border:1px solid var(--border);font-size:12.5px;color:var(--muted-fg);max-width:380px;margin:0 auto}
-    .url svg{width:12px;height:12px;color:var(--emerald)}
-    .url b{color:var(--fg);font-weight:550;font-weight:600}
-    .browser-body{display:block;width:100%;position:relative}
-    .browser-body img{display:block;width:100%}
     /* draggable carousel */
     .carousel{position:relative;width:100%;overflow:hidden;touch-action:pan-y;cursor:grab}
     .carousel.dragging{cursor:grabbing}
@@ -143,10 +138,6 @@ const ogImage = new URL(image, Astro.site).toString()
     .feat-shot .ctrack{height:100%}
     .feat-shot .cslide{height:100%}
     .feat-shot .cslide img{height:100%;object-fit:cover;object-position:top center}
-    /* hero carousel: show each dashboard shot full, height fits the active slide */
-    .browser-body .ctrack{align-items:flex-start}
-    .browser-body .carousel{transition:height .55s cubic-bezier(.22,1,.36,1)}
-    .browser-body .cslide img{width:100%;height:auto;display:block}
 
     /* ── tour gallery (drag-scroll marquee) ── */
     .gallery-strip{overflow-x:auto;overflow-y:hidden;position:relative;cursor:grab;touch-action:pan-x;
@@ -163,8 +154,6 @@ const ogImage = new URL(image, Astro.site).toString()
     .gcard .gtab{font-size:12px;font-weight:500;color:var(--muted-fg)}
     .gcard img{display:block;width:100%;aspect-ratio:16/9.6;object-fit:cover;object-position:top center;-webkit-user-drag:none}
     @media (max-width:560px){.gcard{width:340px}}
-    .shot-fade{position:absolute;left:0;right:0;bottom:-1px;height:90px;
-      background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
 
     /* ── section scaffolding ── */
     section{position:relative}
@@ -173,7 +162,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .sec-head{max-width:none}
     .sec-head .eyebrow{display:flex;align-items:center;gap:9px}
     .sec-head .eyebrow::before{content:"";width:18px;height:1.5px;background:var(--amber);border-radius:2px}
-    .sec-head h2{font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.025em;font-weight:680;font-weight:700;margin-top:14px;text-wrap:balance}
+    .sec-head h2{font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.025em;font-weight:700;margin-top:14px;text-wrap:balance}
     .sec-head p{margin-top:14px;font-size:17px;color:var(--muted-fg);max-width:62ch;text-wrap:pretty}
 
     /* ── feature rows ── */
@@ -183,7 +172,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .feat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
       border:1px solid var(--border);background:#fff;box-shadow:var(--shadow-card)}
     .feat-ico svg{width:19px;height:19px}
-    .feat-text h3{font-size:25px;letter-spacing:-.02em;font-weight:660;font-weight:700;margin-top:18px;line-height:1.15}
+    .feat-text h3{font-size:25px;letter-spacing:-.02em;font-weight:700;margin-top:18px;line-height:1.15}
     .feat-text p{margin-top:13px;font-size:16px;color:var(--muted-fg);max-width:46ch;text-wrap:pretty}
     .feat-list{margin-top:20px;display:flex;flex-direction:column;gap:11px}
     .feat-list li{display:flex;gap:11px;font-size:14.5px;color:var(--fg-soft);list-style:none}
