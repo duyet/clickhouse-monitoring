@@ -10,8 +10,4 @@ export const SITE = {
   dashboard: 'https://dash.chmonitor.dev/?ref=docs',
 }
 
-// External quick links shown as a compact topbar above the sidebar nav.
-export const QUICK_LINKS = [
-  { label: 'Home', href: SITE.home, external: true },
-  { label: 'Dashboard', href: SITE.dashboard, external: true },
-]
+// Doc category sections in the header are generated from nav.json (see HeaderNav.astro).

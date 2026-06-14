@@ -27,6 +27,7 @@ export default defineConfig({
       framework: 'react',
       bundler: 'vite',
     },
+    supportFile: false,
     specPattern: 'src/**/*.cy.{ts,tsx}',
   },
 })
