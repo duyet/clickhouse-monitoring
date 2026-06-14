@@ -1,21 +1,23 @@
 /**
- * Static Open Graph (OG) image generator for all chmonitor apps.
+ * Open Graph (OG) image generator for all chmonitor apps.
  *
  * Pipeline: Satori (HTML/CSS object tree -> SVG) + @resvg/resvg-js (SVG -> PNG).
- * This is a DEV-TIME tool: the PNGs it emits are committed to each app's
- * `public/` dir and served statically, so neither the fonts it downloads nor
- * the native resvg binary ever touch CI or the deployed runtime.
+ * Fonts are vendored under `assets/og-fonts/` so generation is hermetic — no
+ * network access — and safe to run inside CI deploy jobs (see cloudflare.yml).
+ * The PNGs are also committed so local dev and build-check workflows have a
+ * baseline without running this script.
  *
- * Run:  bun run scripts/generate-og-images.ts
+ * Run:  bun run og:generate   (alias for `bun run scripts/generate-og-images.ts`)
  *
  * Add or tweak a card by editing the CARDS array below, then re-run and commit.
  */
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { Resvg } from '@resvg/resvg-js'
 import satori from 'satori'
 
 const ROOT = join(import.meta.dir, '..')
+const FONT_DIR = join(ROOT, 'assets/og-fonts')
 
 // Brand palette — mirrors apps/landing Base.astro :root tokens.
 const BG = '#09090b'
@@ -196,24 +198,15 @@ function buildTree(card: Card) {
   )
 }
 
-async function fetchFont(url: string): Promise<ArrayBuffer> {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch font ${url}: ${res.status}`)
-  return res.arrayBuffer()
+async function loadFont(file: string): Promise<Buffer> {
+  return readFile(join(FONT_DIR, file))
 }
 
 async function main() {
-  console.log('Downloading Inter fonts…')
   const [regular, semibold, bold] = await Promise.all([
-    fetchFont(
-      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf'
-    ),
-    fetchFont(
-      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.ttf'
-    ),
-    fetchFont(
-      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf'
-    ),
+    loadFont('Inter-Regular.ttf'),
+    loadFont('Inter-SemiBold.ttf'),
+    loadFont('Inter-Bold.ttf'),
   ])
 
   const fonts = [
