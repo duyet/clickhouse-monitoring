@@ -58,10 +58,7 @@ const ogImage = new URL(image, Astro.site).toString()
       -webkit-font-smoothing:antialiased;
       line-height:1.55;
     }
-    body::before{
-      content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.035;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
+
     a{color:inherit;text-decoration:none}
     .mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
     .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
@@ -184,7 +181,7 @@ const ogImage = new URL(image, Astro.site).toString()
 
     /* ── section scaffolding ── */
     section{position:relative}
-    .band{padding:96px 0;content-visibility:auto;contain-intrinsic-size:auto 800px}
+    .band{padding:96px 0}
     .band-soft{background:var(--bg-soft);border-block:1px solid var(--border-soft)}
     .sec-head{max-width:none}
     .sec-head .eyebrow{display:flex;align-items:center;gap:9px}

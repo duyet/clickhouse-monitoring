@@ -1,10 +1,10 @@
 ---
 const showcaseSlides = [
-  { tab: 'Overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview dashboard' },
-  { tab: 'Cluster Topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology map' },
-  { tab: 'Health Summary', src: '/landing-assets/hero-health.png', alt: 'chmonitor health summary indicators' },
-  { tab: 'Cluster Insights', src: '/landing-assets/g-insights.png', alt: 'chmonitor cluster insights' },
-  { tab: 'Running Queries', src: '/landing-assets/g-running.png', alt: 'chmonitor running queries' },
+  { tab: 'Overview', path: '/overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview dashboard' },
+  { tab: 'Cluster Topology', path: '/topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology map' },
+  { tab: 'Health Summary', path: '/health', src: '/landing-assets/hero-health.png', alt: 'chmonitor health summary indicators' },
+  { tab: 'Cluster Insights', path: '/insights', src: '/landing-assets/g-insights.png', alt: 'chmonitor cluster insights' },
+  { tab: 'Running Queries', path: '/running-queries', src: '/landing-assets/g-running.png', alt: 'chmonitor running queries' },
 ]
 const galleryCards = [
   { tab: 'Overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview' },
@@ -18,6 +18,7 @@ const galleryCards = [
   { tab: 'Data Explorer', src: '/landing-assets/g-data-explorer.png', alt: 'chmonitor data explorer' },
   { tab: 'Metrics', src: '/landing-assets/g-metrics.png', alt: 'chmonitor metrics' },
 ]
+const showcasePaths = showcaseSlides.map((s) => s.path).join(',')
 ---
 <section class="hero">
   <div class="wrap">
@@ -52,11 +53,19 @@ const galleryCards = [
           </div>
         </div>
         <div class="browser-body">
-          <div class="carousel" data-autoplay="5200" data-url="hero-url-path" data-paths="/overview,/topology,/health,/insights,/running-queries">
+          <div class="carousel" data-autoplay="5200" data-url="hero-url-path" data-paths={showcasePaths}>
             <div class="ctrack">
-              {showcaseSlides.map((slide) => (
+              {showcaseSlides.map((slide, i) => (
                 <div class="cslide">
-                  <img src={slide.src} alt={slide.alt} width="1200" height="720" fetchpriority="high" decoding="async" />
+                  <img
+                    src={slide.src}
+                    alt={slide.alt}
+                    width="1200"
+                    height="720"
+                    fetchpriority={i === 0 ? 'high' : undefined}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
                 </div>
               ))}
             </div>
