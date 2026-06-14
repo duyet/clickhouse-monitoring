@@ -91,7 +91,7 @@ Same features, leaner substrate. Versus the former Next.js app (measured, post-m
 ## Develop
 
 ```bash
-bun install            # from the repo root (workspace member)
+bun install            # isolated install (own lockfile — see below)
 bun run dev            # vite dev (generates src/routeTree.gen.ts on first run)
 bun run build          # vite build + tsc --noEmit (type-check)
 bun run test           # bun test src/
@@ -143,11 +143,13 @@ Applied with full coverage: a TanStack Start request middleware
 `public/_headers` applies the same set to **prerendered static pages** (which are
 served from the edge and bypass the worker).
 
-## Workspace & shared packages
+## Isolation (own lockfile, not a root workspace)
 
-This app is a **root `bun` workspace member** (alongside `apps/mcp`), so its deps
-live in the root `bun.lock`. Run `bun install` from the repo root, or
-`bun --filter dashboard <script>` to target it.
+This app carries its **own `bun.lock`** and installs in isolation (run
+`bun install` from inside `apps/dashboard`) — the same pattern as `apps/landing`
+and `apps/docs`. Its vite bundling resolves the shared `@chm/*` packages' npm
+deps from THIS app's own `node_modules`, so it cannot be a root workspace member
+(hoisting would scatter those deps and break the hardcoded resolve aliases).
 
 Shared `@chm/*` packages are resolved from **source** (no `workspace:*`): `tsconfig`
 `paths` for `tsc`, `vite.config` `resolve.alias` + `ssr.noExternal` so Vite

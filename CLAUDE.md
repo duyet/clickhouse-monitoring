@@ -131,7 +131,7 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 The same deploy command works in both CI and local environments:
 
 ```bash
-bun --filter dashboard run cf:deploy
+cd apps/dashboard && bun run cf:deploy
 ```
 
 This runs inside `apps/dashboard` and executes:
@@ -146,9 +146,9 @@ Falls back to `wrangler login` OAuth for local development.
 
 #### Cloudflare Workers Commands
 
-- `bun --filter dashboard run cf:deploy` — Build + deploy to Cloudflare Workers
-- `bun --filter dashboard run cf:config` — Set Cloudflare secrets from `.env.prod` or `.env.local`
-- `bun --filter dashboard run cf:typegen` — Regenerate Cloudflare environment typings
+- `cd apps/dashboard && bun run cf:deploy` — Build + deploy to Cloudflare Workers
+- `bun run cf:config` — Set Cloudflare secrets from `.env.prod` or `.env.local`
+- `cd apps/dashboard && bun run cf-typegen` — Regenerate Cloudflare environment typings
 
 #### Docker Deployment
 

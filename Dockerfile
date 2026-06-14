@@ -1,17 +1,29 @@
 # Root Dockerfile — builds apps/dashboard (TanStack Start, the primary app).
-# Built from the repo root (context: .) so apps/dashboard/, the workspace-root
-# bun.lock, and the shared packages/ sources (resolved via ../../ Vite aliases)
-# are all reachable.
+# Built from the repo root (context: .) so both apps/dashboard/ and the shared
+# packages/ sources (resolved via ../../ Vite aliases) are reachable.
+#
+# apps/dashboard installs in ISOLATION (its own bun.lock; NOT a root workspace
+# member) — its vite bundling resolves shared @chm/* package deps from the app's
+# own node_modules, so the install must happen inside the app dir.
 ARG GITHUB_SHA=unknown
 ARG GITHUB_REF=unknown
 
 FROM oven/bun:1-alpine AS base
 WORKDIR /app
 
-# ── builder ──────────────────────────────────────────────────────────────────
-# apps/dashboard is a root workspace member (its deps are resolved via the root
-# bun.lock, like apps/mcp), so install the whole workspace from the repo root.
-# A frozen install needs every workspace member's package.json present.
+# ── deps ──────────────────────────────────────────────────────────────────
+# Install the isolated app's own dependencies. packages/ is copied so bun can
+# resolve transitive deps of @chm/clickhouse-client during the frozen install.
+FROM base AS deps
+ENV NODE_ENV=production
+RUN apk add --no-cache libc6-compat
+COPY apps/dashboard/package.json apps/dashboard/bun.lock* ./apps/dashboard/
+COPY packages/ ./packages/
+WORKDIR /app/apps/dashboard
+RUN --mount=type=cache,id=bun-tsr,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --ignore-scripts
+
+# ── builder ────────────────────────────────────────────────────────────────
 FROM base AS builder
 ARG GITHUB_SHA
 ARG GITHUB_REF
@@ -19,15 +31,12 @@ ENV NODE_ENV=production \
     GITHUB_SHA=${GITHUB_SHA} \
     GITHUB_REF=${GITHUB_REF} \
     BUILD_TARGET=node
-RUN apk add --no-cache libc6-compat
-COPY package.json bun.lock tsconfig.base.json ./
-COPY apps/dashboard/package.json ./apps/dashboard/
-COPY apps/mcp/package.json ./apps/mcp/
-COPY packages/ ./packages/
-RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile --ignore-scripts
-# App sources copied after install so the dependency layer caches across source-only changes.
-COPY apps/dashboard/ ./apps/dashboard/
+# packages/ is needed at build time for the @chm/* source aliases (../../).
+COPY packages/ /app/packages/
+# tsconfig.base.json lives at the repo root and is extended by apps/dashboard/tsconfig.json.
+COPY tsconfig.base.json /app/tsconfig.base.json
+COPY apps/dashboard/ /app/apps/dashboard/
+COPY --from=deps /app/apps/dashboard/node_modules /app/apps/dashboard/node_modules
 WORKDIR /app/apps/dashboard
 # BUILD_TARGET=node switches vite.config.ts to the Nitro node-server preset,
 # emitting a self-contained bundle at .output/server/index.mjs.

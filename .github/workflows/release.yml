@@ -268,9 +268,11 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      # apps/dashboard is part of the root bun workspace; the root lockfile owns
-      # its deps. Install at the repo root to hydrate the whole workspace.
+      # apps/dashboard has its own lockfile (not a root workspace member); its
+      # vite bundling resolves @chm/* deps from the app's own node_modules, so
+      # install in isolation inside apps/dashboard, NOT at the repo root.
       - name: Install dependencies
+        working-directory: apps/dashboard
         run: bun install --frozen-lockfile
 
       # Standalone = the Nitro node-server output (.output). Use the build:node:ci
@@ -301,12 +303,12 @@ jobs:
           tar -czf "clickhouse-monitor-${TAG}-standalone.tar.gz" \
             apps/dashboard/.output \
             apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard/bun.lock
           tar -czf "clickhouse-monitor-${TAG}-cloudflare.tar.gz" \
             apps/dashboard/dist \
             apps/dashboard/wrangler.toml \
             apps/dashboard/package.json \
-            bun.lock
+            apps/dashboard/bun.lock
           shasum -a 256 "clickhouse-monitor-${TAG}-standalone.tar.gz" "clickhouse-monitor-${TAG}-cloudflare.tar.gz" > SHA256SUMS
 
       # Centralized release notes: tiered AI summary (Copilot → GitHub Models →

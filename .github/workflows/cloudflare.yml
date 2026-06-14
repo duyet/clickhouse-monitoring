@@ -60,12 +60,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('bun.lock') }}
+          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('apps/dashboard/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-bun-tsr-v1-
 
       - name: Install dependencies
-        working-directory: .
+        working-directory: apps/dashboard
         run: bun install --frozen-lockfile
 
       - name: Build for Cloudflare
