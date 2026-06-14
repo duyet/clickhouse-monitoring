@@ -28,6 +28,7 @@ Agents discover knowledge in this order:
 | **Architecture** | [rust-wasm-performance.md](rust-wasm-performance.md) | decision | Rust/WASM benchmark: keep object transforms in TS, WASM for byte paths |
 | **Architecture** | [memory-optimization.md](memory-optimization.md) | reference | Memory optimization: pooling, memoization, cache limits, monitoring |
 | **Operations** | [deployment.md](deployment.md) | reference | Docker and Cloudflare Workers dual deployment guide |
+| **Operations** | [worker-bundle-size.md](worker-bundle-size.md) | decision | Worker gzip 1.82 MiB (under limit); bundle breakdown; @opentelemetry/api probed = 6.5 KiB, NOT worth stubbing |
 | **Operations** | [monorepo-refactor.md](monorepo-refactor.md) | operations | Bun-workspaces + Turborepo migration: status, workflow, gotchas, Phase 5 TODO |
 | **Operations** | [core-memory.md](core-memory.md) | workflow | Automation core memory: code-smell scans, dead-code rules |
 | **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
