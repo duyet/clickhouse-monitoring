@@ -154,10 +154,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .feat-shot .ctrack{height:100%}
     .feat-shot .cslide{height:100%}
     .feat-shot .cslide img{height:100%;object-fit:cover;object-position:top center}
-    /* hero carousel: show each dashboard shot full, height fits the active slide */
-    .browser-body .ctrack{align-items:flex-start}
-    .browser-body .carousel{transition:height .55s cubic-bezier(.22,1,.36,1)}
-    .browser-body .cslide img{width:100%;height:auto;display:block}
+    .browser-body img{width:100%;height:auto;display:block}
 
     /* ── tour gallery (drag-scroll marquee) ── */
     .gallery-strip{overflow-x:auto;overflow-y:hidden;position:relative;cursor:grab;touch-action:pan-x;

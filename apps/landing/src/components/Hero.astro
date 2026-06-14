@@ -1,11 +1,4 @@
 ---
-const showcaseSlides = [
-  { tab: 'Overview', path: '/overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview dashboard' },
-  { tab: 'Cluster Topology', path: '/topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology map' },
-  { tab: 'Health Summary', path: '/health', src: '/landing-assets/hero-health.png', alt: 'chmonitor health summary indicators' },
-  { tab: 'Cluster Insights', path: '/insights', src: '/landing-assets/g-insights.png', alt: 'chmonitor cluster insights' },
-  { tab: 'Running Queries', path: '/running-queries', src: '/landing-assets/g-running.png', alt: 'chmonitor running queries' },
-]
 const galleryCards = [
   { tab: 'Overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview' },
   { tab: 'Cluster Topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology' },
@@ -18,7 +11,6 @@ const galleryCards = [
   { tab: 'Data Explorer', src: '/landing-assets/g-data-explorer.png', alt: 'chmonitor data explorer' },
   { tab: 'Metrics', src: '/landing-assets/g-metrics.png', alt: 'chmonitor metrics' },
 ]
-const showcasePaths = showcaseSlides.map((s) => s.path).join(',')
 ---
 <section class="hero">
   <div class="wrap">
@@ -49,28 +41,18 @@ const showcasePaths = showcaseSlides.map((s) => s.path).join(',')
           <span class="lights"><i></i><i></i><i></i></span>
           <div class="url">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <b>dash.chmonitor.dev</b><span id="hero-url-path">/overview</span>
+            <b>dash.chmonitor.dev</b><span>/overview</span>
           </div>
         </div>
         <div class="browser-body">
-          <div class="carousel" data-autoplay="5200" data-url="hero-url-path" data-paths={showcasePaths}>
-            <div class="ctrack">
-              {showcaseSlides.map((slide, i) => (
-                <div class="cslide">
-                  <img
-                    src={slide.src}
-                    alt={slide.alt}
-                    width="1200"
-                    height="720"
-                    fetchpriority={i === 0 ? 'high' : undefined}
-                    loading={i === 0 ? 'eager' : 'lazy'}
-                    decoding="async"
-                  />
-                </div>
-              ))}
-            </div>
-            <div class="cdots"></div>
-          </div>
+          <img
+            src="/landing-assets/hero-overview.png"
+            alt="chmonitor cluster overview dashboard"
+            width="1200"
+            height="720"
+            fetchpriority="high"
+            decoding="async"
+          />
         </div>
         <div class="shot-fade"></div>
       </div>
