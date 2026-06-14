@@ -1,16 +1,33 @@
 import { useEffect, useState } from 'react'
 import {
+  decryptJson,
+  encryptJson,
+} from '@/lib/connection-crypto/browser-crypto'
+import { invalidateBrowserConnectionSession } from '@/lib/connection-sessions/session-manager'
+import {
   BROWSER_CONNECTIONS_STORAGE_KEY,
   type BrowserConnection,
+  type EncryptedBrowserConnectionsStore,
 } from '@/lib/types/browser-connection'
 
-function loadConnections(): BrowserConnection[] {
+async function loadConnections(): Promise<BrowserConnection[]> {
   if (typeof window === 'undefined') return []
 
   try {
     const stored = localStorage.getItem(BROWSER_CONNECTIONS_STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored) as BrowserConnection[]
+    if (!stored) return []
+
+    const parsed = JSON.parse(stored) as
+      | EncryptedBrowserConnectionsStore
+      | BrowserConnection[]
+
+    if (Array.isArray(parsed)) {
+      // Legacy plaintext — migrate on next save; return as-is for now.
+      return parsed
+    }
+
+    if (parsed.version === 2 && parsed.encrypted) {
+      return decryptJson<BrowserConnection[]>(parsed.encrypted)
     }
   } catch (error) {
     console.error('Failed to load browser connections:', error)
@@ -19,13 +36,20 @@ function loadConnections(): BrowserConnection[] {
   return []
 }
 
-function saveConnections(connections: BrowserConnection[]): void {
+async function saveConnections(
+  connections: BrowserConnection[]
+): Promise<void> {
   if (typeof window === 'undefined') return
 
   try {
+    const encrypted = await encryptJson(connections)
+    const envelope: EncryptedBrowserConnectionsStore = {
+      version: 2,
+      encrypted,
+    }
     localStorage.setItem(
       BROWSER_CONNECTIONS_STORAGE_KEY,
-      JSON.stringify(connections)
+      JSON.stringify(envelope)
     )
   } catch (error) {
     console.error('Failed to save browser connections:', error)
@@ -36,10 +60,11 @@ export function useBrowserConnections() {
   const [connections, setConnections] = useState<BrowserConnection[]>([])
   const [mounted, setMounted] = useState(false)
 
-  // Load from localStorage after hydration
   useEffect(() => {
-    setConnections(loadConnections())
-    setMounted(true)
+    void loadConnections().then((loaded) => {
+      setConnections(loaded)
+      setMounted(true)
+    })
   }, [])
 
   const addConnection = (
@@ -49,7 +74,7 @@ export function useBrowserConnections() {
     const newConnection: BrowserConnection = {
       ...input,
       id: crypto.randomUUID(),
-      hostId: 0, // temporary; replaced inside setConnections below
+      hostId: 0,
       createdAt: now,
       updatedAt: now,
     }
@@ -60,7 +85,7 @@ export function useBrowserConnections() {
       const hostId = Math.min(...existingHostIds, 0) - 1
       result = { ...newConnection, hostId }
       const updated = [...prev, result]
-      saveConnections(updated)
+      void saveConnections(updated)
       return updated
     })
 
@@ -77,7 +102,8 @@ export function useBrowserConnections() {
           ? { ...c, ...updates, updatedAt: new Date().toISOString() }
           : c
       )
-      saveConnections(updated)
+      void saveConnections(updated)
+      invalidateBrowserConnectionSession(id)
       return updated
     })
   }
@@ -85,16 +111,23 @@ export function useBrowserConnections() {
   const deleteConnection = (id: string): void => {
     setConnections((prev) => {
       const updated = prev.filter((c) => c.id !== id)
-      saveConnections(updated)
+      void saveConnections(updated)
+      invalidateBrowserConnectionSession(id)
       return updated
     })
   }
+
+  const getConnectionByHostId = (
+    hostId: number
+  ): BrowserConnection | undefined =>
+    connections.find((c) => c.hostId === hostId)
 
   return {
     connections,
     addConnection,
     updateConnection,
     deleteConnection,
+    getConnectionByHostId,
     mounted,
   }
 }

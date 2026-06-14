@@ -76,6 +76,11 @@ export type Principal = 'anonymous' | 'authenticated'
 
 export type ResolvedFeatureStates = Record<FeatureId, FeatureState>
 
+export interface UserConnectionsPublicConfig {
+  dbStorageEnabled: boolean
+  requiresAuth: boolean
+}
+
 export interface PublicFeaturePermissionConfig {
   authProvider: 'none' | 'clerk' | 'proxy'
   principal: Principal
@@ -83,4 +88,6 @@ export interface PublicFeaturePermissionConfig {
   resolved?: ResolvedFeatureStates
   /** What anonymous callers may do under this deployment's auth posture. */
   capabilities?: AnonymousCapabilities
+  /** Per-user ClickHouse connection storage capabilities. */
+  userConnections?: UserConnectionsPublicConfig
 }

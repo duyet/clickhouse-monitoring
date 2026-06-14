@@ -1,11 +1,14 @@
 import { Check, Eye, EyeOff, Globe, Loader2, X } from 'lucide-react'
 
 import type { BrowserConnection } from '@/lib/types/browser-connection'
+import type { HostStorageMode } from '@/lib/types/host-storage'
 
 import { useState } from 'react'
+import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 export type { BrowserConnection }
@@ -21,9 +24,12 @@ interface TestStatus {
 }
 
 interface ConnectionFormProps {
-  onSave: (data: ConnectionFormData) => void
+  onSave: (data: ConnectionFormData) => void | Promise<void>
   initialValues?: Partial<ConnectionFormData>
   onCancel: () => void
+  storageMode?: HostStorageMode
+  onStorageModeChange?: (mode: HostStorageMode) => void
+  dbStorageEnabled?: boolean
 }
 
 function isValidUrl(value: string): boolean {
@@ -47,6 +53,9 @@ export function ConnectionForm({
   onSave,
   initialValues,
   onCancel,
+  storageMode = 'browser',
+  onStorageModeChange,
+  dbStorageEnabled = false,
 }: ConnectionFormProps) {
   const [form, setForm] = useState<ConnectionFormData>({
     name: initialValues?.name ?? '',
@@ -105,14 +114,21 @@ export function ConnectionForm({
     }
   }
 
-  const handleSave = () => {
-    if (!isFormValid(form)) return
-    onSave({
-      name: form.name.trim(),
-      host: form.host.trim(),
-      user: form.user.trim(),
-      password: form.password,
-    })
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!isFormValid(form) || saving) return
+    setSaving(true)
+    try {
+      await onSave({
+        name: form.name.trim(),
+        host: form.host.trim(),
+        user: form.user.trim(),
+        password: form.password,
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const valid = isFormValid(form)
@@ -201,10 +217,49 @@ export function ConnectionForm({
         </div>
       </div>
 
-      {/* Storage disclaimer */}
-      <p className="text-xs text-muted-foreground">
-        Credentials are stored locally in your browser only.
-      </p>
+      {/* Storage preference */}
+      {onStorageModeChange && (
+        <div className="space-y-2 rounded-md border border-border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="save-to-server" className="text-sm font-medium">
+                Save to server (synced)
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {storageMode === 'database'
+                  ? 'Stored encrypted on the server. Syncs across devices when signed in.'
+                  : 'Stored encrypted in this browser only.'}
+              </p>
+            </div>
+            <Switch
+              id="save-to-server"
+              checked={storageMode === 'database'}
+              disabled={!dbStorageEnabled}
+              onCheckedChange={(checked) =>
+                onStorageModeChange(checked ? 'database' : 'browser')
+              }
+            />
+          </div>
+          {!dbStorageEnabled && (
+            <p className="text-xs text-muted-foreground">
+              Server storage is disabled on this deployment.{' '}
+              <AppLink
+                href="/docs/features/user-connections"
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                Enable user connections
+              </AppLink>
+            </p>
+          )}
+        </div>
+      )}
+
+      {storageMode === 'browser' && (
+        <p className="text-xs text-muted-foreground">
+          Credentials are encrypted in this browser. Session tokens are used for
+          API requests (password not sent on every query).
+        </p>
+      )}
 
       {/* Test Connection */}
       <div className="flex items-center gap-3">
@@ -240,8 +295,8 @@ export function ConnectionForm({
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="button" onClick={handleSave} disabled={!valid}>
-          Save
+        <Button type="button" onClick={handleSave} disabled={!valid || saving}>
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
     </div>

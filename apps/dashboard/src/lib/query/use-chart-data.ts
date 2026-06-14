@@ -3,9 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import type { ApiResponseMetadata } from '@/lib/api/types'
 
 import { useMemo, useRef } from 'react'
+import {
+  fetchChartForHost,
+  isCustomHost,
+} from '@/lib/host-fetch/resolve-host-fetch'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { REFRESH_INTERVAL, type RefreshInterval } from '@/lib/swr/config'
 import { throwIfNotOk } from '@/lib/swr/fetch-error'
+import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 export interface ChartDataPoint {
   [key: string]: unknown
@@ -56,6 +61,18 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   timezone,
   refreshInterval = REFRESH_INTERVAL.DEFAULT_60S,
 }: UseChartDataParams): UseChartResult<T> {
+  const { hosts, getConnectionByHostId } = useMergedHosts()
+  const numericHostId =
+    hostId === undefined
+      ? undefined
+      : typeof hostId === 'string'
+        ? Number(hostId)
+        : hostId
+  const browserConnection =
+    numericHostId !== undefined && numericHostId < 0
+      ? getConnectionByHostId(numericHostId)
+      : null
+
   // Serialize params so the memo key is value-stable: a parent passing an
   // inline `params` object literal changes its reference every render, which
   // would otherwise defeat this memo (re-running on every render).
@@ -81,6 +98,8 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
     lastHours,
     JSON.stringify(params ?? null),
     timezone,
+    hosts.length,
+    browserConnection?.id,
   ] as const
 
   const resolvedRefetchInterval =
@@ -97,6 +116,23 @@ export function useChartData<T extends ChartDataPoint = ChartDataPoint>({
   >({
     queryKey,
     queryFn: async () => {
+      if (isCustomHost(numericHostId)) {
+        const result = await fetchChartForHost<T[]>({
+          chartName,
+          hostId: numericHostId,
+          hosts,
+          browserConnection,
+          interval,
+          lastHours,
+          params,
+          timezone,
+        })
+        return {
+          data: result.data,
+          metadata: result.metadata as ChartMetadata | undefined,
+        }
+      }
+
       const response = await apiFetch(url)
       await throwIfNotOk(response, 'Failed to fetch chart data')
       return response.json() as Promise<ChartDataResponse<T>>

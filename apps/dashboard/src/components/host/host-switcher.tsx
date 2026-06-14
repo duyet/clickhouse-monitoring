@@ -1,4 +1,4 @@
-import { ChevronsUpDown } from 'lucide-react'
+import { ChevronsUpDown, GlobeIcon, PlusIcon } from 'lucide-react'
 
 import { HostMenuRow } from './host-menu-row'
 import { HostVersionWithStatus } from './host-version-status'
@@ -6,6 +6,8 @@ import {
   LogoStatusIndicator,
   LogoStatusIndicatorSkeleton,
 } from './logo-status-indicator'
+import { useState } from 'react'
+import { AddHostDialog } from '@/components/connections'
 import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
 import {
   DropdownMenu,
@@ -24,7 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
-import { useHosts } from '@/lib/swr/use-hosts'
+import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn, getHost } from '@/lib/utils'
 
@@ -39,17 +41,17 @@ export function HostSwitcher() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isMobile, state } = useSidebar()
-  const { hosts, isLoading, error, isUnauthorized } = useHosts()
+  const { hosts, isLoading, error, isUnauthorized } = useMergedHosts()
   const currentHostId = useHostId()
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
 
-  const activeHost = hosts[currentHostId] || hosts[0]
+  const activeHost =
+    hosts.find((h) => h.id === currentHostId) ?? hosts[0] ?? null
   const showExpanded = isMobile || state === 'expanded'
 
   const handleHostChange = (hostId: number) => {
-    if (hostId >= 0 && hostId < hosts.length) {
-      const url = buildUrl(pathname, { host: hostId }, searchParams)
-      router.push(url)
-    }
+    const url = buildUrl(pathname, { host: hostId }, searchParams)
+    router.push(url)
   }
 
   // Show skeleton while loading hosts
@@ -81,151 +83,198 @@ export function HostSwitcher() {
     )
   }
 
-  // No active host: instead of disappearing, keep the switcher's shape and
-  // surface WHY there is no host — unauthorized (sign in), a load error, or
-  // genuinely none configured. Same layout as the normal single-host view.
+  // No active host: keep switcher shape and surface why
   if (!activeHost) {
     const { label, hint } = isUnauthorized
       ? { label: 'Sign in to load hosts', hint: 'Authentication required' }
       : error
         ? { label: "Couldn't load hosts", hint: 'Tap to retry from a page' }
-        : { label: 'No host', hint: 'None configured' }
+        : { label: 'No host', hint: 'Add a host to get started' }
 
     return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild>
-            <div
-              className={cn(
-                'flex gap-2',
-                showExpanded ? 'items-center' : 'items-center justify-center'
-              )}
-              data-testid="host-switcher-empty"
-              aria-label={label}
-              title={showExpanded ? undefined : label}
-            >
-              <div className="relative">
-                <ClickHouseLogo
-                  width={20}
-                  height={20}
-                  className="size-5 opacity-50"
-                />
-              </div>
-              {showExpanded && (
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium text-muted-foreground">
-                    {label}
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground/70">
-                    {hint}
-                  </span>
-                </div>
-              )}
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      <>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  data-testid="host-switcher-empty"
+                  aria-label={label}
+                  asChild
+                >
+                  <div
+                    className={cn(
+                      'flex gap-2',
+                      showExpanded
+                        ? 'items-center'
+                        : 'items-center justify-center'
+                    )}
+                  >
+                    <div className="relative">
+                      <ClickHouseLogo
+                        width={20}
+                        height={20}
+                        className="size-5 opacity-50"
+                      />
+                    </div>
+                    {showExpanded && (
+                      <>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                          <span className="truncate font-medium text-muted-foreground">
+                            {label}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground/70">
+                            {hint}
+                          </span>
+                        </div>
+                        <ChevronsUpDown className="ml-auto size-4" />
+                      </>
+                    )}
+                  </div>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" sideOffset={4}>
+                <DropdownMenuItem
+                  onClick={() => setAddDialogOpen(true)}
+                  data-testid="add-host"
+                >
+                  <PlusIcon className="size-4" />
+                  Add host…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <AddHostDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+      </>
     )
   }
 
-  // For single host, render simplified view without dropdown
-  const isSingleHost = hosts.length <= 1
+  const showDropdown = true
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        {isSingleHost ? (
-          // Single host: simplified display without dropdown
-          <SidebarMenuButton size="lg" asChild>
-            <div
-              className={cn(
-                'flex gap-2',
-                showExpanded ? 'items-center' : 'items-center justify-center'
-              )}
-            >
-              <div className="relative">
-                <ClickHouseLogo width={20} height={20} className="size-5" />
-                {!showExpanded && (
-                  <LogoStatusIndicator hostId={activeHost.id} />
-                )}
-              </div>
-              {showExpanded && (
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {activeHost.name || getHost(activeHost.host)}
-                  </span>
-                  <HostVersionWithStatus hostId={activeHost.id} />
-                </div>
-              )}
-            </div>
-          </SidebarMenuButton>
-        ) : (
-          // Multiple hosts: full switcher with dropdown
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                data-testid="host-switcher"
-                aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
-                asChild
-              >
-                <div
-                  className={cn(
-                    'flex gap-2',
-                    showExpanded
-                      ? 'items-center'
-                      : 'items-center justify-center'
-                  )}
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          {showDropdown ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  data-testid="host-switcher"
+                  aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
+                  asChild
                 >
-                  <div className="relative">
-                    <ClickHouseLogo width={20} height={20} className="size-5" />
-                    {!showExpanded && (
-                      <LogoStatusIndicator hostId={activeHost.id} />
+                  <div
+                    className={cn(
+                      'flex gap-2',
+                      showExpanded
+                        ? 'items-center'
+                        : 'items-center justify-center'
+                    )}
+                  >
+                    <div className="relative">
+                      <ClickHouseLogo
+                        width={20}
+                        height={20}
+                        className="size-5"
+                      />
+                      {!showExpanded && activeHost.source === 'env' && (
+                        <LogoStatusIndicator hostId={activeHost.id} />
+                      )}
+                    </div>
+                    {showExpanded && (
+                      <>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                          <span className="truncate font-semibold">
+                            {activeHost.name || getHost(activeHost.host)}
+                          </span>
+                          {activeHost.source === 'env' ? (
+                            <HostVersionWithStatus hostId={activeHost.id} />
+                          ) : (
+                            <span className="truncate text-xs text-muted-foreground">
+                              {activeHost.source === 'database'
+                                ? 'Saved to server'
+                                : 'Saved in browser'}
+                            </span>
+                          )}
+                        </div>
+                        <ChevronsUpDown className="ml-auto size-4" />
+                      </>
                     )}
                   </div>
-                  {showExpanded && (
-                    <>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {activeHost.name || getHost(activeHost.host)}
-                        </span>
-                        <HostVersionWithStatus hostId={activeHost.id} />
-                      </div>
-                      <ChevronsUpDown className="ml-auto size-4" />
-                    </>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                align="start"
+                side={isMobile ? 'bottom' : 'right'}
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  ClickHouse Hosts
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {hosts.map((host) => (
+                  <DropdownMenuItem
+                    key={`${host.source}-${host.id}`}
+                    onClick={() => handleHostChange(host.id)}
+                    className="gap-2 p-2"
+                    data-testid={`host-option-${host.id}`}
+                  >
+                    {host.source !== 'env' && (
+                      <GlobeIcon className="size-3 shrink-0 text-muted-foreground" />
+                    )}
+                    <HostMenuRow
+                      hostId={host.source === 'env' ? host.id : null}
+                      hostName={host.name || getHost(host.host)}
+                      isActive={host.id === currentHostId}
+                      skipStatus={host.source !== 'env'}
+                    />
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setAddDialogOpen(true)}
+                  data-testid="add-host"
+                  className="gap-2 text-muted-foreground"
+                >
+                  <PlusIcon className="size-4" />
+                  Add host…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <SidebarMenuButton size="lg" asChild>
+              <div
+                className={cn(
+                  'flex gap-2',
+                  showExpanded ? 'items-center' : 'items-center justify-center'
+                )}
+              >
+                <div className="relative">
+                  <ClickHouseLogo width={20} height={20} className="size-5" />
+                  {!showExpanded && (
+                    <LogoStatusIndicator hostId={activeHost.id} />
                   )}
                 </div>
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-              align="start"
-              side={isMobile ? 'bottom' : 'right'}
-              sideOffset={4}
-            >
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                ClickHouse Hosts
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {hosts.map((host, index) => (
-                <DropdownMenuItem
-                  key={host.host + host.id}
-                  onClick={() => handleHostChange(index)}
-                  className="gap-2 p-2"
-                  data-testid={`host-option-${index}`}
-                >
-                  <HostMenuRow
-                    hostId={host.id}
-                    hostName={host.name || getHost(host.host)}
-                    isActive={index === currentHostId}
-                  />
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </SidebarMenuItem>
-    </SidebarMenu>
+                {showExpanded && (
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {activeHost.name || getHost(activeHost.host)}
+                    </span>
+                    <HostVersionWithStatus hostId={activeHost.id} />
+                  </div>
+                )}
+              </div>
+            </SidebarMenuButton>
+          )}
+        </SidebarMenuItem>
+      </SidebarMenu>
+      <AddHostDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+    </>
   )
 }
