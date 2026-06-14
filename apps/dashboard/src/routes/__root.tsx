@@ -9,11 +9,13 @@ import type { ReactNode } from 'react'
 
 import appCss from '../styles.css?url'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
+import { isClerkClientEnabled } from '@/lib/clerk/clerk-client'
 import { AppProvider } from '@/lib/context/app-context'
 import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
 import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
+import { UserConnectionsCacheGuard } from '@/lib/hooks/user-connections-cache-guard'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -85,6 +87,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <ThemeProvider>
               <TimeRangeProvider>
                 <QueryProvider>
+                  {isClerkClientEnabled() ? (
+                    <UserConnectionsCacheGuard />
+                  ) : null}
                   <BrowserConnectionsProvider>
                     <AppProvider>
                       <FeaturePermissionsProvider>

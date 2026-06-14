@@ -2,13 +2,16 @@ import type { HostInfo } from '@chm/types/host-info'
 
 import { useHosts } from './use-hosts'
 import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'
+import { useUserConnections } from '@/lib/hooks/use-user-connections'
 
 /**
  * Extended host info that includes the connection source.
  * Env hosts come from environment variables; browser hosts are stored in localStorage.
  */
 export interface MergedHostInfo extends HostInfo {
-  source: 'env' | 'browser'
+  source: 'env' | 'browser' | 'database'
+  /** Server-stored connection UUID when source is database. */
+  connectionId?: string
 }
 
 /**
@@ -24,7 +27,14 @@ export interface MergedHostInfo extends HostInfo {
  */
 export function useMergedHosts() {
   const { hosts: envHosts, error, isLoading, isUnauthorized } = useHosts()
-  const { connections, mounted } = useBrowserConnections()
+  const { connections, mounted, getConnectionByHostId } =
+    useBrowserConnections()
+  const {
+    connections: dbConnections,
+    isLoading: dbLoading,
+    featureEnabled: dbFeatureEnabled,
+    isSignedIn: dbAuthReady,
+  } = useUserConnections()
 
   const mergedHosts: MergedHostInfo[] = [
     ...envHosts.map((h): MergedHostInfo => ({ ...h, source: 'env' })),
@@ -37,6 +47,18 @@ export function useMergedHosts() {
         source: 'browser',
       })
     ),
+    ...(dbFeatureEnabled && dbAuthReady
+      ? dbConnections.map(
+          (c): MergedHostInfo => ({
+            id: c.hostId,
+            name: c.name,
+            host: c.host,
+            user: c.user,
+            source: 'database',
+            connectionId: c.id,
+          })
+        )
+      : []),
   ]
 
   return {
@@ -44,6 +66,8 @@ export function useMergedHosts() {
     error,
     // Only the env-host fetch can be unauthorized; browser connections are local.
     isUnauthorized: Boolean(isUnauthorized),
-    isLoading: isLoading || !mounted,
+    isLoading:
+      isLoading || !mounted || (dbFeatureEnabled && dbAuthReady && dbLoading),
+    getConnectionByHostId,
   }
 }
