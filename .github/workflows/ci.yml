@@ -274,9 +274,27 @@ jobs:
             exit 1
           fi
 
-          # Health checks
-          # -L: GET / 307-redirects to /?host=0 (host-defaulting middleware);
-          # follow it so we grep the rendered shell, not the empty redirect body.
-          curl -sSLf http://localhost:3000/ | grep -q "chmonitor"
-          curl -sSf http://localhost:3000/api/healthz | grep -q "ok"
-          curl -sSf http://localhost:3000/api/version | grep -q "version"
+          # Health checks. Each asserts independently and dumps the response on
+          # failure so a broken endpoint is identifiable — a bare `curl | grep`
+          # under `set -e` gives no clue which of the three failed (this masked
+          # a /api/version contract drift for 8+ runs).
+          check() {
+            local label="$1" url="$2" needle="$3" follow="${4:-}"
+            local body
+            if ! body=$(curl -sSf $follow "$url"); then
+              echo "::error::$label: request to $url failed"; exit 1
+            fi
+            if ! grep -q "$needle" <<<"$body"; then
+              echo "::error::$label: response from $url missing '$needle'"
+              echo "----- body (first 40 lines) -----"; echo "$body" | head -40
+              exit 1
+            fi
+            echo "✓ $label OK"
+          }
+          # -L: GET / 307-redirects to /?host=0 (host-defaulting); follow it so
+          # we grep the rendered shell, not the empty redirect body.
+          check "root-shell" http://localhost:3000/ "chmonitor" "-L"
+          check "healthz" http://localhost:3000/api/healthz "ok"
+          # TSR /api/version returns {"ui":"<app version>"} — the CH version()
+          # query was dropped from this endpoint in the TanStack app.
+          check "version" http://localhost:3000/api/version '"ui"'

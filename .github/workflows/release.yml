@@ -87,7 +87,10 @@ jobs:
     name: build-docker-amd64
     needs: [build-wasm]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 30min was exactly the cold-build wall time → timed out for v0.2.7/v0.2.8.
+    # With the shared warm cache this is ~1min; the headroom only matters if the
+    # cache was evicted, in which case a slow build should still complete.
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -138,8 +141,14 @@ jobs:
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
             SKIP_RUST=true
-          cache-from: type=gha,scope=docker-amd64
-          cache-to: type=gha,scope=docker-amd64,mode=max
+          # Reuse ci.yml's warm AMD64 layer cache. ci.yml builds on every main
+          # push via base.yml with tag-suffix '-amd64', producing the scope
+          # 'docker--amd64' (the suffix already carries a leading dash). main is
+          # the default branch, so its caches are readable from this tag-pinned
+          # release dispatch — turning a cold ~30min build (which timed out for
+          # v0.2.7/v0.2.8) into a ~1min warm one.
+          cache-from: type=gha,scope=docker--amd64
+          cache-to: type=gha,scope=docker--amd64,mode=max
           platforms: linux/amd64
 
   build-docker-arm64:
