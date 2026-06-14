@@ -36,6 +36,13 @@ const { version, subpath } = Astro.props
   </nav>
   <div class="header__spacer"></div>
   <div class="header__actions">
+    <a class="header__cta" href={SITE.dashboard} target="_blank" rel="noopener">
+      Dashboard
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path>
+        <path d="m12 5 7 7-7 7"></path>
+      </svg>
+    </a>
     <Search />
     <VersionSwitcher version={version} subpath={subpath} />
     <a class="icon-btn" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub repository">

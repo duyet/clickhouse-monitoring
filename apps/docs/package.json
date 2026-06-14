@@ -14,8 +14,9 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource-variable/inter": "^5.2.5",
-    "@fontsource/ibm-plex-mono": "^5.2.5",
+    "@fontsource-variable/source-sans-3": "^5.2.5",
+    "@fontsource/bricolage-grotesque": "^5.2.5",
+    "@fontsource/jetbrains-mono": "^5.2.5",
     "astro": "^6.1.10"
   },
   "devDependencies": {

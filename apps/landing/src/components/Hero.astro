@@ -1,42 +1,87 @@
-  <section class="hero" style="padding: 44px 0px 54px">
-    <div class="wrap">
-      <span class="pill"><span class="dot"></span> Open source <span class="tag">· GPL-3.0</span></span>
-      <h1 class="hero-title">A simple, beautiful UI to <span class="accent">monitor ClickHouse</span></h1>
-      <p class="hero-sub">chmonitor turns your cluster's system tables into a fast, readable dashboard — queries, merges, parts, replication and health, plus an AI agent that answers questions about your data. Self-host it, or use the hosted cloud.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="https://dash.chmonitor.dev" target="_blank" rel="noopener">
-          Open the cloud dashboard
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="https://github.com/duyet/clickhouse-monitoring" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.35 4.8-4.58 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-          Star on GitHub
-        </a>
-      </div>
+---
+const showcaseSlides = [
+  { tab: 'Overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview dashboard' },
+  { tab: 'Cluster Topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology map' },
+  { tab: 'Health Summary', src: '/landing-assets/hero-health.png', alt: 'chmonitor health summary indicators' },
+  { tab: 'Cluster Insights', src: '/landing-assets/g-insights.png', alt: 'chmonitor cluster insights' },
+  { tab: 'Running Queries', src: '/landing-assets/g-running.png', alt: 'chmonitor running queries' },
+]
+const galleryCards = [
+  { tab: 'Overview', src: '/landing-assets/hero-overview.png', alt: 'chmonitor cluster overview' },
+  { tab: 'Cluster Topology', src: '/landing-assets/hero-topology.png', alt: 'chmonitor cluster topology' },
+  { tab: 'Health Summary', src: '/landing-assets/hero-health.png', alt: 'chmonitor health summary' },
+  { tab: 'AI Agent', src: '/landing-assets/hero-agent.png', alt: 'chmonitor AI agent' },
+  { tab: 'Cluster Insights', src: '/landing-assets/g-insights.png', alt: 'chmonitor cluster insights' },
+  { tab: 'Running Queries', src: '/landing-assets/g-running.png', alt: 'chmonitor running queries' },
+  { tab: 'Explain Query', src: '/landing-assets/g-explain.png', alt: 'chmonitor explain query' },
+  { tab: 'Most Expensive Queries', src: '/landing-assets/g-expensive.png', alt: 'chmonitor most expensive queries' },
+  { tab: 'Data Explorer', src: '/landing-assets/g-data-explorer.png', alt: 'chmonitor data explorer' },
+  { tab: 'Metrics', src: '/landing-assets/g-metrics.png', alt: 'chmonitor metrics' },
+]
+---
+<section class="hero">
+  <div class="wrap">
+    <span class="pill"><span class="dot"></span> Open source <span class="tag">· GPL-3.0</span></span>
+    <h1 class="hero-title">A simple, beautiful UI to <span class="accent">monitor ClickHouse</span></h1>
+    <p class="hero-sub">chmonitor turns your cluster's system tables into a fast, readable dashboard — queries, merges, parts, replication and health, plus an AI agent that answers questions about your data. Self-host it, or use the hosted dashboard.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://dash.chmonitor.dev" target="_blank" rel="noopener">
+        Open dashboard
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/duyet/clickhouse-monitoring" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.35 4.8-4.58 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+        Star on GitHub
+      </a>
     </div>
+    <div class="stats-strip reveal">
+      <div class="stat"><span class="stat-val">85+</span><span class="stat-lbl">purpose-built views</span></div>
+      <div class="stat"><span class="stat-val">Real-time</span><span class="stat-lbl">system table queries</span></div>
+      <div class="stat"><span class="stat-val">Zero</span><span class="stat-lbl">exporters or sidecars</span></div>
+    </div>
+  </div>
 
-    <div class="gallery-strip reveal" style="margin-top:52px">
-      <div class="marquee">
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Overview</span></div><img src="/landing-assets/hero-overview.png" alt="chmonitor cluster overview" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Cluster Topology</span></div><img src="/landing-assets/hero-topology.png" alt="chmonitor cluster topology" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Health Summary</span></div><img src="/landing-assets/hero-health.png" alt="chmonitor health summary" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">AI Agent</span></div><img src="/landing-assets/hero-agent.png" alt="chmonitor AI agent" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Cluster Insights</span></div><img src="/landing-assets/g-insights.png" alt="chmonitor cluster insights" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Running Queries</span></div><img src="/landing-assets/g-running.png" alt="chmonitor running queries" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Explain Query</span></div><img src="/landing-assets/g-explain.png" alt="chmonitor explain query" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Most Expensive Queries</span></div><img src="/landing-assets/g-expensive.png" alt="chmonitor most expensive queries" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Data Explorer</span></div><img src="/landing-assets/g-data-explorer.png" alt="chmonitor data explorer" /></div>
-        <div class="gcard"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Metrics</span></div><img src="/landing-assets/g-metrics.png" alt="chmonitor metrics" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Overview</span></div><img src="/landing-assets/hero-overview.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Cluster Topology</span></div><img src="/landing-assets/hero-topology.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Health Summary</span></div><img src="/landing-assets/hero-health.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">AI Agent</span></div><img src="/landing-assets/hero-agent.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Cluster Insights</span></div><img src="/landing-assets/g-insights.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Running Queries</span></div><img src="/landing-assets/g-running.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Explain Query</span></div><img src="/landing-assets/g-explain.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Most Expensive Queries</span></div><img src="/landing-assets/g-expensive.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Data Explorer</span></div><img src="/landing-assets/g-data-explorer.png" alt="" /></div>
-        <div class="gcard" aria-hidden="true"><div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">Metrics</span></div><img src="/landing-assets/g-metrics.png" alt="" /></div>
+  <div class="shot reveal" style="margin-top:48px">
+    <div class="wrap">
+      <div class="browser hero-showcase">
+        <div class="browser-bar">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <div class="url">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <b>dash.chmonitor.dev</b><span id="hero-url-path">/overview</span>
+          </div>
+        </div>
+        <div class="browser-body">
+          <div class="carousel" data-autoplay="5200" data-url="hero-url-path" data-paths="/overview,/topology,/health,/insights,/running-queries">
+            <div class="ctrack">
+              {showcaseSlides.map((slide) => (
+                <div class="cslide">
+                  <img src={slide.src} alt={slide.alt} width="1200" height="720" fetchpriority="high" decoding="async" />
+                </div>
+              ))}
+            </div>
+            <div class="cdots"></div>
+          </div>
+        </div>
+        <div class="shot-fade"></div>
       </div>
     </div>
-  </section>
+  </div>
+
+  <div class="gallery-strip reveal" style="margin-top:40px">
+    <div class="marquee">
+      {galleryCards.map((card) => (
+        <div class="gcard">
+          <div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">{card.tab}</span></div>
+          <img src={card.src} alt={card.alt} width="600" height="360" loading="lazy" decoding="async" />
+        </div>
+      ))}
+      {galleryCards.map((card) => (
+        <div class="gcard" aria-hidden="true">
+          <div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span><span class="gtab">{card.tab}</span></div>
+          <img src={card.src} alt="" width="600" height="360" loading="lazy" decoding="async" />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
