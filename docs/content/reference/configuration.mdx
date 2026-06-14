@@ -29,10 +29,10 @@ Browser-exposed variables are **inlined at build time**. The prefix depends on w
 
 | App | Client prefix | Example |
 |---|---|---|
-| `apps/dashboard-tsr` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
-| `apps/dashboard` (Next.js, legacy) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
+| `apps/dashboard` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
+| Legacy Next.js (v0.2 and earlier) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
 
-The variable names and values are identical — only the prefix differs. This page and the [Environment Variables](/docs/reference/environment-variables) reference use the `VITE_*` form. If you run the legacy Next.js app, substitute `NEXT_PUBLIC_` wherever you see `VITE_`.
+The variable names and values are identical — only the prefix differs. This page and the [Environment Variables](/docs/reference/environment-variables) reference use the `VITE_*` form. If you are migrating from a v0.2 Next.js deployment, substitute `NEXT_PUBLIC_` wherever you see `VITE_`.
 
 Changing a `VITE_*` variable requires a **rebuild and redeploy** — it is not a runtime change.
 

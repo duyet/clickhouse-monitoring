@@ -1,50 +1,32 @@
 import { defineConfig } from 'cypress'
 
+/**
+ * Cypress config for the TanStack Start (Vite) dashboard.
+ *
+ * Differs from the Next app's config: component tests use the `react` +
+ * `vite` devServer (not `next`/`webpack`). E2E `baseUrl` is overridable via
+ * `CYPRESS_BASE_URL` so the same specs run against a local `vite preview`
+ * (default :3000) or a live deployment (e.g. https://dash.chmonitor.dev)
+ * for prod smoke/parity checks.
+ */
 export default defineConfig({
-  projectId: '8zgiqh',
-  // 8 s is enough for all real assertions; prevents a hung test from burning
-  // 30 s per attempt (the old value that caused the 30-min CI timeout).
+  // 8s is enough for real assertions and prevents a hung test from burning the
+  // full default budget (matches the Next app's tuned timeouts).
   defaultCommandTimeout: 8000,
   requestTimeout: 10000,
   responseTimeout: 15000,
   pageLoadTimeout: 60000,
-  taskTimeout: 60000,
-  execTimeout: 60000,
-  fixturesFolder: 'cypress/fixtures',
-  retries: {
-    runMode: 1,
-    openMode: 0,
-  },
+  retries: { runMode: 1, openMode: 0 },
   e2e: {
-    baseUrl: 'http://localhost:3000',
-    setupNodeEvents(on, config) {
-      // Code coverage integration with @cypress/code-coverage
-      // Note: Coverage requires babel instrumentation which conflicts with
-      // Next.js 15's turbopack. To enable coverage:
-      // 1. Create .babelrc with istanbul plugin
-      // 2. Disable turbopack for e2e tests
-      // 3. Run with NEXT_TURBO=false for coverage builds
-      require('@cypress/code-coverage/task')(on, config)
-
-      // Custom task to check environment variables
-      on('task', {
-        checkEnvVar(envVar: string) {
-          return !!process.env[envVar]
-        },
-      })
-
-      // The config object must be returned for Cypress to pick up
-      // any changed environment variables
-      config.env ??= {}
-      config.env.AGENT_API_TOKEN = process.env.AGENT_API_TOKEN ?? ''
-      return config
-    },
+    baseUrl: process.env.CYPRESS_BASE_URL ?? 'http://localhost:3000',
+    supportFile: 'cypress/support/e2e.ts',
+    specPattern: 'cypress/e2e/**/*.cy.ts',
   },
   component: {
     devServer: {
-      framework: 'next',
-      bundler: 'webpack',
+      framework: 'react',
+      bundler: 'vite',
     },
-    excludeSpecPattern: ['**/menu*/*'],
+    specPattern: 'src/**/*.cy.{ts,tsx}',
   },
 })

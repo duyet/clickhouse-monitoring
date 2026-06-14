@@ -14,6 +14,7 @@
 
 ## Status
 
+- **State**: DONE (2026-06-14, branch `chore/promote-tsr-dashboard-1392`)
 - **Priority**: P3
 - **Effort**: M
 - **Risk**: MED (requires DNS redirect to new dashboard worker)

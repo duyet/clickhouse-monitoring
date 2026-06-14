@@ -4,7 +4,7 @@
 > **Date**: 2026-06-12  
 > **Status**: Draft — pending review  
 > **Author**: chmonitor team  
-> **Scope**: `apps/dashboard-tsr` (TanStack Start migration) + platform services
+> **Scope**: `apps/dashboard` (TanStack Start, v0.3) + platform services
 
 ---
 
@@ -148,7 +148,7 @@ The three pillars of value:
 └──────────────────────────────────────────────────────┘
 ```
 
-### Technology Stack (dashboard-tsr)
+### Technology Stack (apps/dashboard)
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
@@ -748,8 +748,7 @@ rules:
 ```
 clickhouse-monitor/
 ├── apps/
-│   ├── dashboard/         # Next.js 15 dashboard (legacy, being replaced)
-│   ├── dashboard-tsr/     # TanStack Start dashboard (primary, this PRD's focus)
+│   ├── dashboard/         # TanStack Start dashboard (primary, v0.3+)
 │   ├── landing/           # chmonitor.dev marketing site (Astro)
 │   ├── docs/              # docs.chmonitor.dev documentation site
 │   └── mcp/               # Standalone MCP worker
@@ -761,7 +760,7 @@ clickhouse-monitor/
 └── deploy/                # Helm charts, Docker Compose
 ```
 
-### 10.2 dashboard-tsr Architecture
+### 10.2 apps/dashboard Architecture
 
 ```
 src/
@@ -886,7 +885,7 @@ chmonitor queries 40+ ClickHouse system tables including:
 
 ### D. Environment Variables Reference
 
-See `apps/dashboard-tsr/.env.example` for the complete list. Key categories:
+See `apps/dashboard/.env.example` for the complete list. Key categories:
 
 - `CLICKHOUSE_*` — ClickHouse connection (required)
 - `VITE_AUTH_PROVIDER` / `CHM_AUTH_PROVIDER` — Auth mode

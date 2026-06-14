@@ -114,14 +114,6 @@ jobs:
           name: wasm-output
           path: packages/clickhouse-client/src/wasm/generated
 
-      - name: Next.js Cache
-        uses: actions/cache@v5
-        with:
-          path: apps/dashboard/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
-
       - name: Install dependencies
         if: ${{ inputs.job-type == 'build' || inputs.job-type == 'lint' }}
         run: bun install

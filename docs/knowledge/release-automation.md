@@ -99,7 +99,7 @@ shared verbatim across every duyet repo via `duyet/llm-release-action`.
   squash-merge turns the title into the release-please commit, an invalid title
   would be silently dropped from the version bump + changelog.
 - **`labeler.yml`** (+ `.github/labeler.yml`) path-labels PRs for triage /
-  release grouping (`app: dashboard-tsr`, `area: ci`, `documentation`, etc.).
+  release grouping (`app: dashboard`, `area: ci`, `documentation`, etc.).
 
 ## CHANGELOG convention
 

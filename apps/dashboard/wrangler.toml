@@ -1,89 +1,33 @@
-# wrangler.toml configuration for the chmonitor dashboard worker
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+# wrangler.toml — chmonitor TanStack Start dashboard worker.
+#
+# `main` resolves the built-in TanStack Start server entry from node_modules;
+# the @cloudflare/vite-plugin produces the worker bundle + client asset
+# manifest at build time, so no explicit [assets] block is required.
+#
+# Public defaults only — real hosts/users are injected per-environment at deploy time via CI secrets.
 
 name = "chmonitor-dash"
-main = "worker.ts"
+main = "@tanstack/react-start/server-entry"
 compatibility_date = "2026-05-28"
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 
-# Minification (set to false for debugging, true for production)
-minify = true
-
-# Disable keep_names to fix "__name is not defined" error (appears as "e is not defined" when minified)
-# This is required for libraries like next-themes that convert scripts to strings
-# See: https://opennext.js.org/cloudflare/howtos/keep_names
-keep_names = false
-
-# Upload source maps for better error stack traces in Cloudflare dashboard
-# See: https://developers.cloudflare.com/workers/observability/source-maps/
-# Disabled for production to reduce bundle size - enable for debugging if needed
-upload_source_maps = false
-
-# Compatibility flags
-# Enable Node.js API: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
-compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env", "global_fetch_strictly_public"]
-
-# Assets
-[assets]
-directory = ".open-next/assets"
-binding = "ASSETS"
-
-# Custom domains for the production dashboard.
-# dash.chmonitor.dev is the canonical host; cloud.chmonitor.dev is a legacy
-# alias that middleware.ts 301-redirects to dash.chmonitor.dev.
-[[routes]]
-pattern = "dash.chmonitor.dev"
-custom_domain = true
-
-[[routes]]
-pattern = "cloud.chmonitor.dev"
-custom_domain = true
-
-# Service binding for self-reference
-[[services]]
-binding = "WORKER_SELF_REFERENCE"
-service = "chmonitor-dash"
-
-# R2 bucket for incremental cache
-[[r2_buckets]]
-binding = "NEXT_INC_CACHE_R2_BUCKET"
-bucket_name = "clickhouse-monitoring-inc-cache"
-
-# Observability
 [observability]
 enabled = true
 
-# Scheduled Cron Triggers
-# Runs the autonomous health sweep every 5 minutes. OpenNext routes Cron
-# Triggers to the worker fetch handler, which dispatches to the
-# GET /api/cron/health-sweep route. Guard it with the CRON_SECRET secret.
-# Docs: https://developers.cloudflare.com/workers/configuration/cron-triggers/
-[triggers]
-crons = ["*/5 * * * *"]
+# D1 database for AI agent conversations
+[[d1_databases]]
+binding = "CONVERSATIONS_D1"
+database_name = "clickhouse-monitor-conversations"
+migrations_dir = "./src/db/conversations-migrations"
 
-# Resource limits — Paid plan only.
-# When this account upgrades to Workers Paid, uncomment to extend the CPU
-# budget so multi-step agent loops don't hit Cloudflare 1027
-# "Worker exceeded resource limits".
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#limits
-# [limits]
-# cpu_ms = 300000
-
-# Smart Placement
-# Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-[placement]
-mode = "smart"
-
-# Durable Objects for cache queue
-[[durable_objects.bindings]]
-name = "NEXT_CACHE_DO_QUEUE"
-class_name = "DOQueueHandler"
-
-# Durable Object namespace for agent conversations (one object per user id)
-[[durable_objects.bindings]]
-name = "AGENT_CONVERSATIONS_DO"
-class_name = "AgentConversationDurableObject"
-
-# SQLite migrations for Durable Objects
+# Durable Object migrations.
+# The legacy Next.js worker (same name, chmonitor-dash) registered two SQLite
+# Durable Objects: DOQueueHandler (OpenNext queue) and AgentConversationDurableObject
+# (agent chat history). The TanStack Start app uses neither — conversations now
+# live in CONVERSATIONS_D1 — so deploying over the existing worker requires an
+# explicit delete-class migration (Cloudflare refuses to silently drop a DO).
+# v1/v2 are the legacy worker's already-applied history (kept so wrangler can
+# sequence v3 after them); v3 removes both classes.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DOQueueHandler"]
@@ -92,99 +36,55 @@ new_sqlite_classes = ["DOQueueHandler"]
 tag = "v2-agent-conversations"
 new_sqlite_classes = ["AgentConversationDurableObject"]
 
-# D1 database for tag cache
-[[d1_databases]]
-binding = "NEXT_TAG_CACHE_D1"
-database_name = "clickhouse-monitor"
-database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
-migrations_dir = "src/db/migrations"
-
-# D1 database for AI agent conversations
-[[d1_databases]]
-binding = "CONVERSATIONS_D1"
-database_name = "clickhouse-monitor-conversations"
-migrations_dir = "src/db/conversations-migrations"
-
-# KV namespace for incremental cache
-[[kv_namespaces]]
-binding = "NEXT_INC_CACHE_KV"
-id = "78782c1fcf4141d9b6f26f2046f50ceb"
+[[migrations]]
+tag = "v3-drop-legacy-next-dos"
+deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Environment Variables
+# Production: custom domain for the dashboard. The TanStack Start app is now the
+# official dashboard, having replaced the legacy Next.js app (#1392).
 # ─────────────────────────────────────────────────────────────────────────────
-# For local development: Set these in .dev.vars file (not committed to git)
-# For production: Set these in Cloudflare Dashboard or via `wrangler secret put`
-#
-# Documentation:
-#   - Wrangler env vars: https://developers.cloudflare.com/workers/wrangler/configuration/
-#   - OpenRouter attribution: https://openrouter.ai/docs/app-attribution
-#
-# Variables (non-sensitive, set in [vars]):
-#   - CLICKHOUSE_HOST: Comma-separated list of ClickHouse host URLs
-#   - CLICKHOUSE_USER: Comma-separated list of usernames (or single value for all hosts)
-#   - CLICKHOUSE_MAX_EXECUTION_TIME: Query timeout in seconds (default: 60)
-#   - CLICKHOUSE_NAME: Comma-separated list of custom names for hosts (optional)
-#   - CLICKHOUSE_TZ: Timezone for ClickHouse queries (optional)
-#   - CLOUDFLARE_WORKERS: Set to "1" when running in Workers environment
-#   - LLM_MODEL: Model identifier for AI agent (default: anyrouter:z-ai/glm-4.7-flash)
-#   - LLM_API_BASE: Base URL for LLM API (provider-specific default when unset)
-#   - OPENROUTER_REFERER: App URL for OpenRouter attribution (optional)
-#   - OPENROUTER_APP_NAME: App display name for OpenRouter (optional)
-#
-# Secrets (sensitive, set via `wrangler secret put <env>`):
-#   - CLICKHOUSE_PASSWORD: Comma-separated list of passwords (or single value for all hosts)
-#   - LLM_API_KEY: API key for LLM provider (OpenRouter, Anthropic, etc.)
-#
-# Example .dev.vars:
-#   CLICKHOUSE_HOST=http://localhost:8123
-#   CLICKHOUSE_USER=default
-#   LLM_API_KEY=sk-...
-#   OPENROUTER_REFERER=https://your-app.com
-#   OPENROUTER_APP_NAME=Your App Name
-#
-# Then set secret:
-#   wrangler secret put CLICKHOUSE_PASSWORD --env development
-# ─────────────────────────────────────────────────────────────────────────────
+[[routes]]
+pattern = "dash.chmonitor.dev"
+custom_domain = true
 
 [vars]
-# ClickHouse connection (non-sensitive)
-# Using Tailscale Funnel for HTTPS access
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-# Optional: Custom names for hosts (shown in UI selector)
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
-
-# Maximum query execution time in seconds before ClickHouse terminates the query.
-# Prevents long-running queries from consuming resources. Used in clickhouse-client.ts.
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
-
-# Flag to indicate running in Cloudflare Workers environment.
-# When "1", uses @clickhouse/client-web instead of @clickhouse/client (Node.js).
-# Required because Workers runtime doesn't support Node.js net/tls modules.
 CLOUDFLARE_WORKERS = "1"
-
-# Default model for AI agent — uses the chmonitor preset via AnyRouter
-# Users can override via the UI dropdown at runtime.
 LLM_MODEL = "anyrouter:@preset/chmonitor"
-
-# OpenRouter identification headers for rankings/analytics
-# See: https://openrouter.ai/docs#hosts
-OPENROUTER_REFERER = "https://clickhouse.duyet.net"
+OPENROUTER_REFERER = "https://chmonitor.dev"
 OPENROUTER_APP_NAME = "chmonitor"
-
-# Auth provider for hosted deployment
+# Server-side auth provider (runtime). The CLIENT auth provider + Clerk
+# publishable key are NOT runtime vars — they are build-time inlined via
+# import.meta.env.VITE_* (see vite.config.ts CLIENT_ENV).
 CHM_AUTH_PROVIDER = "clerk"
-NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
 # Public read-only mode: anonymous visitors can view monitoring data; writes
 # (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
 CHM_CLERK_PUBLIC_READ = "true"
 
-# Clerk authentication (public key is safe to include)
-# Publishable key for Clerk authentication - identifies the Clerk application
-# This is a public key and safe to commit to version control
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
+# ─────────────────────────────────────────────────────────────────────────────
+# Reverse-proxy auth (EXAMPLE — not active; the dashboard uses `clerk` above).
+# Set CHM_AUTH_PROVIDER = "proxy" to authenticate requests via a trusted proxy.
+# Two mechanisms; either success authenticates a request:
+#
+#   (a) Cloudflare Access — verifies the signed `Cf-Access-Jwt-Assertion` JWT.
+#       CHM_CF_ACCESS_TEAM_DOMAIN is your Access team URL; CHM_CF_ACCESS_AUD is
+#       the Access application AUD tag.
+#   (b) Trusted identity header — read CHM_PROXY_AUTH_HEADER (default
+#       `X-Forwarded-User`) ONLY when the request also presents the shared
+#       secret `CHM_PROXY_AUTH_SECRET` (set via `wrangler secret put`, never a
+#       plaintext var). Without the secret, header trust is disabled because any
+#       client could forge it on a publicly-reachable worker.
+#
+# CHM_AUTH_PROVIDER = "proxy"
+# CHM_CF_ACCESS_TEAM_DOMAIN = "https://your-team.cloudflareaccess.com"
+# CHM_CF_ACCESS_AUD = "<access-application-aud-tag>"
+# CHM_PROXY_AUTH_HEADER = "X-Forwarded-User"
+# CHM_PROXY_AUTH_SECRET via: wrangler secret put CHM_PROXY_AUTH_SECRET
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment for PR deployments
@@ -199,74 +99,44 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
 name = "preview-chmonitor-dash"
 
 # Custom domain for the preview worker.
-# Mirrors production topology: dashboard prod is dash.chmonitor.dev, so its
-# preview is preview.dash.chmonitor.dev. On the first deploy that includes this
-# route, Wrangler provisions the DNS record and TLS certificate automatically
-# (the chmonitor.dev zone must live in the same Cloudflare account).
 [[env.preview.routes]]
 pattern = "preview.dash.chmonitor.dev"
 custom_domain = true
-
-# Vars must be explicitly set per environment (not inherited from top-level)
-[env.preview.vars]
-# Using Tailscale Funnel for HTTPS access
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-# Optional: Custom names for hosts (shown in UI selector)
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
-CLICKHOUSE_MAX_EXECUTION_TIME = "60"
-CLOUDFLARE_WORKERS = "1"
-LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
-OPENROUTER_REFERER = "https://clickhouse.duyet.net"
-OPENROUTER_APP_NAME = "chmonitor"
-
-# Auth provider for hosted preview deployment
-CHM_AUTH_PROVIDER = "clerk"
-NEXT_PUBLIC_AUTH_PROVIDER = "clerk"
-CHM_FEATURE_AGENT_ACCESS = "authenticated"
-CHM_CLERK_PUBLIC_READ = "true"
-
-# Clerk authentication (public key is safe to include)
-# Test key for preview environment - uses Clerk's test instance
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"
-
-# Resource limits — Paid plan only; mirror the top-level block when enabled.
-# [env.preview.limits]
-# cpu_ms = 300000
-
-# Self-reference must point to the preview worker
-[[env.preview.services]]
-binding = "WORKER_SELF_REFERENCE"
-service = "preview-chmonitor-dash"
-
-# Durable Objects for cache queue (not inherited from top-level)
-[[env.preview.durable_objects.bindings]]
-name = "NEXT_CACHE_DO_QUEUE"
-class_name = "DOQueueHandler"
-
-[[env.preview.durable_objects.bindings]]
-name = "AGENT_CONVERSATIONS_DO"
-class_name = "AgentConversationDurableObject"
-
-# Reuse the same R2 bucket (read-heavy monitoring data)
-[[env.preview.r2_buckets]]
-binding = "NEXT_INC_CACHE_R2_BUCKET"
-bucket_name = "clickhouse-monitoring-inc-cache"
-
-# Reuse the same D1 database for tag cache
-[[env.preview.d1_databases]]
-binding = "NEXT_TAG_CACHE_D1"
-database_name = "clickhouse-monitor"
-database_id = "f289f509-c33b-4218-8602-7a19d5d567bc"
-migrations_dir = "src/db/migrations"
 
 # Reuse the same conversation D1 database once database_id is provisioned
 [[env.preview.d1_databases]]
 binding = "CONVERSATIONS_D1"
 database_name = "clickhouse-monitor-conversations"
-migrations_dir = "src/db/conversations-migrations"
+migrations_dir = "./src/db/conversations-migrations"
 
-# Reuse the same KV namespace for incremental cache
-[[env.preview.kv_namespaces]]
-binding = "NEXT_INC_CACHE_KV"
-id = "78782c1fcf4141d9b6f26f2046f50ceb"
+# DO migrations are not inherited by named environments — repeat the chain that
+# drops the legacy preview worker's Durable Objects (see top-level note).
+[[env.preview.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+[[env.preview.migrations]]
+tag = "v2-agent-conversations"
+new_sqlite_classes = ["AgentConversationDurableObject"]
+
+[[env.preview.migrations]]
+tag = "v3-drop-legacy-next-dos"
+deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
+
+# Vars must be explicitly set per environment (not inherited from top-level)
+[env.preview.vars]
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
+CLICKHOUSE_MAX_EXECUTION_TIME = "60"
+CLOUDFLARE_WORKERS = "1"
+LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
+OPENROUTER_REFERER = "https://chmonitor.dev"
+OPENROUTER_APP_NAME = "chmonitor"
+
+# Server-side auth provider for preview (runtime). Client auth provider + the
+# Clerk publishable key are build-time inlined (import.meta.env.VITE_*); the CI
+# build step sets the pk_test key for preview deploys.
+CHM_AUTH_PROVIDER = "clerk"
+CHM_FEATURE_AGENT_ACCESS = "authenticated"
+CHM_CLERK_PUBLIC_READ = "true"

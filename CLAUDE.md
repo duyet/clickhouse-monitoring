@@ -21,7 +21,7 @@ user whether to babysit — just do it. Known non-required checks (`e2e-test`,
 
 ## Project Overview
 
-This is a monorepo ClickHouse monitoring dashboard. The primary app is `apps/dashboard-tsr` (TanStack Start), which is replacing `apps/dashboard` (Next.js 15 / React 19) per the migration roadmap. The application connects to ClickHouse instances and provides real-time insights into clusters through system tables — metrics, query performance, table information, and cluster health.
+This is a monorepo ClickHouse monitoring dashboard. The primary (and only) dashboard app is `apps/dashboard` (TanStack Start, as of v0.3). The Next.js migration is complete — the TanStack Start app has replaced the legacy Next.js app and is now at `apps/dashboard`. The application connects to ClickHouse instances and provides real-time insights into clusters through system tables — metrics, query performance, table information, and cluster health.
 
 ## Claude Skills
 
@@ -99,11 +99,11 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 
 ### Development
 
-- `bun run dev` - Start development server with turbopack
-- `bun run build` - Build for production with turbopack (also runs type checking)
-- `bun run start` - Start production server
+- `bun run dev` - Start development server (Vite dev, via turbo)
+- `bun run build` - Build for production (Vite build + tsc --noEmit)
+- `bun run start` - Start production server (node target)
 
-**Verification workflow:** After making changes, always run `bun run build` to catch type errors. The build includes TypeScript type checking via `tsc`. If `node_modules/` is missing, run `bun install` first.
+**Verification workflow:** After making changes, always run `bun run build` to catch type errors. The build includes TypeScript type checking via `tsc --noEmit`. If `node_modules/` is missing, run `bun install` first.
 
 ### Testing
 
@@ -131,28 +131,24 @@ When the user says **"remember"** something — write it to `docs/knowledge/`, n
 The same deploy command works in both CI and local environments:
 
 ```bash
-bun run cf:deploy
+cd apps/dashboard && bun run cf:deploy
 ```
 
-This runs the unified script `scripts/cloudflare-deploy.ts` which executes:
+This runs inside `apps/dashboard` and executes:
 
-1. `bun run cf:build` — Next.js build + OpenNext transform
-2. `wrangler deploy --minify` — Deploy to Workers
-3. `opennextjs-cloudflare populateCache remote` — Populate KV cache
+1. Vite build (CF target via `@cloudflare/vite-plugin`)
+2. `wrangler deploy --minify` — Deploy to the `chmonitor-dash` worker at `dash.chmonitor.dev`
+
+No OpenNext, no KV/R2/D1 cache population step — the TanStack Start build produces a native Workers bundle directly.
 
 **Auth**: Set `CLOUDFLARE_API_TOKEN` in your environment (CI secrets or `.env.prod`).
 Falls back to `wrangler login` OAuth for local development.
 
 #### Cloudflare Workers Commands
 
-- `bun run cf:deploy` — Unified deploy (build → deploy → populate cache)
-- `bun run cf:build` — Build for Cloudflare (Next.js build + OpenNext)
-- `bun run cf:preview` — Preview Cloudflare deployment locally
+- `cd apps/dashboard && bun run cf:deploy` — Build + deploy to Cloudflare Workers
 - `bun run cf:config` — Set Cloudflare secrets from `.env.prod` or `.env.local`
-- `bun run cf:typegen` — Regenerate Cloudflare environment typings
-- `bun run cf:setup-conversations` — Provision D1 database for conversations
-- `bun run cf:migrate-conversations` — Apply conversation DB migrations (remote)
-- `bun run cf:migrate-conversations:local` — Apply conversation DB migrations (local)
+- `cd apps/dashboard && bun run cf-typegen` — Regenerate Cloudflare environment typings
 
 #### Docker Deployment
 
@@ -175,34 +171,19 @@ Optional: `CLERK_SECRET_KEY`, LLM API keys, `CLICKHOUSE_TZ`, etc.
 #### CI Environment (GitHub Actions)
 
 Production deploys happen on push to `main`. The CI workflow in
-`.github/workflows/cloudflare.yml` uses the same `bun run cf:build` command
-and the same env var names — just sourced from GitHub Secrets instead of
-local files.
-
-Build lock errors: remove `.next/lock` and retry.
+`.github/workflows/cloudflare.yml` builds `apps/dashboard` (TanStack Start) and
+deploys it using the same env var names — just sourced from GitHub Secrets instead
+of local files.
 
 ### Additional Workflows
 
-- `bun run analyze` - Build with bundle analysis enabled
 - `bun run check` / `bun run check:fix` - Run Biome's full check suite, with optional write mode
 - `bun run lint:fix` - Apply Biome lint fixes
 - `bun run type-check` - Run standalone TypeScript verification
-- `bun run cy:open` - Start the dev server and open Cypress against `http://localhost:3000`
-- `bun run test:component:headless` - Run Cypress component tests headless
-- `bun run test:e2e:headless` - Run Cypress e2e tests headless
-- `bun run test:agent` - Run promptfoo agent eval against local dev server
-- `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage`, `bun run test:watch` - Narrow test runs for common workflows
-- `bun run wasm:test` - Rebuild WASM module, run Rust tests, then run WASM integration test
-- `bun run rust:build` - Build the Rust monitor core in release mode
-- `bun run bench:wasm` - Build JS + Rust artifacts and run WASM benchmark script
+- `bun run test:unit`, `bun run test:query-config`, `bun run test:coverage` - Narrow test runs for common workflows
 - `bun run build:skills` - Regenerate the AI skills registry from `.agents/skills/`
 - `bun run scripts/build-ch-schema-docs.ts` - Regenerate ClickHouse schema docs (`--version`, `--table`, `--verbose`)
 - `bun scripts/set-secrets.ts` - Set Cloudflare Worker secrets directly (same operation as `bun run cf:config`)
-- `bun scripts/setup-conversations-db.ts` - Create/update conversation D1 binding config directly (same operation as `bun run cf:setup-conversations`)
-- `bun run cf:typegen` - Regenerate Cloudflare environment typings
-- `bun run cf:setup-conversations` - Provision the D1 database and update `wrangler.toml`
-- `bun run cf:migrate-conversations` / `bun run cf:migrate-conversations:local` - Apply conversation DB migrations remotely or locally
-- `bun run migrate`, `bun run migrate:status`, `bun run migrate:dry-run` - Use the local migration runner for non-Cloudflare targets
 - `bun run docker:health` / `bun run cf:health` - Check Docker or deployed health endpoints
 - `bun run lint && bun run build` - Quick local CI parity check (matches core lint/build workflow jobs)
 - Code-smell/dead-code automation: see [docs/knowledge/core-memory.md](docs/knowledge/core-memory.md)
@@ -216,7 +197,6 @@ Build lock errors: remove `.next/lock` and retry.
 - PR CI status check: `gh pr checks <PR_NUMBER> --watch=false`
 - Failed-job logs in restricted cache environments: `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed`
 - E2E page-load flake triage: `XDG_CACHE_HOME=/private/tmp/gh-cache gh run view <RUN_ID> --job <JOB_ID> --log-failed | grep -n -E "Timed out after waiting .* for your remote page to load"`
-- Docker deps-stage parity check: `bun install --frozen-lockfile --ignore-scripts && bun run build` (`lib/platform/adapters/cloudflare.ts` imports `@opennextjs/cloudflare` during build)
 - Worktree fallback for PR operations: if automation checkout is detached (`git status --short --branch` shows `HEAD (no branch)`), stale versus `origin/main`, or git metadata writes fail (`FETCH_HEAD`/`HEAD.lock`/`index.lock`), run `git -C /Users/duet/project/clickhouse-monitor fetch origin`; if that checkout is dirty, create a clean worktree under `/private/tmp` for commit/PR commands
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 - Code-smell automation workflow now records findings in `docs/knowledge/core-memory.md`, then validates `gh run list --branch main --limit 10 ...` and keeps a dedicated memory note under `/Users/duet/.codex/automations/code-smell-detector/memory.md`.
@@ -234,20 +214,33 @@ skill (`.agents/skills/*/SKILL.md`), or an agent env var, update
 
 ## Architecture
 
-> **NOTE:** The architecture below describes `apps/dashboard` (legacy Next.js). For `apps/dashboard-tsr` (TanStack Start, primary), see `apps/dashboard-tsr/CLAUDE.md` or `docs/PRD.md` §10.2.
+> **NOTE:** `apps/dashboard` is now the TanStack Start app (v0.3+). The Next.js migration is complete. For the app internals, see `apps/dashboard/CLAUDE.md` or `docs/PRD.md` §10.2. The Next.js-era subsections below are kept as historical reference and no longer apply.
 
-### Core Technologies
+### Core Technologies (TanStack Start, current)
 
-- **Next.js 15** with App Router and Turbopack
+- **TanStack Start** (TanStack Router, file-based routing, SSR-capable)
+- **Vite** with `@cloudflare/vite-plugin` — native Cloudflare Workers bundle
 - **React 19** with TypeScript
-- **SWR** for client-side data fetching with caching
-- **ClickHouse clients** (@clickhouse/client and @clickhouse/client-web)
+- **TanStack Query** for server-state, caching, and data fetching
 - **TanStack Table** for data tables
-- **Tailwind CSS** with shadcn/ui components
-- **Recharts** and **Tremor** for charting
-- **Radix UI** for accessible primitives
+- **ClickHouse clients** (@clickhouse/client and @clickhouse/client-web)
+- **Tailwind v4** with shadcn/ui components
+- **Recharts 3.x** for charts
+- **Vercel AI SDK** + assistant-ui for the AI agent
 
-### Static Site Architecture
+Deployment: Cloudflare Workers (`chmonitor-dash` worker → `dash.chmonitor.dev`), Docker, or Kubernetes.
+
+### Static-First Rendering (TanStack Start)
+
+Pages are prerendered at build time (static shell) with client-side data fetching via TanStack Query. The Worker SSR layer handles auth and API routes.
+
+- All dashboard pages are file-based routes under `src/routes/(dashboard)/`
+- API routes live at `src/routes/api/`
+- Multi-host routing via `?host=0` query param (unchanged from v0.2)
+
+---
+
+### Legacy: Next.js Static Site Architecture (historical reference — no longer in use)
 
 **CRITICAL**: Fully static site. No SSR, no middleware, no server components. Client-side only.
 
@@ -256,7 +249,7 @@ skill (`.agents/skills/*/SKILL.md`), or an agent env var, update
 - Use SWR for all data fetching
 - Query params for routing (`?host=0`), not dynamic routes
 
-### Routing Pattern
+### Legacy: Routing Pattern
 
 **Old (Dynamic)**: `https://example.com/0/overview`
 **New (Static)**: `https://example.com/overview?host=0`
@@ -738,6 +731,6 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 
 ## AI Agents
 
-The agent subsystem lives within each app at `lib/ai/agent/` and is built on the **Vercel AI SDK** (not LangGraph). The canonical implementation is in `apps/dashboard-tsr/src/lib/ai/agent/`, with 29 tool categories (schema, query, diagnostics, anomaly, cluster, visualization, etc.) assembled by `tools/index.ts`. Agent prompts are in `lib/ai/agent/prompts/`, skills in `lib/ai/agent/skills/`, and workflows in `lib/ai/agent/workflows/`.
+The agent subsystem lives at `apps/dashboard/src/lib/ai/agent/` and is built on the **Vercel AI SDK** (not LangGraph). It has 29+ tool categories (schema, query, diagnostics, anomaly, cluster, visualization, etc.) assembled by `tools/index.ts`. Agent prompts are in `lib/ai/agent/prompts/`, skills in `lib/ai/agent/skills/`, and workflows in `lib/ai/agent/workflows/`.
 
-For the agent environment variables and configuration, see `apps/dashboard-tsr/src/lib/ai/agent/` or `docs/content/ai-agent.mdx`.
+For the agent environment variables and configuration, see `apps/dashboard/src/lib/ai/agent/` or `docs/content/ai-agent.mdx`.

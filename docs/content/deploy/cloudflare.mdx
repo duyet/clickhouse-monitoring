@@ -2,13 +2,13 @@
 
 Deploy chmonitor to Cloudflare Workers. Best for globally cached, serverless hosting with no servers to manage.
 
-The TanStack Start app (`apps/dashboard-tsr`) uses the `@cloudflare/vite-plugin` to build a native Cloudflare Workers bundle — no OpenNext adapter required. The deploy script is just `bun run build && wrangler deploy`.
+The dashboard app (`apps/dashboard`) uses the `@cloudflare/vite-plugin` to build a native Cloudflare Workers bundle — no OpenNext adapter required. The deploy script is just `bun run build && wrangler deploy`.
 
 ## One-click deploy
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard-tsr)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard)
 
-This deploys the `apps/dashboard-tsr` worker (TanStack Start). You will be prompted to connect your Cloudflare account and configure variables. See the [environment variable reference](#configure) below and the [dashboard-tsr README](https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard-tsr#deploy-your-own) for the full variable list.
+This deploys the `apps/dashboard` worker (TanStack Start). You will be prompted to connect your Cloudflare account and configure variables. See the [environment variable reference](#configure) below and the [dashboard README](https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard#deploy-your-own) for the full variable list.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ This deploys the `apps/dashboard-tsr` worker (TanStack Start). You will be promp
 
 ```bash
 git clone https://github.com/duyet/clickhouse-monitoring.git
-cd clickhouse-monitoring/apps/dashboard-tsr
+cd clickhouse-monitoring/apps/dashboard
 bun install
 
 # Set credentials and build

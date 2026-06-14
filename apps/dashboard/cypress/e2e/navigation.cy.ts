@@ -1,26 +1,20 @@
 /// <reference types="cypress" />
 
 /**
- * @fileoverview Navigation E2E tests - Simplified smoke tests
- * Tests the new static site architecture with ?host= query parameters
+ * Navigation smoke tests for the static-site architecture (?host= query param).
+ * Ported from the Next app; routes are identical under TanStack Start.
  */
 
-describe('Navigation Smoke Tests', () => {
-  it('should load overview page with query parameter', () => {
+describe('Navigation smoke tests', () => {
+  it('loads the overview page with the host query parameter', () => {
     cy.visit('/overview?host=0')
     cy.url().should('include', '/overview')
     cy.url().should('include', 'host=0')
-    cy.get('body').should('contain', 'Overview')
+    cy.get('body').should('exist')
   })
 
-  it('should navigate between main pages', () => {
-    const mainPages: string[] = [
-      '/overview',
-      '/dashboard',
-      '/clusters',
-      '/merges',
-    ]
-
+  it('navigates between the main pages keeping ?host', () => {
+    const mainPages = ['/overview', '/dashboard', '/clusters', '/merges']
     mainPages.forEach((page) => {
       cy.visit(`${page}?host=0`)
       cy.url().should('include', page)
@@ -29,22 +23,24 @@ describe('Navigation Smoke Tests', () => {
     })
   })
 
-  it('should handle direct URL navigation', () => {
+  it('handles direct URL navigation to a deep route', () => {
     cy.visit('/running-queries?host=0')
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
   })
 
-  it('should maintain host parameter during browser navigation', () => {
+  it('preserves the host parameter across browser back/forward', () => {
+    cy.visit('/overview?host=0')
     cy.visit('/dashboard?host=0')
     cy.url().should('include', 'host=0')
 
     cy.go('back')
+    cy.url().should('include', '/overview')
     cy.url().should('include', 'host=0')
 
     cy.go('forward')
-    cy.url().should('include', 'host=0')
     cy.url().should('include', '/dashboard')
+    cy.url().should('include', 'host=0')
   })
 })

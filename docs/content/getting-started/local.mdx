@@ -2,16 +2,9 @@
 
 Run chmonitor from source for development or to test changes before deploying.
 
-## Two apps in the monorepo
+## The dashboard app
 
-The repo contains two dashboard apps:
-
-| App | Directory | Status | Client env prefix |
-|---|---|---|---|
-| TanStack Start | `apps/dashboard-tsr` | **Current** | `VITE_*` |
-| Next.js | `apps/dashboard` | Legacy | `NEXT_PUBLIC_*` |
-
-The TanStack app (`apps/dashboard-tsr`) is the active one. Use it unless you have a reason to run the Next.js version. The steps below target `apps/dashboard-tsr`.
+The dashboard is `apps/dashboard` (TanStack Start, v0.3+). Client env vars use the `VITE_*` prefix. The legacy Next.js app has been removed. The steps below target `apps/dashboard`.
 
 ## Steps
 
@@ -32,7 +25,7 @@ bun install
 
 **3. Create `.env.local`**
 
-In `apps/dashboard-tsr/`, create `.env.local`:
+In `apps/dashboard/`, create `.env.local`:
 
 ```bash
 # Required
@@ -67,21 +60,11 @@ Make sure the user you set in step 3 has the right grants. See:
 **5. Start the dev server**
 
 ```bash
-cd apps/dashboard-tsr
+cd apps/dashboard
 bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-## Running the Next.js app instead
-
-If you need to run the legacy Next.js app:
-
-```bash
-cd apps/dashboard
-# Create apps/dashboard/.env.local with NEXT_PUBLIC_* vars
-bun run dev
-```
 
 ## Common issues
 

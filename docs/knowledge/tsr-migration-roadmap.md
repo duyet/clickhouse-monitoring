@@ -7,17 +7,17 @@ tags: [tanstack-start, migration, roadmap, dashboard-tsr]
 
 # TanStack Start Migration — Roadmap to 100%
 
-Executable plan for completing the Next.js → TanStack Start migration. The new
-app lives at `apps/dashboard-tsr` (parallel to the Next `apps/dashboard`). The
-foundation is **done and merged**; what remains is high-volume, low-risk
-porting. This doc tells a pickup agent exactly how to finish it.
+> **MIGRATION COMPLETE** (PR #1392 cutover, 2026-06-14). All phases below are done.
+> `apps/dashboard` was renamed to `apps/dashboard`; the legacy Next.js app was
+> deleted. `dash.chmonitor.dev` is now served by the TanStack Start worker
+> (`chmonitor-dash`). This doc is kept as historical record — do not re-execute.
 
-> Status anchor: epic **#1392**. ~20% complete (foundation ~100%, user-visible
-> dashboard ~5%). 10 PRs merged: #1406–#1408, #1410–#1416.
+Executable plan for completing the Next.js → TanStack Start migration. The app
+now lives at `apps/dashboard` (was `apps/dashboard` during the migration). Epic: #1392.
 
 ## Architecture (already proven & merged — do NOT re-litigate)
 
-- **Isolated own-lockfile app**: `apps/dashboard-tsr` has its own `bun.lock` and
+- **Isolated own-lockfile app**: `apps/dashboard` has its own `bun.lock` and
   is **NOT** a root workspace (mirrors `apps/landing`/`apps/docs`). Keeps the
   Vite 8 toolchain out of the Next/MCP root lockfile.
 - **Dual-target, one source** (`vite.config.ts` branches on `BUILD_TARGET`):
@@ -43,14 +43,14 @@ porting. This doc tells a pickup agent exactly how to finish it.
 
 1. `git -C <repo> fetch origin main` (origin ref staleness causes bugs), then
    `git worktree add /private/tmp/chm-tsr-<x> -b tsr/<x> origin/main`.
-2. `cd .../apps/dashboard-tsr && bun install` (restore isolated node_modules);
+2. `cd .../apps/dashboard && bun install` (restore isolated node_modules);
    `bun add <leaf deps>` as needed. For UI: `bunx shadcn@latest add <prims> --yes`.
 3. Port files. If sourcing from a workflow's structured output, `html.unescape`
    the contents (they're entity-escaped). Mechanical ports → Sonnet agents.
 4. `NODE_OPTIONS=--max-old-space-size=4096 bun run build` (vite build + tsc +
    prerender). Fix until green. (Node target: `bun run build:node`.)
 5. biome from the MAIN checkout: `./node_modules/.bin/biome check --write
-   /private/tmp/chm-tsr-<x>/apps/dashboard-tsr/src` (worktree has no root
+   /private/tmp/chm-tsr-<x>/apps/dashboard/src` (worktree has no root
    node_modules). Re-build to confirm.
 6. Commit (`Co-Authored-By: duyetbot <bot@duyet.net>`), push, `gh pr create`,
    `gh pr merge --squash` (merges immediately — required-checks gate is minimal).
@@ -112,7 +112,7 @@ Fan out by route group (Sonnet); follow TanStack `migrate-from-next-js`.
   its Clerk piece behind `isClerkClientEnabled()`.
 
 ### Phase 6 — CI rewire #1403
-Wire `apps/dashboard-tsr` into `.github/workflows/`: build (CF + node), tsc,
+Wire `apps/dashboard` into `.github/workflows/`: build (CF + node), tsc,
 biome, prerender, Cypress (re-target), smoke. Add a Docker build job for the
 node target. Capture the Win Metrics (build time, bundle, TTFB, LCP) vs the Next
 baseline for the before/after scorecard on #1392.
@@ -129,7 +129,7 @@ be adversarial** (a parity diff can't prove intent, only sameness).
 - **Workflow agents WRITE to the shared main checkout** despite "structured
   output only" → contamination + stale `git pull` ("Aborting"). Always assemble
   in worktrees from `origin/main`; after workflows `git reset --hard origin/main
-  && git clean -fd apps/dashboard-tsr`. Add "READ-ONLY, no file writes" to prompts.
+  && git clean -fd apps/dashboard`. Add "READ-ONLY, no file writes" to prompts.
 - **`@clickhouse/client-web` `.json<Row>()` WRAPS**: JSON→`{data:Row[]}`,
   JSONEachRow→`Row[]`. Pass the ROW type as the generic, not the wrapper.
 - **`getClient({ web:true })` MANDATORY** on workerd: `nodejs_compat` defines
@@ -153,8 +153,10 @@ react-start 1.168.19 · react-router 1.170.11 · vite 8.0.16 ·
 @tanstack/react-query 5.101 · next-themes 0.4.6 · lucide-react 1.17 ·
 class-variance-authority · @clerk/tanstack-react-start.
 
-## Done = 100%
-All 83 pages + 86 charts + data-table render with live data on both targets;
-all ~56 API routes ported; middleware/MCP/agent working; CI builds+deploys both
-targets; `dash.chmonitor.dev` served by `chmonitor-dash-tsr` after a clean bake;
-Win-Metrics scorecard posted on #1392; old worker decommissioned.
+## Done = 100% ✅
+
+All 83 pages + 86 charts + data-table render with live data; all ~56 API routes
+ported; middleware/MCP/agent working; CI builds + deploys the single
+`apps/dashboard` (TanStack Start) target; `dash.chmonitor.dev` served by
+`chmonitor-dash` after the cutover bake; legacy Next.js app deleted; Win-Metrics
+scorecard posted on #1392.
