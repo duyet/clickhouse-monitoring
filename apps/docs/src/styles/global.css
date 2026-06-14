@@ -481,9 +481,26 @@ details.nav-group[open] > summary.nav-group__label::after {
     background 0.15s ease,
     color 0.15s ease;
 }
+.nav-link__icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+.nav-link__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .nav-link:hover {
   background: var(--bg-overlay-hover);
   color: var(--fg);
+}
+.nav-link:hover .nav-link__icon,
+.nav-link[aria-current='page'] .nav-link__icon {
+  opacity: 1;
 }
 .nav-link[aria-current='page'] {
   background: var(--bg-base);
