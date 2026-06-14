@@ -25,11 +25,12 @@ mock.module('../../runtime/cloudflare-workers', () => ({
 
 // _resetEnvCache is re-exported from clickhouse-client so it resets the SAME
 // env-schema instance that getClient() uses internally.
-const { getClient, isCloudflareWorkers, _resetEnvCache } = await import(
-  new URL('../clickhouse-client.ts?test=client', import.meta.url).href
-)
+const { getClient, releaseClient, isCloudflareWorkers, _resetEnvCache } =
+  await import(
+    new URL('../clickhouse-client.ts?test=client', import.meta.url).href
+  )
 // Import connection-pool to clear between tests
-const { clientPool } = await import(
+const { clientPool, cleanupStaleClients } = await import(
   new URL('../connection-pool.ts?test=client', import.meta.url).href
 )
 
@@ -215,5 +216,83 @@ describe('getClient', () => {
 describe('isCloudflareWorkers re-export', () => {
   it('is re-exported from the module', () => {
     expect(typeof isCloudflareWorkers).toBe('function')
+  })
+})
+
+describe('releaseClient', () => {
+  const originalEnv = { ...process.env }
+
+  beforeEach(() => {
+    process.env = { ...originalEnv }
+    process.env.CLICKHOUSE_HOST = 'http://localhost:8123,host2'
+    process.env.CLICKHOUSE_USER = 'default,u2'
+    process.env.CLICKHOUSE_PASSWORD = ',p2'
+    _resetEnvCache()
+    clientPool.clear()
+    mockCreateClient.mockReset()
+    mockCreateClientWeb.mockReset()
+    mockIsCloudflareWorkers.mockReset()
+    mockIsCloudflareWorkers.mockReturnValue(false)
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+    mock.restore()
+  })
+
+  it('correctly releases leased clients and clamps to 0', async () => {
+    mockCreateClient.mockReturnValue({})
+    await getClient({ web: false })
+
+    const key = 'http://localhost:8123:default:false'
+    const pooled = clientPool.get(key)
+    expect(pooled).toBeDefined()
+    expect(pooled?.inUse).toBe(1)
+
+    releaseClient({ web: false })
+    expect(pooled?.inUse).toBe(0)
+
+    // Clamp to 0
+    releaseClient({ web: false })
+    expect(pooled?.inUse).toBe(0)
+  })
+
+  it('correctly resolves clientConfig or hostId', async () => {
+    mockCreateClient.mockReturnValue({})
+    await getClient({ hostId: 1, web: false })
+
+    const key = 'host2:u2:false'
+    const pooled = clientPool.get(key)
+    expect(pooled).toBeDefined()
+    expect(pooled?.inUse).toBe(1)
+
+    releaseClient({ hostId: 1, web: false })
+    expect(pooled?.inUse).toBe(0)
+  })
+
+  it('cleans up client via cleanupStaleClients only when not in use', async () => {
+    mockCreateClient.mockReturnValue({})
+    await getClient({ web: false })
+
+    const key = 'http://localhost:8123:default:false'
+    const pooled = clientPool.get(key)
+    expect(pooled).toBeDefined()
+
+    // Simulate idle timeout
+    pooled.lastUsed = Date.now() - 600_000
+
+    // Should not clean up since it's in use
+    cleanupStaleClients()
+    expect(clientPool.has(key)).toBe(true)
+
+    // Release the client
+    releaseClient({ web: false })
+
+    // Simulate idle timeout again after release (since releaseClient resets lastUsed)
+    pooled.lastUsed = Date.now() - 600_000
+
+    // Now it should clean up
+    cleanupStaleClients()
+    expect(clientPool.has(key)).toBe(false)
   })
 })
