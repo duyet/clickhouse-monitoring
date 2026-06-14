@@ -22,9 +22,8 @@
   --shadow-md: 0 8px 24px rgba(9, 9, 11, 0.12);
   --shadow-lg: 0 24px 60px -28px rgba(9, 9, 11, 0.3);
 
-  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Source Sans 3 Variable', 'Source Sans 3', ui-sans-serif,
-    system-ui, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, sfmono-regular, menlo, monaco,
     consolas, monospace;
 
@@ -160,9 +159,8 @@ img {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--fg);
   font-size: 1.05rem;
 }
@@ -447,26 +445,22 @@ details.nav-group[open] > summary.nav-group__label::after {
   color: var(--fg);
 }
 .content h1 {
-  font-family: var(--font-display);
-  font-size: 2.15rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   margin: 0 0 0.75rem;
 }
 .content h2 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 2.5rem 0 0.75rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--border);
 }
 .content h3 {
-  font-family: var(--font-display);
   font-size: 1.15rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
   margin: 2rem 0 0.5rem;
 }
 .content h4 {
