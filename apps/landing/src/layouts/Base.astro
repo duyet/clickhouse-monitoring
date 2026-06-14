@@ -119,26 +119,13 @@ const ogImage = new URL(image, Astro.site).toString()
       border-radius:12px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);min-width:130px}
     .stat-val{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--fg)}
     .stat-lbl{font-size:12.5px;color:var(--muted-fg);font-weight:500}
-    .hero-showcase{box-shadow:var(--shadow-float),var(--shadow-glow);transform:perspective(1200px) rotateX(1.5deg);transition:transform .4s cubic-bezier(.22,1,.36,1)}
-    .hero-showcase:hover{transform:perspective(1200px) rotateX(0deg) translateY(-2px)}
-    .url span{color:var(--muted-fg);font-weight:400;margin-left:2px}
-
     /* ── browser frame ── */
-    .shot{margin-top:54px;position:relative}
-    .browser{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;position:relative;
-      box-shadow:var(--shadow-float)}
     .browser-bar{display:flex;align-items:center;gap:14px;height:42px;padding:0 14px;background:#fbfbfc;border-bottom:1px solid var(--border-soft)}
     .lights{display:flex;gap:7px}
     .lights i{width:11px;height:11px;border-radius:50%;display:block}
     .lights i:nth-child(1){background:#ff5f57}
     .lights i:nth-child(2){background:#febc2e}
     .lights i:nth-child(3){background:#28c840}
-    .url{flex:1;display:flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-radius:7px;
-      background:#fff;border:1px solid var(--border);font-size:12.5px;color:var(--muted-fg);max-width:380px;margin:0 auto}
-    .url svg{width:12px;height:12px;color:var(--emerald)}
-    .url b{color:var(--fg);font-weight:550;font-weight:600}
-    .browser-body{display:block;width:100%;position:relative}
-    .browser-body img{display:block;width:100%}
     /* draggable carousel */
     .carousel{position:relative;width:100%;overflow:hidden;touch-action:pan-y;cursor:grab}
     .carousel.dragging{cursor:grabbing}
@@ -155,7 +142,6 @@ const ogImage = new URL(image, Astro.site).toString()
     .feat-shot .ctrack{height:100%}
     .feat-shot .cslide{height:100%}
     .feat-shot .cslide img{height:100%;object-fit:cover;object-position:top center}
-    .browser-body img{width:100%;height:auto;display:block}
 
     /* ── tour gallery (drag-scroll marquee) ── */
     .gallery-strip{overflow-x:auto;overflow-y:hidden;position:relative;cursor:grab;touch-action:pan-x;
@@ -172,8 +158,6 @@ const ogImage = new URL(image, Astro.site).toString()
     .gcard .gtab{font-size:12px;font-weight:500;color:var(--muted-fg)}
     .gcard img{display:block;width:100%;aspect-ratio:16/9.6;object-fit:cover;object-position:top center;-webkit-user-drag:none}
     @media (max-width:560px){.gcard{width:340px}}
-    .shot-fade{position:absolute;left:0;right:0;bottom:-1px;height:90px;
-      background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
 
     /* ── section scaffolding ── */
     section{position:relative}
