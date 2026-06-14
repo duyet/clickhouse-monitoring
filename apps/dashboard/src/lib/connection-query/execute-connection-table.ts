@@ -3,7 +3,10 @@ import type { ConnectionCredentials } from '@/lib/connection-store/types'
 import type { QueryConfig } from '@/lib/query-config'
 
 import { getConnectionVersion, queryConnection } from './connection-client'
-import { selectVersionedSql } from '@chm/sql-builder'
+import {
+  parseVersion,
+  selectVersionedSql,
+} from '@chm/clickhouse-client/clickhouse-version'
 
 async function selectSqlForConnection(
   sql: string | VersionedSql[],
@@ -11,7 +14,7 @@ async function selectSqlForConnection(
 ): Promise<string> {
   if (typeof sql === 'string') return sql
   const versionStr = await getConnectionVersion(credentials)
-  const version = versionStr ? { raw: versionStr } : null
+  const version = versionStr ? parseVersion(versionStr) : null
   return selectVersionedSql(sql, version)
 }
 
