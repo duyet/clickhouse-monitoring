@@ -30,15 +30,11 @@ apps/dashboard/.next/next.config.compiled.js
 # external tool artifacts
 .entire/
 logs/
-# ...but `logs/` dirs under the dashboard-tsr SOURCE tree are log-monitoring
+# ...but `logs/` dirs under the dashboard SOURCE tree are log-monitoring
 # chart components + query-configs, not log output — keep them tracked (the
 # `logs/` rule above would otherwise silently drop them from commits).
-!apps/dashboard-tsr/src/**/logs/
-!apps/dashboard-tsr/src/**/logs/**
-!apps/dashboard/components/charts/logs/
-!apps/dashboard/components/charts/logs/**
-!apps/dashboard/lib/query-config/logs/
-!apps/dashboard/lib/query-config/logs/**
+!apps/dashboard/src/**/logs/
+!apps/dashboard/src/**/logs/**
 
 # rust build artifacts
 rust/target/
