@@ -8,6 +8,7 @@ import {
   serializeActiveFilters,
 } from '@/lib/filters/url-state'
 import { useSearchParams } from '@/lib/next-compat'
+import { pageOgHead } from '@/lib/og'
 import { historyQueriesConfig } from '@/lib/query-config/queries/history-queries'
 
 function HistoryQueriesPageContent() {
@@ -48,4 +49,5 @@ function HistoryQueriesPage() {
 
 export const Route = createFileRoute('/(dashboard)/history-queries')({
   component: HistoryQueriesPage,
+  head: () => pageOgHead('history-queries'),
 })

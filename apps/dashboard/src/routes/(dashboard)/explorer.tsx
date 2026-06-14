@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { lazy, Suspense } from 'react'
 import { ExplorerSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 
 // Lazy-load the explorer layout — large chunk, excluded from the static
 // prerender so the HTML stays small; loads client-side after hydration.
@@ -23,18 +24,5 @@ function ExplorerPage() {
 
 export const Route = createFileRoute('/(dashboard)/explorer')({
   component: ExplorerPage,
-  head: () => ({
-    meta: [
-      { title: 'Database Explorer — chmonitor' },
-      { property: 'og:title', content: 'Database Explorer — chmonitor' },
-      {
-        property: 'og:image',
-        content: 'https://dash.chmonitor.dev/og-explorer.png',
-      },
-      {
-        name: 'twitter:image',
-        content: 'https://dash.chmonitor.dev/og-explorer.png',
-      },
-    ],
-  }),
+  head: () => pageOgHead('explorer'),
 })

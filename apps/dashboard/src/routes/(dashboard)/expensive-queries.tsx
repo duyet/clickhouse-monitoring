@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ExpensiveQueriesView } from '@/components/expensive-queries'
 import { PageSkeleton } from '@/components/skeletons'
+import { pageOgHead } from '@/lib/og'
 
 /**
  * Most Expensive Queries page.
@@ -21,4 +22,5 @@ function ExpensiveQueriesPage() {
 
 export const Route = createFileRoute('/(dashboard)/expensive-queries')({
   component: ExpensiveQueriesPage,
+  head: () => pageOgHead('expensive-queries'),
 })

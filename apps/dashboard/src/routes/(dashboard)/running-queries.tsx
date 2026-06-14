@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { RunningQueriesPageSkeleton } from '@/components/query-tables/query-page-skeleton'
 import { RunningQueriesView } from '@/components/running-queries'
+import { pageOgHead } from '@/lib/og'
 
 /**
  * Running Queries page.
@@ -22,4 +23,5 @@ function RunningQueriesPage() {
 
 export const Route = createFileRoute('/(dashboard)/running-queries')({
   component: RunningQueriesPage,
+  head: () => pageOgHead('running-queries'),
 })
