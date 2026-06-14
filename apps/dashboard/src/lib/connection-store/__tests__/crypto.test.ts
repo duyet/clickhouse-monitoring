@@ -1,5 +1,5 @@
 import { decryptCredentials, encryptCredentials } from '../crypto'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 describe('connection-store crypto', () => {
   const originalKey = process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
