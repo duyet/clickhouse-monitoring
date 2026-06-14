@@ -47,4 +47,21 @@ function ClustersPage() {
 
 export const Route = createFileRoute('/(dashboard)/clusters/')({
   component: ClustersPage,
+  head: () => ({
+    meta: [
+      { title: 'Cluster Topology & Health — chmonitor' },
+      {
+        property: 'og:title',
+        content: 'Cluster Topology & Health — chmonitor',
+      },
+      {
+        property: 'og:image',
+        content: 'https://dash.chmonitor.dev/og-clusters.png',
+      },
+      {
+        name: 'twitter:image',
+        content: 'https://dash.chmonitor.dev/og-clusters.png',
+      },
+    ],
+  }),
 })

@@ -1,0 +1,265 @@
+/**
+ * Static Open Graph (OG) image generator for all chmonitor apps.
+ *
+ * Pipeline: Satori (HTML/CSS object tree -> SVG) + @resvg/resvg-js (SVG -> PNG).
+ * This is a DEV-TIME tool: the PNGs it emits are committed to each app's
+ * `public/` dir and served statically, so neither the fonts it downloads nor
+ * the native resvg binary ever touch CI or the deployed runtime.
+ *
+ * Run:  bun run scripts/generate-og-images.ts
+ *
+ * Add or tweak a card by editing the CARDS array below, then re-run and commit.
+ */
+import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { Resvg } from '@resvg/resvg-js'
+import satori from 'satori'
+
+const ROOT = join(import.meta.dir, '..')
+
+// Brand palette — mirrors apps/landing Base.astro :root tokens.
+const BG = '#09090b'
+const FG = '#fafafa'
+const MUTED = '#a1a1aa'
+const AMBER = '#f59e0b'
+const ORANGE = '#f97316'
+
+const WIDTH = 1200
+const HEIGHT = 630
+
+// ClickHouse mark (yellow bars), recolored to the amber brand accent.
+const LOGO_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="${AMBER}" d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"/></svg>`
+const LOGO_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString('base64')}`
+
+type Card = {
+  /** Output paths relative to repo root; one card can fan out to many apps. */
+  out: string[]
+  eyebrow: string
+  title: string
+  description: string
+  domain: string
+}
+
+const TAGLINE = 'Open-source ClickHouse monitoring'
+
+const CARDS: Card[] = [
+  {
+    out: ['apps/landing/public/og.png'],
+    eyebrow: 'OPEN SOURCE',
+    title: 'A simple UI to monitor ClickHouse',
+    description:
+      'Queries, merges, parts, replication, health and an AI agent. Self-host it or use the cloud.',
+    domain: 'chmonitor.dev',
+  },
+  {
+    out: ['apps/docs/public/og.png'],
+    eyebrow: 'DOCUMENTATION',
+    title: 'chmonitor Documentation',
+    description:
+      'Setup, configuration, query monitoring, the AI agent, MCP server and deployment guides.',
+    domain: 'docs.chmonitor.dev',
+  },
+  {
+    out: ['apps/dashboard/public/og.png'],
+    eyebrow: 'DASHBOARD',
+    title: 'ClickHouse Monitoring Dashboard',
+    description:
+      'Real-time insight into clusters via system tables — metrics, query performance and health.',
+    domain: 'dash.chmonitor.dev',
+  },
+  {
+    out: ['apps/dashboard/public/og-overview.png'],
+    eyebrow: 'OVERVIEW',
+    title: 'Cluster Overview',
+    description:
+      'Connections, queries, merges, replication and system metrics at a glance.',
+    domain: 'dash.chmonitor.dev',
+  },
+  {
+    out: ['apps/dashboard/public/og-clusters.png'],
+    eyebrow: 'CLUSTERS',
+    title: 'Cluster Topology & Health',
+    description:
+      'Visualize nodes, shards and replicas with live health across your ClickHouse cluster.',
+    domain: 'dash.chmonitor.dev',
+  },
+  {
+    out: ['apps/dashboard/public/og-explorer.png'],
+    eyebrow: 'EXPLORER',
+    title: 'Database Explorer',
+    description:
+      'Browse databases, tables, columns, dependencies and projections in one tree.',
+    domain: 'dash.chmonitor.dev',
+  },
+  {
+    out: ['apps/dashboard/public/og-agents.png'],
+    eyebrow: 'AI AGENT',
+    title: 'Ask your cluster anything',
+    description:
+      'An AI agent that answers questions about queries, schema, performance and health.',
+    domain: 'dash.chmonitor.dev',
+  },
+]
+
+/** Tiny hyperscript helper so we avoid a JSX toolchain in this standalone script. */
+function h(type: string, style: Record<string, unknown>, children?: unknown) {
+  return { type, props: { style, children } }
+}
+
+/** Satori reads img `src`/`width`/`height` from props directly, not from style. */
+function img(src: string, width: number, height: number) {
+  return { type: 'img', props: { src, width, height } }
+}
+
+function buildTree(card: Card) {
+  return h(
+    'div',
+    {
+      width: WIDTH,
+      height: HEIGHT,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      backgroundColor: BG,
+      padding: '72px 80px',
+      fontFamily: 'Inter',
+      position: 'relative',
+    },
+    [
+      // Accent gradient bar pinned to the top edge.
+      h('div', {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: WIDTH,
+        height: 10,
+        backgroundImage: `linear-gradient(90deg, ${AMBER}, ${ORANGE})`,
+      }),
+      // Header: logo mark + wordmark.
+      h('div', { display: 'flex', alignItems: 'center', gap: 18 }, [
+        img(LOGO_DATA_URI, 44, 44),
+        h(
+          'div',
+          {
+            fontSize: 34,
+            fontWeight: 700,
+            color: FG,
+            letterSpacing: '-0.02em',
+          },
+          'chmonitor'
+        ),
+      ]),
+      // Body: eyebrow + title + description.
+      h('div', { display: 'flex', flexDirection: 'column', gap: 22 }, [
+        h(
+          'div',
+          {
+            fontSize: 20,
+            fontWeight: 600,
+            letterSpacing: '0.18em',
+            color: AMBER,
+          },
+          card.eyebrow
+        ),
+        h(
+          'div',
+          {
+            fontSize: 68,
+            fontWeight: 700,
+            color: FG,
+            lineHeight: 1.08,
+            letterSpacing: '-0.03em',
+            maxWidth: 980,
+          },
+          card.title
+        ),
+        h(
+          'div',
+          { fontSize: 30, color: MUTED, lineHeight: 1.4, maxWidth: 940 },
+          card.description
+        ),
+      ]),
+      // Footer: domain + tagline.
+      h(
+        'div',
+        {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+        [
+          h('div', { fontSize: 26, fontWeight: 600, color: FG }, card.domain),
+          h('div', { fontSize: 22, color: MUTED }, TAGLINE),
+        ]
+      ),
+    ]
+  )
+}
+
+async function fetchFont(url: string): Promise<ArrayBuffer> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Failed to fetch font ${url}: ${res.status}`)
+  return res.arrayBuffer()
+}
+
+async function main() {
+  console.log('Downloading Inter fonts…')
+  const [regular, semibold, bold] = await Promise.all([
+    fetchFont(
+      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf'
+    ),
+    fetchFont(
+      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.ttf'
+    ),
+    fetchFont(
+      'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf'
+    ),
+  ])
+
+  const fonts = [
+    {
+      name: 'Inter',
+      data: regular,
+      weight: 400 as const,
+      style: 'normal' as const,
+    },
+    {
+      name: 'Inter',
+      data: semibold,
+      weight: 600 as const,
+      style: 'normal' as const,
+    },
+    {
+      name: 'Inter',
+      data: bold,
+      weight: 700 as const,
+      style: 'normal' as const,
+    },
+  ]
+
+  for (const card of CARDS) {
+    const svg = await satori(buildTree(card) as never, {
+      width: WIDTH,
+      height: HEIGHT,
+      fonts,
+    })
+    const png = new Resvg(svg, {
+      fitTo: { mode: 'width', value: WIDTH },
+    })
+      .render()
+      .asPng()
+
+    for (const rel of card.out) {
+      const abs = join(ROOT, rel)
+      await mkdir(dirname(abs), { recursive: true })
+      await writeFile(abs, png)
+      console.log(`  ✓ ${rel} (${(png.length / 1024).toFixed(0)} KB)`)
+    }
+  }
+  console.log('Done.')
+}
+
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

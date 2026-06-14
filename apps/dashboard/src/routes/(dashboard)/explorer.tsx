@@ -23,4 +23,18 @@ function ExplorerPage() {
 
 export const Route = createFileRoute('/(dashboard)/explorer')({
   component: ExplorerPage,
+  head: () => ({
+    meta: [
+      { title: 'Database Explorer — chmonitor' },
+      { property: 'og:title', content: 'Database Explorer — chmonitor' },
+      {
+        property: 'og:image',
+        content: 'https://dash.chmonitor.dev/og-explorer.png',
+      },
+      {
+        name: 'twitter:image',
+        content: 'https://dash.chmonitor.dev/og-explorer.png',
+      },
+    ],
+  }),
 })

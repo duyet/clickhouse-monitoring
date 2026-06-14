@@ -299,4 +299,18 @@ function OverviewPage() {
 
 export const Route = createFileRoute('/(dashboard)/overview')({
   component: OverviewPage,
+  head: () => ({
+    meta: [
+      { title: 'Cluster Overview — chmonitor' },
+      { property: 'og:title', content: 'Cluster Overview — chmonitor' },
+      {
+        property: 'og:image',
+        content: 'https://dash.chmonitor.dev/og-overview.png',
+      },
+      {
+        name: 'twitter:image',
+        content: 'https://dash.chmonitor.dev/og-overview.png',
+      },
+    ],
+  }),
 })
