@@ -77,7 +77,7 @@ const ogImage = new URL('/og.png', Astro.site).toString()
   </head>
   <body>
     <a href="#article" class="sr-only skiplink">Skip to content</a>
-    <Header version={version} subpath={subpath} />
+    <Header version={version} subpath={subpath} currentSlug={currentSlug} />
     <div class="layout">
       <Sidebar version={version} currentSlug={currentSlug} />
       <main class="main">

@@ -1,5 +1,6 @@
 ---
-import { QUICK_LINKS, SITE } from '../config'
+import { SITE } from '../config'
+import HeaderNav from './HeaderNav.astro'
 import Search from './Search.astro'
 import ThemeToggle from './ThemeToggle.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
@@ -7,8 +8,9 @@ import VersionSwitcher from './VersionSwitcher.astro'
 interface Props {
   version: string
   subpath: string
+  currentSlug: string
 }
-const { version, subpath } = Astro.props
+const { version, subpath, currentSlug } = Astro.props
 ---
 
 <header class="header">
@@ -26,15 +28,7 @@ const { version, subpath } = Astro.props
       <span>{SITE.title}</span>
     </a>
   </div>
-  <nav class="header__nav" aria-label="Site">
-    {
-      QUICK_LINKS.map((l) => (
-        <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined}>
-          {l.label}
-        </a>
-      ))
-    }
-  </nav>
+  <HeaderNav version={version} currentSlug={currentSlug} />
   <div class="header__actions">
     <Search />
     <VersionSwitcher version={version} subpath={subpath} />
