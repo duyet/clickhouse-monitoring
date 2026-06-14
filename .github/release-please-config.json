@@ -7,7 +7,7 @@
   "tag-separator": "-",
   "packages": {
     ".": {
-      "release-type": "node",
+      "release-type": "simple",
       "package-name": "chmonitor",
       "changelog-path": "CHANGELOG.md",
       "draft": false,
