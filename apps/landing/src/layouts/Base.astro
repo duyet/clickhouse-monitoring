@@ -1,5 +1,7 @@
 ---
-const { title = 'chmonitor — A simple UI to monitor ClickHouse', description = 'An open-source dashboard to monitor ClickHouse: queries, merges, parts, replication, health and an AI agent. Self-host it or use the cloud.' } = Astro.props
+const { title = 'chmonitor — A simple UI to monitor ClickHouse', description = 'An open-source dashboard to monitor ClickHouse: queries, merges, parts, replication, health and an AI agent. Self-host it or use the cloud.', image = '/og.png' } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site).toString()
+const ogImage = new URL(image, Astro.site).toString()
 ---
 <!doctype html>
 <html lang="en">
@@ -8,6 +10,18 @@ const { title = 'chmonitor — A simple UI to monitor ClickHouse', description =
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />

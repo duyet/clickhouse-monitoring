@@ -40,6 +40,23 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'chmonitor — ClickHouse Monitoring' },
+      {
+        name: 'description',
+        content:
+          'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
+      },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: 'chmonitor — ClickHouse Monitoring' },
+      {
+        property: 'og:description',
+        content:
+          'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
+      },
+      { property: 'og:image', content: 'https://dash.chmonitor.dev/og.png' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:image', content: 'https://dash.chmonitor.dev/og.png' },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
