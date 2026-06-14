@@ -182,6 +182,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Informational gate — not blocking deploy. Promote to blocking once baseline is established._" >> $GITHUB_STEP_SUMMARY
 
+      # The dashboard install above is isolated to apps/dashboard. The MCP worker
+      # (apps/mcp) bundles @chm/* workspace packages (mcp-server -> clickhouse-client)
+      # and zod, which live in the ROOT workspace node_modules — install them here.
+      - name: Install MCP worker dependencies (root workspace)
+        working-directory: .
+        run: bun install --frozen-lockfile
+
       - name: Set MCP worker secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
