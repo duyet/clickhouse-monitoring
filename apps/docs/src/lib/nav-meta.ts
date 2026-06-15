@@ -74,6 +74,16 @@ const SECTION_DESCRIPTIONS: Record<string, string> = {
   More: 'FAQ and settings',
 }
 
+/** Merged header category blurbs (6 top-level tabs). */
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  Introduction: 'Overview, FAQ, and settings',
+  'Getting Started': 'Install, connect, and develop locally',
+  Deploy: 'Hosting, auth, and production rollout',
+  Features: 'Dashboard pages and operational views',
+  'AI Agent': 'In-dashboard assistant and configuration',
+  Reference: 'Config, env vars, advanced topics, and releases',
+}
+
 export function resolveNavDescription(link: string, label: string): string {
   const subpath = linkToSubpath(link)
   if (PAGE_DESCRIPTIONS[subpath]) return PAGE_DESCRIPTIONS[subpath]
@@ -85,4 +95,8 @@ export function resolveNavDescription(link: string, label: string): string {
 
 export function resolveSectionDescription(label: string): string {
   return SECTION_DESCRIPTIONS[label] ?? `Pages in ${label}`
+}
+
+export function resolveCategoryDescription(label: string): string {
+  return CATEGORY_DESCRIPTIONS[label] ?? resolveSectionDescription(label)
 }

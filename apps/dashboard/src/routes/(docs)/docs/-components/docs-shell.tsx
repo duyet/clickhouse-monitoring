@@ -161,13 +161,9 @@ function DocsNavSectionList({
   section: DocsNavSection
   activeSlug: string
 }) {
-  const showHeading = section.items.length > 1
-
   return (
     <div>
-      {showHeading ? (
-        <div className="docs-shell__nav-section mb-2 px-2">{section.title}</div>
-      ) : null}
+      <div className="docs-shell__nav-section mb-1 px-2">{section.title}</div>
       <ul className="space-y-0.5">
         {section.items.map((item) => {
           const isActive = item.slug === activeSlug

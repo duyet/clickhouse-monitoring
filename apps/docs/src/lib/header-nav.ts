@@ -114,3 +114,28 @@ export function findActiveHeaderCategory(
     null
   )
 }
+
+export interface SidebarContext {
+  category: HeaderCategory | null
+  group: NavGroup | null
+  items: NavItem[]
+  /** True when the active sidebar group label differs from the header category. */
+  showGroupLabel: boolean
+}
+
+export function resolveSidebarContext(
+  groups: NavGroup[],
+  currentPath: string
+): SidebarContext {
+  const category = findActiveHeaderCategory(groups, currentPath)
+  const group = findActiveGroup(groups, currentPath)
+  const items = getSidebarItems(group)
+  const showGroupLabel = Boolean(
+    category &&
+      group &&
+      category.sections.length > 1 &&
+      group.label !== category.label
+  )
+
+  return { category, group, items, showGroupLabel }
+}
