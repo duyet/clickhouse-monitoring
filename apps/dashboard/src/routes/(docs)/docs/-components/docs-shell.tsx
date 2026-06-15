@@ -1,23 +1,19 @@
+import { Menu } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
-import type { ReactNode } from 'react'
-
 import { type DocsHeading, docsHref, docsNav } from '../-lib/docs'
+import { type ReactNode, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 type DocsShellProps = {
   activeSlug: string
-  activeTitle: string
   headings: DocsHeading[]
   children: ReactNode
 }
 
-export function DocsShell({
-  activeSlug,
-  activeTitle,
-  headings,
-  children,
-}: DocsShellProps) {
+export function DocsShell({ activeSlug, headings, children }: DocsShellProps) {
+  const [mobilePanel, setMobilePanel] = useState<'menu' | 'toc' | null>(null)
+
   return (
     <div className="docs-vercel-theme min-h-dvh">
       <div className="docs-shell__header sticky top-14 z-20 mb-0 px-4 py-3 lg:px-6">
@@ -41,11 +37,31 @@ export function DocsShell({
       </div>
 
       <div className="px-4 pb-6 lg:px-6 xl:px-8">
-        <DocsMobileNav
-          activeSlug={activeSlug}
-          activeTitle={activeTitle}
-          headings={headings}
-        />
+        <div className="mx-auto w-full max-w-[var(--ds-page-width)]">
+          <DocsMobileToolbar
+            hasToc={headings.length > 0}
+            mobilePanel={mobilePanel}
+            onMenu={() =>
+              setMobilePanel((panel) => (panel === 'menu' ? null : 'menu'))
+            }
+            onToc={() =>
+              setMobilePanel((panel) => (panel === 'toc' ? null : 'toc'))
+            }
+          />
+          {mobilePanel === 'menu' ? (
+            <div className="docs-mobile-panel lg:hidden">
+              <DocsNavList activeSlug={activeSlug} compact />
+            </div>
+          ) : null}
+          {mobilePanel === 'toc' && headings.length > 0 ? (
+            <div className="docs-mobile-panel lg:hidden">
+              <div className="docs-shell__toc-title mb-2 px-2">
+                On this page
+              </div>
+              <DocsTocList headings={headings} />
+            </div>
+          ) : null}
+        </div>
         <div className="mx-auto flex w-full max-w-[var(--ds-page-width)] items-start gap-8">
           <DocsSidebar activeSlug={activeSlug} />
           <main className="min-w-0 flex-1 pb-16">
@@ -58,37 +74,38 @@ export function DocsShell({
   )
 }
 
-function DocsMobileNav({
-  activeSlug,
-  activeTitle,
-  headings,
+function DocsMobileToolbar({
+  hasToc,
+  mobilePanel,
+  onMenu,
+  onToc,
 }: {
-  activeSlug: string
-  activeTitle: string
-  headings: DocsHeading[]
+  hasToc: boolean
+  mobilePanel: 'menu' | 'toc' | null
+  onMenu: () => void
+  onToc: () => void
 }) {
   return (
-    <div className="mb-6 border-[var(--ds-gray-300)] border-b pb-3 lg:hidden">
-      <details className="group rounded-[var(--geist-radius)] border border-[var(--ds-gray-300)] bg-[var(--ds-background-100)]">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 font-medium text-sm [&::-webkit-details-marker]:hidden">
-          <span className="min-w-0 truncate">{activeTitle}</span>
-          <span className="shrink-0 text-[var(--ds-gray-900)] text-xs group-open:hidden">
-            Menu
-          </span>
-          <span className="hidden shrink-0 text-[var(--ds-gray-900)] text-xs group-open:inline">
-            Close
-          </span>
-        </summary>
-        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto border-[var(--ds-gray-300)] border-t p-3">
-          <DocsNavList activeSlug={activeSlug} compact />
-          {headings.length > 0 ? (
-            <div className="mt-4 border-[var(--ds-gray-300)] border-t pt-4">
-              <div className="docs-shell__toc-title mb-2">On this page</div>
-              <DocsTocList headings={headings} />
-            </div>
-          ) : null}
-        </div>
-      </details>
+    <div className="docs-toolbar">
+      <button
+        type="button"
+        className="docs-toolbar__menu"
+        aria-expanded={mobilePanel === 'menu'}
+        onClick={onMenu}
+      >
+        <Menu className="size-[18px] opacity-70" aria-hidden />
+        <span>Menu</span>
+      </button>
+      {hasToc ? (
+        <button
+          type="button"
+          className="docs-toolbar__toc"
+          aria-expanded={mobilePanel === 'toc'}
+          onClick={onToc}
+        >
+          On this page
+        </button>
+      ) : null}
     </div>
   )
 }

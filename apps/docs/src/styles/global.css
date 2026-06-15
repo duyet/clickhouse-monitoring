@@ -140,14 +140,7 @@ img {
     display: none;
   }
 }
-.header__sidebar-toggle {
-  display: inline-flex;
-}
-@media (min-width: 1024px) {
-  .header__sidebar-toggle {
-    display: none;
-  }
-}
+
 .header__start {
   display: flex;
   min-width: 0;
@@ -467,6 +460,131 @@ img {
   }
 }
 
+/* ── Mobile docs toolbar (Vercel: Menu + On this page) ──────────────── */
+.docs-toolbar {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .docs-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    position: sticky;
+    top: var(--header-h);
+    z-index: 30;
+    height: var(--docs-toolbar-height);
+    padding: 0 1.5rem;
+    background: var(--ds-background-100);
+    border-bottom: 1px solid var(--ds-gray-300);
+  }
+}
+.docs-toolbar__menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--geist-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+.docs-toolbar__menu:hover {
+  background: var(--bg-overlay-hover);
+}
+.docs-toolbar__menu svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.docs-toolbar__toc {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--ds-gray-300);
+  border-radius: var(--radius-pill);
+  background: var(--ds-background-100);
+  color: var(--geist-foreground);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.docs-toolbar__toc:hover {
+  background: var(--bg-overlay-hover);
+  border-color: var(--ds-gray-400);
+}
+.toc-mobile-modal {
+  width: min(22rem, 92vw);
+  max-height: min(70vh, 28rem);
+  margin: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-base);
+  color: var(--fg);
+  padding: 0;
+  box-shadow: var(--shadow-lg);
+}
+.toc-mobile-modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+}
+.toc-mobile-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ds-gray-200);
+}
+.toc-mobile-modal__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--geist-foreground);
+}
+.toc-mobile-modal__nav {
+  overflow-y: auto;
+  padding: 0.5rem;
+  max-height: calc(min(70vh, 28rem) - 3.25rem);
+}
+.toc-mobile-modal__nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.toc-mobile-modal__nav a {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.toc-mobile-modal__nav a:hover,
+.toc-mobile-modal__nav a.active {
+  background: var(--ds-gray-200);
+  color: var(--geist-foreground);
+}
+.toc-mobile-modal__nav li[data-depth='3'] a {
+  padding-left: 1.25rem;
+  font-size: 0.75rem;
+}
+
 /* ── Layout: left nav · content · right TOC ─────────────────────────── */
 .layout {
   display: grid;
@@ -711,14 +829,15 @@ details.nav-group[open] > summary.nav-group__label::after {
 [data-docs-prose] h4 {
   line-height: 1.2;
   letter-spacing: -0.025em;
-  scroll-margin-top: calc(var(--header-h) + 1rem);
+  scroll-margin-top: calc(var(--header-h) + var(--docs-toolbar-offset, 0px) + 1rem);
   color: var(--geist-foreground);
   font-weight: 600;
 }
 [data-docs-prose] h1 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 600;
   letter-spacing: -0.03em;
+  line-height: 1.2;
   margin: 0 0 1rem;
 }
 [data-docs-prose] h2 {
@@ -939,6 +1058,9 @@ dialog.search-modal::backdrop {
   }
 }
 @media (max-width: 1023px) {
+  :root {
+    --docs-toolbar-offset: var(--docs-toolbar-height);
+  }
   .sidebar {
     display: none;
   }
@@ -948,7 +1070,7 @@ dialog.search-modal::backdrop {
   :root[data-sidebar='expanded'] .sidebar {
     display: block;
     position: fixed;
-    inset: var(--header-h) auto 0 0;
+    inset: calc(var(--header-h) + var(--docs-toolbar-height)) auto 0 0;
     z-index: 40;
     width: min(var(--sidebar-w), 85vw);
     background: var(--bg);
@@ -958,7 +1080,7 @@ dialog.search-modal::backdrop {
   :root[data-sidebar='expanded'] .layout::before {
     content: '';
     position: fixed;
-    inset: var(--header-h) 0 0 0;
+    inset: calc(var(--header-h) + var(--docs-toolbar-height)) 0 0 0;
     z-index: 30;
     background: rgba(0, 0, 0, 0.4);
     pointer-events: auto;
@@ -977,8 +1099,7 @@ dialog.search-modal::backdrop {
   }
   .header__actions #theme-toggle,
   .header__actions #mobile-nav-toggle,
-  .header__actions #search-open-mobile,
-  .header__actions #sidebar-toggle {
+  .header__actions #search-open-mobile {
     display: inline-flex;
   }
 }
@@ -987,6 +1108,6 @@ dialog.search-modal::backdrop {
     padding: 1.25rem 1.25rem 4rem;
   }
   [data-docs-prose] h1 {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
 }
