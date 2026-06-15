@@ -1,5 +1,4 @@
-type NavItem = { label: string; link: string }
-type NavGroup = { label: string; link?: string; items?: NavItem[] }
+import { findActiveGroup, getSidebarItems, type NavGroup } from './header-nav'
 
 export function resolveDocsBreadcrumb(
   groups: NavGroup[],
@@ -7,19 +6,16 @@ export function resolveDocsBreadcrumb(
   pageTitle: string
 ): string {
   const current = currentSlug ? `/${currentSlug}` : '/'
+  const activeGroup = findActiveGroup(groups, current)
+  const items = getSidebarItems(activeGroup)
+  const activeItem = items.find((entry) => entry.link === current)
 
-  for (const group of groups) {
-    if (group.items) {
-      const item = group.items.find((entry) => entry.link === current)
-      if (item) {
-        return `${group.label} / ${item.label}`
-      }
-      continue
-    }
+  if (activeGroup && activeItem) {
+    return `${activeGroup.label} / ${activeItem.label}`
+  }
 
-    if (group.link === current) {
-      return group.label
-    }
+  if (activeGroup?.link === current) {
+    return activeGroup.label
   }
 
   return pageTitle

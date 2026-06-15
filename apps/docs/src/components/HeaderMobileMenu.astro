@@ -1,6 +1,10 @@
 ---
 import navData from '../generated/nav.json'
-import { isGroupActive, toHeaderCategories, type NavGroup } from '../lib/header-nav'
+import {
+  isCategoryActive,
+  toHeaderCategories,
+  type NavGroup,
+} from '../lib/header-nav'
 import { resolveNavIcon } from '../lib/nav-icons'
 import NavIcon from './NavIcon.astro'
 
@@ -26,8 +30,7 @@ const categories = toHeaderCategories(groups)
   <nav class="mobile-nav-modal__nav">
     {
       categories.map((category) => {
-        const group = groups.find((g) => g.label === category.label)
-        const active = group ? isGroupActive(group, currentPath) : false
+        const active = isCategoryActive(category, currentPath)
 
         return (
           <section class={`mobile-nav-section${active ? ' is-active' : ''}`}>
@@ -38,18 +41,34 @@ const categories = toHeaderCategories(groups)
               category.items.length > 1 && (
                 <ul class="mobile-nav-section__items">
                   {
-                    category.items.map((item) => (
-                      <li>
-                        <a
-                          class="mobile-nav-section__link"
-                          href={item.link}
-                          aria-current={item.link === currentPath ? 'page' : undefined}
-                        >
-                          <NavIcon name={resolveNavIcon(item.link)} />
-                          <span>{item.label}</span>
-                        </a>
-                      </li>
-                    ))
+                    category.sections.length > 1
+                      ? category.sections.flatMap((section) => [
+                          <li class="mobile-nav-section__subheading">{section.label}</li>,
+                          ...section.items.map((item) => (
+                            <li>
+                              <a
+                                class="mobile-nav-section__link"
+                                href={item.link}
+                                aria-current={item.link === currentPath ? 'page' : undefined}
+                              >
+                                <NavIcon name={resolveNavIcon(item.link)} />
+                                <span>{item.label}</span>
+                              </a>
+                            </li>
+                          )),
+                        ])
+                      : category.items.map((item) => (
+                          <li>
+                            <a
+                              class="mobile-nav-section__link"
+                              href={item.link}
+                              aria-current={item.link === currentPath ? 'page' : undefined}
+                            >
+                              <NavIcon name={resolveNavIcon(item.link)} />
+                              <span>{item.label}</span>
+                            </a>
+                          </li>
+                        ))
                   }
                 </ul>
               )

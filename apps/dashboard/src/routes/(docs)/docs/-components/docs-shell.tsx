@@ -3,8 +3,9 @@ import { Link } from '@tanstack/react-router'
 
 import {
   type DocsHeading,
+  type DocsNavSection,
   docsHref,
-  docsNav,
+  findActiveDocsSection,
   resolveDocsBreadcrumb,
 } from '../-lib/docs'
 import { type ReactNode, useState } from 'react'
@@ -140,32 +141,50 @@ function DocsNavList({
   activeSlug: string
   compact?: boolean
 }) {
+  const section = findActiveDocsSection(activeSlug)
+
+  if (!section) {
+    return null
+  }
+
   return (
-    <nav className={cn('space-y-5', compact && 'space-y-4')}>
-      {docsNav.map((section) => (
-        <div key={section.title}>
-          <div className="docs-shell__nav-section mb-2 px-2">
-            {section.title}
-          </div>
-          <ul className="space-y-0.5">
-            {section.items.map((item) => {
-              const isActive = item.slug === activeSlug
-              return (
-                <li key={item.slug || 'index'}>
-                  <Link
-                    to={docsHref(item.slug) as never}
-                    data-active={isActive}
-                    className="docs-shell__nav-link block px-2 py-1.5 transition-colors"
-                  >
-                    {item.title}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))}
+    <nav className={cn(compact && 'space-y-4')}>
+      <DocsNavSectionList section={section} activeSlug={activeSlug} />
     </nav>
+  )
+}
+
+function DocsNavSectionList({
+  section,
+  activeSlug,
+}: {
+  section: DocsNavSection
+  activeSlug: string
+}) {
+  const showHeading = section.items.length > 1
+
+  return (
+    <div>
+      {showHeading ? (
+        <div className="docs-shell__nav-section mb-2 px-2">{section.title}</div>
+      ) : null}
+      <ul className="space-y-0.5">
+        {section.items.map((item) => {
+          const isActive = item.slug === activeSlug
+          return (
+            <li key={item.slug || 'index'}>
+              <Link
+                to={docsHref(item.slug) as never}
+                data-active={isActive}
+                className="docs-shell__nav-link block px-2 py-1.5 transition-colors"
+              >
+                {item.title}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 
