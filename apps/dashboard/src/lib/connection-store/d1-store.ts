@@ -1,0 +1,192 @@
+import type {
+  ConnectionStore,
+  CreateUserConnectionInput,
+  StoredUserConnection,
+  UpdateUserConnectionInput,
+  UserConnectionMeta,
+} from './types'
+
+import { decryptCredentials, encryptCredentials } from './crypto'
+import { allocateDbHostId, ConnectionStoreError } from './types'
+import { getPlatformBindings } from '@chm/platform'
+
+interface D1UserConnectionRow {
+  id: string
+  user_id: string
+  name: string
+  host_url: string
+  ch_user: string
+  host_id: number
+  encrypted_payload: string
+  created_at: number
+  updated_at: number
+}
+
+function rowToMeta(row: D1UserConnectionRow): UserConnectionMeta {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    hostUrl: row.host_url,
+    chUser: row.ch_user,
+    hostId: row.host_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export class D1ConnectionStore implements ConnectionStore {
+  private getDb(): D1Database {
+    const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
+    if (!db) {
+      throw new ConnectionStoreError(
+        'CONVERSATIONS_D1 binding not found',
+        'STORAGE_ERROR'
+      )
+    }
+    return db
+  }
+
+  async list(userId: string): Promise<UserConnectionMeta[]> {
+    const db = this.getDb()
+    const result = await db
+      .prepare(
+        `SELECT id, user_id, name, host_url, ch_user, host_id, encrypted_payload, created_at, updated_at
+         FROM user_connections WHERE user_id = ?1 ORDER BY created_at ASC`
+      )
+      .bind(userId)
+      .all<D1UserConnectionRow>()
+
+    return (result.results ?? []).map(rowToMeta)
+  }
+
+  async get(
+    userId: string,
+    connectionId: string
+  ): Promise<StoredUserConnection | null> {
+    const db = this.getDb()
+    const row = await db
+      .prepare(
+        `SELECT id, user_id, name, host_url, ch_user, host_id, encrypted_payload, created_at, updated_at
+         FROM user_connections WHERE user_id = ?1 AND id = ?2`
+      )
+      .bind(userId, connectionId)
+      .first<D1UserConnectionRow>()
+
+    if (!row) return null
+
+    return {
+      ...rowToMeta(row),
+      encryptedPayload: row.encrypted_payload,
+    }
+  }
+
+  async create(
+    userId: string,
+    input: CreateUserConnectionInput
+  ): Promise<UserConnectionMeta> {
+    const db = this.getDb()
+    const existing = await this.list(userId)
+    const now = Date.now()
+    const id = crypto.randomUUID()
+    const hostId = allocateDbHostId(existing.map((c) => c.hostId))
+    const encryptedPayload = await encryptCredentials(input.credentials)
+
+    await db
+      .prepare(
+        `INSERT INTO user_connections
+         (id, user_id, name, host_url, ch_user, host_id, encrypted_payload, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`
+      )
+      .bind(
+        id,
+        userId,
+        input.name,
+        input.hostUrl,
+        input.chUser,
+        hostId,
+        encryptedPayload,
+        now,
+        now
+      )
+      .run()
+
+    return {
+      id,
+      userId,
+      name: input.name,
+      hostUrl: input.hostUrl,
+      chUser: input.chUser,
+      hostId,
+      createdAt: now,
+      updatedAt: now,
+    }
+  }
+
+  async update(
+    userId: string,
+    connectionId: string,
+    input: UpdateUserConnectionInput
+  ): Promise<UserConnectionMeta> {
+    const existing = await this.get(userId, connectionId)
+    if (!existing) {
+      throw new ConnectionStoreError('Connection not found', 'NOT_FOUND')
+    }
+
+    const now = Date.now()
+    const name = input.name ?? existing.name
+    const hostUrl = input.hostUrl ?? existing.hostUrl
+    const chUser = input.chUser ?? existing.chUser
+
+    let encryptedPayload = existing.encryptedPayload
+    if (input.credentials) {
+      encryptedPayload = await encryptCredentials(input.credentials)
+    } else if (input.hostUrl || input.chUser) {
+      const current = await decryptCredentials(existing.encryptedPayload)
+      encryptedPayload = await encryptCredentials({
+        host: hostUrl,
+        user: chUser,
+        password: current.password,
+      })
+    }
+
+    const db = this.getDb()
+    await db
+      .prepare(
+        `UPDATE user_connections
+         SET name = ?1, host_url = ?2, ch_user = ?3, encrypted_payload = ?4, updated_at = ?5
+         WHERE user_id = ?6 AND id = ?7`
+      )
+      .bind(name, hostUrl, chUser, encryptedPayload, now, userId, connectionId)
+      .run()
+
+    return {
+      ...existing,
+      name,
+      hostUrl,
+      chUser,
+      updatedAt: now,
+    }
+  }
+
+  async delete(userId: string, connectionId: string): Promise<void> {
+    const db = this.getDb()
+    const result = await db
+      .prepare(`DELETE FROM user_connections WHERE user_id = ?1 AND id = ?2`)
+      .bind(userId, connectionId)
+      .run()
+
+    if ((result.meta.changes ?? 0) === 0) {
+      throw new ConnectionStoreError('Connection not found', 'NOT_FOUND')
+    }
+  }
+
+  async getCredentials(
+    userId: string,
+    connectionId: string
+  ): Promise<import('./types').ConnectionCredentials | null> {
+    const stored = await this.get(userId, connectionId)
+    if (!stored) return null
+    return decryptCredentials(stored.encryptedPayload)
+  }
+}

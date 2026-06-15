@@ -7,39 +7,53 @@ import { useHostStatus } from '@/lib/swr/use-host-status'
 import { cn } from '@/lib/utils'
 
 interface HostMenuRowProps {
-  hostId: number
+  hostId: number | null
   hostName: string
   isActive: boolean
+  /** Skip live status polling (browser/database hosts). */
+  skipStatus?: boolean
 }
 
 export const HostMenuRow = function HostMenuRow({
   hostId,
   hostName,
   isActive,
+  skipStatus = false,
 }: HostMenuRowProps) {
-  const { data, isOnline, isLoading } = useHostStatus(hostId, {
-    refreshInterval: 60000,
-    revalidateOnFocus: false,
-  })
+  const { data, isOnline, isLoading } = useHostStatus(
+    skipStatus ? null : hostId,
+    {
+      refreshInterval: 60000,
+      revalidateOnFocus: false,
+    }
+  )
 
-  const dotClass = isLoading
-    ? 'bg-gray-400 animate-pulse'
-    : isOnline
-      ? 'bg-emerald-500'
-      : 'bg-red-400'
+  const dotClass = skipStatus
+    ? 'bg-sky-500'
+    : isLoading
+      ? 'bg-gray-400 animate-pulse'
+      : isOnline
+        ? 'bg-emerald-500'
+        : 'bg-red-400'
 
-  const tooltip = isLoading
-    ? ['Checking...']
-    : isOnline && data
-      ? [`Host: ${data.hostname}`, `Uptime: ${data.uptime}`]
-      : ['Offline']
+  const tooltip = skipStatus
+    ? ['Custom connection']
+    : isLoading
+      ? ['Checking...']
+      : isOnline && data
+        ? [`Host: ${data.hostname}`, `Uptime: ${data.uptime}`]
+        : ['Offline']
 
   return (
     <div className="flex w-full items-center gap-2.5">
       <StatusIndicator className={dotClass} title={tooltip} />
       <div className="flex min-w-0 flex-1 flex-col leading-tight">
         <span className="truncate text-sm font-medium">{hostName}</span>
-        {isLoading ? (
+        {skipStatus ? (
+          <span className="truncate text-xs text-muted-foreground">
+            Custom connection
+          </span>
+        ) : isLoading ? (
           <Skeleton className="mt-0.5 h-3 w-24" />
         ) : isOnline && data ? (
           <span

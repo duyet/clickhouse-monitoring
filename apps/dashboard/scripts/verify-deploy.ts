@@ -122,24 +122,41 @@ async function runUnauthenticated() {
   // 2. prerendered pages + 3. client bundle carries the Clerk key
   try {
     const { status, text } = await http('/overview?host=0')
-    const asset = text.match(/\/assets\/index-[A-Za-z0-9_-]+\.js/)?.[0]
+    const entryAsset = text.match(/\/assets\/index-[A-Za-z0-9_-]+\.js/)?.[0]
+    const preloadedAssets = [
+      ...text.matchAll(/\/assets\/[A-Za-z0-9_.-]+\.js/g),
+    ].map((m) => m[0])
+    const assets = [
+      ...new Set([entryAsset, ...preloadedAssets].filter(Boolean)),
+    ]
     record({
       scenario: 'unauthenticated',
       name: 'GET /overview?host=0',
-      ok: status === 200 && !!asset,
+      ok: status === 200 && !!entryAsset,
       detail:
-        status === 200 ? `entry=${asset ?? 'NOT FOUND'}` : `HTTP ${status}`,
+        status === 200
+          ? `entry=${entryAsset ?? 'NOT FOUND'}`
+          : `HTTP ${status}`,
     })
-    if (asset) {
-      const bundle = await http(asset)
-      const hasKey = /pk_(live|test)_[A-Za-z0-9]+/.test(bundle.text)
+    if (assets.length > 0) {
+      let matchedKey: string | undefined
+      let matchedAsset: string | undefined
+      for (const asset of assets) {
+        const bundle = await http(asset)
+        matchedKey = bundle.text.match(/pk_(live|test)_[A-Za-z0-9]+/)?.[0]
+        if (matchedKey) {
+          matchedAsset = asset
+          break
+        }
+      }
+      const hasKey = Boolean(matchedKey)
       // Only an assertion failure when Clerk is the configured provider.
       record({
         scenario: 'unauthenticated',
         name: 'client bundle has Clerk key',
         ok: clerkExpected ? hasKey : true,
         detail: hasKey
-          ? `key inlined (${bundle.text.match(/pk_(live|test)_[A-Za-z0-9]+/)?.[0]?.slice(0, 12)}…)`
+          ? `key inlined in ${matchedAsset} (${matchedKey?.slice(0, 12)}…)`
           : clerkExpected
             ? 'MISSING — VITE_CLERK_PUBLISHABLE_KEY not inlined (the NEXT_PUBLIC regression)'
             : 'no key (auth provider is not clerk — ok)',

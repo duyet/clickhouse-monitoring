@@ -51,7 +51,7 @@ const TAGLINE = 'Open-source ClickHouse monitoring'
 
 const CARDS: Card[] = [
   {
-    out: ['apps/landing/public/og.png'],
+    out: ['apps/landing/public/og/og.png'],
     eyebrow: 'OPEN SOURCE',
     title: 'A simple UI to monitor ClickHouse',
     description:
@@ -59,7 +59,7 @@ const CARDS: Card[] = [
     domain: 'chmonitor.dev',
   },
   {
-    out: ['apps/docs/public/og.png'],
+    out: ['apps/docs/public/og/og.png'],
     eyebrow: 'DOCUMENTATION',
     title: 'chmonitor Documentation',
     description:
@@ -67,7 +67,7 @@ const CARDS: Card[] = [
     domain: 'docs.chmonitor.dev',
   },
   {
-    out: ['apps/dashboard/public/og.png'],
+    out: ['apps/dashboard/public/og/og.png'],
     eyebrow: 'DASHBOARD',
     title: 'ClickHouse Monitoring Dashboard',
     description:
@@ -77,7 +77,7 @@ const CARDS: Card[] = [
   // Per-page dashboard cards are derived from the shared OG registry so the
   // image text and the route <head> meta never drift. Add a page there, not here.
   ...Object.entries(OG_PAGES).map(([slug, page]) => ({
-    out: [`apps/dashboard/public/og-${slug}.png`],
+    out: [`apps/dashboard/public/og/og-${slug}.png`],
     eyebrow: page.eyebrow,
     title: page.title,
     description: page.description,

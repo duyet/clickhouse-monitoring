@@ -9,11 +9,13 @@ import type { ReactNode } from 'react'
 
 import appCss from '../styles.css?url'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
+import { isClerkClientEnabled } from '@/lib/clerk/clerk-client'
 import { AppProvider } from '@/lib/context/app-context'
 import { BrowserConnectionsProvider } from '@/lib/context/browser-connections-context'
 import { TimeRangeProvider } from '@/lib/context/time-range-context'
 import { TimezoneProvider } from '@/lib/context/timezone-context'
 import { FeaturePermissionsProvider } from '@/lib/feature-permissions/context'
+import { UserConnectionsCacheGuard } from '@/lib/hooks/user-connections-cache-guard'
 import { QueryProvider } from '@/lib/query/provider'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 
@@ -52,11 +54,14 @@ export const Route = createRootRoute({
         content:
           'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
       },
-      { property: 'og:image', content: 'https://dash.chmonitor.dev/og.png' },
+      { property: 'og:image', content: 'https://dash.chmonitor.dev/og/og.png' },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: 'https://dash.chmonitor.dev/og.png' },
+      {
+        name: 'twitter:image',
+        content: 'https://dash.chmonitor.dev/og/og.png',
+      },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
@@ -85,6 +90,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <ThemeProvider>
               <TimeRangeProvider>
                 <QueryProvider>
+                  {isClerkClientEnabled() ? (
+                    <UserConnectionsCacheGuard />
+                  ) : null}
                   <BrowserConnectionsProvider>
                     <AppProvider>
                       <FeaturePermissionsProvider>

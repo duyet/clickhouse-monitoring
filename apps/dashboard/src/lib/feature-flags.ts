@@ -37,6 +37,27 @@ export const featureFlags = {
       return false
     }
   },
+
+  /**
+   * Enable server-side database storage for per-user ClickHouse connections.
+   *
+   * Requires Clerk auth and a configured D1/Postgres backend on the server.
+   *
+   * @default false (unset)
+   * @env VITE_FEATURE_USER_CONNECTIONS_DB
+   */
+  userConnectionsDb: (): boolean => {
+    if (import.meta.env.VITE_FEATURE_USER_CONNECTIONS_DB !== 'true') {
+      return false
+    }
+
+    try {
+      return isClerkAuthProvider()
+    } catch (err) {
+      error('[featureFlags.userConnectionsDb] Auth provider check failed', err)
+      return false
+    }
+  },
 } as const
 
 /**

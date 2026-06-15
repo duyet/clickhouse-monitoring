@@ -19,7 +19,8 @@ export const SQL_PATTERNS = {
   /**
    * Dangerous SQL keywords that modify data or schema
    */
-  DANGEROUS_KEYWORDS: /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE)\b/i,
+  DANGEROUS_KEYWORDS:
+    /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|RENAME|REPLACE)\b/i,
 
   /**
    * SQL execution commands
@@ -36,7 +37,8 @@ export const SQL_PATTERNS = {
   /**
    * Chained dangerous statements
    */
-  CHAINED_DANGEROUS: /;\s*(DROP|DELETE|INSERT|UPDATE)/i,
+  CHAINED_DANGEROUS:
+    /;\s*(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|RENAME|REPLACE)/i,
 
   /**
    * SQL injection via string manipulation
