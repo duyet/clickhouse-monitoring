@@ -1,5 +1,6 @@
 ---
 import { SITE } from '../config'
+import HeaderMobileMenu from './HeaderMobileMenu.astro'
 import HeaderNav from './HeaderNav.astro'
 import Search from './Search.astro'
 import ThemeToggle from './ThemeToggle.astro'
@@ -14,50 +15,77 @@ const { version, subpath, currentSlug } = Astro.props
 ---
 
 <header class="header">
-  <div class="header__start">
-    <button class="icon-btn" id="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="false">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-        <path d="M9 3v18"></path>
-      </svg>
-    </button>
-    <a class="header__brand" href="/">
-      <svg class="header__logo" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" role="img" aria-hidden="true">
-        <path d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"></path>
-      </svg>
-      <span>{SITE.title}</span>
-    </a>
+  <div class="header__top">
+    <div class="header__start">
+      <button
+        class="icon-btn header__sidebar-toggle"
+        id="sidebar-toggle"
+        type="button"
+        aria-label="Toggle docs sidebar"
+        aria-expanded="false"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <path d="M9 3v18"></path>
+        </svg>
+      </button>
+      <a class="header__brand" href="/">
+        <svg class="header__logo" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" role="img" aria-hidden="true">
+          <path d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"></path>
+        </svg>
+        <span>{SITE.title}</span>
+      </a>
+    </div>
+    <div class="header__actions">
+      <Search />
+      <VersionSwitcher version={version} subpath={subpath} />
+      <a class="header__cta" href={SITE.dashboard} target="_blank" rel="noopener">
+        Dashboard
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </a>
+      <a class="icon-btn" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub repository">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 5.83 0c2.22-1.5 3.2-1.18 3.2-1.18.63 1.59.23 2.76.11 3.05.75.81 1.2 1.84 1.2 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"></path>
+        </svg>
+      </a>
+      <ThemeToggle />
+      <button
+        class="icon-btn header__menu-toggle"
+        id="mobile-nav-toggle"
+        type="button"
+        aria-label="Open documentation menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav-modal"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
   </div>
-  <HeaderNav version={version} currentSlug={currentSlug} />
-  <div class="header__actions">
-    <Search />
-    <VersionSwitcher version={version} subpath={subpath} />
-    <a class="header__cta" href={SITE.dashboard} target="_blank" rel="noopener">
-      Dashboard
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M5 12h14"></path>
-        <path d="m12 5 7 7-7 7"></path>
-      </svg>
-    </a>
-    <a class="icon-btn" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub repository">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 5.83 0c2.22-1.5 3.2-1.18 3.2-1.18.63 1.59.23 2.76.11 3.05.75.81 1.2 1.84 1.2 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"></path>
-      </svg>
-    </a>
-    <ThemeToggle />
+  <div class="header__sub">
+    <HeaderNav version={version} currentSlug={currentSlug} />
   </div>
 </header>
 
+<HeaderMobileMenu version={version} currentSlug={currentSlug} />
+
 <script>
-  const toggle = document.getElementById('sidebar-toggle')
+  const sidebarToggle = document.getElementById('sidebar-toggle')
+  const mobileNavToggle = document.getElementById('mobile-nav-toggle')
+  const mobileNavModal = document.getElementById('mobile-nav-modal') as HTMLDialogElement | null
   const root = document.documentElement
-  const mq = window.matchMedia('(min-width: 1024px)')
+  const desktopMq = window.matchMedia('(min-width: 1024px)')
+  const subnavMq = window.matchMedia('(min-width: 768px)')
 
-  const isDesktop = () => mq.matches
+  const isDesktop = () => desktopMq.matches
 
-  const sync = () => {
+  const syncSidebarToggle = () => {
     const collapsed = root.getAttribute('data-sidebar') === 'collapsed'
-    toggle?.setAttribute('aria-expanded', collapsed ? 'false' : 'true')
+    sidebarToggle?.setAttribute('aria-expanded', collapsed ? 'false' : 'true')
   }
 
   const initSidebar = () => {
@@ -67,13 +95,19 @@ const { version, subpath, currentSlug } = Astro.props
     } else {
       root.setAttribute('data-sidebar', 'collapsed')
     }
-    sync()
+    syncSidebarToggle()
+  }
+
+  const syncHeaderHeight = () => {
+    root.setAttribute('data-header-compact', subnavMq.matches ? 'false' : 'true')
   }
 
   initSidebar()
-  mq.addEventListener('change', initSidebar)
+  syncHeaderHeight()
+  desktopMq.addEventListener('change', initSidebar)
+  subnavMq.addEventListener('change', syncHeaderHeight)
 
-  toggle?.addEventListener('click', () => {
+  sidebarToggle?.addEventListener('click', () => {
     const collapsed = root.getAttribute('data-sidebar') === 'collapsed'
     root.setAttribute('data-sidebar', collapsed ? 'expanded' : 'collapsed')
     if (isDesktop()) {
@@ -81,6 +115,34 @@ const { version, subpath, currentSlug } = Astro.props
         localStorage.setItem('sidebar', collapsed ? 'expanded' : 'collapsed')
       } catch {}
     }
-    sync()
+    syncSidebarToggle()
+  })
+
+  mobileNavToggle?.addEventListener('click', () => {
+    if (!mobileNavModal) return
+    if (mobileNavModal.open) {
+      mobileNavModal.close()
+    } else {
+      mobileNavModal.showModal()
+    }
+    mobileNavToggle.setAttribute('aria-expanded', mobileNavModal.open ? 'true' : 'false')
+  })
+
+  mobileNavModal?.addEventListener('close', () => {
+    mobileNavToggle?.setAttribute('aria-expanded', 'false')
+  })
+
+  mobileNavModal?.addEventListener('click', (e) => {
+    if (e.target === mobileNavModal) mobileNavModal.close()
+  })
+
+  // Close mobile sidebar when tapping outside the drawer
+  document.addEventListener('click', (e) => {
+    if (isDesktop() || root.getAttribute('data-sidebar') !== 'expanded') return
+    const sidebar = document.querySelector('.sidebar')
+    const target = e.target as Node
+    if (sidebar?.contains(target) || sidebarToggle?.contains(target)) return
+    root.setAttribute('data-sidebar', 'collapsed')
+    syncSidebarToggle()
   })
 </script>

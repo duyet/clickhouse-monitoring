@@ -1,0 +1,71 @@
+---
+import navData from '../generated/nav.json'
+import { isGroupActive, toHeaderCategories, type NavGroup } from '../lib/header-nav'
+import { resolveNavIcon } from '../lib/nav-icons'
+import NavIcon from './NavIcon.astro'
+
+interface Props {
+  version: string
+  currentSlug: string
+}
+const { version, currentSlug } = Astro.props
+const groups = (navData as Record<string, NavGroup[]>)[version] ?? []
+const currentPath = currentSlug ? `/${currentSlug}` : '/'
+const categories = toHeaderCategories(groups)
+---
+
+<dialog class="mobile-nav-modal" id="mobile-nav-modal" aria-label="Documentation menu">
+  <div class="mobile-nav-modal__head">
+    <span class="mobile-nav-modal__title">Menu</span>
+    <button class="icon-btn" type="button" data-close-mobile-nav aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+  <nav class="mobile-nav-modal__nav">
+    {
+      categories.map((category) => {
+        const group = groups.find((g) => g.label === category.label)
+        const active = group ? isGroupActive(group, currentPath) : false
+
+        return (
+          <section class={`mobile-nav-section${active ? ' is-active' : ''}`}>
+            <a class="mobile-nav-section__label" href={category.href}>
+              {category.label}
+            </a>
+            {
+              category.items.length > 1 && (
+                <ul class="mobile-nav-section__items">
+                  {
+                    category.items.map((item) => (
+                      <li>
+                        <a
+                          class="mobile-nav-section__link"
+                          href={item.link}
+                          aria-current={item.link === currentPath ? 'page' : undefined}
+                        >
+                          <NavIcon name={resolveNavIcon(item.link)} />
+                          <span>{item.label}</span>
+                        </a>
+                      </li>
+                    ))
+                  }
+                </ul>
+              )
+            }
+          </section>
+        )
+      })
+    }
+  </nav>
+</dialog>
+
+<script>
+  for (const btn of document.querySelectorAll('[data-close-mobile-nav]')) {
+    btn.addEventListener('click', () => {
+      const modal = document.getElementById('mobile-nav-modal') as HTMLDialogElement | null
+      modal?.close()
+    })
+  }
+</script>
