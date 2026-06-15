@@ -28,7 +28,7 @@ export function DocsShell({
   const toolbarTitle = resolveDocsBreadcrumb(activeSlug, activeTitle)
 
   return (
-    <div className="docs-vercel-theme min-h-dvh">
+    <div className="docs-theme min-h-dvh">
       <div className="docs-shell__header sticky top-14 z-20 mb-0 px-4 py-3 lg:px-6">
         <div className="mx-auto flex w-full max-w-[var(--ds-page-width)] items-center justify-between gap-4">
           <Link
