@@ -176,7 +176,7 @@ function DocsNavSectionList({
               <Link
                 to={docsHref(item.slug) as never}
                 data-active={isActive}
-                className="docs-shell__nav-link block px-2 py-1.5 transition-colors"
+                className="docs-shell__nav-link block px-2.5 py-[0.4375rem] transition-colors"
               >
                 {item.title}
               </Link>

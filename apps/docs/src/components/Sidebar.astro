@@ -1,6 +1,8 @@
 ---
 import navData from '../generated/nav.json'
 import { findActiveGroup, getSidebarItems, type NavGroup } from '../lib/header-nav'
+import { resolveNavIcon } from '../lib/nav-icons'
+import NavIcon from './NavIcon.astro'
 
 interface Props {
   version: string
@@ -27,6 +29,7 @@ const sidebarItems = getSidebarItems(activeGroup)
           href={item.link}
           aria-current={item.link === currentPath ? 'page' : undefined}
         >
+          <NavIcon name={resolveNavIcon(item.link)} />
           <span class="nav-link__label">{item.label}</span>
         </a>
       ))

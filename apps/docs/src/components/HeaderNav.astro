@@ -5,8 +5,9 @@ import {
   toHeaderCategories,
   type NavGroup,
 } from '../lib/header-nav'
+import { resolveNavDescription } from '../lib/nav-meta'
 import { resolveNavIcon } from '../lib/nav-icons'
-import NavIcon from './NavIcon.astro'
+import NavDropdownCard from './NavDropdownCard.astro'
 
 interface Props {
   version: string
@@ -24,6 +25,7 @@ const categories = toHeaderCategories(groups)
       const active = isCategoryActive(category, currentPath)
       const hasDropdown = category.items.length > 1
       const multiSection = category.sections.length > 1
+      let cardIndex = 0
 
       return hasDropdown ? (
         <div class={`header-nav__item${active ? ' is-active' : ''}`}>
@@ -49,36 +51,46 @@ const categories = toHeaderCategories(groups)
             </svg>
           </a>
           <div class="header-nav__dropdown" role="menu">
-            <div class="header-nav__dropdown-inner">
+            <div
+              class:list={[
+                'header-nav__dropdown-inner',
+                multiSection && 'header-nav__dropdown-inner--columns',
+                !multiSection && category.items.length > 4 && 'header-nav__dropdown-inner--grid',
+              ]}
+            >
               {
                 multiSection
                   ? category.sections.map((section) => (
-                      <div class="header-nav__dropdown-section">
+                      <div class="header-nav__dropdown-column">
                         <div class="header-nav__dropdown-heading">{section.label}</div>
-                        {section.items.map((item) => (
-                          <a
-                            class="header-nav__dropdown-link"
-                            href={item.link}
-                            role="menuitem"
-                            aria-current={item.link === currentPath ? 'page' : undefined}
-                          >
-                            <NavIcon name={resolveNavIcon(item.link)} />
-                            <span>{item.label}</span>
-                          </a>
-                        ))}
+                        {section.items.map((item) => {
+                          const index = cardIndex++
+                          return (
+                            <NavDropdownCard
+                              href={item.link}
+                              label={item.label}
+                              description={resolveNavDescription(item.link, item.label)}
+                              icon={resolveNavIcon(item.link)}
+                              current={item.link === currentPath}
+                              index={index}
+                            />
+                          )
+                        })}
                       </div>
                     ))
-                  : category.items.map((item) => (
-                      <a
-                        class="header-nav__dropdown-link"
-                        href={item.link}
-                        role="menuitem"
-                        aria-current={item.link === currentPath ? 'page' : undefined}
-                      >
-                        <NavIcon name={resolveNavIcon(item.link)} />
-                        <span>{item.label}</span>
-                      </a>
-                    ))
+                  : category.items.map((item) => {
+                      const index = cardIndex++
+                      return (
+                        <NavDropdownCard
+                          href={item.link}
+                          label={item.label}
+                          description={resolveNavDescription(item.link, item.label)}
+                          icon={resolveNavIcon(item.link)}
+                          current={item.link === currentPath}
+                          index={index}
+                        />
+                      )
+                    })
               }
             </div>
           </div>

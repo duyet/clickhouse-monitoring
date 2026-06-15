@@ -27,40 +27,50 @@ const categories = toHeaderCategories(groups)
       </svg>
     </button>
   </div>
-  <nav class="mobile-nav-modal__nav">
+  <div class="mobile-nav-modal__search">
+    <svg class="mobile-nav-modal__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </svg>
+    <input
+      class="mobile-nav-modal__search-input"
+      type="search"
+      placeholder="Search docs…"
+      autocomplete="off"
+      spellcheck="false"
+      data-mobile-nav-search
+    />
+    <kbd class="mobile-nav-modal__search-kbd" aria-hidden="true">Esc</kbd>
+  </div>
+  <nav class="mobile-nav-modal__nav" aria-label="Documentation categories">
     {
       categories.map((category) => {
         const active = isCategoryActive(category, currentPath)
+        const hasChildren = category.items.length > 1
 
-        return (
-          <section class={`mobile-nav-section${active ? ' is-active' : ''}`}>
-            <a class="mobile-nav-section__label" href={category.href}>
-              {category.label}
-            </a>
-            {
-              category.items.length > 1 && (
-                <ul class="mobile-nav-section__items">
-                  {
-                    category.sections.length > 1
-                      ? category.sections.flatMap((section) => [
-                          <li class="mobile-nav-section__subheading">{section.label}</li>,
-                          ...section.items.map((item) => (
-                            <li>
-                              <a
-                                class="mobile-nav-section__link"
-                                href={item.link}
-                                aria-current={item.link === currentPath ? 'page' : undefined}
-                              >
-                                <NavIcon name={resolveNavIcon(item.link)} />
-                                <span>{item.label}</span>
-                              </a>
-                            </li>
-                          )),
-                        ])
-                      : category.items.map((item) => (
-                          <li>
+        return hasChildren ? (
+          <details
+            class="mobile-nav-accordion"
+            data-mobile-nav-category
+            data-default-open={active ? 'true' : 'false'}
+            open={active ? true : undefined}
+          >
+            <summary class="mobile-nav-accordion__summary">
+              <span class="mobile-nav-accordion__label">{category.label}</span>
+              <svg class="mobile-nav-accordion__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </summary>
+            <div class="mobile-nav-accordion__panel">
+              <ul class="mobile-nav-accordion__items">
+                {
+                  category.sections.length > 1
+                    ? category.sections.flatMap((section) => [
+                        <li class="mobile-nav-accordion__subheading">{section.label}</li>,
+                        ...section.items.map((item) => (
+                          <li data-mobile-nav-item data-mobile-nav-label={item.label.toLowerCase()}>
                             <a
-                              class="mobile-nav-section__link"
+                              class="mobile-nav-accordion__link"
                               href={item.link}
                               aria-current={item.link === currentPath ? 'page' : undefined}
                             >
@@ -68,12 +78,33 @@ const categories = toHeaderCategories(groups)
                               <span>{item.label}</span>
                             </a>
                           </li>
-                        ))
-                  }
-                </ul>
-              )
-            }
-          </section>
+                        )),
+                      ])
+                    : category.items.map((item) => (
+                        <li data-mobile-nav-item data-mobile-nav-label={item.label.toLowerCase()}>
+                          <a
+                            class="mobile-nav-accordion__link"
+                            href={item.link}
+                            aria-current={item.link === currentPath ? 'page' : undefined}
+                          >
+                            <NavIcon name={resolveNavIcon(item.link)} />
+                            <span>{item.label}</span>
+                          </a>
+                        </li>
+                      ))
+                }
+              </ul>
+            </div>
+          </details>
+        ) : (
+          <a
+            class="mobile-nav-accordion__solo"
+            href={category.href}
+            aria-current={active ? 'page' : undefined}
+          >
+            <NavIcon name={resolveNavIcon(category.href)} />
+            <span>{category.label}</span>
+          </a>
         )
       })
     }
@@ -81,10 +112,77 @@ const categories = toHeaderCategories(groups)
 </dialog>
 
 <script>
+  const modal = document.getElementById('mobile-nav-modal') as HTMLDialogElement | null
+  const searchInput = document.querySelector<HTMLInputElement>('[data-mobile-nav-search]')
+
   for (const btn of document.querySelectorAll('[data-close-mobile-nav]')) {
-    btn.addEventListener('click', () => {
-      const modal = document.getElementById('mobile-nav-modal') as HTMLDialogElement | null
+    btn.addEventListener('click', () => modal?.close())
+  }
+
+  searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
       modal?.close()
-    })
+    }
+  })
+
+  const resetMobileNavFilter = () => {
+    for (const category of document.querySelectorAll<HTMLDetailsElement>('[data-mobile-nav-category]')) {
+      category.hidden = false
+      category.open = category.dataset.defaultOpen === 'true'
+      for (const item of category.querySelectorAll<HTMLElement>('[data-mobile-nav-item]')) {
+        item.hidden = false
+      }
+      for (const heading of category.querySelectorAll<HTMLElement>('.mobile-nav-accordion__subheading')) {
+        heading.hidden = false
+      }
+    }
+  }
+
+  searchInput?.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase()
+    if (!query) {
+      resetMobileNavFilter()
+      return
+    }
+
+    for (const category of document.querySelectorAll<HTMLDetailsElement>('[data-mobile-nav-category]')) {
+      const items = category.querySelectorAll<HTMLElement>('[data-mobile-nav-item]')
+      let visible = 0
+
+      for (const item of items) {
+        const label = item.dataset.mobileNavLabel ?? ''
+        const match = label.includes(query)
+        item.hidden = !match
+        if (match) visible++
+      }
+
+      for (const heading of category.querySelectorAll<HTMLElement>('.mobile-nav-accordion__subheading')) {
+        let sectionVisible = false
+        let sibling = heading.nextElementSibling
+        while (sibling && !sibling.classList.contains('mobile-nav-accordion__subheading')) {
+          if (sibling instanceof HTMLElement && sibling.matches('[data-mobile-nav-item]') && !sibling.hidden) {
+            sectionVisible = true
+            break
+          }
+          sibling = sibling.nextElementSibling
+        }
+        heading.hidden = !sectionVisible
+      }
+
+      category.open = visible > 0
+      category.hidden = visible === 0
+    }
+  })
+
+  modal?.addEventListener('close', () => {
+    if (searchInput) searchInput.value = ''
+    resetMobileNavFilter()
+  })
+
+  for (const link of document.querySelectorAll<HTMLAnchorElement>(
+    '.mobile-nav-accordion__link, .mobile-nav-accordion__solo'
+  )) {
+    link.addEventListener('click', () => modal?.close())
   }
 </script>
