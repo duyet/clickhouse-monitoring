@@ -279,7 +279,7 @@ describe('releaseClient', () => {
     expect(pooled).toBeDefined()
 
     // Simulate idle timeout
-    pooled.lastUsed = Date.now() - 600_000
+    pooled!.lastUsed = Date.now() - 600_000
 
     // Should not clean up since it's in use
     cleanupStaleClients()
@@ -289,7 +289,7 @@ describe('releaseClient', () => {
     releaseClient({ web: false })
 
     // Simulate idle timeout again after release (since releaseClient resets lastUsed)
-    pooled.lastUsed = Date.now() - 600_000
+    pooled!.lastUsed = Date.now() - 600_000
 
     // Now it should clean up
     cleanupStaleClients()

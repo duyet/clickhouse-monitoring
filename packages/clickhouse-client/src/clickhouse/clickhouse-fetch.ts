@@ -733,8 +733,56 @@ export const query = async (
       query_params: params,
     })
 
+    let released = false
+    const releaseOnce = () => {
+      if (!released) {
+        released = true
+        releaseClient({ web: false })
+      }
+    }
+
+    // Intercept data consumption methods to release client after stream is consumed
+    const originalJson = resultSet.json
+    const originalText = resultSet.text
+    const originalStream = resultSet.stream
+
+    if (typeof originalJson === 'function') {
+      resultSet.json = async function (this: any, ...args: any[]) {
+        try {
+          return await originalJson.apply(this, args)
+        } finally {
+          releaseOnce()
+        }
+      }
+    }
+
+    if (typeof originalText === 'function') {
+      resultSet.text = async function (this: any, ...args: any[]) {
+        try {
+          return await originalText.apply(this, args)
+        } finally {
+          releaseOnce()
+        }
+      }
+    }
+
+    if (typeof originalStream === 'function') {
+      resultSet.stream = function (this: any, ...args: any[]) {
+        const stream = originalStream.apply(this, args)
+        if (stream && typeof stream === 'object') {
+          if (typeof stream.on === 'function') {
+            stream.on('end', () => releaseOnce())
+            stream.on('close', () => releaseOnce())
+            stream.on('error', () => releaseOnce())
+          }
+        }
+        return stream
+      }
+    }
+
     return resultSet
-  } finally {
+  } catch (err) {
     releaseClient({ web: false })
+    throw err
   }
 }
