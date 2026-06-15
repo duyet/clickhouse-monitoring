@@ -5,9 +5,6 @@ import {
   toHeaderCategories,
   type NavGroup,
 } from '../lib/header-nav'
-import { resolveCategoryDescription, resolveNavDescription } from '../lib/nav-meta'
-import { resolveNavIcon } from '../lib/nav-icons'
-import NavDropdownCard from './NavDropdownCard.astro'
 
 interface Props {
   version: string
@@ -21,97 +18,10 @@ const categories = toHeaderCategories(groups)
 
 <nav class="header__nav" aria-label="Documentation categories">
   {
-    categories.map((category, categoryIndex) => {
+    categories.map((category) => {
       const active = isCategoryActive(category, currentPath)
-      const hasDropdown = category.items.length > 1
-      const multiSection = category.sections.length > 1
-      const alignEnd = categoryIndex >= categories.length - 2
-      let cardIndex = 0
 
-      return hasDropdown ? (
-        <div
-          class:list={[
-            'header-nav__item',
-            active && 'is-active',
-            alignEnd && 'header-nav__item--end',
-          ]}
-        >
-          <a
-            class="header-nav__trigger"
-            href={category.href}
-            aria-current={active ? 'page' : undefined}
-            aria-haspopup="menu"
-          >
-            <span>{category.label}</span>
-            <svg
-              class="header-nav__chevron"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </a>
-          <div class="header-nav__dropdown" role="menu">
-            <div
-              class:list={[
-                'header-nav__dropdown-inner',
-                multiSection && 'header-nav__dropdown-inner--columns',
-                !multiSection && category.items.length > 4 && 'header-nav__dropdown-inner--grid',
-              ]}
-            >
-              <div class="header-nav__dropdown-header">
-                <span class="header-nav__dropdown-title">{category.label}</span>
-                <span class="header-nav__dropdown-subtitle">
-                  {resolveCategoryDescription(category.label)}
-                </span>
-              </div>
-              <div class="header-nav__dropdown-body">
-                {
-                  multiSection
-                    ? category.sections.map((section) => (
-                        <div class="header-nav__dropdown-column">
-                          <div class="header-nav__dropdown-heading">{section.label}</div>
-                          {section.items.map((item) => {
-                            const index = cardIndex++
-                            return (
-                              <NavDropdownCard
-                                href={item.link}
-                                label={item.label}
-                                description={resolveNavDescription(item.link, item.label)}
-                                icon={resolveNavIcon(item.link)}
-                                current={item.link === currentPath}
-                                index={index}
-                              />
-                            )
-                          })}
-                        </div>
-                      ))
-                    : category.items.map((item) => {
-                        const index = cardIndex++
-                        return (
-                          <NavDropdownCard
-                            href={item.link}
-                            label={item.label}
-                            description={resolveNavDescription(item.link, item.label)}
-                            icon={resolveNavIcon(item.link)}
-                            current={item.link === currentPath}
-                            index={index}
-                          />
-                        )
-                      })
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+      return (
         <a
           class={`header-nav__link${active ? ' is-active' : ''}`}
           href={category.href}
