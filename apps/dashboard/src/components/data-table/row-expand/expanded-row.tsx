@@ -37,7 +37,7 @@ export function ExpandedRow<TData extends RowData>({
       data-expanded-row
       data-row-id={row.id}
       className={cn(
-        'bg-muted/40 hover:bg-muted/40 dark:bg-muted/20 dark:hover:bg-muted/20',
+        'bg-muted/40 hover:bg-muted/40',
         'border-b border-border/50'
       )}
     >

@@ -105,11 +105,11 @@ export const VirtualizedTableRow = memo(function VirtualizedTableRow<
           : undefined
       }
       className={cn(
-        'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
+        'border-b border-border/50 transition-colors hover:bg-accent/50',
         virtualRow.index % 2 === 1 && 'odd:bg-muted/30',
         row.getIsSelected() && 'border-l-2 border-l-primary',
         canExpand && 'cursor-pointer',
-        isExpanded && 'bg-accent/30 hover:bg-accent/30 dark:bg-accent/15',
+        isExpanded && 'bg-accent/30 hover:bg-accent/30',
         customClass
       )}
       style={{
@@ -179,11 +179,11 @@ export const StandardTableRow = memo(function StandardTableRow<
           : undefined
       }
       className={cn(
-        'border-b border-border/50 transition-colors hover:bg-accent/50 dark:hover:bg-accent/20',
+        'border-b border-border/50 transition-colors hover:bg-accent/50',
         index % 2 === 1 && 'odd:bg-muted/30',
         row.getIsSelected() && 'border-l-2 border-l-primary',
         canExpand && 'cursor-pointer',
-        isExpanded && 'bg-accent/30 hover:bg-accent/30 dark:bg-accent/15',
+        isExpanded && 'bg-accent/30 hover:bg-accent/30',
         customClass
       )}
     >
