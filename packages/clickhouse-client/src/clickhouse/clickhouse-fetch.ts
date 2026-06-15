@@ -742,12 +742,13 @@ export const query = async (
     }
 
     // Intercept data consumption methods to release client after stream is consumed
-    const originalJson = resultSet.json
-    const originalText = resultSet.text
-    const originalStream = resultSet.stream
+    const rs = resultSet as any
+    const originalJson = rs.json
+    const originalText = rs.text
+    const originalStream = rs.stream
 
     if (typeof originalJson === 'function') {
-      resultSet.json = async function (this: any, ...args: any[]) {
+      rs.json = async function (this: any, ...args: any[]) {
         try {
           return await originalJson.apply(this, args)
         } finally {
@@ -757,7 +758,7 @@ export const query = async (
     }
 
     if (typeof originalText === 'function') {
-      resultSet.text = async function (this: any, ...args: any[]) {
+      rs.text = async function (this: any, ...args: any[]) {
         try {
           return await originalText.apply(this, args)
         } finally {
@@ -767,7 +768,7 @@ export const query = async (
     }
 
     if (typeof originalStream === 'function') {
-      resultSet.stream = function (this: any, ...args: any[]) {
+      rs.stream = function (this: any, ...args: any[]) {
         const stream = originalStream.apply(this, args)
         if (stream && typeof stream === 'object') {
           if (typeof stream.on === 'function') {
