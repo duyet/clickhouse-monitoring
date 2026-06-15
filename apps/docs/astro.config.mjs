@@ -11,6 +11,11 @@ export default defineConfig({
   // Static HTML at build time → dist/ → Cloudflare Workers ASSETS (no SSR).
   output: 'static',
   site: 'https://docs.chmonitor.dev',
+  build: {
+    // Inline CSS into each page's <head> so first paint never waits on a
+    // separate /_astro/*.css request (prevents theme/layout flash on load).
+    inlineStylesheets: 'always',
+  },
   integrations: [sitemap()],
   markdown: {
     shikiConfig: {

@@ -38,8 +38,6 @@
   }
 </style>
 
-<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
-
 <script>
   const openBtns = [
     document.getElementById('search-open'),
@@ -48,9 +46,25 @@
   const modal = document.getElementById('search-modal') as HTMLDialogElement | null
   let initialized = false
 
+  function loadStylesheet(href: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
+        resolve()
+        return
+      }
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
+      link.onload = () => resolve()
+      link.onerror = () => reject(new Error(`failed to load ${href}`))
+      document.head.appendChild(link)
+    })
+  }
+
   async function initSearch() {
     if (initialized || !modal) return
     try {
+      await loadStylesheet('/pagefind/pagefind-ui.css')
       await new Promise<void>((resolve, reject) => {
         const s = document.createElement('script')
         s.src = '/pagefind/pagefind-ui.js'
