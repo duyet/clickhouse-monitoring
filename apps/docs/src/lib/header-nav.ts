@@ -36,10 +36,8 @@ export const HEADER_CATEGORIES: { label: string; groups: string[] }[] = [
   },
 ]
 
-export function groupHref(group: NavGroup): string {
-  if (group.link) return group.link
-  const overview = group.items?.find((it) => it.label === 'Overview')
-  return overview?.link ?? group.items?.[0]?.link ?? '/'
+export function slugToPath(slug: string): string {
+  return slug ? `/${slug}` : '/'
 }
 
 export function isGroupActive(group: NavGroup, currentPath: string): boolean {
@@ -103,19 +101,8 @@ export function isCategoryActive(
   return category.items.some((item) => item.link === currentPath)
 }
 
-export function findActiveHeaderCategory(
-  groups: NavGroup[],
-  currentPath: string
-): HeaderCategory | null {
-  const categories = toHeaderCategories(groups)
-  return (
-    categories.find((cat) => isCategoryActive(cat, currentPath)) ??
-    categories[0] ??
-    null
-  )
-}
-
-export interface SidebarContext {
+export interface DocsNavContext {
+  categories: HeaderCategory[]
   category: HeaderCategory | null
   group: NavGroup | null
   items: NavItem[]
@@ -123,11 +110,15 @@ export interface SidebarContext {
   showGroupLabel: boolean
 }
 
-export function resolveSidebarContext(
+export function resolveDocsNavContext(
   groups: NavGroup[],
   currentPath: string
-): SidebarContext {
-  const category = findActiveHeaderCategory(groups, currentPath)
+): DocsNavContext {
+  const categories = toHeaderCategories(groups)
+  const category =
+    categories.find((cat) => isCategoryActive(cat, currentPath)) ??
+    categories[0] ??
+    null
   const group = findActiveGroup(groups, currentPath)
   const items = getSidebarItems(group)
   const showGroupLabel = Boolean(
@@ -137,5 +128,18 @@ export function resolveSidebarContext(
       group.label !== category.label
   )
 
+  return { categories, category, group, items, showGroupLabel }
+}
+
+export type SidebarContext = Omit<DocsNavContext, 'categories'>
+
+export function resolveSidebarContext(
+  groups: NavGroup[],
+  currentPath: string
+): SidebarContext {
+  const { category, group, items, showGroupLabel } = resolveDocsNavContext(
+    groups,
+    currentPath
+  )
   return { category, group, items, showGroupLabel }
 }

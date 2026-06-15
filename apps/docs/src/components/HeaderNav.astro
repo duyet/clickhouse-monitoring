@@ -2,6 +2,7 @@
 import navData from '../generated/nav.json'
 import {
   isCategoryActive,
+  slugToPath,
   toHeaderCategories,
   type NavGroup,
 } from '../lib/header-nav'
@@ -12,7 +13,7 @@ interface Props {
 }
 const { version, currentSlug } = Astro.props
 const groups = (navData as Record<string, NavGroup[]>)[version] ?? []
-const currentPath = currentSlug ? `/${currentSlug}` : '/'
+const currentPath = slugToPath(currentSlug)
 const categories = toHeaderCategories(groups)
 ---
 

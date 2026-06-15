@@ -1,11 +1,16 @@
-import { findActiveGroup, getSidebarItems, type NavGroup } from './header-nav'
+import {
+  findActiveGroup,
+  getSidebarItems,
+  type NavGroup,
+  slugToPath,
+} from './header-nav'
 
 export function resolveDocsBreadcrumb(
   groups: NavGroup[],
   currentSlug: string,
   pageTitle: string
 ): string {
-  const current = currentSlug ? `/${currentSlug}` : '/'
+  const current = slugToPath(currentSlug)
   const activeGroup = findActiveGroup(groups, current)
   const items = getSidebarItems(activeGroup)
   const activeItem = items.find((entry) => entry.link === current)
