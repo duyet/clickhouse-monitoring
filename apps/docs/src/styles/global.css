@@ -223,8 +223,7 @@ img {
   opacity: 0.45;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.header-nav__item:hover .header-nav__chevron,
-.header-nav__item:focus-within .header-nav__chevron {
+.header-nav__item:hover .header-nav__chevron {
   transform: rotate(180deg);
 }
 .header-nav__dropdown {
@@ -237,16 +236,20 @@ img {
   max-width: min(44rem, 92vw);
   transform: translateX(-50%) translateY(0.35rem) scale(0.98);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   transition:
     opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.2s;
 }
-.header-nav__item:hover .header-nav__dropdown,
-.header-nav__item:focus-within .header-nav__dropdown {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0) scale(1);
+@media (hover: hover) and (pointer: fine) {
+  .header-nav__item:hover .header-nav__dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 .header-nav__dropdown-inner {
   padding: 0.625rem;
@@ -292,8 +295,12 @@ img {
   transition:
     background 0.15s ease,
     transform 0.15s ease;
-  animation: nav-card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: var(--nav-card-delay, 0ms);
+}
+@media (hover: hover) and (pointer: fine) {
+  .header-nav__item:hover .header-nav__dropdown-card {
+    animation: nav-card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--nav-card-delay, 0ms);
+  }
 }
 @keyframes nav-card-in {
   from {
@@ -373,7 +380,10 @@ img {
   }
 }
 /* Mobile category menu (command-palette dialog) */
-.mobile-nav-modal {
+.mobile-nav-modal:not([open]) {
+  display: none;
+}
+.mobile-nav-modal[open] {
   width: min(32rem, 94vw);
   max-height: min(85dvh, 36rem);
   margin: auto;
