@@ -2,6 +2,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource/geist-mono/400.css'
 import '@fontsource/geist-mono/500.css'
+import criticalCss from '../styles/critical.css?raw'
 import '../styles/global.css'
 import { SITE } from '../config'
 import DocsMobileToolbar from '../components/DocsMobileToolbar.astro'
@@ -58,25 +59,35 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
-    {/* No-FOUC theme: set data-theme before paint. */}
+    {/* No-FOUC: set layout/theme attrs before paint, then critical CSS. */}
     <script is:inline>
-      const stored = localStorage.getItem('theme')
-      const dark =
-        stored === 'dark' ||
-        (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
-      const desktop = window.matchMedia('(min-width: 1024px)').matches
-      const subnav = window.matchMedia('(min-width: 768px)').matches
-      if (desktop) {
-        document.documentElement.setAttribute(
-          'data-sidebar',
-          localStorage.getItem('sidebar') === 'collapsed' ? 'collapsed' : 'expanded'
-        )
-      } else {
-        document.documentElement.setAttribute('data-sidebar', 'collapsed')
-      }
-      document.documentElement.setAttribute('data-header-compact', subnav ? 'false' : 'true')
+      ;(function () {
+        const root = document.documentElement
+        const stored = localStorage.getItem('theme')
+        const dark =
+          stored === 'dark' ||
+          (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        root.setAttribute('data-theme', dark ? 'dark' : 'light')
+        const desktop = window.matchMedia('(min-width: 1024px)').matches
+        const subnav = window.matchMedia('(min-width: 768px)').matches
+        if (desktop) {
+          root.setAttribute(
+            'data-sidebar',
+            localStorage.getItem('sidebar') === 'collapsed' ? 'collapsed' : 'expanded'
+          )
+        } else {
+          root.setAttribute('data-sidebar', 'collapsed')
+        }
+        root.setAttribute('data-header-compact', subnav ? 'false' : 'true')
+        const markReady = () => root.classList.add('docs-ready')
+        if (document.readyState === 'complete') {
+          markReady()
+        } else {
+          window.addEventListener('load', markReady, { once: true })
+        }
+      })()
     </script>
+    <style is:inline set:html={criticalCss} />
   </head>
   <body>
     <a href="#article" class="sr-only skiplink">Skip to content</a>
