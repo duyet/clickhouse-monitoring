@@ -136,7 +136,7 @@ export const OG_PAGES: Record<string, OgPage> = {
 
 /** Absolute URL of a page's OG image, e.g. .../og-running-queries.png. */
 export function ogImageUrl(slug: string): string {
-  return `${OG_DOMAIN}/og-${slug}.png`
+  return `${OG_DOMAIN}/og/og-${slug}.png`
 }
 
 /**

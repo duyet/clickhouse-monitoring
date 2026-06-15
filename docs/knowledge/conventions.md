@@ -17,18 +17,18 @@ related:
 
 ## Component Patterns
 
-- **All pages use `'use client'`** — this is a fully static site with no server components
+- **Static-First Rendering** — pages are prerendered at build time (static shell) with client-side data fetching via TanStack Query
 - **Hooks at deepest consumer** — use hooks at the component that needs data, not parent. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop
 - **Compound components** for complex UI (data tables)
 
 ## File Organization
 
-- All pages: `.tsx` with `"use client"` directive
-- Layouts: `app/[route]/layout.tsx`
-- Pages: `app/[route]/page.tsx`
-- Layouts: `app/[route]/layout.tsx`
-- Configs: `config.ts` within route directories
-- Test files co-located with components (`.cy.tsx`)
+- Root route: `src/routes/__root.tsx`
+- Dashboard pages: File-based routes under `src/routes/(dashboard)/`
+- API routes: Server-side API endpoints under `src/routes/api/`
+- Navigation config: Defined in `src/menu.ts`
+- Styles: Main Tailwind v4 stylesheet at `src/styles.css`
+- Test files co-located with components or in cypress/ directory (`.cy.tsx` / `.cy.ts`)
 
 ## shadcn/ui Rules
 
