@@ -6,6 +6,7 @@ import {
   Settings,
   User as UserIcon,
 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { SignInButton, useClerk, useUser } from '@clerk/tanstack-react-start'
 import { useState } from 'react'
@@ -31,6 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
+import { clearUserConnectionsCache } from '@/lib/hooks/use-user-connections'
 
 /**
  * Clerk-integrated navigation user menu.
@@ -42,6 +44,7 @@ import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 export function ClerkNavWrapper() {
   const { user, isLoaded, isSignedIn } = useUser()
   const { openUserProfile, signOut } = useClerk()
+  const queryClient = useQueryClient()
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
@@ -195,6 +198,7 @@ export function ClerkNavWrapper() {
                 <DropdownMenuItem
                   className="flex items-center gap-2 text-destructive focus:text-destructive"
                   onSelect={async () => {
+                    clearUserConnectionsCache(queryClient)
                     try {
                       await signOut({ redirectUrl: '/' })
                     } catch {

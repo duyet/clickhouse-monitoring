@@ -2,6 +2,7 @@ import type { BrowserConnection } from '@/lib/types/browser-connection'
 
 import { apiFetch } from './api-fetch'
 import { throwIfNotOk } from './fetch-error'
+import { getBrowserConnectionSessionToken } from '@/lib/connection-sessions/session-manager'
 
 /**
  * Parameters for the browser proxy fetch
@@ -35,15 +36,12 @@ export async function fetchViaBrowserProxy<T = unknown>({
   data: T[]
   metadata: Record<string, unknown>
 }> {
+  const sessionToken = await getBrowserConnectionSessionToken(connection)
   const response = await apiFetch('/api/v1/browser-connections/proxy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      connection: {
-        host: connection.host,
-        user: connection.user,
-        password: connection.password,
-      },
+      sessionToken,
       query,
       query_params: queryParams,
       format,

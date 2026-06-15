@@ -27,7 +27,9 @@ export function FirstRunEmptyState() {
         title="Connect a ClickHouse host to get started"
         description={
           <span className="block">
-            No ClickHouse hosts are configured yet. Set{' '}
+            No ClickHouse hosts are configured yet. Use the sidebar host
+            switcher → <strong>Add host…</strong> to connect from your browser,
+            or set{' '}
             <code className="rounded bg-muted px-1 text-[11px]">
               CLICKHOUSE_HOST
             </code>

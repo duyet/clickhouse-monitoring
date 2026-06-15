@@ -1,0 +1,95 @@
+/**
+ * Table data via browser connection session or inline credentials.
+ * POST /api/v1/browser-connections/tables/$name
+ */
+
+import { createFileRoute } from '@tanstack/react-router'
+
+import { createValidationError } from '@/lib/api/error-handler'
+import {
+  createErrorResponse,
+  createSuccessResponse,
+} from '@/lib/api/shared/response-builder'
+import { ApiErrorType } from '@/lib/api/types'
+import { executeConnectionTableConfig } from '@/lib/connection-query/execute-connection-table'
+import { resolveProxyCredentials } from '@/lib/connection-query/resolve-credentials'
+import { getQueryConfigByName } from '@/lib/query-config'
+
+const ROUTE_CONTEXT = {
+  route: '/api/v1/browser-connections/tables/$name',
+  method: 'POST',
+} as const
+
+interface TableProxyBody {
+  connection?: { host: string; user: string; password: string }
+  sessionToken?: string
+  searchParams?: Record<string, string | number | boolean>
+  timezone?: string
+}
+
+async function handlePost(
+  request: Request,
+  tableName: string
+): Promise<Response> {
+  const queryConfig = getQueryConfigByName(tableName)
+  if (!queryConfig) {
+    return createErrorResponse(
+      {
+        type: ApiErrorType.TableNotFound,
+        message: `Table query not found: ${tableName}`,
+      },
+      404,
+      ROUTE_CONTEXT
+    )
+  }
+
+  let body: Partial<TableProxyBody>
+  try {
+    body = (await request.json()) as Partial<TableProxyBody>
+  } catch {
+    return createValidationError(
+      'Request body must be valid JSON',
+      ROUTE_CONTEXT
+    )
+  }
+
+  const credentials = await resolveProxyCredentials(
+    { connection: body.connection, sessionToken: body.sessionToken },
+    null
+  )
+  if (!credentials) {
+    return createValidationError(
+      'Missing required field: connection or sessionToken',
+      ROUTE_CONTEXT
+    )
+  }
+
+  try {
+    const result = await executeConnectionTableConfig(
+      queryConfig,
+      credentials,
+      body.searchParams,
+      body.timezone
+    )
+    return createSuccessResponse(result.data, result.metadata)
+  } catch (err) {
+    return createErrorResponse(
+      {
+        type: ApiErrorType.QueryError,
+        message: err instanceof Error ? err.message : 'Table query failed',
+      },
+      500,
+      ROUTE_CONTEXT
+    )
+  }
+}
+
+export const Route = createFileRoute(
+  '/api/v1/browser-connections/tables/$name'
+)({
+  server: {
+    handlers: {
+      POST: async ({ request, params }) => handlePost(request, params.name),
+    },
+  },
+})
