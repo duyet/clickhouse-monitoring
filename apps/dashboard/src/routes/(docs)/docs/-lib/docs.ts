@@ -163,6 +163,19 @@ export function docsHref(slug: string) {
   return slug ? `/docs/${slug}` : '/docs'
 }
 
+export function resolveDocsBreadcrumb(slug: string, pageTitle: string) {
+  const normalizedSlug = normalizeSlug(slug)
+
+  for (const section of docsNav) {
+    const item = section.items.find((entry) => entry.slug === normalizedSlug)
+    if (item) {
+      return `${section.title} / ${item.title}`
+    }
+  }
+
+  return pageTitle
+}
+
 export function getDocsPage(slug: string): DocsPage | null {
   const normalizedSlug = normalizeSlug(slug)
   const source = docsContent[normalizedSlug] ?? null

@@ -99,15 +99,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.75rem;
   position: sticky;
   top: calc(3.5rem + 3.25rem);
   z-index: 20;
   height: var(--docs-toolbar-height);
-  margin: 0 -1rem 1rem;
+  margin: 0 -1rem 0;
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--ds-gray-300);
   background: var(--ds-background-100);
+  isolation: isolate;
 }
 
 @media (min-width: 1024px) {
@@ -116,8 +117,16 @@
   }
 }
 
+@media (max-width: 1023px) {
+  .docs-vercel-theme .docs-markdown h1 {
+    display: none;
+  }
+}
+
 .docs-vercel-theme .docs-toolbar__menu {
   display: inline-flex;
+  min-width: 0;
+  flex: 1;
   align-items: center;
   gap: 0.5rem;
   height: 2.25rem;
@@ -130,6 +139,20 @@
   font-weight: 500;
   cursor: pointer;
   border-radius: var(--geist-radius);
+  text-align: left;
+}
+
+.docs-vercel-theme .docs-toolbar__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-toolbar__toc {
+  flex-shrink: 0;
 }
 
 .docs-vercel-theme .docs-toolbar__menu:hover {
@@ -238,11 +261,13 @@
   background: var(--ds-gray-100);
   border: 1px solid var(--ds-gray-300);
   border-radius: var(--geist-radius);
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
   font-family: var(--font-mono);
-  font-size: 0.85em;
+  font-size: 0.875em;
   font-weight: 500;
-  padding: 0.12em 0.4em;
+  padding: 0.1em 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .docs-vercel-theme .docs-markdown pre {

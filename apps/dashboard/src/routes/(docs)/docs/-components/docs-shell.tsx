@@ -1,18 +1,30 @@
 import { Menu } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
-import { type DocsHeading, docsHref, docsNav } from '../-lib/docs'
+import {
+  type DocsHeading,
+  docsHref,
+  docsNav,
+  resolveDocsBreadcrumb,
+} from '../-lib/docs'
 import { type ReactNode, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 type DocsShellProps = {
   activeSlug: string
+  activeTitle: string
   headings: DocsHeading[]
   children: ReactNode
 }
 
-export function DocsShell({ activeSlug, headings, children }: DocsShellProps) {
+export function DocsShell({
+  activeSlug,
+  activeTitle,
+  headings,
+  children,
+}: DocsShellProps) {
   const [mobilePanel, setMobilePanel] = useState<'menu' | 'toc' | null>(null)
+  const toolbarTitle = resolveDocsBreadcrumb(activeSlug, activeTitle)
 
   return (
     <div className="docs-vercel-theme min-h-dvh">
@@ -39,6 +51,7 @@ export function DocsShell({ activeSlug, headings, children }: DocsShellProps) {
       <div className="px-4 pb-6 lg:px-6 xl:px-8">
         <div className="mx-auto w-full max-w-[var(--ds-page-width)]">
           <DocsMobileToolbar
+            title={toolbarTitle}
             hasToc={headings.length > 0}
             mobilePanel={mobilePanel}
             onMenu={() =>
@@ -75,11 +88,13 @@ export function DocsShell({ activeSlug, headings, children }: DocsShellProps) {
 }
 
 function DocsMobileToolbar({
+  title,
   hasToc,
   mobilePanel,
   onMenu,
   onToc,
 }: {
+  title: string
   hasToc: boolean
   mobilePanel: 'menu' | 'toc' | null
   onMenu: () => void
@@ -93,8 +108,8 @@ function DocsMobileToolbar({
         aria-expanded={mobilePanel === 'menu'}
         onClick={onMenu}
       >
-        <Menu className="size-[18px] opacity-70" aria-hidden />
-        <span>Menu</span>
+        <Menu className="size-[18px] shrink-0 opacity-70" aria-hidden />
+        <span className="docs-toolbar__title">{title}</span>
       </button>
       {hasToc ? (
         <button

@@ -27,7 +27,11 @@ function DocsIndexPage() {
   }
 
   return (
-    <DocsShell activeSlug={page.slug} headings={page.headings}>
+    <DocsShell
+      activeSlug={page.slug}
+      activeTitle={page.title}
+      headings={page.headings}
+    >
       <DocsMarkdown markdown={page.markdown} />
     </DocsShell>
   )
