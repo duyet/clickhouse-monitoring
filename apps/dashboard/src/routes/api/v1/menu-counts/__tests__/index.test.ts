@@ -68,8 +68,8 @@ describe('menu-counts API GET handler', () => {
     expect(body.data).toHaveProperty('counts')
     expect(body.data.counts['tables-explorer']).toBe(5)
     expect(body.data.counts['tables-overview']).toBe(10)
-    expect(body.data.counts['clusters']).toBe(2)
-    expect(body.data.counts['backups']).toBe(1)
+    expect(body.data.counts.clusters).toBe(2)
+    expect(body.data.counts.backups).toBe(1)
     // Optional table that doesn't exist should be null
     expect(body.data.counts['distributed-ddl-queue']).toBeNull()
 

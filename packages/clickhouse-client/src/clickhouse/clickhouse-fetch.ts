@@ -308,18 +308,26 @@ export const fetchData = async <
       sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
     }
 
+    let cachedRawText: string | undefined
+    const getRawText = () => {
+      if (cachedRawText === undefined) {
+        cachedRawText = JSON.stringify(data)
+      }
+      return cachedRawText
+    }
+
     // Include raw response for debugging (lazily evaluated to avoid performance overhead)
     Object.defineProperties(metadata, {
       rawResponseLength: {
         get() {
-          return JSON.stringify(data).length
+          return getRawText().length
         },
         enumerable: true,
         configurable: true,
       },
       rawResponsePreview: {
         get() {
-          const rawText = JSON.stringify(data)
+          const rawText = getRawText()
           return rawText.length <= 500
             ? rawText
             : `${rawText.substring(0, 500)}...`
