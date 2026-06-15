@@ -112,6 +112,10 @@ const { version, subpath, currentSlug } = Astro.props
       mobileNavModal.close()
     } else {
       mobileNavModal.showModal()
+      requestAnimationFrame(() => {
+        const searchInput = mobileNavModal.querySelector<HTMLInputElement>('[data-mobile-nav-search]')
+        searchInput?.focus()
+      })
     }
     mobileNavToggle.setAttribute('aria-expanded', mobileNavModal.open ? 'true' : 'false')
   })
