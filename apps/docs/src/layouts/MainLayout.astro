@@ -83,7 +83,7 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
     <div class="layout">
       <Sidebar version={version} currentSlug={currentSlug} />
       <main class="main">
-        <article id="article" class="content">
+        <article id="article" class="content" data-docs-prose>
           <slot />
         </article>
         {

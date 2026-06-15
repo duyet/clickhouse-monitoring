@@ -21,7 +21,7 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
   }
 
   return (
-    <div className="markdown-content docs-markdown">
+    <div className="markdown-content docs-markdown" data-docs-prose>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
