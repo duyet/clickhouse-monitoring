@@ -1,6 +1,6 @@
 ---
 import navData from '../generated/nav.json'
-import { resolveSidebarContext, type NavGroup } from '../lib/header-nav'
+import { resolveSidebarContext, slugToPath, type NavGroup } from '../lib/header-nav'
 import { resolveNavIcon } from '../lib/nav-icons'
 import NavLinkRow from './NavLinkRow.astro'
 
@@ -10,7 +10,7 @@ interface Props {
 }
 const { version, currentSlug } = Astro.props
 const groups = (navData as Record<string, NavGroup[]>)[version] ?? []
-const currentPath = currentSlug ? `/${currentSlug}` : '/'
+const currentPath = slugToPath(currentSlug)
 const { category, group, items, showGroupLabel } = resolveSidebarContext(groups, currentPath)
 const showSidebar = items.length > 0
 ---

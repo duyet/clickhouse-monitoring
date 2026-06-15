@@ -829,12 +829,6 @@ img {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-row__desc {
-  font-size: 0.6875rem;
-  font-weight: 400;
-  color: var(--fg-subtle);
-  line-height: 1.3;
-}
 .nav-row:hover {
   background: var(--ds-gray-alpha-100);
   color: var(--fg);

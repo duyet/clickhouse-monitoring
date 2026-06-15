@@ -2,8 +2,8 @@
 import navData from '../generated/nav.json'
 import {
   isCategoryActive,
-  resolveSidebarContext,
-  toHeaderCategories,
+  resolveDocsNavContext,
+  slugToPath,
   type NavGroup,
 } from '../lib/header-nav'
 import { resolveNavIcon } from '../lib/nav-icons'
@@ -16,9 +16,9 @@ interface Props {
 }
 const { version, currentSlug } = Astro.props
 const groups = (navData as Record<string, NavGroup[]>)[version] ?? []
-const currentPath = currentSlug ? `/${currentSlug}` : '/'
-const categories = toHeaderCategories(groups)
-const { category, group, items, showGroupLabel } = resolveSidebarContext(groups, currentPath)
+const currentPath = slugToPath(currentSlug)
+const { categories, category, group, items, showGroupLabel } =
+  resolveDocsNavContext(groups, currentPath)
 const sectionTitle = showGroupLabel && group ? group.label : (category?.label ?? 'Docs')
 ---
 
@@ -78,6 +78,7 @@ const sectionTitle = showGroupLabel && group ? group.label : (category?.label ??
           categories.map((cat) => {
             const active = isCategoryActive(cat, currentPath)
             const hasChildren = cat.items.length > 1
+            const showSectionHeadings = cat.sections.length > 1
 
             return hasChildren ? (
               <details
@@ -95,34 +96,23 @@ const sectionTitle = showGroupLabel && group ? group.label : (category?.label ??
                 <div class="mobile-nav-accordion__panel">
                   <ul class="mobile-nav-accordion__items">
                     {
-                      cat.sections.length > 1
-                        ? cat.sections.flatMap((section) => [
-                            <li class="mobile-nav-accordion__subheading">{section.label}</li>,
-                            ...section.items.map((item) => (
-                              <li data-mobile-nav-item data-mobile-nav-label={item.label.toLowerCase()}>
-                                <a
-                                  class="mobile-nav-accordion__link"
-                                  href={item.link}
-                                  aria-current={item.link === currentPath ? 'page' : undefined}
-                                >
-                                  <NavIcon name={resolveNavIcon(item.link)} />
-                                  <span>{item.label}</span>
-                                </a>
-                              </li>
-                            )),
-                          ])
-                        : cat.items.map((item) => (
-                            <li data-mobile-nav-item data-mobile-nav-label={item.label.toLowerCase()}>
-                              <a
-                                class="mobile-nav-accordion__link"
-                                href={item.link}
-                                aria-current={item.link === currentPath ? 'page' : undefined}
-                              >
-                                <NavIcon name={resolveNavIcon(item.link)} />
-                                <span>{item.label}</span>
-                              </a>
-                            </li>
-                          ))
+                      cat.sections.flatMap((section) => [
+                        ...(showSectionHeadings
+                          ? [<li class="mobile-nav-accordion__subheading">{section.label}</li>]
+                          : []),
+                        ...section.items.map((item) => (
+                          <li data-mobile-nav-item data-mobile-nav-label={item.label.toLowerCase()}>
+                            <a
+                              class="mobile-nav-accordion__link"
+                              href={item.link}
+                              aria-current={item.link === currentPath ? 'page' : undefined}
+                            >
+                              <NavIcon name={resolveNavIcon(item.link)} />
+                              <span>{item.label}</span>
+                            </a>
+                          </li>
+                        )),
+                      ])
                     }
                   </ul>
                 </div>
@@ -143,4 +133,3 @@ const sectionTitle = showGroupLabel && group ? group.label : (category?.label ??
     </section>
   </div>
 </dialog>
-

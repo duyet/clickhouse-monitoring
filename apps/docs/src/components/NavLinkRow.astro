@@ -8,16 +8,8 @@ interface Props {
   icon: NavIconName
   current?: boolean
   compact?: boolean
-  description?: string
 }
-const {
-  href,
-  label,
-  icon,
-  current = false,
-  compact = false,
-  description,
-} = Astro.props
+const { href, label, icon, current = false, compact = false } = Astro.props
 ---
 
 <a
@@ -29,6 +21,5 @@ const {
   <NavIcon name={icon} />
   <span class="nav-row__text">
     <span class="nav-row__label">{label}</span>
-    {description && !compact ? <span class="nav-row__desc">{description}</span> : null}
   </span>
 </a>
