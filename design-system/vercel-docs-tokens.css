@@ -1,7 +1,15 @@
 /* Vercel Docs / Geist design tokens
-   Source: https://vercel.com/docs (extracted 2026-06-15) */
+   Source: https://vercel.com/docs (extracted 2026-06-15)
 
-:root {
+   IMPORTANT: these tokens are SCOPED to `.docs-vercel-theme` (the docs shell
+   root), NOT `:root`. The block below redefines shadcn-reserved variable names
+   (`--accent`, `--primary`, `--border`, …). Defining them at global `:root`
+   leaked the Vercel/Geist values into the whole dashboard — `bg-accent`
+   skeletons and `hover:bg-accent` menus painted near-black (--ds-gray-1000).
+   Keeping them under `.docs-vercel-theme` confines the custom design system to
+   the docs subtree, which is the only place that opts in. */
+
+.docs-vercel-theme {
   --geist-space: 4px;
   --geist-gap: 24px;
   --geist-gap-half: 12px;
@@ -82,7 +90,7 @@
   --layout-max: var(--ds-page-width);
 }
 
-:root[data-theme='dark'] {
+.dark .docs-vercel-theme {
   --ds-background-100: #000000;
   --ds-background-200: #0a0a0a;
   --ds-gray-100: #1a1a1a;
@@ -116,7 +124,7 @@
 }
 
 @media (min-width: 1280px) {
-  :root {
+  .docs-vercel-theme {
     --sidebar-w: 17rem;
   }
 }
