@@ -73,7 +73,7 @@ The next build picks it up automatically, makes `v0.4` the latest, and keeps
 
 The design follows the [Vercel Docs](https://vercel.com/docs) / Geist layout
 (three-column sticky shell, Geist Sans + Mono, `--ds-*` tokens, Pagefind
-search). Tokens live in `design-system/vercel-docs-tokens.css` and are applied
+search). Tokens live in `design-system/docs-tokens.css` and are applied
 via plain CSS — no Tailwind dependency:
 
 - **Tokens & layout** — `src/styles/global.css`, with light + dark themes driven
