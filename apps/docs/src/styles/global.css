@@ -1,87 +1,14 @@
-/* chmonitor docs — xAI docs-inspired design system */
+/* chmonitor docs — Vercel Docs / Geist design system */
 
-/* ── Design tokens ──────────────────────────────────────────────────── */
+@import '../../../../design-system/vercel-docs-tokens.css';
+
 :root {
-  --neutral-50: #fafafa;
-  --neutral-100: #f5f5f5;
-  --neutral-200: #e5e5e5;
-  --neutral-300: #d4d4d4;
-  --neutral-400: #a3a3a3;
-  --neutral-500: #737373;
-  --neutral-600: #525252;
-  --neutral-700: #404040;
-  --neutral-800: #262626;
-  --neutral-900: #171717;
-  --neutral-950: #0a0a0a;
-
-  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system,
-    'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, sfmono-regular, menlo, monaco,
-    consolas, monospace;
-
-  --radius-sm: 0.375rem;
-  --radius: 0.625rem;
-  --radius-lg: 0.75rem;
+  --radius-sm: var(--geist-radius);
+  --radius: 8px;
+  --radius-lg: 10px;
   --radius-pill: 9999px;
-  --radius-nav: 10px;
-
-  --header-h: 4rem;
-  --sidebar-w: 15.5rem;
-  --toc-w: 14rem;
-  --content-max: 46rem;
-  --layout-max: 120rem;
-
-  /* Semantic — light */
-  --bg: var(--neutral-50);
-  --bg-base: #ffffff;
-  --bg-elev: var(--neutral-100);
-  --bg-overlay-hover: rgba(23, 23, 23, 0.04);
-  --bg-header: transparent;
-  --fg: var(--neutral-900);
-  --fg-muted: var(--neutral-500);
-  --fg-subtle: var(--neutral-400);
-  --border: rgba(23, 23, 23, 0.08);
-  --border-strong: var(--neutral-200);
-  --link: var(--neutral-900);
-  --link-hover: var(--neutral-700);
-  --accent: var(--neutral-900);
-  --accent-soft: rgba(23, 23, 23, 0.04);
-  --code-bg: var(--neutral-100);
-  --code-border: var(--neutral-200);
-  --selection: rgba(23, 23, 23, 0.12);
-  --primary: var(--neutral-900);
-  --primary-fg: #ffffff;
-  --shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.12);
-}
-
-:root[data-theme='dark'] {
-  --bg: var(--neutral-950);
-  --bg-base: var(--neutral-950);
-  --bg-elev: var(--neutral-900);
-  --bg-overlay-hover: rgba(255, 255, 255, 0.06);
-  --bg-header: transparent;
-  --fg: var(--neutral-50);
-  --fg-muted: var(--neutral-400);
-  --fg-subtle: var(--neutral-500);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: var(--neutral-800);
-  --link: var(--neutral-50);
-  --link-hover: var(--neutral-200);
-  --accent: var(--neutral-50);
-  --accent-soft: rgba(255, 255, 255, 0.06);
-  --code-bg: var(--neutral-900);
-  --code-border: var(--neutral-800);
-  --selection: rgba(255, 255, 255, 0.16);
-  --primary: var(--neutral-50);
-  --primary-fg: var(--neutral-950);
-  --shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
-}
-
-@media (min-width: 1280px) {
-  :root {
-    --sidebar-w: 18rem;
-    --header-h: 5rem;
-  }
+  --radius-nav: var(--geist-radius);
+  --header-h: var(--header-height);
 }
 
 /* ── Base ───────────────────────────────────────────────────────────── */
@@ -101,12 +28,12 @@ html {
 body {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.65;
+  font-size: 0.875rem;
+  line-height: 1.5715;
   color: var(--fg);
   background: var(--bg);
   font-feature-settings: 'cv11', 'ss01';
-  letter-spacing: -0.011em;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
@@ -150,7 +77,7 @@ img {
   border-radius: var(--radius);
 }
 
-/* ── Header (fixed, gradient fade like docs.x.ai) ───────────────────── */
+/* ── Header (Vercel docs: fixed bar + bottom border) ───────────────── */
 .header {
   position: fixed;
   inset: 0 0 auto;
@@ -162,34 +89,12 @@ img {
   gap: 1rem;
   padding: 0 1rem;
   background: var(--bg-header);
+  box-shadow: var(--header-border);
 }
 @media (min-width: 1024px) {
   .header {
     padding: 0 1.5rem;
   }
-}
-.header::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 8rem;
-  pointer-events: none;
-  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
-  opacity: 0.95;
-}
-@media (min-width: 1024px) {
-  .header::before {
-    height: 6rem;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--bg) 75%, transparent) 0%,
-      transparent 100%
-    );
-  }
-}
-.header > * {
-  position: relative;
-  z-index: 1;
 }
 .header__start {
   display: flex;
@@ -267,6 +172,7 @@ img {
 .header-nav__link.is-active,
 .header-nav__item.is-active .header-nav__trigger {
   color: var(--fg);
+  background: var(--ds-gray-200);
 }
 .header-nav__item {
   position: relative;
@@ -401,8 +307,8 @@ img {
   height: 2.25rem;
   padding: 0 0.75rem 0 1rem;
   border-radius: var(--radius-pill);
-  border: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
-  background: transparent;
+  border: 1px solid var(--ds-gray-300);
+  background: var(--bg-base);
   color: var(--fg-muted);
   font: inherit;
   font-size: 0.875rem;
@@ -586,12 +492,9 @@ details.nav-group[open] > summary.nav-group__label::after {
   opacity: 1;
 }
 .nav-link[aria-current='page'] {
-  background: var(--bg-base);
+  background: var(--ds-gray-200);
   color: var(--fg);
   font-weight: 500;
-}
-:root[data-theme='dark'] .nav-link[aria-current='page'] {
-  background: var(--neutral-800);
 }
 
 /* ── Version switcher ───────────────────────────────────────────────── */
@@ -662,7 +565,7 @@ details.nav-group[open] > summary.nav-group__label::after {
 .toc a:hover,
 .toc a.active {
   color: var(--fg);
-  background: var(--bg-overlay-hover);
+  background: var(--ds-gray-200);
 }
 .toc li[data-depth='3'] a {
   padding-left: 1rem;
@@ -685,24 +588,28 @@ details.nav-group[open] > summary.nav-group__label::after {
   font-weight: 600;
 }
 .content h1 {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 600;
   letter-spacing: -0.03em;
   margin: 0 0 1rem;
+  color: var(--ds-gray-900);
 }
 .content h2 {
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   margin: 2.5rem 0 0.75rem;
   padding-bottom: 0;
   border-bottom: none;
+  color: var(--ds-gray-900);
 }
 .content h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   margin: 2rem 0 0.5rem;
+  color: var(--ds-gray-900);
 }
 .content h4 {
   font-size: 1rem;
   margin: 1.5rem 0 0.5rem;
+  color: var(--ds-gray-900);
 }
 .content p,
 .content li {
@@ -712,13 +619,14 @@ details.nav-group[open] > summary.nav-group__label::after {
   margin: 0.85rem 0;
 }
 .content a {
-  color: var(--fg);
+  color: var(--link);
   text-underline-offset: 0.2em;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--fg) 25%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent);
 }
 .content a:hover {
-  text-decoration-color: var(--fg);
+  color: var(--link-hover);
+  text-decoration-color: var(--link-hover);
 }
 .content ul,
 .content ol {

@@ -1,7 +1,5 @@
 ---
 import navData from '../generated/nav.json'
-import { resolveNavIcon } from '../lib/nav-icons'
-import NavIcon from './NavIcon.astro'
 
 interface Props {
   version: string
@@ -22,7 +20,6 @@ const isActiveGroup = (group: any) => group.items?.some((it: any) => it.link ===
           <div class="nav-group__items">
             {group.items.map((item: any) => (
               <a class="nav-link" href={item.link} aria-current={item.link === current ? 'page' : undefined}>
-                <NavIcon name={resolveNavIcon(item.link)} />
                 <span class="nav-link__label">{item.label}</span>
               </a>
             ))}
@@ -31,7 +28,6 @@ const isActiveGroup = (group: any) => group.items?.some((it: any) => it.link ===
       ) : (
         <div class="nav-group">
           <a class="nav-link" href={group.link} aria-current={group.link === current ? 'page' : undefined}>
-            <NavIcon name={resolveNavIcon(group.link)} />
             <span class="nav-link__label">{group.label}</span>
           </a>
         </div>

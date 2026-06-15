@@ -1,0 +1,173 @@
+@import '@fontsource-variable/geist';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+@import '../../../../../../design-system/vercel-docs-tokens.css';
+
+.docs-vercel-theme {
+  --background: var(--ds-background-200);
+  --foreground: var(--ds-gray-1000);
+  --muted-foreground: var(--ds-gray-900);
+  --border: var(--ds-gray-300);
+  --accent: var(--ds-gray-200);
+  --primary: var(--geist-link-color);
+
+  font-family: var(--font-sans);
+  background: var(--ds-background-200);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-shell__header {
+  border-bottom: 1px solid var(--ds-gray-300);
+  background: var(--ds-background-100);
+}
+
+.docs-vercel-theme .docs-shell__sidebar {
+  border-right: 1px solid var(--ds-gray-300);
+}
+
+.docs-vercel-theme .docs-shell__nav-section {
+  color: var(--ds-gray-1000);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-shell__nav-link {
+  border-radius: var(--geist-radius);
+  color: var(--ds-gray-900);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.docs-vercel-theme .docs-shell__nav-link:hover {
+  background: var(--ds-gray-alpha-100);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-shell__nav-link[data-active='true'] {
+  background: var(--ds-gray-200);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-shell__toc-title {
+  color: var(--ds-gray-1000);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-shell__toc-link {
+  border-radius: var(--geist-radius);
+  color: var(--ds-gray-900);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.docs-vercel-theme .docs-shell__toc-link:hover,
+.docs-vercel-theme .docs-shell__toc-link[data-active='true'] {
+  background: var(--ds-gray-200);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-markdown {
+  font-size: 0.875rem;
+  line-height: 1.5715;
+}
+
+.docs-vercel-theme .docs-markdown h1 {
+  color: var(--ds-gray-900);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.docs-vercel-theme .docs-markdown h2 {
+  border-bottom: none;
+  color: var(--ds-gray-900);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin-top: 2.5rem;
+  padding-bottom: 0;
+}
+
+.docs-vercel-theme .docs-markdown h3 {
+  color: var(--ds-gray-900);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+.docs-vercel-theme .docs-markdown h4 {
+  color: var(--ds-gray-900);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+.docs-vercel-theme .docs-markdown p,
+.docs-vercel-theme .docs-markdown li {
+  color: var(--ds-gray-900);
+}
+
+.docs-vercel-theme .docs-markdown a {
+  color: var(--geist-link-color);
+  text-decoration-color: color-mix(in srgb, var(--geist-link-color) 35%, transparent);
+  text-decoration-line: underline;
+  text-underline-offset: 0.2em;
+}
+
+.docs-vercel-theme .docs-markdown a:hover {
+  color: var(--link-hover);
+  text-decoration-color: var(--link-hover);
+}
+
+.docs-vercel-theme .docs-markdown :not(pre) > code {
+  background: var(--ds-gray-100);
+  border: 1px solid var(--ds-gray-300);
+  border-radius: var(--geist-radius);
+  color: var(--ds-gray-1000);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-weight: 500;
+  padding: 0.12em 0.4em;
+}
+
+.docs-vercel-theme .docs-markdown pre {
+  background: var(--ds-gray-100);
+  border: 1px solid var(--ds-gray-300);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.docs-vercel-theme .docs-markdown table {
+  border: 1px solid var(--ds-gray-300);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  overflow: hidden;
+}
+
+.docs-vercel-theme .docs-markdown th {
+  background: var(--ds-gray-100);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-markdown td,
+.docs-vercel-theme .docs-markdown th {
+  border-color: var(--ds-gray-300);
+}
+
+.dark .docs-vercel-theme {
+  --background: var(--ds-background-200);
+  --foreground: var(--ds-gray-1000);
+  --muted-foreground: var(--ds-gray-900);
+  --border: var(--ds-gray-300);
+  --accent: var(--ds-gray-200);
+}
