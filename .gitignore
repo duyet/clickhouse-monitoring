@@ -28,6 +28,7 @@ apps/dashboard/.next/next.config.compiled.js
 /build
 
 # external tool artifacts
+.extract-design-system/
 .entire/
 logs/
 # ...but `logs/` dirs under the dashboard SOURCE tree are log-monitoring

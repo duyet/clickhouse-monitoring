@@ -71,9 +71,10 @@ The next build picks it up automatically, makes `v0.4` the latest, and keeps
 
 ## Theme & customization
 
-The design (12-column sticky layout, Inter type, gray/blue/green/red token
-palette, shadow scale, `.component-preview`, content typography) is ported from
-astro-design-system and lives in plain CSS — no Tailwind dependency:
+The design follows the [Vercel Docs](https://vercel.com/docs) / Geist layout
+(three-column sticky shell, Geist Sans + Mono, `--ds-*` tokens, Pagefind
+search). Tokens live in `design-system/vercel-docs-tokens.css` and are applied
+via plain CSS — no Tailwind dependency:
 
 - **Tokens & layout** — `src/styles/global.css`, with light + dark themes driven
   by CSS custom properties and a `[data-theme]` attribute.
@@ -82,7 +83,7 @@ astro-design-system and lives in plain CSS — no Tailwind dependency:
 - **Site config** — `src/config.ts` (title, links). Sidebar order/labels are
   curated in `scripts/sync-docs.mjs` (`SECTION_ORDER`, `LABEL_OVERRIDES`).
 - **Logo & favicon** — `src/assets/logo.svg` and `public/favicon.svg`.
-- **Fonts** — Inter + IBM Plex Mono, self-hosted via `@fontsource*`.
+- **Fonts** — Geist Sans + Geist Mono, self-hosted via `@fontsource*`.
 
 ## Deploy
 

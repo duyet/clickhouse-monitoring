@@ -70,6 +70,27 @@ export const getClient = async ({
   return Promise.resolve(pooled.client)
 }
 
+export const releaseClient = ({
+  clientConfig,
+  hostId,
+  web,
+}: {
+  clientConfig?: ClickHouseConfig
+  hostId?: number
+  web?: boolean
+}): void => {
+  const isWeb = web === true || (web === undefined && isCloudflareWorkers())
+  const config = clientConfig
+    ? clientConfig
+    : getAndValidateClientConfig(hostId ?? 0)
+  const poolKey = getPoolKey(config, isWeb)
+  const pooled = clientPool.get(poolKey)
+  if (pooled) {
+    pooled.inUse = Math.max(0, pooled.inUse - 1)
+    pooled.lastUsed = Date.now()
+  }
+}
+
 // Re-export connection pool stats
 export { getConnectionPoolStats, isCloudflareWorkers }
 

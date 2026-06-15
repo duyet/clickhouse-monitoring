@@ -24,20 +24,16 @@ export type DocsPage = {
   headings: DocsHeading[]
 }
 
+/** Sidebar groups — aligned with docs.chmonitor.dev nav.json. */
 export const docsNav: DocsNavSection[] = [
   {
-    title: 'chmonitor',
-    items: [
-      { title: 'Introduction', slug: '' },
-      { title: 'Features', slug: 'features' },
-      { title: 'FAQ', slug: 'faq' },
-    ],
+    title: 'Introduction',
+    items: [{ title: 'Introduction', slug: '' }],
   },
   {
     title: 'Getting Started',
     items: [
-      { title: 'Getting Started', slug: 'getting-started' },
-      { title: 'Local Development', slug: 'getting-started/local' },
+      { title: 'Overview', slug: 'getting-started' },
       {
         title: 'ClickHouse User & Grants',
         slug: 'getting-started/clickhouse-requirements',
@@ -46,121 +42,142 @@ export const docsNav: DocsNavSection[] = [
         title: 'Enable System Tables',
         slug: 'getting-started/clickhouse-enable-system-tables',
       },
+      { title: 'Local Development', slug: 'getting-started/local' },
     ],
   },
   {
-    // Each platform page is self-contained: install + every config category +
-    // auth + migration notes for that platform.
-    title: 'Install & Configure',
+    title: 'Deployment',
     items: [
-      { title: 'Choosing a Platform', slug: 'deploy' },
+      { title: 'Overview', slug: 'deploy' },
+      { title: 'Cloudflare Workers', slug: 'deploy/cloudflare' },
       { title: 'Docker', slug: 'deploy/docker' },
       { title: 'Kubernetes', slug: 'deploy/k8s' },
-      { title: 'Cloudflare Workers', slug: 'deploy/cloudflare' },
-      { title: 'Vercel', slug: 'deploy/vercel' },
-      { title: 'Self-Host (Node)', slug: 'deploy/self-host' },
       { title: 'Production Checklist', slug: 'deploy/production-checklist' },
+      { title: 'Self-host (Node / standalone)', slug: 'deploy/self-host' },
+      { title: 'Vercel', slug: 'deploy/vercel' },
     ],
   },
   {
-    // One page per supported auth method, plus an overview.
-    title: 'Authentication',
+    title: 'Features',
     items: [
-      { title: 'Overview', slug: 'authentication' },
-      { title: 'Public (no auth)', slug: 'authentication/public' },
-      { title: 'API Keys', slug: 'authentication/api-keys' },
-      { title: 'Clerk', slug: 'authentication/clerk' },
-      {
-        title: 'Cloudflare Access',
-        slug: 'authentication/cloudflare-access',
-      },
-      {
-        title: 'Trusted Header Proxy',
-        slug: 'authentication/trusted-header',
-      },
-    ],
-  },
-  {
-    // One templated page per feature group: what it does, permission, system
-    // tables, grants.
-    title: 'Feature Guides',
-    items: [
-      { title: 'Overview', slug: 'features/overview' },
-      { title: 'Query Monitoring', slug: 'features/queries' },
-      { title: 'Tables & Storage', slug: 'features/tables' },
-      { title: 'Data Explorer', slug: 'features/explorer' },
-      { title: 'Merges & Operations', slug: 'features/operations' },
-      { title: 'Clusters & Replication', slug: 'features/cluster' },
-      { title: 'Metrics & Profiler', slug: 'features/metrics' },
-      { title: 'Insights', slug: 'features/insights' },
-      { title: 'Health & Alerting', slug: 'features/health' },
-      { title: 'Security & Audit', slug: 'features/security' },
-      { title: 'Logs', slug: 'features/logs' },
-      { title: 'Settings', slug: 'features/settings' },
+      { title: 'Overview', slug: 'features' },
+      { title: 'Browser Connections', slug: 'features/browser-connections' },
+      { title: 'Cluster', slug: 'features/cluster' },
       { title: 'Dashboard', slug: 'features/dashboard' },
+      { title: 'Data Explorer', slug: 'features/explorer' },
+      { title: 'Health', slug: 'features/health' },
+      { title: 'Insights', slug: 'features/insights' },
+      { title: 'Logs', slug: 'features/logs' },
       { title: 'MCP Server', slug: 'features/mcp' },
+      { title: 'Metrics', slug: 'features/metrics' },
+      { title: 'Operations', slug: 'features/operations' },
+      { title: 'Overview', slug: 'features/overview' },
       { title: 'PeerDB', slug: 'features/peerdb' },
+      { title: 'Queries', slug: 'features/queries' },
+      { title: 'Security', slug: 'features/security' },
+      { title: 'Settings', slug: 'features/settings' },
+      { title: 'Tables', slug: 'features/tables' },
+    ],
+  },
+  {
+    title: 'Advanced',
+    items: [
       {
-        title: 'Browser Connections',
-        slug: 'features/browser-connections',
+        title: 'Agent Conversation Storage',
+        slug: 'advanced/agent-conversation-storage',
       },
+      { title: 'Custom Name', slug: 'advanced/custom-name' },
+      { title: 'Feature Permissions', slug: 'advanced/feature-permissions' },
+      { title: 'Multiple Hosts', slug: 'advanced/multiple-hosts' },
+      { title: 'PeerDB Monitoring', slug: 'advanced/peerdb-monitoring' },
+      { title: 'Query History', slug: 'advanced/queries-history' },
+      { title: 'Self-Tracking', slug: 'advanced/self-tracking' },
+    ],
+  },
+  {
+    title: 'Reference',
+    items: [
+      { title: 'Configuration', slug: 'reference/configuration' },
       {
-        title: 'User Connections',
-        slug: 'features/user-connections',
+        title: 'Environment Variables',
+        slug: 'reference/environment-variables',
       },
+      { title: 'MCP Server', slug: 'reference/mcp-server' },
     ],
   },
   {
     title: 'AI Agent',
     items: [
       { title: 'Overview', slug: 'ai-agent' },
-      { title: 'Configuration', slug: 'ai-agent/configuration' },
-      { title: 'Capabilities', slug: 'ai-agent/capabilities' },
+      { title: 'Agent capabilities', slug: 'ai-agent/capabilities' },
+      { title: 'Configure the AI Agent', slug: 'ai-agent/configuration' },
+      { title: 'Conversation history', slug: 'ai-agent/conversation-history' },
       {
-        title: 'Conversation History',
-        slug: 'ai-agent/conversation-history',
-      },
-      {
-        title: 'Conversation Backends',
+        title: 'Conversation store backends',
         slug: 'ai-agent/conversation-history/backends',
       },
     ],
   },
   {
-    title: 'Configuration',
+    title: 'Authentication',
     items: [
-      { title: 'Configuration Overview', slug: 'reference/configuration' },
+      { title: 'Overview', slug: 'authentication' },
+      { title: 'API keys (chm_ Bearer)', slug: 'authentication/api-keys' },
+      { title: 'Clerk', slug: 'authentication/clerk' },
+      { title: 'Public (no auth)', slug: 'authentication/public' },
       {
-        title: 'Environment Variables',
-        slug: 'reference/environment-variables',
+        title: 'Reverse proxy: Cloudflare Access',
+        slug: 'authentication/cloudflare-access',
       },
-      { title: 'Feature Permissions', slug: 'advanced/feature-permissions' },
-      { title: 'Multiple Hosts', slug: 'advanced/multiple-hosts' },
-      { title: 'Custom Host Name', slug: 'advanced/custom-name' },
-      { title: 'Queries History', slug: 'advanced/queries-history' },
-      { title: 'Self-Tracking', slug: 'advanced/self-tracking' },
-      { title: 'PeerDB Setup', slug: 'advanced/peerdb-monitoring' },
-      { title: 'Settings (in-app)', slug: 'settings' },
+      {
+        title: 'Reverse proxy: trusted header',
+        slug: 'authentication/trusted-header',
+      },
     ],
   },
   {
-    title: 'Reference',
-    items: [{ title: 'MCP Server', slug: 'reference/mcp-server' }],
-  },
-  {
-    // One "Migrate to vX.Y" page per breaking release, newest first.
     title: 'Migrating',
     items: [{ title: 'Migrate to v0.3', slug: 'migrating/v0-3' }],
   },
   {
-    // One "What's New in vX.Y" page per release, newest first.
     title: 'Releases',
-    items: [{ title: "What's New in v0.3", slug: 'releases/v0-3' }],
+    items: [{ title: "v0.3 — What's New", slug: 'releases/v0-3' }],
+  },
+  {
+    title: 'More',
+    items: [
+      { title: 'FAQ', slug: 'faq' },
+      { title: 'Settings', slug: 'settings' },
+    ],
   },
 ]
 
+export function findActiveDocsSection(slug: string): DocsNavSection | null {
+  const normalizedSlug = normalizeSlug(slug)
+
+  for (const section of docsNav) {
+    if (section.items.some((item) => item.slug === normalizedSlug)) {
+      return section
+    }
+  }
+
+  return docsNav[0] ?? null
+}
+
 export function docsHref(slug: string) {
   return slug ? `/docs/${slug}` : '/docs'
+}
+
+export function resolveDocsBreadcrumb(slug: string, pageTitle: string) {
+  const normalizedSlug = normalizeSlug(slug)
+  const section = findActiveDocsSection(normalizedSlug)
+  const item = section?.items.find((entry) => entry.slug === normalizedSlug)
+
+  if (section && item) {
+    return `${section.title} / ${item.title}`
+  }
+
+  return pageTitle
 }
 
 export function getDocsPage(slug: string): DocsPage | null {

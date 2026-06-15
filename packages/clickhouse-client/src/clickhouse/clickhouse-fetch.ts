@@ -15,7 +15,7 @@ import {
 } from '../clickhouse-version'
 import { validateTableExistence } from '../table-validator'
 import { transformClickHouseJsonEachRowWasmJson } from '../wasm/monitor-core'
-import { getClient } from './clickhouse-client'
+import { getClient, releaseClient } from './clickhouse-client'
 import { getClickHouseConfigs } from './clickhouse-config'
 import { QUERY_COMMENT } from './constants'
 import { debug, error, warn } from '@chm/logger'
@@ -198,71 +198,70 @@ export const fetchData = async <
       clientConfig,
     })
 
-    // Select version-appropriate query
-    let effectiveQuery = query
-    // Only fetch version when needed (prevents infinite recursion since
-    // getClickHouseVersion itself calls fetchData without queryConfig)
-    let clickhouseVersion: Awaited<ReturnType<typeof getClickHouseVersion>> =
-      null
+    try {
+      // Select version-appropriate query
+      let effectiveQuery = query
+      // Only fetch version when needed (prevents infinite recursion since
+      // getClickHouseVersion itself calls fetchData without queryConfig)
+      let clickhouseVersion: Awaited<ReturnType<typeof getClickHouseVersion>> =
+        null
 
-    if (queryConfig) {
-      // Get ClickHouse version for query selection
-      clickhouseVersion = await getClickHouseVersion(currentHostId)
+      if (queryConfig) {
+        // Get ClickHouse version for query selection
+        clickhouseVersion = await getClickHouseVersion(currentHostId)
 
-      // New format: sql is an array of VersionedSql
-      if (Array.isArray(queryConfig.sql)) {
-        effectiveQuery = selectVersionedSql(queryConfig.sql, clickhouseVersion)
+        // New format: sql is an array of VersionedSql
+        if (Array.isArray(queryConfig.sql)) {
+          effectiveQuery = selectVersionedSql(
+            queryConfig.sql,
+            clickhouseVersion
+          )
 
-        debug(
-          `[fetchData] Version selection for ${queryConfig.name}: ` +
-            `detected=${clickhouseVersion?.raw ?? 'null'}, ` +
-            `selected=${effectiveQuery.substring(0, 60).replace(/\s+/g, ' ')}...`
-        )
-      }
-      // Simple string sql
-      else if (typeof queryConfig.sql === 'string') {
-        effectiveQuery = queryConfig.sql
-      }
-
-      // Deprecated: old variants format (backward compatibility)
-      if (queryConfig.variants && queryConfig.variants.length > 0) {
-        effectiveQuery = selectQueryVariantSemver(
-          {
-            query: typeof queryConfig.sql === 'string' ? queryConfig.sql : '',
-            variants: queryConfig.variants.map((v) => ({
-              versions: v.versions,
-              query: v.sql,
-            })),
-          },
-          clickhouseVersion
-        )
-
-        if (clickhouseVersion) {
           debug(
-            `[fetchData] Using query for ClickHouse ${clickhouseVersion.raw} via variants (config: ${queryConfig.name})`
+            `[fetchData] Version selection for ${queryConfig.name}: ` +
+              `detected=${clickhouseVersion?.raw ?? 'null'}, ` +
+              `selected=${effectiveQuery.substring(0, 60).replace(/\s+/g, ' ')}...`
           )
         }
+        // Simple string sql
+        else if (typeof queryConfig.sql === 'string') {
+          effectiveQuery = queryConfig.sql
+        }
+
+        // Deprecated: old variants format (backward compatibility)
+        if (queryConfig.variants && queryConfig.variants.length > 0) {
+          effectiveQuery = selectQueryVariantSemver(
+            {
+              query: typeof queryConfig.sql === 'string' ? queryConfig.sql : '',
+              variants: queryConfig.variants.map((v) => ({
+                versions: v.versions,
+                query: v.sql,
+              })),
+            },
+            clickhouseVersion
+          )
+
+          if (clickhouseVersion) {
+            debug(
+              `[fetchData] Using query for ClickHouse ${clickhouseVersion.raw} via variants (config: ${queryConfig.name})`
+            )
+          }
+        }
       }
-    }
 
-    const resultSet = await client.query({
-      query: QUERY_COMMENT + effectiveQuery,
-      format,
-      query_params,
-      clickhouse_settings,
-    })
+      const resultSet = await client.query({
+        query: QUERY_COMMENT + effectiveQuery,
+        format,
+        query_params,
+        clickhouse_settings,
+      })
 
-    const query_id = resultSet.query_id
+      const query_id = resultSet.query_id
 
-    // Use the client's json() method which handles format-specific parsing
-    const data = (await resultSet.json()) as T
+      // Use the client's json() method which handles format-specific parsing
+      const data = (await resultSet.json()) as T
 
-    // For debugging: serialize the parsed data to see what we got (only when in development or debug mode)
-    const isDebug =
-      typeof process !== 'undefined' &&
-      (process.env?.NODE_ENV === 'development' || process.env?.DEBUG === 'true')
-
-    if (isDebug) {
+      // For debugging: serialize the parsed data to see what we got
       const rawText = JSON.stringify(data)
       debug(`[fetchData] ClickHouse response (${query_id}):`, {
         dataType: typeof data,
@@ -270,74 +269,76 @@ export const fetchData = async <
         length: Array.isArray(data) ? data.length : 'N/A',
         preview: rawText.substring(0, 500),
       })
-    }
 
-    const end = new Date()
-    const duration = (end.getTime() - start.getTime()) / 1000
-    let rows: number = 0
+      const end = new Date()
+      const duration = (end.getTime() - start.getTime()) / 1000
+      let rows: number = 0
 
-    debug(
-      `--> Query (${query_id}, host: ${clientConfig.host}):`,
-      effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
-    )
+      debug(
+        `--> Query (${query_id}, host: ${clientConfig.host}):`,
+        effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+      )
 
-    if (data === null) {
-      rows = -1
-    } else if (Array.isArray(data)) {
-      rows = data.length
-    } else if (
-      typeof data === 'object' &&
-      Object.hasOwn(data, 'rows') &&
-      Object.hasOwn(data, 'statistics')
-    ) {
-      rows = data.rows as number
-    } else if (typeof data === 'object' && Object.hasOwn(data, 'rows')) {
-      rows = data.rows as number
-    }
-
-    debug(`<-- Response (${query_id}):`, { rows, duration, unit: 's' })
-
-    const metadata: Record<string, string | number> = {
-      queryId: query_id,
-      duration,
-      rows,
-      host: clientConfig.host,
-      // Include detected ClickHouse version
-      clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
-      // Include the actual SQL that was executed (normalized for readability)
-      sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
-    }
-
-    let cachedRawText: string | undefined
-    const getRawText = () => {
-      if (cachedRawText === undefined) {
-        cachedRawText = JSON.stringify(data)
+      if (data === null) {
+        rows = -1
+      } else if (Array.isArray(data)) {
+        rows = data.length
+      } else if (
+        typeof data === 'object' &&
+        Object.hasOwn(data, 'rows') &&
+        Object.hasOwn(data, 'statistics')
+      ) {
+        rows = data.rows as number
+      } else if (typeof data === 'object' && Object.hasOwn(data, 'rows')) {
+        rows = data.rows as number
       }
-      return cachedRawText
+
+      debug(`<-- Response (${query_id}):`, { rows, duration, unit: 's' })
+
+      const metadata: Record<string, string | number> = {
+        queryId: query_id,
+        duration,
+        rows,
+        host: clientConfig.host,
+        // Include detected ClickHouse version
+        clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
+        // Include the actual SQL that was executed (normalized for readability)
+        sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
+      }
+
+      let cachedRawText: string | undefined
+      const getRawText = () => {
+        if (cachedRawText === undefined) {
+          cachedRawText = JSON.stringify(data)
+        }
+        return cachedRawText
+      }
+
+      // Include raw response for debugging (lazily evaluated to avoid performance overhead)
+      Object.defineProperties(metadata, {
+        rawResponseLength: {
+          get() {
+            return getRawText().length
+          },
+          enumerable: true,
+          configurable: true,
+        },
+        rawResponsePreview: {
+          get() {
+            const rawText = getRawText()
+            return rawText.length <= 500
+              ? rawText
+              : `${rawText.substring(0, 500)}...`
+          },
+          enumerable: true,
+          configurable: true,
+        },
+      })
+
+      return { data, metadata }
+    } finally {
+      releaseClient({ clientConfig })
     }
-
-    // Include raw response for debugging (lazily evaluated to avoid performance overhead)
-    Object.defineProperties(metadata, {
-      rawResponseLength: {
-        get() {
-          return getRawText().length
-        },
-        enumerable: true,
-        configurable: true,
-      },
-      rawResponsePreview: {
-        get() {
-          const rawText = getRawText()
-          return rawText.length <= 500
-            ? rawText
-            : `${rawText.substring(0, 500)}...`
-        },
-        enumerable: true,
-        configurable: true,
-      },
-    })
-
-    return { data, metadata }
   } catch (originalError) {
     const errorMessage =
       originalError instanceof Error
@@ -567,38 +568,42 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
       clientConfig,
     })
 
-    const resultSet = await client.query({
-      query: QUERY_COMMENT + query,
-      format: 'JSONEachRow',
-      query_params,
-      clickhouse_settings,
-    })
+    try {
+      const resultSet = await client.query({
+        query: QUERY_COMMENT + query,
+        format: 'JSONEachRow',
+        query_params,
+        clickhouse_settings,
+      })
 
-    const queryId = resultSet.query_id
-    const rawText = await resultSet.text()
-    const dataJson = await transformClickHouseJsonEachRowWasmJson(rawText)
-    const duration = (Date.now() - start.getTime()) / 1000
-    const rows = countJsonEachRowRows(rawText)
+      const queryId = resultSet.query_id
+      const rawText = await resultSet.text()
+      const dataJson = await transformClickHouseJsonEachRowWasmJson(rawText)
+      const duration = (Date.now() - start.getTime()) / 1000
+      const rows = countJsonEachRowRows(rawText)
 
-    debug(
-      `--> Query (${queryId}, host: ${clientConfig.host}):`,
-      query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
-    )
-    debug(`<-- Response (${queryId}):`, { rows, duration, unit: 's' })
+      debug(
+        `--> Query (${queryId}, host: ${clientConfig.host}):`,
+        query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+      )
+      debug(`<-- Response (${queryId}):`, { rows, duration, unit: 's' })
 
-    return {
-      data: null,
-      dataJson,
-      metadata: {
-        queryId,
-        duration,
-        rows,
-        host: clientConfig.host,
-        sql: query.replace(/\s+/g, ' ').trim(),
-        rawResponseLength: rawText.length,
-        rawResponsePreview:
-          rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,
-      },
+      return {
+        data: null,
+        dataJson,
+        metadata: {
+          queryId,
+          duration,
+          rows,
+          host: clientConfig.host,
+          sql: query.replace(/\s+/g, ' ').trim(),
+          rawResponseLength: rawText.length,
+          rawResponsePreview:
+            rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,
+        },
+      }
+    } finally {
+      releaseClient({ clientConfig })
     }
   } catch (originalError) {
     const errorMessage =
@@ -746,11 +751,64 @@ export const query = async (
     web: false,
     clickhouseSettings: {},
   })
-  const resultSet = await client.query({
-    query: QUERY_COMMENT + query,
-    format,
-    query_params: params,
-  })
+  try {
+    const resultSet = await client.query({
+      query: QUERY_COMMENT + query,
+      format,
+      query_params: params,
+    })
 
-  return resultSet
+    let released = false
+    const releaseOnce = () => {
+      if (!released) {
+        released = true
+        releaseClient({ web: false })
+      }
+    }
+
+    // Intercept data consumption methods to release client after stream is consumed
+    const rs = resultSet as any
+    const originalJson = rs.json
+    const originalText = rs.text
+    const originalStream = rs.stream
+
+    if (typeof originalJson === 'function') {
+      rs.json = async function (this: any, ...args: any[]) {
+        try {
+          return await originalJson.apply(this, args)
+        } finally {
+          releaseOnce()
+        }
+      }
+    }
+
+    if (typeof originalText === 'function') {
+      rs.text = async function (this: any, ...args: any[]) {
+        try {
+          return await originalText.apply(this, args)
+        } finally {
+          releaseOnce()
+        }
+      }
+    }
+
+    if (typeof originalStream === 'function') {
+      rs.stream = function (this: any, ...args: any[]) {
+        const stream = originalStream.apply(this, args)
+        if (stream && typeof stream === 'object') {
+          if (typeof stream.on === 'function') {
+            stream.on('end', () => releaseOnce())
+            stream.on('close', () => releaseOnce())
+            stream.on('error', () => releaseOnce())
+          }
+        }
+        return stream
+      }
+    }
+
+    return resultSet
+  } catch (err) {
+    releaseClient({ web: false })
+    throw err
+  }
 }

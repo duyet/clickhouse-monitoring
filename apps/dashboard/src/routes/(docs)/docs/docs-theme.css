@@ -1,0 +1,305 @@
+@import '@fontsource-variable/geist';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+@import '../../../../../../design-system/vercel-docs-tokens.css';
+
+.docs-vercel-theme {
+  --background: var(--ds-background-100);
+  --foreground: var(--geist-foreground);
+  --muted-foreground: var(--ds-gray-900);
+  --border: var(--ds-gray-300);
+  --accent: var(--ds-gray-200);
+  --primary: var(--geist-link-color);
+
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--ds-background-100);
+  color: var(--geist-foreground);
+}
+
+.docs-vercel-theme .docs-shell__header {
+  border-bottom: 1px solid var(--ds-gray-300);
+  background: var(--ds-background-100);
+}
+
+.docs-vercel-theme .docs-shell__sidebar {
+  border-right: 1px solid var(--ds-gray-300);
+}
+
+.docs-vercel-theme .docs-shell__nav-section {
+  color: var(--ds-gray-1000);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-shell__nav-link {
+  border-radius: var(--geist-radius);
+  color: var(--ds-gray-900);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.docs-vercel-theme .docs-shell__nav-link:hover {
+  background: var(--ds-gray-alpha-100);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-shell__nav-link[data-active='true'] {
+  background: var(--ds-gray-200);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-shell__toc-title {
+  color: var(--ds-gray-1000);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-shell__toc-link {
+  border-radius: var(--geist-radius);
+  color: var(--ds-gray-900);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.docs-vercel-theme .docs-shell__toc-link:hover,
+.docs-vercel-theme .docs-shell__toc-link[data-active='true'] {
+  background: var(--ds-gray-200);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-markdown {
+  font-kerning: normal;
+  font-size: 1rem;
+  font-variant-ligatures: common-ligatures contextual;
+  line-height: 1.5;
+}
+
+.docs-vercel-theme .docs-markdown h1 {
+  color: var(--geist-foreground);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+@media (max-width: 820px) {
+  .docs-vercel-theme .docs-markdown h1 {
+    font-size: 2rem;
+  }
+}
+
+.docs-vercel-theme .docs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  position: sticky;
+  top: calc(3.5rem + 3.25rem);
+  z-index: 20;
+  height: var(--docs-toolbar-height);
+  margin: 0 -1rem 0;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--ds-gray-300);
+  background: var(--ds-background-100);
+  isolation: isolate;
+}
+
+@media (min-width: 1024px) {
+  .docs-vercel-theme .docs-toolbar {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .docs-vercel-theme .docs-markdown h1 {
+    display: none;
+  }
+}
+
+.docs-vercel-theme .docs-toolbar__menu {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--geist-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--geist-radius);
+  text-align: left;
+}
+
+.docs-vercel-theme .docs-toolbar__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.docs-vercel-theme .docs-toolbar__toc {
+  flex-shrink: 0;
+}
+
+.docs-vercel-theme .docs-toolbar__menu:hover {
+  background: var(--ds-gray-alpha-100);
+}
+
+.docs-vercel-theme .docs-toolbar__toc {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--ds-gray-300);
+  border-radius: 9999px;
+  background: var(--ds-background-100);
+  color: var(--geist-foreground);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.docs-vercel-theme .docs-toolbar__toc:hover {
+  background: var(--ds-gray-alpha-100);
+}
+
+.docs-vercel-theme .docs-mobile-panel {
+  margin-bottom: 1rem;
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
+  border: 1px solid var(--ds-gray-300);
+  border-radius: var(--geist-radius);
+  background: var(--ds-background-100);
+  padding: 0.75rem;
+}
+
+.docs-vercel-theme .docs-markdown h2 {
+  border-bottom: none;
+  color: var(--geist-foreground);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin-top: 2.5rem;
+  padding-bottom: 0;
+}
+
+.docs-vercel-theme .docs-markdown h3 {
+  color: var(--geist-foreground);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+.docs-vercel-theme .docs-markdown h4 {
+  color: var(--geist-foreground);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+
+.docs-vercel-theme .docs-markdown > p {
+  margin-top: 1.25em;
+  margin-bottom: 0;
+  color: var(--geist-foreground);
+  font-size: 1rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.docs-vercel-theme .docs-markdown > p:first-child {
+  margin-top: 0;
+}
+
+.docs-vercel-theme .docs-markdown > h1 + p {
+  margin-top: 1.25em;
+  padding: 1rem 1.25rem;
+  border-radius: var(--geist-radius);
+  background: var(--ds-blue-100);
+}
+
+.docs-vercel-theme .docs-markdown > h2 + p,
+.docs-vercel-theme .docs-markdown > h3 + p,
+.docs-vercel-theme .docs-markdown > h4 + p {
+  margin-top: 0.75em;
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, blockquote) {
+  color: var(--geist-foreground);
+  line-height: 1.7;
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--ds-gray-alpha-600);
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a:hover,
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.docs-vercel-theme .docs-markdown :not(pre) > code {
+  background: var(--ds-gray-100);
+  border: 1px solid var(--ds-gray-300);
+  border-radius: var(--geist-radius);
+  color: var(--geist-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  font-weight: 500;
+  padding: 0.1em 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.docs-vercel-theme .docs-markdown pre {
+  background: var(--ds-gray-100);
+  border: 1px solid var(--ds-gray-300);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.docs-vercel-theme .docs-markdown table {
+  border: 1px solid var(--ds-gray-300);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  overflow: hidden;
+}
+
+.docs-vercel-theme .docs-markdown th {
+  background: var(--ds-gray-100);
+  color: var(--ds-gray-1000);
+}
+
+.docs-vercel-theme .docs-markdown td,
+.docs-vercel-theme .docs-markdown th {
+  border-color: var(--ds-gray-300);
+}
+
+.dark .docs-vercel-theme {
+  --background: var(--ds-background-200);
+  --foreground: var(--ds-gray-1000);
+  --muted-foreground: var(--ds-gray-900);
+  --border: var(--ds-gray-300);
+  --accent: var(--ds-gray-200);
+}

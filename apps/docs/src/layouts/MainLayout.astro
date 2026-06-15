@@ -1,9 +1,10 @@
 ---
-import '@fontsource-variable/inter'
-import '@fontsource/jetbrains-mono/400.css'
-import '@fontsource/jetbrains-mono/500.css'
+import '@fontsource-variable/geist'
+import '@fontsource/geist-mono/400.css'
+import '@fontsource/geist-mono/500.css'
 import '../styles/global.css'
 import { SITE } from '../config'
+import DocsMobileToolbar from '../components/DocsMobileToolbar.astro'
 import Header from '../components/Header.astro'
 import Sidebar from '../components/Sidebar.astro'
 import TableOfContents from '../components/TableOfContents.astro'
@@ -65,6 +66,7 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
         (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
       document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
       const desktop = window.matchMedia('(min-width: 1024px)').matches
+      const subnav = window.matchMedia('(min-width: 768px)').matches
       if (desktop) {
         document.documentElement.setAttribute(
           'data-sidebar',
@@ -73,6 +75,7 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
       } else {
         document.documentElement.setAttribute('data-sidebar', 'collapsed')
       }
+      document.documentElement.setAttribute('data-header-compact', subnav ? 'false' : 'true')
     </script>
   </head>
   <body>
@@ -81,7 +84,13 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
     <div class="layout">
       <Sidebar version={version} currentSlug={currentSlug} />
       <main class="main">
-        <article id="article" class="content">
+        <DocsMobileToolbar
+          title={title}
+          version={version}
+          currentSlug={currentSlug}
+          headings={headings}
+        />
+        <article id="article" class="content" data-docs-prose>
           <slot />
         </article>
         {
