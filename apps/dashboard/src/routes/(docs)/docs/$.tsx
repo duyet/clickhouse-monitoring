@@ -17,7 +17,7 @@ function DocsPage() {
 
   if (!page) {
     return (
-      <div className="docs-vercel-theme flex min-h-dvh flex-col items-center justify-center px-4 text-center">
+      <div className="docs-theme flex min-h-dvh flex-col items-center justify-center px-4 text-center">
         <h1 className="font-semibold text-2xl text-[var(--ds-gray-1000)]">
           Page not found
         </h1>
