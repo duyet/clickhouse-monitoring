@@ -104,6 +104,10 @@ export const docsNav: DocsNavSection[] = [
         title: 'Browser Connections',
         slug: 'features/browser-connections',
       },
+      {
+        title: 'User Connections',
+        slug: 'features/user-connections',
+      },
     ],
   },
   {

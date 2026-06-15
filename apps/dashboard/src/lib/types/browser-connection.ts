@@ -11,3 +11,9 @@ export interface BrowserConnection {
 
 export const BROWSER_CONNECTIONS_STORAGE_KEY =
   'clickhouse-monitor-browser-connections'
+
+/** Encrypted storage envelope (version 2). */
+export interface EncryptedBrowserConnectionsStore {
+  version: 2
+  encrypted: string
+}

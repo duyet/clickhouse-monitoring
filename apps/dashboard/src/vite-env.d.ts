@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_PROVIDER?: string
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string
   readonly VITE_FEATURE_CONVERSATION_DB?: string
+  readonly VITE_FEATURE_USER_CONNECTIONS_DB?: string
   readonly VITE_AUTOCOMPLETE_LIMIT?: string
   readonly VITE_RUNNING_QUERIES_REFRESH_MS?: string
   // Build metadata (injected by vite.config define / CI build step)

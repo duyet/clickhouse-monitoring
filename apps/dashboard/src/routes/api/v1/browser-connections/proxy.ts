@@ -28,6 +28,7 @@ import {
   createHostValidationFetch,
   validateHostUrl,
 } from '@/lib/browser-connections/host-url'
+import { resolveProxyCredentials } from '@/lib/connection-query/resolve-credentials'
 
 const ROUTE_CONTEXT = {
   route: '/api/v1/browser-connections/proxy',
@@ -41,7 +42,8 @@ interface ProxyConnection {
 }
 
 interface ProxyRequest {
-  connection: ProxyConnection
+  connection?: ProxyConnection
+  sessionToken?: string
   query: string
   query_params?: Record<string, string | number | boolean>
   format?: string
@@ -58,16 +60,27 @@ async function handlePost(request: Request): Promise<Response> {
     )
   }
 
-  const { connection, query, query_params, format = 'JSONEachRow' } = body
+  const {
+    connection,
+    sessionToken,
+    query,
+    query_params,
+    format = 'JSONEachRow',
+  } = body
 
-  if (!connection || typeof connection !== 'object') {
+  const resolved = await resolveProxyCredentials(
+    { connection, sessionToken },
+    null
+  )
+
+  if (!resolved) {
     return createValidationError(
-      'Missing required field: connection',
+      'Missing required field: connection or sessionToken',
       ROUTE_CONTEXT
     )
   }
 
-  const { host, user, password } = connection
+  const { host, user, password } = resolved
 
   if (!host || typeof host !== 'string') {
     return createValidationError(

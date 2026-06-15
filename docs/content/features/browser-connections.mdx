@@ -15,7 +15,7 @@
 
 chmonitor normally connects to ClickHouse using the server-side `CLICKHOUSE_HOST`, `CLICKHOUSE_USER`, and `CLICKHOUSE_PASSWORD` environment variables. Browser Connections lets individual users add extra ClickHouse hosts directly in their browser, without changing server config.
 
-When a user adds a connection, the credentials are stored in **browser localStorage**. When they query, chmonitor proxies the request server-side using the stored credentials — the browser never opens a direct connection to ClickHouse.
+When a user adds a connection, the credentials are stored in **encrypted browser localStorage** (AES-256-GCM with a device-bound key). When they query, chmonitor creates a short-lived **session token** server-side; subsequent chart/table requests use the token instead of sending the password on every request. All queries still proxy through the chmonitor server — the browser never opens a direct connection to ClickHouse.
 
 This is useful for:
 
@@ -48,7 +48,8 @@ Server-configured hosts appear for all users without any browser setup.
 
 ## Notes & limitations
 
-- **Credentials are stored in browser localStorage in plaintext.** Do not use this feature with credentials that provide write access to production data on shared or untrusted devices.
+- **Credentials are encrypted in browser localStorage**, but XSS on the dashboard could still expose decrypted values in memory. Do not use write-capable production credentials on shared or untrusted devices.
+- **Session tokens** expire after 15 minutes; the client refreshes them automatically when needed.
 - Browser connections are per-browser, per-device. They are not shared across users or synchronized.
 - All queries still go through the chmonitor server proxy — the browser never connects directly to ClickHouse. The chmonitor server must have network access to the target ClickHouse host.
 - For team or multi-user deployments, prefer server-side `CLICKHOUSE_HOST`/`CLICKHOUSE_USER`/`CLICKHOUSE_PASSWORD` configuration so all users share the same host list.

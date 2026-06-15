@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 
 import { useEffect, useState } from 'react'
+import { USER_CONNECTIONS_QUERY_PREFIX } from '@/lib/hooks/use-user-connections'
 
 interface QueryProviderProps {
   children: React.ReactNode
@@ -128,7 +129,14 @@ export function QueryProvider({ children }: QueryProviderProps) {
           // Only persist queries that actually succeeded — never cache a
           // pending/errored state to disk (it would rehydrate as a stuck
           // loading or error on next load).
-          shouldDehydrateQuery: (query) => query.state.status === 'success',
+          shouldDehydrateQuery: (query) => {
+            if (query.state.status !== 'success') return false
+            // Never persist per-user server connections — would leak across accounts.
+            if (query.queryKey[0] === USER_CONNECTIONS_QUERY_PREFIX) {
+              return false
+            }
+            return true
+          },
         },
       }}
     >
