@@ -17,7 +17,6 @@ const { href, label, icon, current = false, compact = false } = Astro.props
   href={href}
   aria-current={current ? 'page' : undefined}
 >
-  <span class="nav-row__indicator" aria-hidden="true"></span>
   <NavIcon name={icon} />
   <span class="nav-row__text">
     <span class="nav-row__label">{label}</span>
