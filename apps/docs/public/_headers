@@ -1,0 +1,29 @@
+# Cloudflare Workers static-asset response headers.
+# https://developers.cloudflare.com/workers/static-assets/headers/
+#
+# docs.chmonitor.dev is a static-assets-only Worker (no main script). Every page
+# is pre-rendered HTML in dist/ at build time; the edge ASSETS binding serves
+# them directly. These headers apply to that asset store — HTML and hashed build
+# output alike — so keep long-lived caching scoped to fingerprinted files only.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Astro content-hashed CSS, JS, and fonts under /_astro. The hash is the cache
+# key — any change produces a new filename — so these are safe to cache forever.
+# Without this, Workers Assets defaults to max-age=0,must-revalidate and every
+# repeat visit pays a revalidation round-trip on CSS/fonts.
+#
+# HTML shells intentionally keep the default (revalidate on deploy).
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Pagefind fragment/index blobs are content-addressed (*.pf_fragment, etc.).
+/pagefind/fragment/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/pagefind/index/*
+  Cache-Control: public, max-age=31536000, immutable
