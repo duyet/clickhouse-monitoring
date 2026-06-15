@@ -5,7 +5,7 @@
 
 .docs-vercel-theme {
   --background: var(--ds-background-100);
-  --foreground: var(--ds-gray-1000);
+  --foreground: var(--geist-foreground);
   --muted-foreground: var(--ds-gray-900);
   --border: var(--ds-gray-300);
   --accent: var(--ds-gray-200);
@@ -15,7 +15,7 @@
   font-size: 1rem;
   line-height: 1.5;
   background: var(--ds-background-100);
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
 }
 
 .docs-vercel-theme .docs-shell__header {
@@ -73,12 +73,14 @@
 }
 
 .docs-vercel-theme .docs-markdown {
+  font-kerning: normal;
   font-size: 1rem;
+  font-variant-ligatures: common-ligatures contextual;
   line-height: 1.5;
 }
 
 .docs-vercel-theme .docs-markdown h1 {
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
   font-size: 2rem;
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -89,7 +91,7 @@
 
 .docs-vercel-theme .docs-markdown h2 {
   border-bottom: none;
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.025em;
@@ -99,34 +101,61 @@
 }
 
 .docs-vercel-theme .docs-markdown h3 {
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
   font-size: 1.25rem;
   font-weight: 600;
   margin-top: 2rem;
 }
 
 .docs-vercel-theme .docs-markdown h4 {
-  color: var(--ds-gray-1000);
+  color: var(--geist-foreground);
   font-size: 1rem;
   font-weight: 600;
   margin-top: 1.5rem;
 }
 
-.docs-vercel-theme .docs-markdown p,
-.docs-vercel-theme .docs-markdown li {
-  color: var(--ds-gray-900);
+.docs-vercel-theme .docs-markdown > p {
+  margin-top: 1.25em;
+  margin-bottom: 0;
+  color: var(--geist-foreground);
+  font-size: 1rem;
+  line-height: 1.7;
+  text-wrap: pretty;
 }
 
-.docs-vercel-theme .docs-markdown a {
-  color: var(--geist-link-color);
-  text-decoration-color: color-mix(in srgb, var(--geist-link-color) 35%, transparent);
-  text-decoration-line: underline;
-  text-underline-offset: 0.2em;
+.docs-vercel-theme .docs-markdown > p:first-child {
+  margin-top: 0;
 }
 
-.docs-vercel-theme .docs-markdown a:hover {
-  color: var(--link-hover);
-  text-decoration-color: var(--link-hover);
+.docs-vercel-theme .docs-markdown > h1 + p {
+  margin-top: 1.25em;
+  padding: 1rem 1.25rem;
+  border-radius: var(--geist-radius);
+  background: var(--ds-blue-100);
+}
+
+.docs-vercel-theme .docs-markdown > h2 + p,
+.docs-vercel-theme .docs-markdown > h3 + p,
+.docs-vercel-theme .docs-markdown > h4 + p {
+  margin-top: 0.75em;
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, blockquote) {
+  color: var(--geist-foreground);
+  line-height: 1.7;
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--ds-gray-alpha-600);
+}
+
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a:hover,
+.docs-vercel-theme .docs-markdown :is(p, li, td, th, dt, dd, blockquote) a:focus-visible {
+  text-decoration-color: currentColor;
 }
 
 .docs-vercel-theme .docs-markdown :not(pre) > code {

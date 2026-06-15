@@ -16,25 +16,31 @@
   --font-sans-fallback: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
   --font-mono-fallback: ui-monospace, 'Roboto Mono', Menlo, Monaco, monospace;
-  --font-sans: 'Geist Variable', 'Geist', ui-sans-serif, var(--font-sans-fallback);
+  --font-sans:
+    'Geist Variable', 'Geist', Arial, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji', ui-sans-serif, var(--font-sans-fallback);
   --font-mono: 'Geist Mono', ui-monospace, var(--font-mono-fallback);
 
   /* Light */
   --ds-background-100: #ffffff;
   --ds-background-200: #fafafa;
-  --ds-gray-100: #f5f5f5;
-  --ds-gray-200: #eaeaea;
-  --ds-gray-300: #e5e5e5;
-  --ds-gray-400: #d4d4d4;
-  --ds-gray-500: #a3a3a3;
-  --ds-gray-600: #888888;
-  --ds-gray-700: #666666;
-  --ds-gray-800: #444444;
+  --ds-gray-100: #f2f2f2;
+  --ds-gray-200: #ebebeb;
+  --ds-gray-300: #e6e6e6;
+  --ds-gray-400: #eaeaea;
+  --ds-gray-500: #c9c9c9;
+  --ds-gray-600: #a8a8a8;
+  --ds-gray-700: #8f8f8f;
+  --ds-gray-800: #7d7d7d;
   --ds-gray-900: #666666;
   --ds-gray-1000: #171717;
   --ds-gray-alpha-100: rgba(0, 0, 0, 0.04);
   --ds-gray-alpha-200: rgba(0, 0, 0, 0.08);
+  --ds-gray-alpha-600: rgba(0, 0, 0, 0.34);
+  --ds-blue-100: hsl(212, 100%, 97%);
+  --ds-blue-200: hsl(210, 100%, 96%);
   --ds-blue-700: #0070f3;
+  --ds-blue-900: hsl(211, 100%, 42%);
   --geist-foreground: #000000;
   --geist-background: #ffffff;
   --geist-link-color: var(--ds-blue-700);
@@ -51,8 +57,9 @@
   --bg-elev: var(--ds-gray-100);
   --bg-overlay-hover: var(--ds-gray-alpha-100);
   --bg-header: var(--ds-background-100);
-  --fg: var(--ds-gray-1000);
+  --fg: var(--geist-foreground);
   --fg-muted: var(--ds-gray-900);
+  --fg-prose: var(--geist-foreground);
   --fg-subtle: var(--ds-gray-600);
   --border: var(--ds-gray-alpha-200);
   --border-strong: var(--ds-gray-300);
@@ -89,6 +96,10 @@
   --ds-gray-1000: #ededed;
   --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
   --ds-gray-alpha-200: rgba(255, 255, 255, 0.09);
+  --ds-gray-alpha-600: rgba(255, 255, 255, 0.34);
+  --ds-blue-100: hsl(216, 50%, 12%);
+  --ds-blue-200: hsl(214, 59%, 15%);
+  --ds-blue-900: hsl(210, 100%, 66%);
   --geist-foreground: #ededed;
   --geist-background: #000000;
   --geist-link-color: #3291ff;

@@ -34,7 +34,7 @@ body {
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.5;
-  color: var(--fg);
+  color: var(--geist-foreground);
   background: var(--bg);
   font-feature-settings: 'cv11', 'ss01';
   letter-spacing: -0.01em;
@@ -697,81 +697,106 @@ details.nav-group[open] > summary.nav-group__label::after {
   font-weight: 400;
 }
 
-/* ── Content typography ─────────────────────────────────────────────── */
-.content > :first-child {
+/* ── Content typography (Vercel docs prose) ───────────────────────────── */
+[data-docs-prose] {
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+}
+[data-docs-prose] > :first-child {
   margin-top: 0;
 }
-.content h1,
-.content h2,
-.content h3,
-.content h4 {
+[data-docs-prose] h1,
+[data-docs-prose] h2,
+[data-docs-prose] h3,
+[data-docs-prose] h4 {
   line-height: 1.2;
   letter-spacing: -0.025em;
   scroll-margin-top: calc(var(--header-h) + 1rem);
-  color: var(--fg);
+  color: var(--geist-foreground);
   font-weight: 600;
 }
-.content h1 {
+[data-docs-prose] h1 {
   font-size: 2rem;
   font-weight: 600;
   letter-spacing: -0.03em;
   margin: 0 0 1rem;
-  color: var(--ds-gray-1000);
 }
-.content h2 {
+[data-docs-prose] h2 {
   font-size: 1.5rem;
   margin: 2.5rem 0 0.75rem;
   padding-bottom: 0;
   border-bottom: none;
-  color: var(--ds-gray-1000);
 }
-.content h3 {
+[data-docs-prose] h3 {
   font-size: 1.25rem;
   margin: 2rem 0 0.5rem;
-  color: var(--ds-gray-1000);
 }
-.content h4 {
+[data-docs-prose] h4 {
   font-size: 1rem;
   margin: 1.5rem 0 0.5rem;
-  color: var(--ds-gray-1000);
 }
-.content p,
-.content li {
-  color: var(--ds-gray-900);
+[data-docs-prose] > p {
+  margin-top: 1.25em;
+  margin-bottom: 0;
+  color: var(--geist-foreground);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.7;
+  text-wrap: pretty;
 }
-.content p {
-  margin: 1rem 0;
+[data-docs-prose] > p:first-child {
+  margin-top: 0;
 }
-.content a {
-  color: var(--link);
-  text-underline-offset: 0.2em;
+/* Vercel docs: first summary paragraph after the page title */
+[data-docs-prose] > h1 + p {
+  margin-top: 1.25em;
+  padding: 1rem 1.25rem;
+  border-radius: var(--geist-radius);
+  background: var(--ds-blue-100);
+}
+[data-docs-prose] > h2 + p,
+[data-docs-prose] > h3 + p,
+[data-docs-prose] > h4 + p {
+  margin-top: 0.75em;
+}
+[data-docs-prose] :is(p, li, td, th, blockquote) {
+  color: var(--geist-foreground);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+[data-docs-prose] :is(p, li, td, th, dt, dd, blockquote) a {
+  color: inherit;
+  font-weight: 500;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent);
+  text-underline-offset: 2px;
+  text-decoration-color: var(--ds-gray-alpha-600);
 }
-.content a:hover {
-  color: var(--link-hover);
-  text-decoration-color: var(--link-hover);
+[data-docs-prose] :is(p, li, td, th, dt, dd, blockquote) a:hover,
+[data-docs-prose] :is(p, li, td, th, dt, dd, blockquote) a:focus-visible {
+  text-decoration-color: currentColor;
 }
-.content ul,
-.content ol {
+[data-docs-prose] .page-foot a,
+[data-docs-prose] a.header-nav__link {
+  color: var(--link);
+}
+[data-docs-prose] > ul,
+[data-docs-prose] > ol {
   padding-left: 1.4rem;
-  margin: 0.85rem 0;
+  margin-top: 1em;
+  margin-bottom: 0;
 }
-.content li {
+[data-docs-prose] li {
   margin: 0.3rem 0;
 }
-.content strong {
-  color: var(--fg);
+[data-docs-prose] strong {
+  color: var(--geist-foreground);
   font-weight: 600;
 }
-.content hr {
+[data-docs-prose] hr {
   border: none;
   border-top: 1px solid var(--border);
   margin: 2.5rem 0;
 }
-.content blockquote {
+[data-docs-prose] blockquote {
   margin: 1.25rem 0;
   padding: 0.5rem 1rem;
   border-left: 2px solid var(--border-strong);
@@ -779,16 +804,20 @@ details.nav-group[open] > summary.nav-group__label::after {
   border-radius: 0 var(--radius) var(--radius) 0;
   color: var(--fg-muted);
 }
-.content blockquote p {
+[data-docs-prose] blockquote p {
   margin: 0.35rem 0;
 }
 
 /* Inline + block code */
-.content code {
+[data-docs-prose] code,
+[data-docs-prose] pre {
+  font-variant-ligatures: no-common-ligatures no-contextual;
+}
+[data-docs-prose] code {
   font-family: var(--font-mono);
   font-size: 0.85em;
 }
-.content :not(pre) > code {
+[data-docs-prose] :not(pre) > code {
   background: var(--code-bg);
   border: 1px solid var(--code-border);
   border-radius: var(--radius-sm);
@@ -796,7 +825,7 @@ details.nav-group[open] > summary.nav-group__label::after {
   font-weight: 500;
   color: var(--fg);
 }
-.content pre {
+[data-docs-prose] pre {
   margin: 1rem 0;
   padding: 1rem 1.1rem;
   border-radius: var(--radius-lg);
@@ -806,14 +835,14 @@ details.nav-group[open] > summary.nav-group__label::after {
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-.content pre code {
+[data-docs-prose] pre code {
   background: none;
   border: none;
   padding: 0;
 }
 
 /* Tables */
-.content table {
+[data-docs-prose] table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.25rem 0;
@@ -822,26 +851,26 @@ details.nav-group[open] > summary.nav-group__label::after {
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
-.content th,
-.content td {
+[data-docs-prose] th,
+[data-docs-prose] td {
   text-align: left;
   padding: 0.55rem 0.8rem;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
-.content th {
+[data-docs-prose] th {
   background: var(--bg-elev);
   font-weight: 600;
   color: var(--fg);
 }
-.content tr:last-child td {
+[data-docs-prose] tr:last-child td {
   border-bottom: none;
 }
-.content td code {
+[data-docs-prose] td code {
   white-space: nowrap;
 }
 
-.content .component-preview {
+[data-docs-prose] .component-preview {
   padding: 3rem;
   display: flex;
   gap: 1rem;
@@ -957,7 +986,7 @@ dialog.search-modal::backdrop {
   .main {
     padding: 1.25rem 1.25rem 4rem;
   }
-  .content h1 {
+  [data-docs-prose] h1 {
     font-size: 1.75rem;
   }
 }
