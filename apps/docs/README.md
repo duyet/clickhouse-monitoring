@@ -90,3 +90,11 @@ via plain CSS — no Tailwind dependency:
 Served as static assets by a Cloudflare Worker (`wrangler.toml`) on
 `docs.chmonitor.dev`. The build output includes the Pagefind search index
 (`dist/pagefind/`).
+
+**Architecture constraints (do not regress):**
+
+- `output: 'static'` in `astro.config.mjs` — every page is HTML at build time.
+- No Worker `main` script — `wrangler.toml` only declares `[assets] directory = "./dist"`.
+- `public/_headers` sets long-lived `Cache-Control` on fingerprinted `/_astro/*`
+  and Pagefind blobs; HTML keeps default revalidation so deploys propagate.
+- `html_handling = "drop-trailing-slash"` avoids 307 redirects on bare paths.

@@ -1,7 +1,7 @@
 # wrangler.toml for the chmonitor documentation worker.
 #
-# Static-assets-only Worker: Astro Starlight builds to ./dist, which is served
-# directly by Workers Assets (no `main` script).
+# Static-assets-only Worker: Astro builds to ./dist, served directly by Workers
+# ASSETS (no `main` script). All pages are pre-rendered HTML at build time.
 #
 # Deploy: cd apps/docs && bun run build && wrangler deploy
 
@@ -10,6 +10,9 @@ compatibility_date = "2026-05-28"
 
 [assets]
 directory = "./dist"
+# Serve /getting-started from dist/getting-started/index.html without a 307 to
+# /getting-started/ — avoids an extra edge round-trip on every bare-path link.
+html_handling = "drop-trailing-slash"
 
 [[routes]]
 pattern = "docs.chmonitor.dev"
@@ -25,6 +28,7 @@ name = "preview-chmonitor-docs"
 
 [env.preview.assets]
 directory = "./dist"
+html_handling = "drop-trailing-slash"
 
 [[env.preview.routes]]
 pattern = "preview.docs.chmonitor.dev"
