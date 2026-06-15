@@ -54,11 +54,14 @@ export const Route = createRootRoute({
         content:
           'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
       },
-      { property: 'og:image', content: 'https://dash.chmonitor.dev/og.png' },
+      { property: 'og:image', content: 'https://dash.chmonitor.dev/og/og.png' },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: 'https://dash.chmonitor.dev/og.png' },
+      {
+        name: 'twitter:image',
+        content: 'https://dash.chmonitor.dev/og/og.png',
+      },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),

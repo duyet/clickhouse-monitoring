@@ -35,18 +35,18 @@ committed to each app's `public/` dir:
 
 | File | Used by |
 |------|---------|
-| `apps/landing/public/og.png` | Landing (`chmonitor.dev`) |
-| `apps/docs/public/og.png` | Docs (`docs.chmonitor.dev`) |
-| `apps/dashboard/public/og.png` | Dashboard default |
-| `apps/dashboard/public/og-<slug>.png` | One per entry in the OG registry (`overview`, `clusters`, `explorer`, `agents`, `running-queries`, `history-queries`, `failed-queries`, `slow-queries`, `expensive-queries`, `merges`, `mutations`, `tables`, `replicas`, `settings`, `users`, `query-cache`, `backups`, `disks`) |
+| `apps/landing/public/og/og.png` | Landing (`chmonitor.dev`) |
+| `apps/docs/public/og/og.png` | Docs (`docs.chmonitor.dev`) |
+| `apps/dashboard/public/og/og.png` | Dashboard default |
+| `apps/dashboard/public/og/og-<slug>.png` | One per entry in the OG registry (`overview`, `clusters`, `explorer`, `agents`, `running-queries`, `history-queries`, `failed-queries`, `slow-queries`, `expensive-queries`, `merges`, `mutations`, `tables`, `replicas`, `settings`, `users`, `query-cache`, `backups`, `disks`) |
 
-Pages without a registry entry fall back to the dashboard default `og.png` via
+Pages without a registry entry fall back to the dashboard default `og/og.png` via
 the `__root.tsx` base tags.
 
 ## Meta wiring
 
 - **Landing** — `apps/landing/src/layouts/Base.astro` (`image` prop, default
-  `/og.png`; absolute URL via `Astro.site`).
+  `/og/og.png`; absolute URL via `Astro.site`).
 - **Docs** — `apps/docs/src/layouts/MainLayout.astro`.
 - **Dashboard** — base tags in `src/routes/__root.tsx`; per-page `og:title` /
   `og:image` / `twitter:image` come from `pageOgHead('<slug>')` in each route's
