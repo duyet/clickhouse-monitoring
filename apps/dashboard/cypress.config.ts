@@ -22,12 +22,4 @@ export default defineConfig({
     supportFile: 'cypress/support/e2e.ts',
     specPattern: 'cypress/e2e/**/*.cy.ts',
   },
-  component: {
-    devServer: {
-      framework: 'react',
-      bundler: 'vite',
-    },
-    supportFile: false,
-    specPattern: 'src/**/*.cy.{ts,tsx}',
-  },
 })
