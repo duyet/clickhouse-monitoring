@@ -38,6 +38,7 @@ import type {
 
 import { env } from 'cloudflare:workers'
 import { parseAuthProvider } from '@/lib/auth/provider'
+import { getUserConnectionsServerConfig } from '@/lib/connection-store/server-feature'
 import {
   FEATURE_ACCESS_VALUES,
   FEATURE_IDS,
@@ -213,6 +214,8 @@ function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
         ? { read: true, write: false }
         : { read: false, write: false }
 
+  const userConnections = getUserConnectionsServerConfig()
+
   return {
     authProvider,
     // WORKERD: no server-side Clerk auth() here → always anonymous.
@@ -221,6 +224,10 @@ function getPublicFeaturePermissionConfig(): PublicFeaturePermissionConfig {
     features,
     resolved,
     capabilities,
+    userConnections: {
+      dbStorageEnabled: userConnections.dbStorageEnabled,
+      requiresAuth: userConnections.requiresAuth,
+    },
   }
 }
 

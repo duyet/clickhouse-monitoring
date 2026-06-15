@@ -4,8 +4,13 @@ import type { ApiResponseMetadata } from '@/lib/api/types'
 import type { StaleError } from './use-chart-data'
 
 import { useMemo, useRef } from 'react'
+import {
+  fetchTableForHost,
+  isCustomHost,
+} from '@/lib/host-fetch/resolve-host-fetch'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { throwIfNotOk } from '@/lib/swr/fetch-error'
+import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
 
 interface TableDataResponse<T = unknown> {
   data: T[]
@@ -31,6 +36,10 @@ export function useTableData<T = unknown>(
   refreshInterval?: number,
   timezone?: string
 ) {
+  const { hosts, getConnectionByHostId } = useMergedHosts()
+  const browserConnection =
+    hostId !== undefined && hostId < 0 ? getConnectionByHostId(hostId) : null
+
   // Serialize searchParams so the memo key is value-stable even when a parent
   // recreates the object each render (inline literal / derived state).
   const searchParamsKey = searchParams ? JSON.stringify(searchParams) : ''
@@ -58,6 +67,8 @@ export function useTableData<T = unknown>(
     hostId,
     JSON.stringify(searchParams ?? {}),
     timezone,
+    hosts.length,
+    browserConnection?.id,
   ] as const
 
   const resolvedRefetchInterval =
@@ -74,6 +85,22 @@ export function useTableData<T = unknown>(
   >({
     queryKey,
     queryFn: async () => {
+      if (isCustomHost(hostId)) {
+        const result = await fetchTableForHost<T>({
+          queryConfigName,
+          hostId,
+          hosts,
+          browserConnection,
+          searchParams,
+          timezone,
+        })
+        return {
+          data: result.data,
+          metadata: (result.metadata ??
+            {}) as unknown as TableDataResponse<T>['metadata'],
+        } satisfies TableDataResponse<T>
+      }
+
       const response = await apiFetch(url)
       await throwIfNotOk(response, 'Failed to fetch table data')
       return response.json() as Promise<TableDataResponse<T>>

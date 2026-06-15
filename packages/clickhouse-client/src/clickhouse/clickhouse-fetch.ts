@@ -257,14 +257,20 @@ export const fetchData = async <
     // Use the client's json() method which handles format-specific parsing
     const data = (await resultSet.json()) as T
 
-    // For debugging: serialize the parsed data to see what we got
-    const rawText = JSON.stringify(data)
-    debug(`[fetchData] ClickHouse response (${query_id}):`, {
-      dataType: typeof data,
-      isArray: Array.isArray(data),
-      length: Array.isArray(data) ? data.length : 'N/A',
-      preview: rawText.substring(0, 500),
-    })
+    // For debugging: serialize the parsed data to see what we got (only when in development or debug mode)
+    const isDebug =
+      typeof process !== 'undefined' &&
+      (process.env?.NODE_ENV === 'development' || process.env?.DEBUG === 'true')
+
+    if (isDebug) {
+      const rawText = JSON.stringify(data)
+      debug(`[fetchData] ClickHouse response (${query_id}):`, {
+        dataType: typeof data,
+        isArray: Array.isArray(data),
+        length: Array.isArray(data) ? data.length : 'N/A',
+        preview: rawText.substring(0, 500),
+      })
+    }
 
     const end = new Date()
     const duration = (end.getTime() - start.getTime()) / 1000
@@ -300,11 +306,36 @@ export const fetchData = async <
       clickhouseVersion: clickhouseVersion?.raw ?? 'unknown',
       // Include the actual SQL that was executed (normalized for readability)
       sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
-      // Include raw response for debugging (truncated if large)
-      rawResponseLength: rawText.length,
-      rawResponsePreview:
-        rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,
     }
+
+    let cachedRawText: string | undefined
+    const getRawText = () => {
+      if (cachedRawText === undefined) {
+        cachedRawText = JSON.stringify(data)
+      }
+      return cachedRawText
+    }
+
+    // Include raw response for debugging (lazily evaluated to avoid performance overhead)
+    Object.defineProperties(metadata, {
+      rawResponseLength: {
+        get() {
+          return getRawText().length
+        },
+        enumerable: true,
+        configurable: true,
+      },
+      rawResponsePreview: {
+        get() {
+          const rawText = getRawText()
+          return rawText.length <= 500
+            ? rawText
+            : `${rawText.substring(0, 500)}...`
+        },
+        enumerable: true,
+        configurable: true,
+      },
+    })
 
     return { data, metadata }
   } catch (originalError) {

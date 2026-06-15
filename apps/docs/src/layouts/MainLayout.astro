@@ -33,7 +33,7 @@ const {
 } = Astro.props
 const pageTitle = title ? `${title} · ${SITE.title} docs` : `${SITE.title} docs`
 const canonical = new URL(Astro.url.pathname, Astro.site).toString()
-const ogImage = new URL('/og.png', Astro.site).toString()
+const ogImage = new URL('/og/og.png', Astro.site).toString()
 ---
 
 <!doctype html>
