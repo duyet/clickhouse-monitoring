@@ -41,6 +41,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
+    // Expand the "Queries" group menu first
+    cy.get(SIDEBAR).contains('button', 'Queries').click()
     // Find the visible Running Queries link (handles both sidebar and popover)
     // Using :visible ensures we only match elements actually visible to the user
     cy.get('a[href*="/running-queries"]:visible').first().click()
@@ -50,6 +52,8 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to clusters via sidebar', () => {
+    // Expand the "Cluster" group menu first
+    cy.get(SIDEBAR).contains('button', 'Cluster').click()
     // Find the visible Clusters link (handles both sidebar and popover)
     // Using :visible ensures we only match elements actually visible to the user
     cy.get('a[href*="/clusters"]:visible').first().click()
