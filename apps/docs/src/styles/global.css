@@ -1,6 +1,6 @@
 /* chmonitor docs — Vercel Docs / Geist design system */
 
-@import '../../../../design-system/vercel-docs-tokens.css';
+@import '../../../../design-system/docs-tokens.css';
 
 :root {
   --radius-sm: var(--geist-radius);
@@ -9,6 +9,14 @@
   --radius-pill: 9999px;
   --radius-nav: var(--geist-radius);
   --header-h: var(--header-height);
+
+  /* Shadcn-reserved names the shared token file intentionally omits (they
+     leak into the dashboard). This standalone app has no shadcn surface, so
+     declare them here. They reference --ds-* primitives, so they follow the
+     data-theme dark flip automatically. */
+  --accent: var(--ds-gray-1000);
+  --primary: var(--ds-gray-1000);
+  --border: var(--ds-gray-alpha-200);
 }
 
 :root[data-header-compact='true'] {
