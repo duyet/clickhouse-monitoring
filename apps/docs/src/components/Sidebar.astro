@@ -1,46 +1,35 @@
 ---
 import navData from '../generated/nav.json'
+import { findActiveGroup, getSidebarItems, type NavGroup } from '../lib/header-nav'
 
 interface Props {
   version: string
   currentSlug: string
 }
 const { version, currentSlug } = Astro.props
-const groups = (navData as Record<string, any[]>)[version] ?? []
-const current = `/${currentSlug}`
-const isActiveGroup = (group: any) => group.items?.some((it: any) => it.link === current)
+const groups = (navData as Record<string, NavGroup[]>)[version] ?? []
+const currentPath = currentSlug ? `/${currentSlug}` : '/'
+const activeGroup = findActiveGroup(groups, currentPath)
+const sidebarItems = getSidebarItems(activeGroup)
 ---
 
 <nav class="sidebar" aria-label="Documentation navigation">
   {
-    groups.map((group) =>
-      group.items ? (
-        <details class="nav-group" open={isActiveGroup(group)}>
-          <summary class="nav-group__label">{group.label}</summary>
-          <div class="nav-group__items">
-            {group.items.map((item: any) => (
-              <a class="nav-link" href={item.link} aria-current={item.link === current ? 'page' : undefined}>
-                <span class="nav-link__label">{item.label}</span>
-              </a>
-            ))}
-          </div>
-        </details>
-      ) : (
-        <div class="nav-group">
-          <a class="nav-link" href={group.link} aria-current={group.link === current ? 'page' : undefined}>
-            <span class="nav-link__label">{group.label}</span>
-          </a>
-        </div>
-      )
+    activeGroup && sidebarItems.length > 1 && (
+      <div class="sidebar__heading">{activeGroup.label}</div>
     )
   }
+  <div class="nav-group__items">
+    {
+      sidebarItems.map((item) => (
+        <a
+          class="nav-link"
+          href={item.link}
+          aria-current={item.link === currentPath ? 'page' : undefined}
+        >
+          <span class="nav-link__label">{item.label}</span>
+        </a>
+      ))
+    }
+  </div>
 </nav>
-
-<script>
-  const all = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.nav-group'))
-  for (const d of all) {
-    d.addEventListener('toggle', () => {
-      if (d.open) for (const o of all) if (o !== d) o.open = false
-    })
-  }
-</script>

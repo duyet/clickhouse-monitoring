@@ -277,6 +277,19 @@ img {
 .header-nav__dropdown-link[aria-current='page'] .nav-link__icon {
   opacity: 1;
 }
+.header-nav__dropdown-section + .header-nav__dropdown-section {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--ds-gray-200);
+}
+.header-nav__dropdown-heading {
+  padding: 0.25rem 0.5rem 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
 .header__actions {
   display: flex;
   align-items: center;
@@ -360,6 +373,15 @@ img {
 .mobile-nav-section__link[aria-current='page'] {
   background: var(--bg-overlay-hover);
   color: var(--fg);
+}
+.mobile-nav-section__subheading {
+  padding: 0.35rem 0.75rem 0.125rem 1.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  list-style: none;
 }
 .icon-btn {
   display: inline-flex;
@@ -664,6 +686,13 @@ img {
 }
 
 /* ── Left sidebar nav ───────────────────────────────────────────────── */
+.sidebar__heading {
+  padding: 0.5rem 0.5rem 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
 .nav-group {
   margin-bottom: 0;
   padding-top: 0.75rem;

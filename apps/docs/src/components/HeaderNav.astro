@@ -1,6 +1,10 @@
 ---
 import navData from '../generated/nav.json'
-import { isGroupActive, toHeaderCategories, type NavGroup } from '../lib/header-nav'
+import {
+  isCategoryActive,
+  toHeaderCategories,
+  type NavGroup,
+} from '../lib/header-nav'
 import { resolveNavIcon } from '../lib/nav-icons'
 import NavIcon from './NavIcon.astro'
 
@@ -17,32 +21,64 @@ const categories = toHeaderCategories(groups)
 <nav class="header__nav" aria-label="Documentation categories">
   {
     categories.map((category) => {
-      const group = groups.find((g) => g.label === category.label)
-      const active = group ? isGroupActive(group, currentPath) : false
+      const active = isCategoryActive(category, currentPath)
       const hasDropdown = category.items.length > 1
+      const multiSection = category.sections.length > 1
 
       return hasDropdown ? (
         <div class={`header-nav__item${active ? ' is-active' : ''}`}>
-          <a class="header-nav__trigger" href={category.href} aria-current={active ? 'page' : undefined}>
+          <a
+            class="header-nav__trigger"
+            href={category.href}
+            aria-current={active ? 'page' : undefined}
+          >
             <span>{category.label}</span>
-            <svg class="header-nav__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="header-nav__chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <path d="m6 9 6 6 6-6" />
             </svg>
           </a>
           <div class="header-nav__dropdown" role="menu">
             <div class="header-nav__dropdown-inner">
               {
-                category.items.map((item) => (
-                  <a
-                    class="header-nav__dropdown-link"
-                    href={item.link}
-                    role="menuitem"
-                    aria-current={item.link === currentPath ? 'page' : undefined}
-                  >
-                    <NavIcon name={resolveNavIcon(item.link)} />
-                    <span>{item.label}</span>
-                  </a>
-                ))
+                multiSection
+                  ? category.sections.map((section) => (
+                      <div class="header-nav__dropdown-section">
+                        <div class="header-nav__dropdown-heading">{section.label}</div>
+                        {section.items.map((item) => (
+                          <a
+                            class="header-nav__dropdown-link"
+                            href={item.link}
+                            role="menuitem"
+                            aria-current={item.link === currentPath ? 'page' : undefined}
+                          >
+                            <NavIcon name={resolveNavIcon(item.link)} />
+                            <span>{item.label}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ))
+                  : category.items.map((item) => (
+                      <a
+                        class="header-nav__dropdown-link"
+                        href={item.link}
+                        role="menuitem"
+                        aria-current={item.link === currentPath ? 'page' : undefined}
+                      >
+                        <NavIcon name={resolveNavIcon(item.link)} />
+                        <span>{item.label}</span>
+                      </a>
+                    ))
               }
             </div>
           </div>
