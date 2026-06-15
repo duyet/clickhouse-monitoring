@@ -4,7 +4,7 @@
 @import '../../../../../../design-system/vercel-docs-tokens.css';
 
 .docs-vercel-theme {
-  --background: var(--ds-background-200);
+  --background: var(--ds-background-100);
   --foreground: var(--ds-gray-1000);
   --muted-foreground: var(--ds-gray-900);
   --border: var(--ds-gray-300);
@@ -12,7 +12,9 @@
   --primary: var(--geist-link-color);
 
   font-family: var(--font-sans);
-  background: var(--ds-background-200);
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--ds-background-100);
   color: var(--ds-gray-1000);
 }
 
@@ -71,12 +73,12 @@
 }
 
 .docs-vercel-theme .docs-markdown {
-  font-size: 0.875rem;
-  line-height: 1.5715;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .docs-vercel-theme .docs-markdown h1 {
-  color: var(--ds-gray-900);
+  color: var(--ds-gray-1000);
   font-size: 2rem;
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -87,7 +89,7 @@
 
 .docs-vercel-theme .docs-markdown h2 {
   border-bottom: none;
-  color: var(--ds-gray-900);
+  color: var(--ds-gray-1000);
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.025em;
@@ -97,14 +99,14 @@
 }
 
 .docs-vercel-theme .docs-markdown h3 {
-  color: var(--ds-gray-900);
+  color: var(--ds-gray-1000);
   font-size: 1.25rem;
   font-weight: 600;
   margin-top: 2rem;
 }
 
 .docs-vercel-theme .docs-markdown h4 {
-  color: var(--ds-gray-900);
+  color: var(--ds-gray-1000);
   font-size: 1rem;
   font-weight: 600;
   margin-top: 1.5rem;
