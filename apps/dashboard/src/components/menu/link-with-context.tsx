@@ -48,7 +48,6 @@ export const HostPrefixedLink = ({
 
   return (
     <Link
-      // biome-ignore lint/suspicious/noExplicitAny: TanStack Router `to` expects a route path union and `search` must satisfy the route's schema; casting through `any` lets us pass runtime-determined paths and search params from menu config without scattering ts-ignore comments.
       to={toPath as any}
       search={searchParams as any}
       className={className}
