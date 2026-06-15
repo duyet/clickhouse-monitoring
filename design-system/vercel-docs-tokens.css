@@ -1,0 +1,108 @@
+/* Vercel Docs / Geist design tokens
+   Source: https://vercel.com/docs (extracted 2026-06-15) */
+
+:root {
+  --geist-space: 4px;
+  --geist-gap: 24px;
+  --geist-gap-half: 12px;
+  --geist-page-margin: var(--geist-gap);
+  --geist-radius: 6px;
+  --header-height: 64px;
+  --docs-header-height: 106px;
+  --ds-page-width: 1400px;
+
+  --font-sans-fallback: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-mono-fallback: ui-monospace, 'Roboto Mono', Menlo, Monaco, monospace;
+  --font-sans: 'Geist Variable', 'Geist', ui-sans-serif, var(--font-sans-fallback);
+  --font-mono: 'Geist Mono', ui-monospace, var(--font-mono-fallback);
+
+  /* Light */
+  --ds-background-100: #ffffff;
+  --ds-background-200: #fafafa;
+  --ds-gray-100: #f5f5f5;
+  --ds-gray-200: #eaeaea;
+  --ds-gray-300: #e5e5e5;
+  --ds-gray-400: #d4d4d4;
+  --ds-gray-500: #a3a3a3;
+  --ds-gray-600: #888888;
+  --ds-gray-700: #666666;
+  --ds-gray-800: #444444;
+  --ds-gray-900: #666666;
+  --ds-gray-1000: #171717;
+  --ds-gray-alpha-100: rgba(0, 0, 0, 0.04);
+  --ds-gray-alpha-200: rgba(0, 0, 0, 0.08);
+  --ds-blue-700: #0070f3;
+  --geist-foreground: #000000;
+  --geist-background: #ffffff;
+  --geist-link-color: var(--ds-blue-700);
+
+  --ds-shadow-border-base: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --ds-shadow-small: 0 2px 2px rgba(0, 0, 0, 0.04);
+  --ds-shadow-menu: var(--ds-shadow-border-base), 0 1px 1px rgba(0, 0, 0, 0.02),
+    0 4px 8px -4px rgba(0, 0, 0, 0.04), 0 16px 24px -8px rgba(0, 0, 0, 0.06);
+  --ds-focus-ring: 0 0 0 2px var(--ds-background-100), 0 0 0 4px var(--ds-blue-700);
+
+  /* Semantic aliases for docs layout */
+  --bg: var(--ds-background-200);
+  --bg-base: var(--ds-background-100);
+  --bg-elev: var(--ds-gray-100);
+  --bg-overlay-hover: var(--ds-gray-alpha-100);
+  --bg-header: var(--ds-background-100);
+  --fg: var(--ds-gray-1000);
+  --fg-muted: var(--ds-gray-900);
+  --fg-subtle: var(--ds-gray-600);
+  --border: var(--ds-gray-alpha-200);
+  --border-strong: var(--ds-gray-300);
+  --link: var(--geist-link-color);
+  --link-hover: #0060df;
+  --accent: var(--ds-gray-1000);
+  --accent-soft: var(--ds-gray-alpha-100);
+  --code-bg: var(--ds-gray-100);
+  --code-border: var(--ds-gray-300);
+  --selection: var(--ds-gray-200);
+  --primary: var(--ds-gray-1000);
+  --primary-fg: #ffffff;
+  --shadow-lg: var(--ds-shadow-menu);
+  --header-border: 0 1px 0 rgba(0, 0, 0, 0.1);
+
+  --sidebar-w: 15.5rem;
+  --toc-w: 13.5rem;
+  --content-max: 42rem;
+  --layout-max: var(--ds-page-width);
+}
+
+:root[data-theme='dark'] {
+  --ds-background-100: #000000;
+  --ds-background-200: #0a0a0a;
+  --ds-gray-100: #1a1a1a;
+  --ds-gray-200: #292929;
+  --ds-gray-300: #333333;
+  --ds-gray-400: #444444;
+  --ds-gray-500: #666666;
+  --ds-gray-600: #888888;
+  --ds-gray-700: #999999;
+  --ds-gray-800: #aaaaaa;
+  --ds-gray-900: #a1a1a1;
+  --ds-gray-1000: #ededed;
+  --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
+  --ds-gray-alpha-200: rgba(255, 255, 255, 0.09);
+  --geist-foreground: #ededed;
+  --geist-background: #000000;
+  --geist-link-color: #3291ff;
+  --ds-blue-700: #3291ff;
+
+  --ds-shadow-border-base: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --ds-shadow-small: 0 2px 2px rgba(0, 0, 0, 0.4);
+  --ds-shadow-menu: var(--ds-shadow-border-base), 0 16px 24px -8px rgba(0, 0, 0, 0.6);
+  --header-border: 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  --link: var(--geist-link-color);
+  --link-hover: #52a8ff;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --sidebar-w: 17rem;
+  }
+}

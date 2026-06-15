@@ -57,34 +57,22 @@ export function DocsMarkdown({ markdown }: DocsMarkdownProps) {
             return <Link to={resolvedHref as never}>{children}</Link>
           },
           h1: ({ children }) => (
-            <h1
-              id={headingId(children)}
-              className="scroll-m-20 text-4xl font-bold tracking-normal"
-            >
+            <h1 id={headingId(children)} className="scroll-m-20">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2
-              id={headingId(children)}
-              className="scroll-m-20 border-border border-b pb-2 text-2xl font-semibold tracking-normal"
-            >
+            <h2 id={headingId(children)} className="scroll-m-20">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3
-              id={headingId(children)}
-              className="scroll-m-20 text-xl font-semibold tracking-normal"
-            >
+            <h3 id={headingId(children)} className="scroll-m-20">
               {children}
             </h3>
           ),
           h4: ({ children }) => (
-            <h4
-              id={headingId(children)}
-              className="scroll-m-20 text-base font-semibold tracking-normal"
-            >
+            <h4 id={headingId(children)} className="scroll-m-20">
               {children}
             </h4>
           ),

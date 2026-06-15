@@ -9,7 +9,7 @@ export const Route = createFileRoute('/(docs)')({
 
 function DocsLayout() {
   return (
-    <div className="bg-background font-sans antialiased">
+    <div className="antialiased">
       <Outlet />
     </div>
   )
