@@ -10,6 +10,7 @@
   --header-top-height: 64px;
   --header-sub-height: 42px;
   --header-height: calc(var(--header-top-height) + var(--header-sub-height));
+  --docs-toolbar-height: 55px;
   --docs-header-height: var(--header-height);
   --ds-page-width: 1400px;
 
