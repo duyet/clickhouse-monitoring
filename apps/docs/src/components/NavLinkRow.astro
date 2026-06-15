@@ -1,0 +1,34 @@
+---
+import type { NavIconName } from '../lib/nav-icons'
+import NavIcon from './NavIcon.astro'
+
+interface Props {
+  href: string
+  label: string
+  icon: NavIconName
+  current?: boolean
+  compact?: boolean
+  description?: string
+}
+const {
+  href,
+  label,
+  icon,
+  current = false,
+  compact = false,
+  description,
+} = Astro.props
+---
+
+<a
+  class:list={['nav-row', compact && 'nav-row--compact']}
+  href={href}
+  aria-current={current ? 'page' : undefined}
+>
+  <span class="nav-row__indicator" aria-hidden="true"></span>
+  <NavIcon name={icon} />
+  <span class="nav-row__text">
+    <span class="nav-row__label">{label}</span>
+    {description && !compact ? <span class="nav-row__desc">{description}</span> : null}
+  </span>
+</a>
