@@ -5,13 +5,15 @@
 # Runs: Biome check, dashboard unit tests, and packages tests
 # ─────────────────────────────────────────────────────────────────────────────
 
+set -e
+
 echo "🔍 Running full Biome check..."
-bun run check || exit 1
+bun run check
 
 echo "🧪 Running dashboard unit tests..."
-bun run test:unit || exit 1
+bun run test:unit
 
 echo "📦 Running package unit tests..."
-bun run test:packages || exit 1
+bun run test:packages
 
 echo "✅ Pre-push checks passed!"
