@@ -53,7 +53,7 @@ export function extractReferencedTables(
 
   // Extract CTE names to filter them out later (they're aliases, not real tables)
   const cteNames = new Set<string>()
-  const cteMatch = sql.match(/WITH\s+(.+?)\s+AS\s*\(/is)
+  const cteMatch = sql.match(/WITH\s+(.+?)\s+AS\s*\(/i)
   if (cteMatch) {
     // Parse CTE definitions: "cte1 AS (...), cte2 AS (...)"
     const cteDefs = cteMatch[1].split(/\),\s*/)
