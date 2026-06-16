@@ -151,42 +151,42 @@ WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {lastHours:UInt32} 
 
         const largestScan = resultMap.largest_scan
         if (largestScan) {
-          const h = buildHighlight('Largest Data Scan', largestScan, {
+          const highlight = buildHighlight('Largest Data Scan', largestScan, {
             valueKey: 'readable_bytes',
             detailFn: (r) =>
               `scanned ${r.readable_rows} rows in ${formatDuration(Number(r.query_duration_ms || 0))}`,
           })
-          if (h) highlights.push(h)
+          if (highlight) highlights.push(highlight)
         }
 
         const fastestScan = resultMap.fastest_scan
         if (fastestScan) {
-          const h = buildHighlight('Fastest Scan Speed', fastestScan, {
+          const highlight = buildHighlight('Fastest Scan Speed', fastestScan, {
             valueKey: 'readable_speed',
             detailFn: (r) =>
               `processed ${r.readable_bytes} in ${formatDuration(Number(r.query_duration_ms || 0))}`,
           })
-          if (h) highlights.push(h)
+          if (highlight) highlights.push(highlight)
         }
 
         const longestQuery = resultMap.longest_query
         if (longestQuery) {
-          const h = buildHighlight('Longest Query', longestQuery, {
+          const highlight = buildHighlight('Longest Query', longestQuery, {
             valueKey: 'query_duration_ms',
             detailFn: (r) =>
               `duration ${formatDuration(Number(r.query_duration_ms || 0))}, scanned ${r.readable_bytes}`,
           })
-          if (h) highlights.push(h)
+          if (highlight) highlights.push(highlight)
         }
 
         const peakMemory = resultMap.peak_memory
         if (peakMemory) {
-          const h = buildHighlight('Peak Memory', peakMemory, {
+          const highlight = buildHighlight('Peak Memory', peakMemory, {
             valueKey: 'readable_memory',
             detailFn: (r) =>
               `used ${r.readable_memory}, scanned ${r.readable_rows} rows`,
           })
-          if (h) highlights.push(h)
+          if (highlight) highlights.push(highlight)
         }
 
         return {

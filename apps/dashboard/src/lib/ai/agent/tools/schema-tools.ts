@@ -63,9 +63,9 @@ export function createSchemaTools(hostId: number) {
         const effectiveHostId = resolveHostId(paramHostId, hostId)
         const limit = 500
         const result = (await readOnlyQuery({
-          query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC LIMIT ${limit}`,
+          query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY total_bytes DESC LIMIT {limit:UInt32}`,
           hostId: effectiveHostId,
-          query_params: { database },
+          query_params: { database, limit },
         })) as unknown[]
         const truncated = Array.isArray(result) && result.length === limit
         return {
@@ -143,9 +143,9 @@ export function createSchemaTools(hostId: number) {
         if (!table) {
           const limit = 500
           const result = (await readOnlyQuery({
-            query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name LIMIT ${limit}`,
+            query: `SELECT name, engine, total_rows, formatReadableSize(total_bytes) AS size FROM system.tables WHERE database = {database:String} ORDER BY name LIMIT {limit:UInt32}`,
             hostId: effectiveHostId,
-            query_params: { database },
+            query_params: { database, limit },
           })) as unknown[]
           const truncated = Array.isArray(result) && result.length === limit
           return {

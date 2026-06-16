@@ -26,6 +26,7 @@ export function createQueryTools(hostId: number) {
               substring(query, 1, 200) AS query
             FROM system.processes
             ORDER BY elapsed DESC
+            LIMIT 100
           `,
           hostId: resolvedHostId,
         })
