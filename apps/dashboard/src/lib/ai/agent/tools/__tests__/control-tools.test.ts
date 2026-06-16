@@ -77,7 +77,7 @@ describe('createControlTools', () => {
     })
 
     expect(result).toEqual({ status: 'ok' })
-    expect(writtenQueries[0].query).toBe('OPTIMIZE TABLE my_db.my_table')
+    expect(writtenQueries[0].query).toBe('OPTIMIZE TABLE `my_db`.`my_table`')
   })
 
   test('optimize_table sends OPTIMIZE TABLE with FINAL', async () => {
@@ -100,7 +100,9 @@ describe('createControlTools', () => {
       final: true,
     })
 
-    expect(writtenQueries[0].query).toBe('OPTIMIZE TABLE my_db.my_table FINAL')
+    expect(writtenQueries[0].query).toBe(
+      'OPTIMIZE TABLE `my_db`.`my_table` FINAL'
+    )
   })
 
   test('optimize_table rejects invalid table identifier', async () => {
