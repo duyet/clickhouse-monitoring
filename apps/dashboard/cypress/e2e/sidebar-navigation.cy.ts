@@ -41,22 +41,37 @@ describe('Sidebar navigation', () => {
   })
 
   it('navigates to running-queries via sidebar', () => {
-    // Expand the "Queries" group menu first
+    // Ensure sidebar is in expanded state first (it starts expanded by default
+    // but collapse animation may interfere with visibility checks in CI).
+    cy.get('[data-slot="sidebar-trigger"]')
+      .should('exist')
+      .click({ force: true })
+    cy.get('[data-sidebar="sidebar"]').should('be.visible')
+    // Expand the "Queries" group menu
     cy.get(SIDEBAR).contains('button', 'Queries').click()
-    // Find the visible Running Queries link (handles both sidebar and popover)
-    // Using :visible ensures we only match elements actually visible to the user
-    cy.get('a[href*="/running-queries"]:visible').first().click()
+    // Use should('be.visible') instead of :visible CSS pseudo-selector for
+    // more reliable visibility detection in headless Electron with Radix UI
+    // collapsible animations.
+    cy.get('a[href*="/running-queries"]', { timeout: 10000 })
+      .should('be.visible')
+      .first()
+      .click()
     cy.url().should('include', '/running-queries')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
   })
 
   it('navigates to clusters via sidebar', () => {
-    // Expand the "Cluster" group menu first
+    cy.get('[data-slot="sidebar-trigger"]')
+      .should('exist')
+      .click({ force: true })
+    cy.get('[data-sidebar="sidebar"]').should('be.visible')
+    // Expand the "Cluster" group menu
     cy.get(SIDEBAR).contains('button', 'Cluster').click()
-    // Find the visible Clusters link (handles both sidebar and popover)
-    // Using :visible ensures we only match elements actually visible to the user
-    cy.get('a[href*="/clusters"]:visible').first().click()
+    cy.get('a[href*="/clusters"]', { timeout: 10000 })
+      .should('be.visible')
+      .first()
+      .click()
     cy.url().should('include', '/clusters')
     cy.url().should('include', 'host=0')
     cy.get('body').should('exist')
