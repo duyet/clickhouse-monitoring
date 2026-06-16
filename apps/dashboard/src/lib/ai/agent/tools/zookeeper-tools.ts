@@ -23,7 +23,7 @@ export function createZookeeperTools(hostId: number) {
         }
         const resolvedHostId = resolveHostId(hostIdOverride, hostId)
         return readOnlyQuery({
-          query: `SELECT name, value, path FROM system.zookeeper WHERE path = {path:String}`,
+          query: `SELECT name, value, path FROM system.zookeeper WHERE path = {path:String} LIMIT 100`,
           query_params: { path },
           hostId: resolvedHostId,
         })
