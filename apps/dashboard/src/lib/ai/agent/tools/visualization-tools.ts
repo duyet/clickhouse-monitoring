@@ -191,46 +191,76 @@ export function createVisualizationTools(hostId: number) {
           }
         }
 
-        const sourcesWithColumns = await Promise.all(
-          tables.map(async (tbl) => {
-            const columns = (await readOnlyQuery({
-              query: `SELECT name, type, comment FROM system.columns
-                      WHERE database = {database:String} AND table = {table:String}
-                      ORDER BY position`,
-              hostId: effectiveHostId,
-              query_params: { database: tbl.database, table: tbl.table },
-            })) as Array<{ name: string; type: string; comment?: string }>
+        // Batch column fetch: single query for all tables instead of N+1
+        // Build a tuple filter for all (database, table) pairs
+        const tablePairs = tables
+          .map((t) => `('${t.database}', '${t.table}')`)
+          .join(', ')
 
-            const search = searchTerm.toLowerCase()
-            const matchedColumns = columns
-              .filter(
-                (col) =>
-                  col.name.toLowerCase().includes(search) ||
-                  (col.comment ?? '').toLowerCase().includes(search)
-              )
-              .map((col) => ({ name: col.name, type: col.type }))
+        const allColumns = (await readOnlyQuery({
+          query: `SELECT database, table, name, type, comment
+                  FROM system.columns
+                  WHERE (database, table) IN (${tablePairs})
+                  ORDER BY database, table, position`,
+          hostId: effectiveHostId,
+        })) as Array<{
+          database: string
+          table: string
+          name: string
+          type: string
+          comment?: string
+        }>
 
-            const measures = columns
-              .filter((col) => isNumericType(col.type))
-              .map((col) => ({ name: col.name, type: col.type }))
-
-            const dimensions = columns
-              .filter((col) => !isNumericType(col.type))
-              .map((col) => ({ name: col.name, type: col.type }))
-
-            return {
-              database: tbl.database,
-              table: tbl.table,
-              engine: tbl.engine,
-              totalRows: tbl.total_rows,
-              size: tbl.size,
-              comment: tbl.comment ?? '',
-              matchedColumns,
-              measures,
-              dimensions,
-            }
+        // Group columns by table
+        const columnsByTable = new Map<
+          string,
+          Array<{ name: string; type: string; comment?: string }>
+        >()
+        for (const col of allColumns) {
+          const key = `${col.database}.${col.table}`
+          if (!columnsByTable.has(key)) {
+            columnsByTable.set(key, [])
+          }
+          columnsByTable.get(key)!.push({
+            name: col.name,
+            type: col.type,
+            comment: col.comment,
           })
-        )
+        }
+
+        const search = searchTerm.toLowerCase()
+        const sourcesWithColumns = tables.map((tbl) => {
+          const key = `${tbl.database}.${tbl.table}`
+          const columns = columnsByTable.get(key) ?? []
+
+          const matchedColumns = columns
+            .filter(
+              (col) =>
+                col.name.toLowerCase().includes(search) ||
+                (col.comment ?? '').toLowerCase().includes(search)
+            )
+            .map((col) => ({ name: col.name, type: col.type }))
+
+          const measures = columns
+            .filter((col) => isNumericType(col.type))
+            .map((col) => ({ name: col.name, type: col.type }))
+
+          const dimensions = columns
+            .filter((col) => !isNumericType(col.type))
+            .map((col) => ({ name: col.name, type: col.type }))
+
+          return {
+            database: tbl.database,
+            table: tbl.table,
+            engine: tbl.engine,
+            totalRows: tbl.total_rows,
+            size: tbl.size,
+            comment: tbl.comment ?? '',
+            matchedColumns,
+            measures,
+            dimensions,
+          }
+        })
 
         return {
           type: 'data_sources' as const,
