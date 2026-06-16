@@ -4,10 +4,11 @@ import { hostIdSchema, readOnlyQuery, resolveHostId } from './helpers'
 import { dynamicTool } from 'ai'
 
 /**
- * Validate and sanitize the INTERVAL value to prevent SQL injection.
+ * Parse and validate the INTERVAL value to prevent SQL injection.
  * Only allows patterns like "1 HOUR", "30 MINUTE", "2 DAY".
+ * Returns the numeric value and unit for proper parameterization.
  */
-function sanitizeInterval(value: string): string {
+function parseInterval(value: string): { value: number; unit: string } {
   const normalized = value.trim().toUpperCase()
   const match = normalized.match(
     /^(\d{1,4})\s+(SECOND|MINUTE|HOUR|DAY|WEEK|MONTH)S?$/
@@ -17,7 +18,7 @@ function sanitizeInterval(value: string): string {
       `Invalid interval: "${value}". Use format like "1 HOUR", "30 MINUTE", "2 DAY".`
     )
   }
-  return `${match[1]} ${match[2]}`
+  return { value: parseInt(match[1], 10), unit: match[2] }
 }
 
 const SYMPTOM_QUERIES: Record<
@@ -33,7 +34,7 @@ const SYMPTOM_QUERIES: Record<
       },
       {
         name: 'recent_slow',
-        sql: `SELECT toStartOfMinute(event_time) as minute, count() as count, avg(query_duration_ms) as avg_ms, max(query_duration_ms) as max_ms FROM system.query_log WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {since} GROUP BY minute ORDER BY minute`,
+        sql: `SELECT toStartOfMinute(event_time) as minute, count() as count, avg(query_duration_ms) as avg_ms, max(query_duration_ms) as max_ms FROM system.query_log WHERE type = 'QueryFinish' AND event_time > now() - INTERVAL {value:UInt32} {unit:String} GROUP BY minute ORDER BY minute`,
       },
       {
         name: 'concurrent_merges',
@@ -46,11 +47,11 @@ const SYMPTOM_QUERIES: Record<
     queries: [
       {
         name: 'error_timeline',
-        sql: `SELECT toStartOfMinute(event_time) as minute, count() as errors, any(exception_code) as sample_code, any(substring(exception, 1, 200)) as sample_error FROM system.query_log WHERE type = 'ExceptionWhileProcessing' AND event_time > now() - INTERVAL {since} GROUP BY minute ORDER BY minute`,
+        sql: `SELECT toStartOfMinute(event_time) as minute, count() as errors, any(exception_code) as sample_code, any(substring(exception, 1, 200)) as sample_error FROM system.query_log WHERE type = 'ExceptionWhileProcessing' AND event_time > now() - INTERVAL {value:UInt32} {unit:String} GROUP BY minute ORDER BY minute`,
       },
       {
         name: 'top_errors',
-        sql: `SELECT exception_code, count() as count, any(substring(exception, 1, 300)) as sample_message FROM system.query_log WHERE type = 'ExceptionWhileProcessing' AND event_time > now() - INTERVAL {since} GROUP BY exception_code ORDER BY count DESC LIMIT 5`,
+        sql: `SELECT exception_code, count() as count, any(substring(exception, 1, 300)) as sample_message FROM system.query_log WHERE type = 'ExceptionWhileProcessing' AND event_time > now() - INTERVAL {value:UInt32} {unit:String} GROUP BY exception_code ORDER BY count DESC LIMIT 5`,
       },
       {
         name: 'system_errors',
@@ -88,7 +89,7 @@ const SYMPTOM_QUERIES: Record<
       },
       {
         name: 'recent_oom',
-        sql: `SELECT event_time, substring(message, 1, 500) as message FROM system.text_log WHERE message LIKE '%Memory limit%' AND event_time > now() - INTERVAL {since} ORDER BY event_time DESC LIMIT 5`,
+        sql: `SELECT event_time, substring(message, 1, 500) as message FROM system.text_log WHERE message LIKE '%Memory limit%' AND event_time > now() - INTERVAL {value:UInt32} {unit:String} ORDER BY event_time DESC LIMIT 5`,
       },
     ],
   },
@@ -114,7 +115,7 @@ const SYMPTOM_QUERIES: Record<
 const COMMON_CONTEXT_QUERIES = [
   {
     name: 'recent_ddl',
-    sql: `SELECT event_time, user, substring(query, 1, 300) as query_preview, query_duration_ms FROM system.query_log WHERE query_kind = 'DDL' AND event_time > now() - INTERVAL {since} ORDER BY event_time DESC LIMIT 5`,
+    sql: `SELECT event_time, user, substring(query, 1, 300) as query_preview, query_duration_ms FROM system.query_log WHERE query_kind = 'DDL' AND event_time > now() - INTERVAL {value:UInt32} {unit:String} ORDER BY event_time DESC LIMIT 5`,
   },
   {
     name: 'server_load',
@@ -156,9 +157,9 @@ export function createIncidentTools(hostId: number) {
         }
         const resolved = resolveHostId(toolHostId, hostId)
 
-        let sanitized: string
+        let parsed: { value: number; unit: string }
         try {
-          sanitized = sanitizeInterval(since)
+          parsed = parseInterval(since)
         } catch (e) {
           return { error: e instanceof Error ? e.message : String(e) }
         }
@@ -173,8 +174,15 @@ export function createIncidentTools(hostId: number) {
         const results = await Promise.all(
           allQueries.map(async (q) => {
             try {
-              const sql = q.sql.replace(/\{since\}/g, sanitized)
-              const data = await readOnlyQuery({ query: sql, hostId: resolved })
+              // Check if query uses interval parameters
+              const usesInterval = q.sql.includes('{value:UInt32}')
+              const data = await readOnlyQuery({
+                query: q.sql,
+                hostId: resolved,
+                ...(usesInterval && {
+                  query_params: { value: parsed.value, unit: parsed.unit },
+                }),
+              })
               return { name: q.name, data }
             } catch (e) {
               return {
@@ -193,7 +201,7 @@ export function createIncidentTools(hostId: number) {
         return {
           investigation: config.label,
           symptom,
-          time_window: sanitized,
+          time_window: `${parsed.value} ${parsed.unit}`,
           investigated_at: new Date().toISOString(),
           findings,
           instructions: `Analyze these findings for the "${config.label}" investigation. Create a timeline of events, identify the most likely root cause, and recommend specific actions to resolve the issue.`,

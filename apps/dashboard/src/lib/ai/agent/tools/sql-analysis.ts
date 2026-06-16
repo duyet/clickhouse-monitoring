@@ -51,6 +51,20 @@ export function extractReferencedTables(
 ): ReferencedTable[] {
   const tables = new Map<string, ReferencedTable>()
 
+  // Extract CTE names to filter them out later (they're aliases, not real tables)
+  const cteNames = new Set<string>()
+  const cteMatch = sql.match(/WITH\s+(.+?)\s+AS\s*\(/is)
+  if (cteMatch) {
+    // Parse CTE definitions: "cte1 AS (...), cte2 AS (...)"
+    const cteDefs = cteMatch[1].split(/\),\s*/)
+    for (const cteDef of cteDefs) {
+      const name = cteDef.trim().split(/\s+/)[0]
+      if (name) {
+        cteNames.add(normalizeIdentifier(name))
+      }
+    }
+  }
+
   for (const match of sql.matchAll(TABLE_REFERENCE_PATTERN)) {
     const raw = match[1]
     if (!raw || raw.startsWith('(')) continue
@@ -59,6 +73,9 @@ export function extractReferencedTables(
     const database = parts.length > 1 ? parts[0] : defaultDatabase
     const table = parts.length > 1 ? parts[1] : parts[0]
     if (!database || !table) continue
+
+    // Skip if this is a CTE alias (not a real table)
+    if (cteNames.has(table)) continue
 
     const qualifiedName = `${database}.${table}`
     if (!tables.has(qualifiedName)) {
