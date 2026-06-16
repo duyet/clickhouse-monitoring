@@ -77,16 +77,17 @@ export function ToolGroupTrigger({
   return (
     <CollapsibleTrigger
       className={cn(
-        'flex w-full items-center gap-1.5 px-3 py-2',
-        'text-xs font-medium text-muted-foreground',
-        'hover:text-foreground transition-colors',
+        'flex w-full items-center gap-1.5 px-3 py-2 rounded-md',
+        'bg-orange-50/50 dark:bg-orange-950/20',
+        'text-xs font-medium text-orange-700 dark:text-orange-300',
+        'hover:bg-orange-100/50 dark:hover:bg-orange-950/30 transition-colors',
         className
       )}
     >
       <WrenchIcon
         className={cn(
-          'size-3.5 shrink-0',
-          isRunning && 'animate-pulse text-primary/70'
+          'size-3.5 shrink-0 text-orange-600 dark:text-orange-400',
+          isRunning && 'animate-pulse'
         )}
       />
       <span className="flex-1 text-left">
@@ -95,9 +96,9 @@ export function ToolGroupTrigger({
           : 'Tool calls'}
       </span>
       {isRunning && (
-        <span className="mr-1 inline-block size-2 animate-pulse rounded-full bg-primary/60" />
+        <span className="mr-1 inline-block size-2 animate-pulse rounded-full bg-orange-500/60" />
       )}
-      <ChevronRightIcon className="size-3 shrink-0 transition-transform duration-200 group-data-[state=open]/toolgroup:rotate-90" />
+      <ChevronRightIcon className="size-3 shrink-0 text-orange-600 dark:text-orange-400 transition-transform duration-200 group-data-[state=open]/toolgroup:rotate-90" />
     </CollapsibleTrigger>
   )
 }

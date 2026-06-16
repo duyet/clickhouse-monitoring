@@ -76,11 +76,8 @@ export function Thread({
     <ThreadPrimitive.Root
       className="aui-root flex h-full flex-col overflow-hidden bg-background"
       style={{
-        // User messages and composer stay narrow for readability.
         // Assistant responses (charts, tables, SQL) use the full container width.
-        ['--thread-max-width' as string]: 'min(100%, 56rem)',
         ['--assistant-max-width' as string]: '100%',
-        ['--user-max-width' as string]: 'min(100%, 46rem)',
       }}
     >
       {/* Empty (welcome) state lives OUTSIDE the auto-scrolling Viewport.
@@ -112,10 +109,10 @@ export function Thread({
 
           <div className="min-h-6 grow" />
 
-          <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-[var(--thread-max-width)] flex-col items-center gap-2 bg-background pb-3">
+          <div className="sticky bottom-0 z-10 mx-auto flex w-full flex-col items-start gap-2 bg-background pb-3 px-4">
             <ThreadScrollToBottom />
             <ThreadComposer />
-            <p className="text-muted-foreground px-1 text-[11px] leading-4">
+            <p className="text-muted-foreground text-[11px] leading-4">
               The agent runs read-only ClickHouse queries. Conversations are
               saved{' '}
               {resolveConversationBackend() === 'd1'
@@ -188,10 +185,10 @@ function ThreadWelcome({
 
 const UserMessage: FC = () => {
   return (
-    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--user-max-width)] py-3">
+    <MessagePrimitive.Root className="ml-auto w-full py-3">
       <div className="flex flex-col items-end gap-1">
         <UserActionBar />
-        <div className="bg-muted text-foreground max-w-[80%] break-words rounded-2xl rounded-br-sm px-4 py-2 text-sm">
+        <div className="bg-muted text-foreground break-words rounded-2xl rounded-br-sm px-4 py-2 text-sm">
           <MessagePrimitive.Parts />
         </div>
         <BranchPicker />

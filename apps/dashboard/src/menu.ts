@@ -60,13 +60,6 @@ export const menuItemsConfig: MenuItem[] = [
     permission: { feature: 'overview' },
   },
   {
-    title: 'Dashboard',
-    href: '/dashboard',
-    icon: DashboardIcon,
-    section: 'main',
-    permission: { feature: 'dashboard' },
-  },
-  {
     title: 'AI Agent',
     href: '/agents',
     icon: SparklesIcon,
