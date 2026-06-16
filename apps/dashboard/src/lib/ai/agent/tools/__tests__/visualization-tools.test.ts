@@ -32,19 +32,45 @@ function setupVisualizationMocks() {
         }
       }
 
-      // discover_data_sources: column listing query
-      if (q.includes('system.columns') && q.includes('ORDER BY position')) {
+      // discover_data_sources: column listing query (batch with IN clause)
+      if (q.includes('system.columns') && q.includes('ORDER BY')) {
         return {
           data: [
-            { name: 'event_date', type: 'Date', comment: 'Event date' },
             {
+              database: 'analytics',
+              table: 'events',
+              name: 'event_date',
+              type: 'Date',
+              comment: 'Event date',
+            },
+            {
+              database: 'analytics',
+              table: 'events',
               name: 'tenant_id',
               type: 'UInt64',
               comment: 'Tenant identifier',
             },
-            { name: 'event_name', type: 'String', comment: 'Event name' },
-            { name: 'value', type: 'Float64', comment: 'Metric value' },
-            { name: 'count', type: 'Int64', comment: 'Event count' },
+            {
+              database: 'analytics',
+              table: 'events',
+              name: 'event_name',
+              type: 'String',
+              comment: 'Event name',
+            },
+            {
+              database: 'analytics',
+              table: 'events',
+              name: 'value',
+              type: 'Float64',
+              comment: 'Metric value',
+            },
+            {
+              database: 'analytics',
+              table: 'events',
+              name: 'count',
+              type: 'Int64',
+              comment: 'Event count',
+            },
           ],
           error: null,
         }
@@ -304,21 +330,44 @@ describe('createVisualizationTools', () => {
               error: null,
             }
           }
-          if (
-            query.includes('system.columns') &&
-            query.includes('ORDER BY position')
-          ) {
+          if (query.includes('system.columns') && query.includes('ORDER BY')) {
             return {
               data: [
-                { name: 'event_date', type: 'Date', comment: 'Event date' },
                 {
+                  database: 'analytics',
+                  table: 'events',
+                  name: 'event_date',
+                  type: 'Date',
+                  comment: 'Event date',
+                },
+                {
+                  database: 'analytics',
+                  table: 'events',
                   name: 'tenant_id',
                   type: 'UInt64',
                   comment: 'Tenant identifier',
                 },
-                { name: 'event_name', type: 'String', comment: 'Event name' },
-                { name: 'value', type: 'Float64', comment: 'Metric value' },
-                { name: 'count', type: 'Int64', comment: 'Event count' },
+                {
+                  database: 'analytics',
+                  table: 'events',
+                  name: 'event_name',
+                  type: 'String',
+                  comment: 'Event name',
+                },
+                {
+                  database: 'analytics',
+                  table: 'events',
+                  name: 'value',
+                  type: 'Float64',
+                  comment: 'Metric value',
+                },
+                {
+                  database: 'analytics',
+                  table: 'events',
+                  name: 'count',
+                  type: 'Int64',
+                  comment: 'Event count',
+                },
               ],
               error: null,
             }
