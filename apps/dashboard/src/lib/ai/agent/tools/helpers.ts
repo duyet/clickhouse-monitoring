@@ -12,6 +12,60 @@ import { fetchData } from '@chm/clickhouse-client'
 import { validateSqlQuery } from '@chm/sql-builder'
 
 /**
+ * Simple in-memory LRU cache for metadata queries.
+ * Cached per request with 60-second TTL to reduce redundant ClickHouse queries.
+ */
+class MetadataCache {
+  private cache = new Map<string, { data: unknown; expires: number }>()
+  private readonly DEFAULT_TTL = 60000 // 60 seconds
+
+  private getCacheKey(
+    hostId: number,
+    query: string,
+    params?: Record<string, unknown>
+  ): string {
+    const paramsStr = params ? JSON.stringify(params) : ''
+    return `${hostId}:${query}:${paramsStr}`
+  }
+
+  get(
+    hostId: number,
+    query: string,
+    params?: Record<string, unknown>
+  ): unknown | null {
+    const key = this.getCacheKey(hostId, query, params)
+    const entry = this.cache.get(key)
+    if (!entry) return null
+    if (Date.now() > entry.expires) {
+      this.cache.delete(key)
+      return null
+    }
+    return entry.data
+  }
+
+  set(
+    hostId: number,
+    query: string,
+    data: unknown,
+    params?: Record<string, unknown>,
+    ttl = this.DEFAULT_TTL
+  ): void {
+    const key = this.getCacheKey(hostId, query, params)
+    this.cache.set(key, { data, expires: Date.now() + ttl })
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+}
+
+/**
+ * Global metadata cache instance.
+ * Cleared between agent requests to prevent stale data.
+ */
+export const metadataCache = new MetadataCache()
+
+/**
  * Resolve the effective host ID from tool input and default.
  */
 export function resolveHostId(
@@ -24,14 +78,30 @@ export function resolveHostId(
 /**
  * Execute a read-only query against ClickHouse.
  * Validates SQL, sets readonly mode, and returns data or throws.
+ * Uses metadata cache for schema/metadata queries.
  */
 export async function readOnlyQuery(options: {
   query: string
   hostId: number
   format?: DataFormat
   query_params?: Record<string, unknown>
+  useCache?: boolean
 }): Promise<unknown> {
-  const { query, hostId, format = 'JSONEachRow', query_params } = options
+  const {
+    query,
+    hostId,
+    format = 'JSONEachRow',
+    query_params,
+    useCache = false,
+  } = options
+
+  // Check cache for metadata queries
+  if (useCache) {
+    const cached = metadataCache.get(hostId, query, query_params)
+    if (cached !== null) {
+      return cached
+    }
+  }
 
   const result = await fetchData({
     query,
@@ -43,6 +113,11 @@ export async function readOnlyQuery(options: {
 
   if (result.error) {
     throw new Error(result.error.message)
+  }
+
+  // Cache successful metadata query results
+  if (useCache) {
+    metadataCache.set(hostId, query, result.data, query_params)
   }
 
   return result.data

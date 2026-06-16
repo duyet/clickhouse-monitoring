@@ -6,6 +6,7 @@ import {
   resolveHostId,
   writeQuery,
 } from './helpers'
+import { formatQualifiedTable } from './sql-analysis'
 import { dynamicTool } from 'ai'
 
 export function createControlTools(hostId: number) {
@@ -61,11 +62,12 @@ export function createControlTools(hostId: number) {
           !isValidTableIdentifier(table)
         ) {
           throw new Error(
-            `Invalid table identifier: ${database}.${table}. Only alphanumeric characters, underscores, and hyphens are allowed.`
+            `Invalid table identifier: ${database}.${table}. Only alphanumeric characters and underscores are allowed.`
           )
         }
         const resolvedHostId = resolveHostId(hostIdOverride, hostId)
-        const sql = `OPTIMIZE TABLE ${database}.${table}${final ? ' FINAL' : ''}`
+        const qualifiedTable = formatQualifiedTable(database, table)
+        const sql = `OPTIMIZE TABLE ${qualifiedTable}${final ? ' FINAL' : ''}`
         return writeQuery({
           query: sql,
           hostId: resolvedHostId,
