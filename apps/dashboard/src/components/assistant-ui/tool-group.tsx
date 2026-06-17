@@ -13,8 +13,14 @@ import type {
   MessagePartStatus,
   ToolCallMessagePartStatus,
 } from '@assistant-ui/react'
-import type { PropsWithChildren } from 'react'
 
+import {
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,19 +35,47 @@ import { cn } from '@/lib/utils'
 interface ToolGroupRootProps extends PropsWithChildren {
   className?: string
   defaultOpen?: boolean
+  /**
+   * When the run is streaming the block auto-expands; once it finishes it
+   * auto-collapses. A manual toggle stops the auto-sync for this block's life.
+   */
+  isRunning?: boolean
 }
 
 /**
  * Collapsible root container for a set of adjacent tool calls.
+ *
+ * Controlled when `isRunning` is provided: the active (streaming) run stays
+ * expanded while finished runs collapse into tidy history. A manual toggle
+ * wins permanently.
  */
 export function ToolGroupRoot({
   children,
   className,
   defaultOpen = true,
+  isRunning,
 }: ToolGroupRootProps) {
+  const controlled = isRunning !== undefined
+  const userToggledRef = useRef(false)
+  const [open, setOpen] = useState(isRunning ?? defaultOpen)
+
+  // Follow isRunning until the user takes manual control.
+  useEffect(() => {
+    if (controlled && !userToggledRef.current) {
+      setOpen(isRunning ?? false)
+    }
+  }, [controlled, isRunning])
+
+  const handleOpenChange = useCallback((next: boolean) => {
+    userToggledRef.current = true
+    setOpen(next)
+  }, [])
+
   return (
     <Collapsible
-      defaultOpen={defaultOpen}
+      {...(controlled
+        ? { open, onOpenChange: handleOpenChange }
+        : { defaultOpen })}
       className={cn('group/toolgroup', className)}
     >
       {children}
