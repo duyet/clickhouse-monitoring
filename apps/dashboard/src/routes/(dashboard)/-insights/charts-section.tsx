@@ -1,5 +1,4 @@
 import { createBarChart } from '@/components/charts/factory'
-import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { useChartData } from '@/lib/query/use-chart-data'
 
 const TopTablesBySizeChart = createBarChart({
@@ -37,16 +36,8 @@ export function ChartsSection({ hostId }: { readonly hostId: number }) {
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-      {hasTopTablesData && (
-        <LazyChartWrapper>
-          <TopTablesBySizeChart hostId={hostId} />
-        </LazyChartWrapper>
-      )}
-      {hasCompressionData && (
-        <LazyChartWrapper>
-          <CompressionRatiosChart hostId={hostId} />
-        </LazyChartWrapper>
-      )}
+      {hasTopTablesData && <TopTablesBySizeChart hostId={hostId} />}
+      {hasCompressionData && <CompressionRatiosChart hostId={hostId} />}
       {!hasTopTablesData && !hasCompressionData && (
         <div className="col-span-1 text-center text-muted-foreground/60 py-8 lg:col-span-2">
           No table data available

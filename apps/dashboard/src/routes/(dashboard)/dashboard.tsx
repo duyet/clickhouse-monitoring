@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { getChartComponent, hasChart } from '@/components/charts/registry'
 import { ChartPicker } from '@/components/dashboard/chart-picker'
 import { SavedDashboardsToolbar } from '@/components/dashboard/saved-dashboards-toolbar'
@@ -92,11 +91,9 @@ function DashboardContent() {
           const Chart = getChartComponent(chartName)
           if (!Chart) return null
           return (
-            <LazyChartWrapper key={chartName}>
-              <Suspense fallback={<ChartSkeleton />}>
-                <Chart hostId={hostId} />
-              </Suspense>
-            </LazyChartWrapper>
+            <Suspense key={chartName} fallback={<ChartSkeleton />}>
+              <Chart hostId={hostId} />
+            </Suspense>
           )
         })}
       </div>

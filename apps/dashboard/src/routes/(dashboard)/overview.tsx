@@ -4,7 +4,6 @@ import type { OverviewChartConfig } from './-charts-config'
 
 import { OVERVIEW_TABS } from './-charts-config'
 import { lazy, Suspense, useState } from 'react'
-import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
 import { InsightsPanel } from '@/components/insights/insights-panel'
 import { cardStyles } from '@/components/overview-charts/card-styles'
@@ -51,9 +50,6 @@ interface LazyTabContentProps {
   hostId: number
 }
 
-// Number of charts to load immediately (first row in a 3-column grid).
-// Charts at index >= EAGER_CHART_COUNT are deferred until scrolled into view.
-const EAGER_CHART_COUNT = 3
 const OVERVIEW_CHART_CLASS_NAME = 'h-full min-h-0 w-full'
 const OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME =
   'flex min-h-0 flex-1 flex-col px-3 pb-3 pt-0'
@@ -64,11 +60,18 @@ const LazyTabContent = function LazyTabContent({
   label,
   hostId,
 }: LazyTabContentProps) {
+  // All charts mount immediately so each fires its own TanStack Query in
+  // parallel on tab-mount (inactive tabs stay unmounted via Radix, so only the
+  // active tab's charts fetch). By the time the user scrolls a chart into view
+  // its query has already resolved and the result is cached, so scrolling
+  // reveals ready content instead of a scroll-triggered skeleton. We do NOT
+  // gate the mount on scroll: deferring the mount also defers the first fetch,
+  // which is what made each card flash skeleton→content as it scrolled in.
   return (
     <div className={gridClassName} role="region" aria-label={`${label} charts`}>
-      {charts.map((chartConfig, index) => {
+      {charts.map((chartConfig) => {
         const ChartComponent = chartConfig.component
-        const chartEl = (
+        return (
           <ChartComponent
             key={chartConfig.id}
             title={chartConfig.title}
@@ -87,19 +90,6 @@ const LazyTabContent = function LazyTabContent({
             href={chartConfig.href}
             {...(chartConfig.props ?? {})}
           />
-        )
-
-        if (index < EAGER_CHART_COUNT) {
-          return chartEl
-        }
-
-        return (
-          <LazyChartWrapper
-            key={chartConfig.id}
-            className={chartConfig.className}
-          >
-            {chartEl}
-          </LazyChartWrapper>
         )
       })}
     </div>
