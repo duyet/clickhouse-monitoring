@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="chmonitor logo mark monochrome">
+  <title>chmonitor</title>
+  <rect x="1.9" y="1.9" width="28.2" height="28.2" rx="7.4" fill="none" stroke="currentColor" stroke-width="2"/>
+  <g fill="currentColor">
+    <rect x="6.4" y="17" width="2.7" height="8" rx="1.35"/>
+    <rect x="10.6" y="11" width="2.7" height="14" rx="1.35"/>
+    <rect x="14.8" y="15" width="2.7" height="10" rx="1.35"/>
+    <rect x="19" y="8" width="2.7" height="17" rx="1.35"/>
+    <rect x="23.2" y="13" width="2.7" height="12" rx="1.35" fill-opacity=".55"/>
+    <circle cx="20.35" cy="5.1" r="1.7"/>
+  </g>
+</svg>
