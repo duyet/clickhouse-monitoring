@@ -53,6 +53,43 @@ interface LazyTabContentProps {
 const OVERVIEW_CHART_CLASS_NAME = 'h-full min-h-0 w-full'
 const OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME =
   'flex min-h-0 flex-1 flex-col px-3 pb-3 pt-0'
+// Full-width banner charts (e.g. the Activity Heatmap) size to their content
+// instead of a fixed grid row, so the card content uses auto height (no flex-1
+// / min-h-0 height cap that would clip the calendar).
+const BANNER_CHART_CARD_CONTENT_CLASS_NAME = 'flex flex-col px-4 pb-4 pt-0'
+
+function OverviewChart({
+  chartConfig,
+  hostId,
+  banner,
+}: {
+  chartConfig: OverviewChartConfig
+  hostId: number
+  banner: boolean
+}) {
+  const ChartComponent = chartConfig.component
+  return (
+    <ChartComponent
+      title={chartConfig.title}
+      interval={chartConfig.interval}
+      lastHours={chartConfig.lastHours}
+      className={chartConfig.className}
+      chartClassName={cn(
+        banner ? undefined : OVERVIEW_CHART_CLASS_NAME,
+        chartConfig.chartClassName
+      )}
+      chartCardContentClassName={cn(
+        banner
+          ? BANNER_CHART_CARD_CONTENT_CLASS_NAME
+          : OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME,
+        chartConfig.chartCardContentClassName
+      )}
+      hostId={hostId}
+      href={chartConfig.href}
+      {...(chartConfig.props ?? {})}
+    />
+  )
+}
 
 const LazyTabContent = function LazyTabContent({
   charts,
@@ -67,31 +104,38 @@ const LazyTabContent = function LazyTabContent({
   // reveals ready content instead of a scroll-triggered skeleton. We do NOT
   // gate the mount on scroll: deferring the mount also defers the first fetch,
   // which is what made each card flash skeleton→content as it scrolled in.
+  //
+  // `fullWidth` charts render as their own auto-height banner rows ABOVE the
+  // fixed-height grid so a tall hero card (the Activity Heatmap) isn't clipped.
+  const banners = charts.filter((chart) => chart.fullWidth)
+  const gridCharts = charts.filter((chart) => !chart.fullWidth)
+
   return (
-    <div className={gridClassName} role="region" aria-label={`${label} charts`}>
-      {charts.map((chartConfig) => {
-        const ChartComponent = chartConfig.component
-        return (
-          <ChartComponent
-            key={chartConfig.id}
-            title={chartConfig.title}
-            interval={chartConfig.interval}
-            lastHours={chartConfig.lastHours}
-            className={chartConfig.className}
-            chartClassName={cn(
-              OVERVIEW_CHART_CLASS_NAME,
-              chartConfig.chartClassName
-            )}
-            chartCardContentClassName={cn(
-              OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME,
-              chartConfig.chartCardContentClassName
-            )}
-            hostId={hostId}
-            href={chartConfig.href}
-            {...(chartConfig.props ?? {})}
-          />
-        )
-      })}
+    <div className="flex flex-col gap-3">
+      {banners.map((chartConfig) => (
+        <OverviewChart
+          key={chartConfig.id}
+          chartConfig={chartConfig}
+          hostId={hostId}
+          banner
+        />
+      ))}
+      {gridCharts.length > 0 && (
+        <div
+          className={gridClassName}
+          role="region"
+          aria-label={`${label} charts`}
+        >
+          {gridCharts.map((chartConfig) => (
+            <OverviewChart
+              key={chartConfig.id}
+              chartConfig={chartConfig}
+              hostId={hostId}
+              banner={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -106,19 +150,29 @@ function TabContentSkeleton({ tab }: { tab: (typeof OVERVIEW_TABS)[number] }) {
     return <Skeleton className="h-[420px] w-full rounded-lg" />
   }
 
+  const banners = tab.charts.filter((chart) => chart.fullWidth)
+  const gridCharts = tab.charts.filter((chart) => !chart.fullWidth)
+
   return (
     <div
-      className={tab.gridClassName}
+      className="flex flex-col gap-3"
       role="status"
       aria-label={`Loading ${tab.label} charts`}
     >
-      {tab.charts.map((chart) => (
-        <ChartSkeleton
-          key={chart.id}
-          className={cn(OVERVIEW_CHART_CLASS_NAME, chart.className)}
-          type={chart.type === 'metric' ? 'metric' : undefined}
-        />
+      {banners.map((chart) => (
+        <Skeleton key={chart.id} className="h-[440px] w-full rounded-lg" />
       ))}
+      {gridCharts.length > 0 && (
+        <div className={tab.gridClassName}>
+          {gridCharts.map((chart) => (
+            <ChartSkeleton
+              key={chart.id}
+              className={cn(OVERVIEW_CHART_CLASS_NAME, chart.className)}
+              type={chart.type === 'metric' ? 'metric' : undefined}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -265,21 +319,11 @@ function OverviewPageFallback() {
         ))}
       </div>
       <TabsSkeleton tabCount={OVERVIEW_TABS.length} variant="underline" />
-      {/* Reserve the first tab's chart grid so the loading document is roughly
-          as tall as the loaded page. Reuses the real grid class + chart count
-          so it stays in sync if charts are added/removed. */}
-      <div
-        className={cn('mt-2', FIRST_TAB.gridClassName)}
-        role="status"
-        aria-label="Loading charts"
-      >
-        {FIRST_TAB.charts.map((chart) => (
-          <ChartSkeleton
-            key={chart.id}
-            className={cn(OVERVIEW_CHART_CLASS_NAME, chart.className)}
-            type={chart.type === 'metric' ? 'metric' : undefined}
-          />
-        ))}
+      {/* Reserve the first tab's banners + chart grid so the loading document is
+          roughly as tall as the loaded page. Reuses TabContentSkeleton so the
+          banner/grid split stays in sync if charts are added/removed. */}
+      <div className="mt-2">
+        <TabContentSkeleton tab={FIRST_TAB} />
       </div>
     </div>
   )

@@ -55,6 +55,13 @@ export interface OverviewChartConfig<
   props?: Omit<T, 'hostId'>
   /** Navigation target URL when clicked */
   href?: string
+  /**
+   * Render this chart as a full-width banner ABOVE the tab's chart grid (its
+   * own auto-height row) instead of as a fixed-height grid cell. Used by the
+   * Activity Heatmap hero card so its calendar isn't clipped by the grid's
+   * fixed row height.
+   */
+  fullWidth?: boolean
 }
 
 /**
@@ -368,9 +375,9 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'query-count-heatmap-overview',
     component: ChartQueryCountHeatmap,
     title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
+    className: 'w-full',
     type: 'custom',
-    href: '/history-queries',
+    fullWidth: true,
   },
   {
     id: 'query-count-24h',
@@ -544,9 +551,9 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'query-count-heatmap',
     component: ChartQueryCountHeatmap,
     title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
+    className: 'w-full',
     type: 'custom',
-    href: '/history-queries',
+    fullWidth: true,
   },
   {
     id: 'query-count-14d',
