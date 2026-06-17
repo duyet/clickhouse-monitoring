@@ -1,5 +1,15 @@
 export interface VizConfig {
-  chartType: 'bar' | 'line' | 'area' | 'pie' | 'number' | 'table' | 'combo'
+  chartType:
+    | 'bar'
+    | 'line'
+    | 'area'
+    | 'pie'
+    | 'number'
+    | 'table'
+    | 'combo'
+    | 'radial'
+    | 'bar_list'
+    | 'scatter'
   xKey: string
   yKeys: string[]
   sortBy?: string
@@ -27,6 +37,9 @@ export const CHART_TYPE_LABELS: Record<ChartType, string> = {
   pie: 'Pie',
   number: 'Number',
   table: 'Table',
+  radial: 'Radial',
+  bar_list: 'Bar List',
+  scatter: 'Scatter',
 }
 
 export function isNumericColumn(
