@@ -71,7 +71,7 @@ export function ReasoningRoot({
         userToggledRef.current = true
         setOpen(next)
       }
-      lockScroll(next)
+      lockScroll()
     },
     [controlled, lockScroll]
   )
