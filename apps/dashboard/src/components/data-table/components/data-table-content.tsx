@@ -231,7 +231,7 @@ export const DataTableContent = memo(function DataTableContent<
 
   return (
     <TooltipProvider>
-      <div className="relative">
+      <div className="relative min-w-0">
         <div
           ref={tableContainerRef}
           className={cn(
@@ -268,7 +268,7 @@ export const DataTableContent = memo(function DataTableContent<
               />
             </div>
           )}
-          <div className={cn(compact ? undefined : tableVisibility)}>
+          <div className={cn('min-w-0', compact ? undefined : tableVisibility)}>
             {enableColumnReordering ? (
               <DndContext
                 sensors={sensors}
