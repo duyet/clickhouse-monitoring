@@ -58,6 +58,9 @@ const CLIENT_ENV = {
     e.VITE_RUNNING_QUERIES_REFRESH_MS ??
     e.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS ??
     '',
+  // Edition: 'community' (default, OSS, fail-open) | 'enterprise' (paid).
+  // Unset or unrecognised values always resolve to 'community' in parseEdition().
+  VITE_EDITION: e.VITE_EDITION ?? 'community',
   // Opt-in product telemetry: OFF by default — must be explicitly enabled.
   VITE_TELEMETRY_ENABLED:
     e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'false',
