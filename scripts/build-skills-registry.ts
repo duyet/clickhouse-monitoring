@@ -45,7 +45,8 @@ async function main() {
   const outputFile = join(
     process.cwd(),
     'apps',
-    'web',
+    'dashboard',
+    'src',
     'lib',
     'ai',
     'agent',

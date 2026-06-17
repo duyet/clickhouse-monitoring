@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "build-agent": {
+      "source": "duyet/build-agent",
+      "sourceType": "github",
+      "skillPath": "skills/build-agent/SKILL.md",
+      "computedHash": "063491a19ea114cb05b48a6aaa00c6e4c09c134dbd4d387ff78041589d22b22a"
+    }
+  }
+}
