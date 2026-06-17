@@ -1,4 +1,9 @@
 export {
+  type ConfigSource,
+  getConfigSource,
+  loadDeclarativeConfig,
+} from './loader'
+export {
   type DeclarativeQueryConfig,
   declarativeQueryConfigSchema,
   sqlSchema,
