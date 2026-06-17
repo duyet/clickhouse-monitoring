@@ -188,6 +188,9 @@ const SSR_STUB_NAMED_EXPORTS = [
   'PieChart',
   'RadialBar',
   'RadialBarChart',
+  'Scatter',
+  'ScatterChart',
+  'Tooltip',
   'XAxis',
   'YAxis',
   // streamdown + @streamdown/mermaid
