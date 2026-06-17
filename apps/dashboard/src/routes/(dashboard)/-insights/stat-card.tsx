@@ -8,7 +8,7 @@ import { ChartSkeleton } from '@/components/skeletons/chart'
 
 /** Skeleton shown while a stat's chart data is loading. */
 export function statLoading(title: string) {
-  return <ChartSkeleton title={title} />
+  return <ChartSkeleton title={title} headerClassName="py-1" />
 }
 
 /** Empty / error state shown when a stat has no data. */
@@ -25,6 +25,7 @@ export function statEmpty(
       data={data}
       metadata={metadata}
       compact
+      headerClassName="py-1"
     />
   )
 }

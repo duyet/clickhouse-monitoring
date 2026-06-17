@@ -9,6 +9,9 @@ interface ChartSkeletonProps {
   className?: string
   title?: string
   type?: ChartSkeletonType
+  /** Extra classes applied to the card header — mirrors ChartCard's headerClassName so
+   *  skeleton and loaded states stay pixel-identical. */
+  headerClassName?: string
 }
 
 /** Area/Line chart skeleton using a beautifully simulated SVG wave */
@@ -195,6 +198,7 @@ export const ChartSkeleton = function ChartSkeleton({
   className,
   title,
   type = 'area',
+  headerClassName,
 }: ChartSkeletonProps = {}) {
   // Render appropriate loader based on type
   const renderContent = () => {
@@ -230,7 +234,7 @@ export const ChartSkeleton = function ChartSkeleton({
     >
       {/* Header geometry mirrors ChartCard's header (same padding + typography)
           so the title row is the same height in both states. */}
-      <CardHeader className={chartCard.header}>
+      <CardHeader className={cn(chartCard.header, headerClassName)}>
         <header className="flex flex-row items-center justify-between gap-2">
           {title ? (
             <span className="flex items-center gap-2 min-w-0">

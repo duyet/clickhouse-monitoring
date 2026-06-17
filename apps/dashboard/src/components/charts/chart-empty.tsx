@@ -36,6 +36,8 @@ interface ChartEmptyProps {
   metadata?: Partial<ApiResponseMetadata>
   /** Navigation target URL when clicked */
   href?: string
+  /** Extra classes applied to the card header — mirrors ChartCard's headerClassName. */
+  headerClassName?: string
 }
 
 export const ChartEmpty = function ChartEmpty({
@@ -49,6 +51,7 @@ export const ChartEmpty = function ChartEmpty({
   data,
   metadata,
   href,
+  headerClassName,
 }: ChartEmptyProps) {
   const router = useRouter()
   const hostId = useHostId()
@@ -118,7 +121,7 @@ export const ChartEmpty = function ChartEmpty({
     >
       {/* Header with title and toolbar */}
       {(title || hasToolbar) && (
-        <CardHeader className={chartCard.header}>
+        <CardHeader className={cn(chartCard.header, headerClassName)}>
           <header className="flex flex-row items-center justify-between gap-2">
             {title ? (
               <div className="flex items-center gap-1.5 min-w-0 flex-1">
