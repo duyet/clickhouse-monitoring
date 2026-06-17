@@ -12,14 +12,14 @@
  * THAT run — not the whole message.
  */
 
+import type {
+  EnrichedPartState,
+  MessagePartStatus,
+  PartState,
+  ToolCallMessagePartStatus,
+} from '@assistant-ui/react'
 import type { ReactNode } from 'react'
 
-import {
-  type EnrichedPartState,
-  groupPartByType,
-  type MessagePartStatus,
-  type ToolCallMessagePartStatus,
-} from '@assistant-ui/react'
 import { MarkdownText } from '@/components/assistant-ui/markdown-text'
 import {
   Reasoning,
@@ -38,22 +38,27 @@ import {
 // GroupedParts groupBy — module-level stable reference
 // ---------------------------------------------------------------------------
 
+// Type alias for the group key union used in GroupedParts
+type ChainOfThoughtKey = 'group-reasoning' | 'group-tool'
+
 /**
  * Groups adjacent reasoning parts into a `group-reasoning` run and adjacent
  * tool-call parts into a `group-tool` run, as SEPARATE top-level siblings.
  * A text part between two runs breaks the run, so counts stay local. Text
  * parts are left ungrouped (rendered as leaves).
  *
- * Module-level stable reference — required for GroupedParts performance.
- * `groupPartByType` also carries a memo fingerprint for the tree memoization.
+ * Plain module-level stable reference — required for GroupedParts performance.
+ * Intentionally NOT `groupPartByType`: the Cloudflare build replaces
+ * `@assistant-ui/react` with a client-only SSR stub whose fixed export list
+ * does not include `groupPartByType`, so importing it breaks the CF build.
  */
-export const groupByChainOfThought = groupPartByType({
-  reasoning: ['group-reasoning'],
-  'tool-call': ['group-tool'],
-})
-
-// Type alias for the group key union used in GroupedParts
-type ChainOfThoughtKey = 'group-reasoning' | 'group-tool'
+export const groupByChainOfThought = (
+  part: PartState
+): readonly ChainOfThoughtKey[] | null => {
+  if (part.type === 'reasoning') return ['group-reasoning'] as const
+  if (part.type === 'tool-call') return ['group-tool'] as const
+  return null
+}
 
 /** Shape of each group/leaf node delivered by MessagePrimitive.GroupedParts */
 type GroupedRenderInfo = {
