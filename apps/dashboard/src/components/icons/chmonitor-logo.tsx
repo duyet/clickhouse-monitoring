@@ -7,9 +7,6 @@
  * (`apps/landing/scripts/build-brand-assets.ts`) so the in-app mark stays in
  * sync with the favicons and landing lockup.
  */
-const ORANGE = '#f97316'
-const EMERALD = '#10b981'
-
 const BARS = [
   { x: 3.3, y: 13.05, h: 15.45 },
   { x: 8.7, y: 3.5, h: 25 },
@@ -20,15 +17,17 @@ const BARS = [
 const W = 3.8
 const CAP = { x: 3.3, y: 9.75, h: 3.3 }
 
+interface ChmonitorLogoProps {
+  className?: string
+  width?: number
+  height?: number
+}
+
 export const ChmonitorLogo = function ChmonitorLogo({
   className,
   width = 24,
   height = 24,
-}: {
-  className?: string
-  width?: number
-  height?: number
-}) {
+}: ChmonitorLogoProps) {
   return (
     <svg
       role="img"
@@ -40,9 +39,22 @@ export const ChmonitorLogo = function ChmonitorLogo({
     >
       <title>chmonitor</title>
       {BARS.map((b) => (
-        <rect key={b.x} x={b.x} y={b.y} width={W} height={b.h} fill={ORANGE} />
+        <rect
+          key={b.x}
+          x={b.x}
+          y={b.y}
+          width={W}
+          height={b.h}
+          className="fill-orange-500"
+        />
       ))}
-      <rect x={CAP.x} y={CAP.y} width={W} height={CAP.h} fill={EMERALD} />
+      <rect
+        x={CAP.x}
+        y={CAP.y}
+        width={W}
+        height={CAP.h}
+        className="fill-emerald-500"
+      />
     </svg>
   )
 }
