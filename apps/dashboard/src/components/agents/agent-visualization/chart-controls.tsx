@@ -114,6 +114,28 @@ export function ChartControls({
   // Table chart type doesn't need controls
   if (chartType === 'table') return null
 
+  // Radial and bar_list: just x/y axis pickers, no sort/stacked/log
+  if (chartType === 'radial' || chartType === 'bar_list') {
+    return (
+      <div className="flex flex-wrap gap-2 pb-2">
+        <ColumnSelect
+          label="Label"
+          value={xKey}
+          options={columns}
+          onValueChange={onXKeyChange}
+          width="w-[120px]"
+        />
+        <ColumnSelect
+          label="Value"
+          value={yKeys[0] ?? ''}
+          options={numericColumns.length > 0 ? numericColumns : columns}
+          onValueChange={onYKeyChange}
+          width="w-[120px]"
+        />
+      </div>
+    )
+  }
+
   // Number chart type: show column and row selectors
   if (chartType === 'number') {
     return (
@@ -220,7 +242,7 @@ export function ChartControls({
           </ToggleButton>
         )}
 
-        {/* Log scale toggle */}
+        {/* Log scale toggle (radial/bar_list handled by the early return above) */}
         {chartType !== 'pie' && (
           <ToggleButton
             active={logScale}

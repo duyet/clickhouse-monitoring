@@ -12,9 +12,22 @@ export function createVisualizationTools(hostId: number) {
         sql: z.string().describe('SQL query to execute and visualize'),
         title: z.string().optional().describe('Chart title'),
         chartType: z
-          .enum(['bar', 'line', 'area', 'pie', 'number', 'table'])
+          .enum([
+            'bar',
+            'line',
+            'area',
+            'pie',
+            'number',
+            'table',
+            'combo',
+            'radial',
+            'bar_list',
+            'scatter',
+          ])
           .optional()
-          .describe('Suggested chart type'),
+          .describe(
+            'Suggested chart type. bar=grouped bars, line/area=time-series, pie=proportions, number=single metric, table=raw data, combo=multi-axis, radial=radial bar gauge, bar_list=ranked horizontal bars (top N), scatter=correlation between two numeric columns'
+          ),
         xKey: z.string().optional().describe('Column for X axis'),
         yKeys: z
           .array(z.string())
@@ -45,7 +58,17 @@ export function createVisualizationTools(hostId: number) {
         } = input as {
           sql: string
           title?: string
-          chartType?: 'bar' | 'line' | 'area' | 'pie' | 'number' | 'table'
+          chartType?:
+            | 'bar'
+            | 'line'
+            | 'area'
+            | 'pie'
+            | 'number'
+            | 'table'
+            | 'combo'
+            | 'radial'
+            | 'bar_list'
+            | 'scatter'
           xKey?: string
           yKeys?: string[]
           sortBy?: string
@@ -80,9 +103,30 @@ export function createVisualizationTools(hostId: number) {
           }
         }
 
-        const resolvedChartType =
-          chartType ??
-          (rows.length === 1 && resolvedYKeys.length === 1 ? 'number' : 'bar')
+        // Auto-pick chart type based on shape of results
+        const resolvedChartType = (() => {
+          if (chartType) return chartType
+          // Single row + single metric → large number display
+          if (rows.length === 1 && resolvedYKeys.length === 1) return 'number'
+          // Two numeric columns (no string dimension) → scatter for correlation
+          const stringColumns = columns.filter(
+            (col) => col !== resolvedXKey && typeof firstRow[col] === 'string'
+          )
+          if (
+            resolvedYKeys.length >= 2 &&
+            stringColumns.length === 0 &&
+            rows.length > 5
+          )
+            return 'scatter'
+          // Many rows with one string label + one numeric → ranked bar list
+          if (
+            rows.length >= 10 &&
+            resolvedYKeys.length === 1 &&
+            typeof firstRow[resolvedXKey] === 'string'
+          )
+            return 'bar_list'
+          return 'bar'
+        })()
 
         return {
           type: 'visualization' as const,

@@ -60,6 +60,24 @@ const NumberChart = lazy(() =>
   }))
 )
 
+const RadialChartPrimitive = lazy(() =>
+  import('@/components/charts/primitives/radial').then((m) => ({
+    default: m.RadialChart,
+  }))
+)
+
+const BarListPrimitive = lazy(() =>
+  import('@/components/charts/primitives/bar-list').then((m) => ({
+    default: m.BarList,
+  }))
+)
+
+const ScatterChartPrimitive = lazy(() =>
+  import('@/components/charts/primitives/scatter').then((m) => ({
+    default: m.ScatterChartPrimitive,
+  }))
+)
+
 /**
  * AgentVisualization renders tool query results with interactive chart and
  * data/query tabs. Supports bar, line, area, pie, number, and table views.
@@ -205,6 +223,50 @@ export function AgentVisualization({
             stacked={stacked}
             logScale={logScale}
           />
+        )
+      }
+
+      if (chartType === 'radial') {
+        const radialData = sortedRows.slice(0, 12) as Record<
+          string,
+          string | number
+        >[]
+        return (
+          <Suspense fallback={<ChartLoadingSkeleton />}>
+            <RadialChartPrimitive
+              data={radialData}
+              nameKey={xKey}
+              dataKey={yKeys[0] ?? columns[0] ?? ''}
+              showLegend={radialData.length <= 6}
+              showLabel
+            />
+          </Suspense>
+        )
+      }
+
+      if (chartType === 'bar_list') {
+        const barListData = sortedRows.map((row) => ({
+          name: String(row[xKey] ?? ''),
+          value: Number(row[yKeys[0] ?? ''] ?? 0),
+          ...row,
+        }))
+        return (
+          <Suspense fallback={<ChartLoadingSkeleton />}>
+            <BarListPrimitive data={barListData} className="py-1" />
+          </Suspense>
+        )
+      }
+
+      if (chartType === 'scatter') {
+        return (
+          <Suspense fallback={<ChartLoadingSkeleton />}>
+            <ScatterChartPrimitive
+              data={sortedRows}
+              xKey={xKey}
+              yKeys={yKeys.length > 0 ? yKeys : [columns[1] ?? columns[0] ?? '']}
+              readable={viz.readable}
+            />
+          </Suspense>
         )
       }
 
