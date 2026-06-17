@@ -6,6 +6,7 @@ import { OVERVIEW_TABS } from './-charts-config'
 import { lazy, Suspense, useState } from 'react'
 import { LazyChartWrapper } from '@/components/charts/lazy-chart-wrapper'
 import { ClientOnly } from '@/components/client-only'
+import { InsightsPanel } from '@/components/insights/insights-panel'
 import { cardStyles } from '@/components/overview-charts/card-styles'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
@@ -174,6 +175,10 @@ function OverviewPageContent() {
     <div>
       <OverviewStatusStrip className="mb-3" />
       <OverviewCharts className="mb-4 sm:mb-6" />
+
+      <ClientOnly fallback={null}>
+        <InsightsPanel hostId={hostId} className="mb-4 sm:mb-6" />
+      </ClientOnly>
 
       <ClientOnly
         fallback={
