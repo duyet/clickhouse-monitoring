@@ -61,6 +61,9 @@ const CLIENT_ENV = {
   // Opt-in product telemetry: OFF by default — must be explicitly enabled.
   VITE_TELEMETRY_ENABLED:
     e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'false',
+  // Deployment target (docker | helm | cf | dev | unknown). Set in CI build
+  // steps so telemetry can distinguish deployment environments.
+  VITE_DEPLOY_TARGET: e.VITE_DEPLOY_TARGET ?? 'unknown',
   VITE_GIT_SHA:
     e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
   VITE_GIT_REF:
