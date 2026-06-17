@@ -20,6 +20,7 @@ import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { Button } from '@/components/ui/button'
 import { useConversationBackend } from '@/lib/hooks/use-conversation-backend'
 import { useFollowUps } from '@/lib/hooks/use-follow-ups'
+import { track } from '@/lib/telemetry'
 
 export function FollowUpSuggestions() {
   const { supportsAiEnrichment } = useConversationBackend()
@@ -40,6 +41,7 @@ export function FollowUpSuggestions() {
       role: 'user',
       content: [{ type: 'text', text: trimmed }],
     })
+    track('ai_query_sent')
   }
 
   return (

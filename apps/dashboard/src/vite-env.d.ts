@@ -12,6 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_RUNNING_QUERIES_REFRESH_MS?: string
   // Opt-in product telemetry (off by default). See lib/telemetry/.
   readonly VITE_TELEMETRY_ENABLED?: string
+  // Deployment target for telemetry dimensions (docker | helm | cf | dev | unknown).
+  readonly VITE_DEPLOY_TARGET?: string
   // Build metadata (injected by vite.config define / CI build step)
   readonly VITE_GIT_SHA?: string
   readonly VITE_GIT_REF?: string

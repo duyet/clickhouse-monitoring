@@ -28,6 +28,7 @@ import { useSearchParams } from '@/lib/next-compat'
 import { useTableData } from '@/lib/query/use-table-data'
 import { runningQueriesConfig } from '@/lib/query-config/queries/running-queries'
 import { useHostId } from '@/lib/swr/use-host'
+import { track } from '@/lib/telemetry'
 import { cn } from '@/lib/utils'
 
 /**
@@ -97,6 +98,11 @@ export const RunningQueriesView = function RunningQueriesView() {
   const searchParams = useSearchParams()
   const [chartsOpen, setChartsOpen] = useState(true)
   const [live, setLive] = useState(true)
+
+  // Fire-and-forget product telemetry — no-op unless enabled.
+  useEffect(() => {
+    track('queries_viewed')
+  }, [])
 
   // Pipe URL-driven filter params into the SWR key so the schema-driven
   // header filters and bar (rendered by the underlying DataTable) actually
