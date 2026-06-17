@@ -157,14 +157,15 @@ describe('createMcpTools', () => {
       // Additional tools from modular system
       expect(tools.explore_table_schema).toBeDefined()
       expect(tools.get_failed_queries).toBeDefined()
-      expect(tools.get_expensive_queries).toBeDefined()
-      expect(tools.get_mutations).toBeDefined()
       expect(tools.get_replication_status).toBeDefined()
-      expect(tools.get_clusters).toBeDefined()
-      expect(tools.get_dashboard_pages).toBeDefined()
-      expect(tools.spot_issues).toBeDefined()
-      expect(tools.repair_query).toBeDefined()
-      expect(tools.recommend_table_design).toBeDefined()
+      expect(tools.get_disk_usage).toBeDefined()
+      expect(tools.get_table_parts).toBeDefined()
+      expect(tools.get_merge_status).toBeDefined()
+      expect(tools.explain_query).toBeDefined()
+      expect(tools.query_and_visualize).toBeDefined()
+      expect(tools.update_plan).toBeDefined()
+      expect(tools.load_skill).toBeDefined()
+      expect(tools.ask_user).toBeDefined()
     })
 
     test('uses default hostId when not provided', () => {

@@ -50,34 +50,6 @@ export function createHealthTools(hostId: number) {
       },
     }),
 
-    get_system_resources: dynamicTool({
-      description:
-        'Get CPU, memory, disk, and thread usage from system metrics.',
-      inputSchema: z.object({
-        hostId: hostIdSchema,
-      }),
-      execute: async (input: unknown) => {
-        const { hostId: toolHostId } = input as { hostId?: number }
-        const resolvedHostId = resolveHostId(toolHostId, hostId)
-
-        const [metricsResult, asyncMetricsResult] = await Promise.all([
-          readOnlyQuery({
-            query: `SELECT metric, value, description FROM system.metrics WHERE metric IN ('MemoryTracking', 'MemoryResident', 'TCPConnection', 'HTTPConnection', 'InterserverConnection', 'OpenFileForRead', 'OpenFileForWrite', 'BackgroundMergesAndMutationsPoolTask', 'BackgroundSchedulePoolTask') ORDER BY metric`,
-            hostId: resolvedHostId,
-          }),
-          readOnlyQuery({
-            query: `SELECT metric, value FROM system.asynchronous_metrics WHERE metric IN ('OSMemoryTotal', 'OSMemoryAvailable', 'LoadAverage1', 'LoadAverage5', 'LoadAverage15', 'MaxPartCountForPartition', 'NumberOfDatabases', 'NumberOfTables', 'TotalRowsOfMergeTreeTables', 'TotalBytesOfMergeTreeTables') ORDER BY metric`,
-            hostId: resolvedHostId,
-          }),
-        ])
-
-        return {
-          metrics: metricsResult,
-          async_metrics: asyncMetricsResult,
-        }
-      },
-    }),
-
     get_disk_usage: dynamicTool({
       description: 'Get per-disk space usage including free and total space.',
       inputSchema: z.object({
@@ -89,56 +61,6 @@ export function createHealthTools(hostId: number) {
 
         return readOnlyQuery({
           query: `SELECT name, path, formatReadableSize(free_space) AS free, formatReadableSize(total_space) AS total, round(free_space * 100.0 / nullIf(total_space, 0), 2) AS free_pct FROM system.disks ORDER BY name`,
-          hostId: resolvedHostId,
-        })
-      },
-    }),
-
-    get_errors: dynamicTool({
-      description: 'Get recent system errors with error codes and messages.',
-      inputSchema: z.object({
-        limit: z
-          .number()
-          .optional()
-          .default(20)
-          .describe('Maximum number of errors to return'),
-        hostId: hostIdSchema,
-      }),
-      execute: async (input: unknown) => {
-        const { limit = 20, hostId: toolHostId } = input as {
-          limit?: number
-          hostId?: number
-        }
-        const resolvedHostId = resolveHostId(toolHostId, hostId)
-
-        return readOnlyQuery({
-          query: `SELECT name, code, value AS count, last_error_time, substring(last_error_message, 1, 300) AS last_message FROM system.errors ORDER BY last_error_time DESC LIMIT {limit:UInt32}`,
-          query_params: { limit },
-          hostId: resolvedHostId,
-        })
-      },
-    }),
-
-    get_crash_log: dynamicTool({
-      description: 'Get crash history from system.crash_log.',
-      inputSchema: z.object({
-        limit: z
-          .number()
-          .optional()
-          .default(10)
-          .describe('Maximum number of crash entries to return'),
-        hostId: hostIdSchema,
-      }),
-      execute: async (input: unknown) => {
-        const { limit = 10, hostId: toolHostId } = input as {
-          limit?: number
-          hostId?: number
-        }
-        const resolvedHostId = resolveHostId(toolHostId, hostId)
-
-        return readOnlyQuery({
-          query: `SELECT event_time, signal, thread_id, query_id, substring(trace_full, 1, 500) AS trace FROM system.crash_log ORDER BY event_time DESC LIMIT {limit:UInt32}`,
-          query_params: { limit },
           hostId: resolvedHostId,
         })
       },
