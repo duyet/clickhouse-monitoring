@@ -1,199 +1,55 @@
-import { Maximize2 } from 'lucide-react'
-
+import type { ComputedCheck, HealthStatus } from '@/lib/health/health-status'
 import type { Thresholds } from '@/lib/health/thresholds-storage'
 import type { HealthCheckDef } from './health-checks'
-import type { HealthCheckState } from './use-health-checks'
 
+import { HealthCardShell } from './health-card-shell'
 import { HealthDetailDialog } from './health-detail-dialog'
-import { useEffect, useRef, useState } from 'react'
-import { AppLink } from '@/components/ui/app-link'
-import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
 
-export type HealthStatus = 'ok' | 'warning' | 'critical' | 'loading' | 'error'
-
-function StatusDot({ status }: { status: HealthStatus }) {
-  return (
-    <span
-      className={cn(
-        'inline-block h-2 w-2 rounded-full flex-shrink-0',
-        status === 'ok' && 'bg-green-500',
-        status === 'warning' && 'bg-amber-500',
-        status === 'critical' && 'bg-red-500',
-        status === 'loading' && 'bg-muted animate-pulse',
-        status === 'error' && 'bg-muted'
-      )}
-      role="img"
-      aria-label={`Status: ${status}`}
-    />
-  )
-}
+// Re-exported for modules that import the status union from here.
+export type { HealthStatus }
 
 interface HealthCardProps {
   check: HealthCheckDef
   thresholds: Thresholds
   hostId: number
-  /** Resolved data for this check from the batched health query. */
-  result: HealthCheckState
-  /** True only while the batched query has no cached data yet. */
-  isLoading: boolean
+  /** Status/value/label resolved upstream in the grid. */
+  computed: ComputedCheck
+  /** Observed values, oldest first, for the trend sparkline. */
+  spark?: number[]
+  /** ClickHouse version, forwarded to the detail dialog. */
+  clickhouseVersion?: string
 }
 
+/**
+ * A single health check card. Presentational: the grid computes status (so it
+ * can sort/count/filter) and hands it down. The card renders the shared shell
+ * and owns only its own detail dialog.
+ */
 export function HealthCard({
   check,
   thresholds,
   hostId,
-  result,
-  isLoading,
+  computed,
+  spark,
+  clickhouseVersion,
 }: HealthCardProps) {
   const [detailOpen, setDetailOpen] = useState(false)
-
-  let status: HealthStatus = 'loading'
-  let value: number | null = null
-  let label = ''
-  let row: Record<string, unknown> | undefined
-
-  const metaStatus = result.status
-  const isUnavailable =
-    metaStatus === 'table_not_found' || metaStatus === 'table_not_configured'
-
-  if (isLoading) {
-    status = 'loading'
-    label = 'Loading…'
-  } else if (result.error) {
-    status = 'error'
-    label = 'Unavailable'
-  } else if (isUnavailable) {
-    status = 'error'
-    label = result.statusMessage ?? 'Unavailable'
-  } else if (result.data && result.data.length > 0) {
-    row = result.data[0] as Record<string, unknown>
-    const raw = row[check.valueKey]
-    value = raw === null || raw === undefined ? 0 : Number(raw)
-    label = check.formatLabel ? check.formatLabel(value) : String(value)
-    if (Number.isFinite(value)) {
-      if (value >= thresholds.critical) status = 'critical'
-      else if (value >= thresholds.warning) status = 'warning'
-      else status = 'ok'
-    } else {
-      status = 'error'
-      label = 'Invalid value'
-      value = null
-    }
-  } else {
-    value = 0
-    label = check.formatLabel ? check.formatLabel(0) : '0'
-    status = 'ok'
-  }
-
-  const lastStatusRef = useRef<'ok' | 'warning' | 'critical' | null>(null)
-
-  useEffect(() => {
-    if (status !== 'ok' && status !== 'warning' && status !== 'critical') return
-    const prev = lastStatusRef.current
-    if (isEscalation(prev, status) && status !== 'ok') {
-      void (async () => {
-        try {
-          await dispatchAlert({
-            checkId: check.id,
-            title: check.title,
-            severity: status,
-            value,
-            label,
-            hostId,
-          })
-        } catch (error) {
-          console.error('Failed to dispatch health alert', error)
-        }
-      })()
-    }
-    lastStatusRef.current = status
-  }, [status, value, label, check.id, check.title, hostId])
-
-  const displayValue = check.formatValue
-    ? check.formatValue(value)
-    : value !== null
-      ? value.toLocaleString()
-      : '—'
-
-  const withHost = (href: string) =>
-    `${href}${href.includes('?') ? '&' : '?'}host=${hostId}`
-
-  const Icon = check.icon
+  const { status, value, label, displayValue, row } = computed
 
   return (
     <>
-      <div
-        className={cn(
-          'group flex flex-col gap-3 rounded-lg border p-4 bg-card transition-colors',
-          status === 'critical' && 'border-red-500/50 bg-red-500/5',
-          status === 'warning' && 'border-amber-500/50 bg-amber-500/5'
-        )}
-      >
-        {/* Header: icon + title + status dot + expand button */}
-        <div className="flex items-center gap-2">
-          {Icon && (
-            <Icon
-              className={cn(
-                'size-4 flex-shrink-0',
-                status === 'critical' && 'text-red-500',
-                status === 'warning' && 'text-amber-500',
-                status === 'ok' && 'text-green-500',
-                (status === 'loading' || status === 'error') &&
-                  'text-muted-foreground'
-              )}
-              aria-hidden
-            />
-          )}
-          <span className="text-[12.5px] font-medium text-muted-foreground leading-tight flex-1 min-w-0 truncate">
-            {check.title}
-          </span>
-          <StatusDot status={status} />
-          <button
-            type="button"
-            onClick={() => setDetailOpen(true)}
-            aria-label={`Open ${check.title} details`}
-            className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-          >
-            <Maximize2 className="size-3" />
-          </button>
-        </div>
-
-        {/* Body: big number + sub-label */}
-        <button
-          type="button"
-          onClick={() => setDetailOpen(true)}
-          className="text-left"
-        >
-          <div className="text-2xl font-bold tabular-nums">{displayValue}</div>
-          <div className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
-            {label}
-          </div>
-        </button>
-
-        {/* Footer: related links as tappable chips */}
-        {check.relatedLinks && check.relatedLinks.length > 0 && (
-          <div className="border-t pt-2">
-            <div className="flex flex-wrap gap-1">
-              {check.relatedLinks.slice(0, 3).map((l) => (
-                <AppLink
-                  key={l.href}
-                  href={withHost(l.href)}
-                  className={cn(
-                    'inline-flex items-center rounded-md px-2 py-0.5',
-                    'text-[11px] font-medium leading-none',
-                    'bg-muted/60 text-muted-foreground',
-                    'hover:bg-muted hover:text-foreground',
-                    'transition-colors'
-                  )}
-                >
-                  {l.label}
-                </AppLink>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <HealthCardShell
+        icon={check.icon}
+        title={check.title}
+        status={status}
+        displayValue={displayValue}
+        sublabel={label}
+        spark={spark}
+        links={check.relatedLinks}
+        hostId={hostId}
+        onExpand={() => setDetailOpen(true)}
+      />
 
       <HealthDetailDialog
         open={detailOpen}
@@ -205,7 +61,7 @@ export function HealthCard({
         label={label}
         thresholds={thresholds}
         row={row}
-        clickhouseVersion={result.clickhouseVersion}
+        clickhouseVersion={clickhouseVersion}
       />
     </>
   )
