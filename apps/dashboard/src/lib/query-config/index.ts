@@ -1,5 +1,8 @@
 import type { QueryConfig } from '@/types/query-config'
 
+import { DECLARATIVE_CATALOG } from './declarative/catalog'
+import { getConfigSource, loadDeclarativeConfig } from './declarative/loader'
+
 export type { QueryConfig } from './types'
 
 export { getSqlForDisplay } from './types'
@@ -212,9 +215,17 @@ export const queries: Array<QueryConfig> = [
   ...anomalyQueries,
 ]
 
-export const getQueryConfigByName = (name: string): QueryConfig | undefined => {
+export const getQueryConfigByName = (
+  name: string,
+  runtimeEnv?: Record<string, string | undefined>
+): QueryConfig | undefined => {
   if (!name) {
     return undefined
+  }
+
+  if (getConfigSource(runtimeEnv) === 'declarative') {
+    const decl = DECLARATIVE_CATALOG[name]
+    if (decl) return loadDeclarativeConfig(decl)
   }
 
   return queries.find((q) => q.name === name)
