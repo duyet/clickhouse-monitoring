@@ -12,6 +12,8 @@
 
 import {
   ArrowRightIcon,
+  DatabaseIcon,
+  ExternalLinkIcon,
   MonitorIcon,
   PanelRightCloseIcon,
   PlugZapIcon,
@@ -26,6 +28,7 @@ import { AgentModelPicker } from '@/components/agents/welcome/agent-model-picker
 import { SkillDetailDialog } from '@/components/agents/welcome/skill-detail-dialog'
 import { SkillsLibraryDialog } from '@/components/agents/welcome/skills-library-dialog'
 import { SUGGESTED_PROMPTS } from '@/components/agents/welcome/suggested-prompts'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -37,6 +40,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
+import {
+  CONVERSATION_BACKEND_LABELS,
+  useConversationBackend,
+} from '@/lib/hooks/use-conversation-backend'
 import { useHostId } from '@/lib/swr/use-host'
 import { cn } from '@/lib/utils'
 
@@ -88,6 +95,11 @@ export function AgentSettingsSidebar({
           <MonitorIcon className="text-muted-foreground size-3.5" />
           <span className="font-mono text-[12.5px]">{hostName}</span>
         </div>
+      </SidebarSection>
+
+      {/* CONVERSATION HISTORY */}
+      <SidebarSection label="Conversation History">
+        <ConversationHistoryPanel />
       </SidebarSection>
 
       {/* MODEL */}
@@ -276,6 +288,57 @@ export function AgentSettingsSidebar({
         {sections}
       </div>
     </aside>
+  )
+}
+
+/**
+ * Read-only panel showing where conversation history is persisted. The backend
+ * is fixed at deploy time via environment variables, so nothing here is
+ * editable — it only surfaces the active backend and, for AgentState, a link to
+ * the service plus the AI-enrichment status.
+ */
+function ConversationHistoryPanel() {
+  const { backend, supportsAiEnrichment, isLoading } = useConversationBackend()
+  const label = CONVERSATION_BACKEND_LABELS[backend]
+  const isAgentState = backend === 'agentstate'
+
+  return (
+    <div className="space-y-1.5">
+      <div className="bg-background border-input flex h-9 items-center gap-2 rounded-md border px-3">
+        <DatabaseIcon className="text-muted-foreground size-3.5 shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-[12.5px]">
+          {isLoading ? 'Detecting…' : label}
+        </span>
+        {isAgentState && (
+          <Badge
+            variant={supportsAiEnrichment ? 'default' : 'secondary'}
+            className="shrink-0 text-[9.5px]"
+          >
+            {supportsAiEnrichment ? 'AI enrichment on' : 'AI enrichment off'}
+          </Badge>
+        )}
+      </div>
+
+      {isAgentState && (
+        <a
+          href="https://agentstate.app"
+          target="_blank"
+          rel="noreferrer"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted/40 -mx-1 flex items-center gap-1.5 rounded px-1 py-0.5 text-[11px] transition-colors"
+        >
+          <ExternalLinkIcon className="size-3 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">
+            Manage history on AgentState
+          </span>
+          <ArrowRightIcon className="size-2.5 shrink-0" />
+        </a>
+      )}
+
+      <p className="text-muted-foreground text-[10.5px] leading-snug">
+        The history backend is configured at deploy time via environment
+        variables and cannot be changed here.
+      </p>
+    </div>
   )
 }
 
