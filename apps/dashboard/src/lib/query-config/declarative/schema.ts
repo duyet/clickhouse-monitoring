@@ -44,6 +44,8 @@ export const versionedSqlEntrySchema = z.object({
   since: versionStringSchema,
   sql: z.string().min(1, 'sql string must not be empty'),
   description: z.string().optional(),
+  // Per-version column overrides (mirrors VersionedSql.columns from @chm/sql-builder)
+  columns: z.array(z.string()).optional(),
 })
 
 export const sqlSchema = z.union([

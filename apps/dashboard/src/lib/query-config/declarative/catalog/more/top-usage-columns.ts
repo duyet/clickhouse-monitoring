@@ -1,0 +1,74 @@
+import type { DeclarativeQueryConfig } from '../../schema'
+
+export const topUsageColumnsDeclarative: DeclarativeQueryConfig = {
+  name: 'top-usage-columns',
+  defaultView: 'auto',
+  card: { primary: 'column' },
+  description: 'Most usage columns of table based on system.query_log',
+  // docs: QUERY_LOG — not a URL, cannot be expressed declaratively; omitted
+  optional: false,
+  tableCheck: 'system.query_log',
+  sql: [
+    {
+      since: '23.8',
+      sql: `
+      SELECT
+          columns as column,
+          count() as count,
+          round(100 * count() / max(count()) OVER ()) as pct_count
+      FROM merge('system', '^query_log')
+      ARRAY JOIN columns
+      WHERE (query_kind = 'Select')
+        AND (type = 'QueryFinish')
+        AND (has(tables, {table: String}))
+        AND (positionCaseInsensitive(column, {table:String}) != 0)
+      GROUP BY 1
+      ORDER BY 2 DESC`,
+      description: 'Base query without query_cache_usage',
+    },
+    {
+      since: '24.1',
+      sql: `
+      SELECT
+          columns as column,
+          count() as count,
+          round(100 * count() / max(count()) OVER ()) as pct_count,
+          countIf(query_cache_usage = 'Read') as cache_hits,
+          countIf(query_cache_usage != 'None' AND query_cache_usage != 'Unknown') as cache_usage,
+          round(100 * countIf(query_cache_usage = 'Read') / count(), 2) as cache_hit_rate
+      FROM merge('system', '^query_log')
+      ARRAY JOIN columns
+      WHERE (query_kind = 'Select')
+        AND (type = 'QueryFinish')
+        AND (has(tables, {table: String}))
+        AND (positionCaseInsensitive(column, {table:String}) != 0)
+      GROUP BY 1
+      ORDER BY 2 DESC`,
+      description: 'Added query_cache_usage aggregations for cache insights',
+      columns: [
+        'column',
+        'count',
+        'pct_count',
+        'cache_hits',
+        'cache_usage',
+        'cache_hit_rate',
+      ],
+    },
+  ],
+  columns: [
+    'column',
+    'count',
+    'pct_count',
+    'cache_hits',
+    'cache_usage',
+    'cache_hit_rate',
+  ],
+  columnFormats: {
+    count: ['background-bar', { numberFormat: true }],
+    pct_count: ['background-bar', { numberFormat: true }],
+    cache_hits: 'number',
+    cache_usage: 'number',
+    cache_hit_rate: ['background-bar', { numberFormat: true }],
+  },
+  defaultParams: { table: '' },
+}
