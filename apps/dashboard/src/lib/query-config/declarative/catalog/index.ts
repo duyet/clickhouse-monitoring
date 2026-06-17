@@ -1,0 +1,209 @@
+/**
+ * DECLARATIVE_CATALOG — Plan 02L-prep.
+ *
+ * Central registry of all declarative query configs keyed by their .name
+ * field. Used by getQueryConfigByName when CHM_CONFIG_SOURCE=declarative.
+ *
+ * This file is DORMANT at runtime when the default flag (ts) is in effect —
+ * getQueryConfigByName falls through to the TS queries array instead.
+ * Flip CHM_CONFIG_SOURCE=declarative to route lookups here.
+ */
+
+import type { DeclarativeQueryConfig } from '../schema'
+
+// Anomaly
+import {
+  anomalySummaryDeclarative,
+  diskUsageChangeDeclarative,
+  errorRateBaselineDeclarative,
+  memoryUsageBaselineDeclarative,
+  mergePerformanceBaselineDeclarative,
+  queryCountBaselineDeclarative,
+  replicationLagBaselineDeclarative,
+} from './anomaly/anomaly-queries'
+// Explorer
+import { explorerColumnsDeclarative } from './explorer/columns'
+import { explorerDatabasesDeclarative } from './explorer/databases'
+import { explorerDdlDeclarative } from './explorer/ddl'
+import {
+  explorerAllDependenciesDeclarative,
+  explorerDatabaseDependenciesDeclarative,
+  explorerDependenciesDownstreamDeclarative,
+  explorerDependenciesUpstreamDeclarative,
+  explorerDictionarySourceDeclarative,
+  explorerTableDependenciesDeclarative,
+} from './explorer/dependencies'
+import { explorerIndexesDeclarative } from './explorer/indexes'
+import { explorerProjectionsDeclarative } from './explorer/projections'
+import { explorerSkipIndexesDeclarative } from './explorer/skip-indexes'
+import { explorerTablesDeclarative } from './explorer/tables'
+// Keeper
+import { keeperConnectionLogDeclarative } from './keeper/keeper-connection-log'
+import { keeperInfoDeclarative } from './keeper/keeper-info'
+import { keeperLogDeclarative } from './keeper/keeper-log'
+import { keeperOverviewDeclarative } from './keeper/keeper-overview'
+import { keeperPresenceDeclarative } from './keeper/keeper-presence'
+import { keeperWatchesDeclarative } from './keeper/keeper-watches'
+// Logs
+import { crashLogDeclarative } from './logs/crashes'
+import { textLogDeclarative } from './logs/text-log'
+// Merges
+import { mergesDeclarative } from './merges/merges'
+// More
+import { asynchronousMetricsDeclarative } from './more/asynchronous-metrics'
+import { backupsDeclarative } from './more/backups'
+import { dictionariesDeclarative } from './more/dictionaries'
+import { errorsDeclarative } from './more/errors'
+import { rolesDeclarative } from './more/roles'
+import { topUsageColumnsDeclarative } from './more/top-usage-columns'
+import { topUsageTablesDeclarative } from './more/top-usage-tables'
+import { zookeeperDeclarative } from './more/zookeeper'
+// Queries
+import { commonErrorsDeclarative } from './queries/common-errors'
+import { parallelizationDeclarative } from './queries/parallelization'
+import { profilerDeclarative } from './queries/profiler'
+import { queryViewsLogDeclarative } from './queries/query-views-log'
+import { threadAnalysisDeclarative } from './queries/thread-analysis'
+// Security
+import { loginAttemptsDeclarative } from './security/login-attempts'
+import { sessionsDeclarative } from './security/sessions'
+// System
+import {
+  clusterLiveMetricsAllDeclarative,
+  clusterLiveMetricsDeclarative,
+} from './system/cluster-live-metrics'
+import { clustersDeclarative } from './system/clusters'
+import { clustersTopologyDeclarative } from './system/clusters-topology'
+import {
+  databaseTableColumnsDeclarative,
+  tablesListDeclarative,
+} from './system/database-table'
+import {
+  databaseDiskSpaceByDatabaseDeclarative,
+  databaseDiskSpaceDeclarative,
+  diskSpaceDeclarative,
+} from './system/disks'
+import { queryMetricLogDeclarative } from './system/query-metric-log'
+import {
+  clustersReplicasStatusDeclarative,
+  replicaTablesDeclarative,
+} from './system/replicas-status'
+import { replicatedMergeTreeSettingsDeclarative } from './system/replicated-merge-tree-settings'
+// Tables
+import { detachedPartsDeclarative } from './tables/detached-parts'
+import { distributedDdlQueueDeclarative } from './tables/distributed-ddl-queue'
+import { droppedTablesDeclarative } from './tables/dropped-tables'
+import { movesDeclarative } from './tables/moves'
+import { replicasDeclarative } from './tables/replicas'
+import { replicatedFetchesDeclarative } from './tables/replicated-fetches'
+import { replicationQueueDeclarative } from './tables/replication-queue'
+import { viewRefreshesDeclarative } from './tables/view-refreshes'
+
+// ---------------------------------------------------------------------------
+// Build the catalog
+// ---------------------------------------------------------------------------
+
+const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
+  // Anomaly
+  queryCountBaselineDeclarative,
+  memoryUsageBaselineDeclarative,
+  mergePerformanceBaselineDeclarative,
+  replicationLagBaselineDeclarative,
+  errorRateBaselineDeclarative,
+  diskUsageChangeDeclarative,
+  anomalySummaryDeclarative,
+
+  // Explorer
+  explorerColumnsDeclarative,
+  explorerDatabasesDeclarative,
+  explorerDdlDeclarative,
+  explorerDatabaseDependenciesDeclarative,
+  explorerDictionarySourceDeclarative,
+  explorerDependenciesDownstreamDeclarative,
+  explorerDependenciesUpstreamDeclarative,
+  explorerAllDependenciesDeclarative,
+  explorerTableDependenciesDeclarative,
+  explorerIndexesDeclarative,
+  explorerProjectionsDeclarative,
+  explorerSkipIndexesDeclarative,
+  explorerTablesDeclarative,
+
+  // Keeper
+  keeperConnectionLogDeclarative,
+  keeperInfoDeclarative,
+  keeperLogDeclarative,
+  keeperOverviewDeclarative,
+  keeperPresenceDeclarative,
+  keeperWatchesDeclarative,
+
+  // Logs
+  crashLogDeclarative,
+  textLogDeclarative,
+
+  // Merges
+  mergesDeclarative,
+
+  // More
+  asynchronousMetricsDeclarative,
+  backupsDeclarative,
+  dictionariesDeclarative,
+  errorsDeclarative,
+  rolesDeclarative,
+  topUsageColumnsDeclarative,
+  topUsageTablesDeclarative,
+  zookeeperDeclarative,
+
+  // Queries
+  commonErrorsDeclarative,
+  parallelizationDeclarative,
+  profilerDeclarative,
+  queryViewsLogDeclarative,
+  threadAnalysisDeclarative,
+
+  // Security
+  loginAttemptsDeclarative,
+  sessionsDeclarative,
+
+  // System
+  clusterLiveMetricsDeclarative,
+  clusterLiveMetricsAllDeclarative,
+  clustersTopologyDeclarative,
+  clustersDeclarative,
+  databaseTableColumnsDeclarative,
+  tablesListDeclarative,
+  diskSpaceDeclarative,
+  databaseDiskSpaceDeclarative,
+  databaseDiskSpaceByDatabaseDeclarative,
+  queryMetricLogDeclarative,
+  clustersReplicasStatusDeclarative,
+  replicaTablesDeclarative,
+  replicatedMergeTreeSettingsDeclarative,
+
+  // Tables
+  detachedPartsDeclarative,
+  distributedDdlQueueDeclarative,
+  droppedTablesDeclarative,
+  movesDeclarative,
+  replicasDeclarative,
+  replicatedFetchesDeclarative,
+  replicationQueueDeclarative,
+  viewRefreshesDeclarative,
+]
+
+// Assert no duplicate names at module load time — two configs sharing a name
+// would be a catalog authoring bug and should fail loudly.
+const seen = new Set<string>()
+for (const cfg of ALL_DECLARATIVE) {
+  if (seen.has(cfg.name)) {
+    throw new Error(
+      `DECLARATIVE_CATALOG: duplicate name detected: '${cfg.name}'. Each catalog entry must have a unique name.`
+    )
+  }
+  seen.add(cfg.name)
+}
+
+export const DECLARATIVE_CATALOG: Record<string, DeclarativeQueryConfig> =
+  ALL_DECLARATIVE.reduce<Record<string, DeclarativeQueryConfig>>((acc, cfg) => {
+    acc[cfg.name] = cfg
+    return acc
+  }, {})
