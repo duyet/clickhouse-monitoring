@@ -10,6 +10,7 @@ import type { LanguageModel } from 'ai'
 import { resolveDefaultAgentModel } from '../agent-model-registry'
 import { parseModelId, resolveProvider } from '../providers'
 import { createOpenAI } from '@ai-sdk/openai'
+import { createAnyRouter } from '@anyr/ai-sdk-provider'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
 export const DEFAULT_MODEL =
@@ -57,9 +58,7 @@ function getAppMetadata(referer?: string) {
   }
 }
 
-function getOpenAICompatibleHeaders(providerId: string, referer?: string) {
-  if (providerId !== 'anyrouter') return undefined
-
+function getAnyRouterHeaders(referer?: string): Record<string, string> {
   const meta = getAppMetadata(referer)
   // X-AnyRouter-Source is the app identifier AnyRouter groups rankings by (its
   // curation matches this against `chmonitor`); the marketplace category goes in
@@ -136,11 +135,22 @@ export function resolveAgentChatModel({
     }
   }
 
-  const headers = getOpenAICompatibleHeaders(resolved.providerId, referer)
+  if (resolved.providerId === 'anyrouter') {
+    const anyrouter = createAnyRouter({
+      apiKey: resolved.apiKey,
+      baseURL: resolved.baseURL,
+      headers: getAnyRouterHeaders(referer),
+    })
+    return {
+      model: anyrouter(modelId) as LanguageModel,
+      modelId,
+      providerId: resolved.providerId,
+    }
+  }
+
   const openai = createOpenAI({
     apiKey: resolved.apiKey,
     baseURL: resolved.baseURL,
-    ...(headers && { headers }),
   })
 
   return {
