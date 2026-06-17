@@ -360,6 +360,14 @@ const ChartZookeeperWait = lazy(() =>
  */
 export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
   {
+    id: 'query-count-heatmap-overview',
+    component: ChartQueryCountHeatmap,
+    title: 'Query Activity Heatmap',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
+    type: 'custom',
+    href: '/history-queries',
+  },
+  {
     id: 'query-count-24h',
     component: ChartQueryCount,
     title: 'Query Count',
@@ -513,20 +521,20 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     type: 'area',
     href: '/metrics',
   },
-  {
-    id: 'query-count-heatmap-overview',
-    component: ChartQueryCountHeatmap,
-    title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
-    type: 'custom',
-    href: '/history-queries',
-  },
 ]
 
 /**
  * Queries tab charts - query performance and patterns (detailed view)
  */
 export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
+  {
+    id: 'query-count-heatmap',
+    component: ChartQueryCountHeatmap,
+    title: 'Query Activity Heatmap',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
+    type: 'custom',
+    href: '/history-queries',
+  },
   {
     id: 'query-count-14d',
     component: ChartQueryCountByUser,
@@ -581,14 +589,6 @@ export const QUERIES_TAB_CHARTS: OverviewChartConfig[] = [
     interval: 'toStartOfHour',
     className: 'w-full h-full',
     type: 'area',
-    href: '/history-queries',
-  },
-  {
-    id: 'query-count-heatmap',
-    component: ChartQueryCountHeatmap,
-    title: 'Query Activity Heatmap',
-    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
-    type: 'custom',
     href: '/history-queries',
   },
   {
