@@ -27,6 +27,7 @@ import {
 } from '@/lib/health/history-storage'
 import { loadThresholds } from '@/lib/health/thresholds-storage'
 import { useHostId } from '@/lib/swr'
+import { track } from '@/lib/telemetry'
 import { cn } from '@/lib/utils'
 
 const STUCK_MUTATIONS_CHART = 'summary-stuck-mutations'
@@ -73,6 +74,11 @@ export function HealthGrid() {
       window.removeEventListener('health-thresholds-changed', handler)
       window.removeEventListener('storage', handler)
     }
+  }, [])
+
+  // Fire-and-forget product telemetry — no-op unless enabled.
+  useEffect(() => {
+    track('health_viewed')
   }, [])
 
   // Every card's chart name, fetched together in one request.

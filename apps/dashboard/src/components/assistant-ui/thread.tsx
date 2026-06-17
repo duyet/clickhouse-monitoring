@@ -58,6 +58,7 @@ import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message
 import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
 import { resolveConversationBackend } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
+import { track } from '@/lib/telemetry'
 
 interface ThreadProps {
   /** Display name to weave into the welcome heading. */
@@ -167,6 +168,7 @@ function ThreadWelcome({
         role: 'user',
         content: [{ type: 'text', text: trimmed }],
       })
+      track('ai_query_sent')
     },
     [threadRuntime, ensureAuthed]
   )

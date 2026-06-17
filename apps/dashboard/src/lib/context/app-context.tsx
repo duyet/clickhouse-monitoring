@@ -6,9 +6,11 @@ import {
   type SetStateAction,
   use,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+import { track } from '@/lib/telemetry'
 
 export interface ContextValue {
   interval: ClickHouseInterval
@@ -83,6 +85,11 @@ export const AppProvider = ({
         return next
       })
     }, [])
+
+  // Fire-and-forget product telemetry — no-op unless enabled. Once per app load.
+  useEffect(() => {
+    track('app_loaded')
+  }, [])
 
   const value = useMemo<ContextValue>(
     () => ({
