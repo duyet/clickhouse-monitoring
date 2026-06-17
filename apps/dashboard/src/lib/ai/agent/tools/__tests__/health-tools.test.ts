@@ -26,13 +26,10 @@ function setupHealthMock() {
 }
 
 describe('createHealthTools', () => {
-  test('creates all health tools', () => {
+  test('creates health tools', () => {
     const tools = createHealthTools(0) as any
     expect(tools.get_metrics).toBeDefined()
-    expect(tools.get_system_resources).toBeDefined()
     expect(tools.get_disk_usage).toBeDefined()
-    expect(tools.get_errors).toBeDefined()
-    expect(tools.get_crash_log).toBeDefined()
   })
 
   test('get_metrics returns version, uptime, and connection metrics', async () => {
@@ -67,25 +64,6 @@ describe('createHealthTools', () => {
     expect(result.uptime_seconds).toBeUndefined()
   })
 
-  test('get_system_resources returns metrics and async_metrics', async () => {
-    Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore.metrics = [{ metric: 'MemoryTracking', value: 100 }]
-    queryStore.async_metrics = [
-      { metric: 'LoadAverage1', value: 2.5 },
-      { metric: 'OSMemoryTotal', value: 32000000000 },
-    ]
-    setupHealthMock()
-
-    const tools = createHealthTools(0) as any
-    const result = await tools.get_system_resources.execute({})
-
-    expect(result.metrics).toEqual([{ metric: 'MemoryTracking', value: 100 }])
-    expect(result.async_metrics).toEqual([
-      { metric: 'LoadAverage1', value: 2.5 },
-      { metric: 'OSMemoryTotal', value: 32000000000 },
-    ])
-  })
-
   test('get_disk_usage returns disk data', async () => {
     Object.keys(queryStore).forEach((k) => delete queryStore[k])
     queryStore.disks = [
@@ -111,61 +89,6 @@ describe('createHealthTools', () => {
         free_pct: 80,
       },
     ])
-  })
-
-  test('get_errors returns error data with default limit', async () => {
-    Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore.errors = [
-      {
-        name: 'UNKNOWN',
-        code: 50,
-        count: 10,
-        last_message: 'something broke',
-      },
-    ]
-    setupHealthMock()
-
-    const tools = createHealthTools(0) as any
-    const result = await tools.get_errors.execute({})
-
-    expect(result).toHaveLength(1)
-    expect(result[0].name).toBe('UNKNOWN')
-  })
-
-  test('get_crash_log returns crash data with default limit', async () => {
-    Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore.crash = [
-      { event_time: '2024-01-01', signal: 11, thread_id: 1, trace: 'stack...' },
-    ]
-    setupHealthMock()
-
-    const tools = createHealthTools(0) as any
-    const result = await tools.get_crash_log.execute({})
-
-    expect(result).toHaveLength(1)
-    expect(result[0].signal).toBe(11)
-  })
-
-  test('get_errors respects custom limit', async () => {
-    Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore.errors = [{ name: 'E1' }, { name: 'E2' }]
-    setupHealthMock()
-
-    const tools = createHealthTools(0) as any
-    const result = await tools.get_errors.execute({ limit: 1 })
-
-    expect(result).toHaveLength(2)
-  })
-
-  test('get_crash_log respects custom limit', async () => {
-    Object.keys(queryStore).forEach((k) => delete queryStore[k])
-    queryStore.crash = [{ event_time: '2024-01-01' }]
-    setupHealthMock()
-
-    const tools = createHealthTools(0) as any
-    const result = await tools.get_crash_log.execute({ limit: 5 })
-
-    expect(result).toHaveLength(1)
   })
 
   test('tools resolve hostId override', async () => {

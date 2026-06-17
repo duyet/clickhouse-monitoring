@@ -8,20 +8,20 @@ The agent connects through the **same ClickHouse host and user** as the rest of 
 
 | Category | What the agent covers |
 |---|---|
-| Schema exploration | List databases, tables, columns; discover data sources relevant to a topic |
+| Schema exploration | List databases, tables, columns; explore tables relevant to a topic |
 | Query analysis | Running, slow, failed, and expensive queries; EXPLAIN plans; optimization advice |
-| System health | Server metrics, CPU/memory/disk, error log, crash log, anomaly detection |
-| Storage, merges & mutations | Part sizes, active merges, stuck mutations, historical merge throughput |
-| Replication & cluster | Replication lag, queue, ZooKeeper/Keeper status, cluster topology, DDL queue |
-| Security & audit | Active sessions, login attempts, users and roles |
-| Schema migration safety | Assess ALTER impact, column usage (blast radius), table design recommendations |
-| Comparison & forecasting | Cross-host comparison, time-period comparison, disk capacity forecast |
+| System health | Server metrics, disks, errors, anomaly detection |
+| Storage, merges & mutations | Part sizes, active merges, stuck mutations, merge throughput |
+| Replication & cluster | Replication lag, queue, ZooKeeper/Keeper status, cluster topology |
+| Schema & data-type advice | ORDER BY/keys, codecs, skip indexes, column type right-sizing |
+| Tuning & upgrades | Hardware-based settings, version-upgrade guidance |
 | Charts & visualization | Run SQL and render an interactive chart inline |
-| Findings persistence | Record and retrieve structured findings (severity, category, metric, value) |
 
-**Skills** — when a question needs domain depth, the agent loads a bundled expert guide (a skill) before answering. Nine skills cover best practices, query optimization, system tables, troubleshooting, replication, cluster operations, storage, migration patterns, and security hardening. Available skills: `GET /api/v1/agent/skills`.
+A small set of tools delivers this: dedicated primitives for the common reads, and the `query` tool plus an expert **skill** recipe for everything else. See [Capabilities](/docs/ai-agent/capabilities) for the full list.
 
-**Dynamic workflows** — for multi-step tasks (incident triage, health checks, capacity planning) the agent picks a workflow template and runs it as a live checklist, updating each step as it progresses. Six templates are built in. See [Capabilities](/docs/ai-agent/capabilities) for the full list.
+**Skills** — when a question needs domain depth, the agent loads a bundled expert guide (a skill) with copy-pasteable SQL recipes before answering. Eighteen skills cover data analysis, anomaly detection, query tuning, schema & data-type design, hardware tuning, version upgrades, concept explanations, incident response, plan-and-verify, and the core domains (replication, cluster, storage, migration, security, best practices, troubleshooting, system tables). Available skills: `GET /api/v1/agent/skills`.
+
+**Plan and verify** — for multi-step tasks (incident triage, investigations, find-and-fix) the agent authors a live checklist with `update_plan`, keeps one step in progress, and verifies each result before stating it. Simple one-step questions skip the plan. See [Capabilities](/docs/ai-agent/capabilities) for details.
 
 ## Quick start
 
@@ -38,7 +38,7 @@ For full configuration options see [Configuration](/docs/ai-agent/configuration)
 ## Child pages
 
 - [Configuration](/docs/ai-agent/configuration) — all env vars, providers, access control
-- [Capabilities](/docs/ai-agent/capabilities) — tool categories, skills, workflow templates, examples
+- [Capabilities](/docs/ai-agent/capabilities) — tools, skills, plan & verify, examples
 - [Conversation History](/docs/ai-agent/conversation-history) — how history works, how to enable server persistence
   - [Store Backends](/docs/ai-agent/conversation-history/backends) — per-backend setup (D1, ClickHouse, Postgres, …)
 
