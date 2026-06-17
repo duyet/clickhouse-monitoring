@@ -213,6 +213,7 @@ plus a short list of what you changed:
     - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
+    - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
 
 ### AI Agent Access
 
