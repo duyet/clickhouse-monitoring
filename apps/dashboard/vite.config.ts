@@ -64,6 +64,10 @@ const CLIENT_ENV = {
   // Deployment target (docker | helm | cf | dev | unknown). Set in CI build
   // steps so telemetry can distinguish deployment environments.
   VITE_DEPLOY_TARGET: e.VITE_DEPLOY_TARGET ?? 'unknown',
+  // Collection endpoint for the opt-in daily instance ping. Empty by default —
+  // no network call is made unless this is explicitly set. No production
+  // endpoint is provisioned yet (TODO for a human).
+  VITE_TELEMETRY_ENDPOINT: e.VITE_TELEMETRY_ENDPOINT ?? '',
   VITE_GIT_SHA:
     e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
   VITE_GIT_REF:
