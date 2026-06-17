@@ -8,7 +8,7 @@ import {
 } from './logo-status-indicator'
 import { useState } from 'react'
 import { AddHostDialog } from '@/components/connections'
-import { ClickHouseLogo } from '@/components/icons/clickhouse-logo'
+import { ChmonitorLogo } from '@/components/icons/chmonitor-logo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +67,7 @@ export function HostSwitcher() {
               )}
             >
               <div className="relative">
-                <ClickHouseLogo width={20} height={20} className="size-5" />
+                <ChmonitorLogo width={20} height={20} className="size-5" />
                 {!showExpanded && <LogoStatusIndicatorSkeleton />}
               </div>
               {showExpanded && (
@@ -113,7 +113,7 @@ export function HostSwitcher() {
                     )}
                   >
                     <div className="relative">
-                      <ClickHouseLogo
+                      <ChmonitorLogo
                         width={20}
                         height={20}
                         className="size-5 opacity-50"
@@ -177,7 +177,7 @@ export function HostSwitcher() {
                     )}
                   >
                     <div className="relative">
-                      <ClickHouseLogo
+                      <ChmonitorLogo
                         width={20}
                         height={20}
                         className="size-5"
@@ -256,7 +256,7 @@ export function HostSwitcher() {
                 )}
               >
                 <div className="relative">
-                  <ClickHouseLogo width={20} height={20} className="size-5" />
+                  <ChmonitorLogo width={20} height={20} className="size-5" />
                   {!showExpanded && (
                     <LogoStatusIndicator hostId={activeHost.id} />
                   )}
