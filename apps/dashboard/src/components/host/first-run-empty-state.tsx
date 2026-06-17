@@ -1,7 +1,7 @@
 import { DatabaseZap } from 'lucide-react'
 
-import { AppLink } from '@/components/ui/app-link'
 import { EmptyState } from '@/components/ui/empty-state'
+import { docsSiteUrl } from '@/lib/docs-site'
 
 /**
  * First-run onboarding surface.
@@ -50,18 +50,22 @@ export function FirstRunEmptyState() {
       {/* Doc links live outside EmptyState because its built-in actions are
           onClick-only (no href) and its description is line-clamped. */}
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <AppLink
-          href="/docs/getting-started"
+        <a
+          href={docsSiteUrl('getting-started')}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-[13px] font-medium text-background hover:bg-foreground/90"
         >
           Getting started
-        </AppLink>
-        <AppLink
-          href="/docs/reference/environment-variables"
+        </a>
+        <a
+          href={docsSiteUrl('reference/environment-variables')}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] font-medium hover:bg-muted"
         >
           Environment variables
-        </AppLink>
+        </a>
       </div>
     </div>
   )

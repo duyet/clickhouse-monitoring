@@ -62,6 +62,12 @@ export const CommandPalette = function CommandPalette({
   const navigate = (href: string) => {
     setOpen(false)
     setInputValue('')
+    // External destinations (e.g. Docs → docs.chmonitor.dev) open in a new tab
+    // instead of being routed through the SPA.
+    if (/^https?:\/\//.test(href)) {
+      window.open(href, '_blank', 'noopener,noreferrer')
+      return
+    }
     const url = buildUrl(href, { host: hostId })
     router.push(url)
   }

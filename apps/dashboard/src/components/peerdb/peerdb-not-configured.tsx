@@ -1,6 +1,6 @@
 import { BookOpenIcon, ExternalLinkIcon, PlugZapIcon } from 'lucide-react'
 
-import { AppLink } from '@/components/ui/app-link'
+import { docsSiteUrl } from '@/lib/docs-site'
 
 /** Shown when PEERDB_API_URL is unset and the proxy returns 503. */
 export function PeerDBNotConfigured() {
@@ -35,19 +35,23 @@ PEERDB_PASSWORD=your-peerdb-ui-password`}
       </pre>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <AppLink
-          href="/docs/advanced/peerdb-monitoring"
+        <a
+          href={docsSiteUrl('advanced/peerdb-monitoring')}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-[13px] font-medium text-background hover:bg-foreground/90"
         >
           <BookOpenIcon className="size-3.5" />
           Setup guide
-        </AppLink>
-        <AppLink
-          href="/docs/reference/environment-variables"
+        </a>
+        <a
+          href={docsSiteUrl('reference/environment-variables')}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] font-medium hover:bg-muted"
         >
           Environment variables
-        </AppLink>
+        </a>
         <a
           href="https://docs.peerdb.io"
           target="_blank"
