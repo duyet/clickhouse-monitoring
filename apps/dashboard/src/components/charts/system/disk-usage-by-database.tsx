@@ -1,10 +1,10 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
-import { useId } from 'react'
+import { useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { BarList } from '@/components/charts/primitives/bar-list'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RankBars } from '@/components/charts/primitives/rank-bars'
+import { SegmentedControl } from '@/components/filters/segmented-control'
 import { useChartData } from '@/lib/swr'
 
 type DataRow = {
@@ -16,12 +16,17 @@ type DataRow = {
   part_count: number
 }
 
+const MODE_OPTIONS = [
+  { label: 'Size', value: 'size' },
+  { label: 'Rows', value: 'rows' },
+]
+
 export const ChartDiskUsageByDatabase = function ChartDiskUsageByDatabase({
   title,
   className,
   hostId,
 }: ChartProps) {
-  const tabsId = useId()
+  const [mode, setMode] = useState<'size' | 'rows'>('size')
   const swr = useChartData<DataRow>({
     chartName: 'disk-usage-by-database',
     hostId,
@@ -31,17 +36,22 @@ export const ChartDiskUsageByDatabase = function ChartDiskUsageByDatabase({
   return (
     <ChartContainer swr={swr} title={title} className={className}>
       {(rows, sql, metadata, staleError, mutate) => {
-        const dataBySize = rows.map((row) => ({
-          name: row.database,
-          value: row.total_bytes,
-          formatted: row.readable_size,
-        }))
+        const max =
+          mode === 'size'
+            ? Math.max(...rows.map((r) => r.total_bytes), 0.0001)
+            : Math.max(...rows.map((r) => r.total_rows), 0.0001)
 
-        const dataByRows = rows.map((row) => ({
-          name: row.database,
-          value: row.total_rows,
-          formatted: row.readable_rows,
-        }))
+        const items = rows.map((row) => {
+          const v = mode === 'size' ? row.total_bytes : row.total_rows
+          const display =
+            mode === 'size' ? row.readable_size : row.readable_rows
+          return {
+            label: row.database,
+            value: display,
+            pct: Math.max(4, (v / max) * 100),
+            color: 'var(--chart-2)',
+          }
+        })
 
         return (
           <ChartCard
@@ -54,34 +64,18 @@ export const ChartDiskUsageByDatabase = function ChartDiskUsageByDatabase({
             staleError={staleError}
             onRetry={mutate}
           >
-            <Tabs
-              id={tabsId}
-              defaultValue="by-size"
-              className="overflow-hidden"
-            >
-              <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
-                <TabsTrigger
-                  key="by-size"
-                  value="by-size"
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
-                >
-                  By Disk Size
-                </TabsTrigger>
-                <TabsTrigger
-                  key="by-rows"
-                  value="by-rows"
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
-                >
-                  By Row Count
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="by-size" className="overflow-hidden">
-                <BarList data={dataBySize} formatedColumn="formatted" />
-              </TabsContent>
-              <TabsContent value="by-rows" className="overflow-hidden">
-                <BarList data={dataByRows} formatedColumn="formatted" />
-              </TabsContent>
-            </Tabs>
+            <div className="flex h-full min-h-0 flex-col gap-3">
+              <div className="flex items-center justify-end">
+                <SegmentedControl
+                  options={MODE_OPTIONS}
+                  value={mode}
+                  onChange={(v) => setMode(v as 'size' | 'rows')}
+                />
+              </div>
+              <div className="min-h-0 flex-1 overflow-auto">
+                <RankBars items={items} />
+              </div>
+            </div>
           </ChartCard>
         )
       }}
