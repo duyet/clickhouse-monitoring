@@ -29,6 +29,7 @@
     "verify-deploy": "bun scripts/verify-deploy.ts"
   },
   "dependencies": {
+    "@agentstate/sdk": "^0.1.2",
     "@ai-sdk/openai": "^3.0.72",
     "@ai-sdk/provider-utils": "^4.0.30",
     "@assistant-ui/react": "0.14.11",

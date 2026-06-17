@@ -36,6 +36,7 @@ Agents discover knowledge in this order:
 | **Specs** | [ai-insights.md](ai-insights.md) | spec | AI Insights engine: collect→enrich→persist (findings store), cron + manual generation, stable-key dismissal, overview panel |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
 | **Specs** | [agent-conversation-storage.md](agent-conversation-storage.md) | spec | Runtime-selected agent chat persistence backends and fallback rules |
+| **Specs** | [agentstate-conversation-store.md](agentstate-conversation-store.md) | spec | AgentState backend: resolveStore priority, external_id/tag isolation, append-only upsert, AI enrichment, backend/follow-ups routes |
 | **Specs** | [query-config-format.md](query-config-format.md) | spec | QueryConfig type format, versioned SQL, BackgroundBar columns |
 | **Specs** | [og-images.md](og-images.md) | spec | OG/social images: Satori+resvg generator, vendored fonts, auto-regenerated on Cloudflare deploy, meta wiring |
 | **Specs** | [cluster-topology.md](cluster-topology.md) | spec | Cluster topology SVG: layout pipeline, constant contracts, OKLCH gotcha, shared component, verification harness |
