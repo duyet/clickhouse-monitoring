@@ -24,6 +24,9 @@ interface ImportMetaEnv {
   // Query-config source flag. 'ts' = current TS configs (default); 'declarative'
   // = load from external declarative catalog. See lib/query-config/declarative/loader.ts.
   readonly VITE_CONFIG_SOURCE?: string
+  // Edition flag. 'community' (default, OSS, fail-open) | 'enterprise' (paid).
+  // See lib/edition/. Unset or unrecognised → 'community'.
+  readonly VITE_EDITION?: string
 }
 
 interface ImportMeta {
