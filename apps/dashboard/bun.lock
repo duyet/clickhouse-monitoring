@@ -5,6 +5,7 @@
     "": {
       "name": "dashboard-tsr",
       "dependencies": {
+        "@agentstate/sdk": "^0.1.2",
         "@ai-sdk/openai": "^3.0.72",
         "@ai-sdk/provider-utils": "^4.0.30",
         "@assistant-ui/react": "0.14.11",
@@ -98,6 +99,8 @@
     },
   },
   "packages": {
+    "@agentstate/sdk": ["@agentstate/sdk@0.1.2", "", { "peerDependencies": { "@langchain/langgraph-checkpoint": "^1.0.2" }, "optionalPeers": ["@langchain/langgraph-checkpoint"] }, "sha512-zNFkVMRc+j462MbNzS3MY9gVGvBFd1Ic+odCFe5WDQrTMhaA038OqUAp/EZtW1WBVNaskrIrLVAO2eTzPHIlrA=="],
+
     "@ai-sdk/gateway": ["@ai-sdk/gateway@3.0.133", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.30", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-Ebs+7iS9zUgJu5B0RlxM2JmDWzq79Cpd6YdiqcCzB5qFdpfQJPUDiXutqlQP89F2XGjOdDeidulBTXUdXWzOxw=="],
 
     "@ai-sdk/openai": ["@ai-sdk/openai@3.0.72", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.30" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-ZF545m6pCXLUTERFfRCyfM7WsG4Nu/A+jlXQjSv7w22dGov02ssB0e1kviI3NLIERfRF/U+n2rKbFuUjzYY7CQ=="],

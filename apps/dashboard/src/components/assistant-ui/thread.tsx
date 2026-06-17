@@ -38,6 +38,7 @@ import {
   renderGroupedPart,
 } from './-thread/chain-of-thought'
 import { ThreadComposer, WelcomeComposer } from './-thread/composer'
+import { FollowUpSuggestions } from './-thread/follow-up-suggestions'
 import { MessageStatsFooter } from './-thread/message-stats'
 import {
   ActionBarPrimitive,
@@ -111,6 +112,7 @@ export function Thread({
 
           <div className="sticky bottom-0 z-10 mx-auto flex w-full flex-col items-start gap-2 bg-background pb-3 px-4">
             <ThreadScrollToBottom />
+            <FollowUpSuggestions />
             <ThreadComposer />
             <p className="text-muted-foreground text-[11px] leading-4">
               The agent runs read-only ClickHouse queries. Conversations are

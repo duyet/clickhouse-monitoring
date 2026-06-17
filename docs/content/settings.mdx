@@ -15,6 +15,19 @@ To reach it, open the dashboard and click **Settings** in the navigation.
 
 Settings changes made in-app are stored per browser session or in the configured conversation store. They do not affect server-side environment variables.
 
+## Conversation History (agent settings sidebar)
+
+The agent settings sidebar includes a **read-only** "Conversation History" section that names the backend currently storing agent chats. The backend is chosen at deploy time by environment variables — it cannot be switched from the UI. Labels you may see:
+
+| Label | Meaning |
+|---|---|
+| **Browser** | History stays in `localStorage` (server persistence is off) |
+| **AgentState** | Managed/self-hosted [AgentState](https://agentstate.app) service; when AI enrichment is on, the chat also suggests follow-up questions |
+| **D1** | Cloudflare D1 (SQLite) database |
+| **Postgres** | A PostgreSQL-compatible database |
+
+To change the active backend, set the relevant server-side env vars and redeploy. See [Conversation history backends](/docs/ai-agent#conversation-history-backends) in the AI Agent docs for the full env-var reference and setup steps.
+
 ## Gating or disabling Settings
 
 By default, the Settings page is **public** — any visitor can open it. To restrict or remove it:

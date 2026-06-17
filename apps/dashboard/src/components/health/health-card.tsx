@@ -2,12 +2,12 @@ import { Maximize2 } from 'lucide-react'
 
 import type { Thresholds } from '@/lib/health/thresholds-storage'
 import type { HealthCheckDef } from './health-checks'
+import type { HealthCheckState } from './use-health-checks'
 
 import { HealthDetailDialog } from './health-detail-dialog'
 import { useEffect, useRef, useState } from 'react'
 import { AppLink } from '@/components/ui/app-link'
 import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
-import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 export type HealthStatus = 'ok' | 'warning' | 'critical' | 'loading' | 'error'
@@ -32,37 +32,42 @@ function StatusDot({ status }: { status: HealthStatus }) {
 interface HealthCardProps {
   check: HealthCheckDef
   thresholds: Thresholds
+  hostId: number
+  /** Resolved data for this check from the batched health query. */
+  result: HealthCheckState
+  /** True only while the batched query has no cached data yet. */
+  isLoading: boolean
 }
 
-export function HealthCard({ check, thresholds }: HealthCardProps) {
-  const hostId = useHostId()
+export function HealthCard({
+  check,
+  thresholds,
+  hostId,
+  result,
+  isLoading,
+}: HealthCardProps) {
   const [detailOpen, setDetailOpen] = useState(false)
-  const swr = useChartData({
-    chartName: check.chartName,
-    hostId,
-    refreshInterval: 30000,
-  })
 
   let status: HealthStatus = 'loading'
   let value: number | null = null
   let label = ''
   let row: Record<string, unknown> | undefined
 
-  const metaStatus = swr.metadata?.status
+  const metaStatus = result.status
   const isUnavailable =
     metaStatus === 'table_not_found' || metaStatus === 'table_not_configured'
 
-  if (swr.isLoading) {
+  if (isLoading) {
     status = 'loading'
     label = 'Loading…'
-  } else if (swr.error) {
+  } else if (result.error) {
     status = 'error'
     label = 'Unavailable'
   } else if (isUnavailable) {
     status = 'error'
-    label = swr.metadata?.statusMessage ?? 'Unavailable'
-  } else if (swr.data && swr.data.length > 0) {
-    row = swr.data[0] as Record<string, unknown>
+    label = result.statusMessage ?? 'Unavailable'
+  } else if (result.data && result.data.length > 0) {
+    row = result.data[0] as Record<string, unknown>
     const raw = row[check.valueKey]
     value = raw === null || raw === undefined ? 0 : Number(raw)
     label = check.formatLabel ? check.formatLabel(value) : String(value)
@@ -200,7 +205,7 @@ export function HealthCard({ check, thresholds }: HealthCardProps) {
         label={label}
         thresholds={thresholds}
         row={row}
-        clickhouseVersion={swr.metadata?.clickhouseVersion}
+        clickhouseVersion={result.clickhouseVersion}
       />
     </>
   )

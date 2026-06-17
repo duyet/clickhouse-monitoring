@@ -7,9 +7,11 @@
 
 import type { ConversationStore } from './types'
 
+import { AgentStateStore } from './agentstate-store'
 import { BrowserStore } from './browser-store'
 import { D1Store } from './d1-store'
 import { MemoryStore } from './memory-store'
+import { ConversationStoreError } from './types'
 // PostgresStore is NOT statically imported: the `postgres` package is
 // Node-only and must NOT be bundled into the Cloudflare Workers build.
 // It is loaded only at runtime via dynamic import when DATABASE_URL is set
@@ -23,15 +25,21 @@ import { featureFlags } from '@/lib/feature-flags'
  */
 const D1_BINDING_NAME = 'CONVERSATIONS_D1'
 const DATABASE_URL = 'DATABASE_URL'
+const AGENTSTATE_API_KEY = 'AGENTSTATE_API_KEY'
+const AGENTSTATE_BASE_URL = 'AGENTSTATE_BASE_URL'
+const AGENTSTATE_AI_ENRICH = 'AGENTSTATE_AI_ENRICH'
+const CONVERSATION_STORE_BACKEND = 'CONVERSATION_STORE_BACKEND'
 
 /**
  * Resolves the appropriate conversation store implementation at runtime.
  *
  * Resolution priority:
  * 1. Feature flag disabled → BrowserStore (localStorage)
- * 2. D1 binding available → D1Store (Cloudflare D1)
- * 3. DATABASE_URL env var → PostgresStore
- * 4. No database config → MemoryStore with warning
+ * 2. AgentState (forced via CONVERSATION_STORE_BACKEND=agentstate, or when
+ *    AGENTSTATE_API_KEY is set and no other backend is explicitly forced)
+ * 3. D1 binding available → D1Store (Cloudflare D1)
+ * 4. DATABASE_URL env var → PostgresStore
+ * 5. No database config → MemoryStore with warning
  *
  * @returns Promise resolving to ConversationStore instance
  *
@@ -47,7 +55,30 @@ export async function resolveStore(): Promise<ConversationStore> {
     return new BrowserStore()
   }
 
-  // 2. Check for Cloudflare D1 binding (highest priority for serverless)
+  // 2. AgentState backend. Used when explicitly forced, or when an API key is
+  // present and no other concrete backend is forced. This sits ahead of D1 so
+  // that an explicit AgentState configuration wins even inside Cloudflare.
+  const backend = process.env[CONVERSATION_STORE_BACKEND]
+  const agentStateApiKey = process.env[AGENTSTATE_API_KEY]
+  const otherBackendForced =
+    backend === 'd1' || backend === 'postgres' || backend === 'memory'
+
+  if (backend === 'agentstate' || (agentStateApiKey && !otherBackendForced)) {
+    if (!agentStateApiKey) {
+      throw new ConversationStoreError(
+        'AGENTSTATE_API_KEY is required when CONVERSATION_STORE_BACKEND is set to "agentstate".',
+        'VALIDATION_ERROR'
+      )
+    }
+
+    return new AgentStateStore({
+      apiKey: agentStateApiKey,
+      baseUrl: process.env[AGENTSTATE_BASE_URL],
+      aiEnrich: process.env[AGENTSTATE_AI_ENRICH] === 'true',
+    })
+  }
+
+  // 3. Check for Cloudflare D1 binding (highest priority for serverless)
   try {
     const db = getPlatformBindings().getD1Database(D1_BINDING_NAME)
     if (db) {
@@ -58,7 +89,7 @@ export async function resolveStore(): Promise<ConversationStore> {
     // Not in Cloudflare environment or no binding - continue to next check
   }
 
-  // 3. Check for Postgres DATABASE_URL (traditional database, Node-only path).
+  // 4. Check for Postgres DATABASE_URL (traditional database, Node-only path).
   // Dynamic import keeps the `postgres` package out of the Cloudflare Workers
   // bundle — workerd never reaches this branch (D1 is resolved above).
   if (process.env[DATABASE_URL]) {
@@ -66,7 +97,7 @@ export async function resolveStore(): Promise<ConversationStore> {
     return new PostgresStore(process.env[DATABASE_URL])
   }
 
-  // 4. Fallback to MemoryStore with warning
+  // 5. Fallback to MemoryStore with warning
   if (process.env.NODE_ENV === 'development' || process.env.CI) {
     console.warn(
       '[ConversationStore] No database configured (D1 binding or DATABASE_URL). ' +
@@ -93,6 +124,7 @@ export function isPersistentStore(store: ConversationStore): boolean {
   return (
     store instanceof D1Store ||
     store instanceof BrowserStore ||
+    store instanceof AgentStateStore ||
     !(store instanceof MemoryStore)
   )
 }
