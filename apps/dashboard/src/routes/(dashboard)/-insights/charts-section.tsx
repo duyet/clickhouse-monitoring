@@ -35,7 +35,7 @@ export function ChartsSection({ hostId }: { readonly hostId: number }) {
   const hasCompressionData = compressionData && compressionData.length > 0
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+    <div className="grid auto-rows-[280px] grid-cols-1 gap-3 lg:grid-cols-2">
       {hasTopTablesData && <TopTablesBySizeChart hostId={hostId} />}
       {hasCompressionData && <CompressionRatiosChart hostId={hostId} />}
       {!hasTopTablesData && !hasCompressionData && (
