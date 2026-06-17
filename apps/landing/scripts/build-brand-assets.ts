@@ -217,4 +217,9 @@ async function run() {
   console.log('done')
 }
 
-await run()
+try {
+  await run()
+} catch (err) {
+  console.error('brand asset generation failed:', err)
+  process.exit(1)
+}
