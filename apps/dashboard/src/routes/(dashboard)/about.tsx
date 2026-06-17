@@ -32,7 +32,7 @@ function FeatureCard({
       <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
         <Icon className="text-primary size-5" />
       </div>
-      <div className="space-y-1">
+      <div className="min-w-0 space-y-1">
         <h3 className="font-medium">{title}</h3>
         <p className="text-muted-foreground text-sm">{description}</p>
       </div>
