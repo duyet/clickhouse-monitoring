@@ -263,7 +263,9 @@ export function AgentVisualization({
             <ScatterChartPrimitive
               data={sortedRows}
               xKey={xKey}
-              yKeys={yKeys.length > 0 ? yKeys : [columns[1] ?? columns[0] ?? '']}
+              yKeys={
+                yKeys.length > 0 ? yKeys : [columns[1] ?? columns[0] ?? '']
+              }
               readable={viz.readable}
             />
           </Suspense>
