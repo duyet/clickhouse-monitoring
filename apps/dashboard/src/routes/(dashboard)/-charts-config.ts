@@ -278,6 +278,11 @@ const ChartDiskSize = lazy(() =>
     default: mod.ChartDiskSize,
   }))
 )
+const ChartDiskUsage = lazy(() =>
+  import('@/components/charts/system/disk-usage').then((mod) => ({
+    default: mod.ChartDiskUsage,
+  }))
+)
 const ChartDiskUsageByDatabase = lazy(() =>
   import('@/components/charts/system/disk-usage-by-database').then((mod) => ({
     default: mod.ChartDiskUsageByDatabase,
@@ -446,6 +451,14 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     className: 'w-full h-full',
     type: 'area',
     href: '/charts?name=connections-http,connections-interserver',
+  },
+  {
+    id: 'disk-usage-breakdown-overview',
+    component: ChartDiskUsage,
+    title: 'Disk Usage',
+    className: 'w-full h-full',
+    type: 'custom',
+    href: '/disks',
   },
   {
     id: 'disks-usage-overview',
