@@ -7,6 +7,7 @@ import { lazy, Suspense, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { InsightsPanel } from '@/components/insights/insights-panel'
 import { cardStyles } from '@/components/overview-charts/card-styles'
+import { DiskUsageCard } from '@/components/overview-charts/disk-usage-card'
 import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
 import { OverviewStatusStrip } from '@/components/overview-charts/overview-status-strip'
 import { ChartSkeleton, Skeleton, TabsSkeleton } from '@/components/skeletons'
@@ -165,6 +166,8 @@ function OverviewPageContent() {
     <div>
       <OverviewStatusStrip className="mb-3" />
       <OverviewCharts className="mb-4 sm:mb-6" />
+
+      <DiskUsageCard className="mb-4 sm:mb-6" />
 
       <ClientOnly fallback={null}>
         <InsightsPanel hostId={hostId} className="mb-4 sm:mb-6" />

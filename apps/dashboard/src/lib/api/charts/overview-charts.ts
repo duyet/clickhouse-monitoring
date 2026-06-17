@@ -42,4 +42,23 @@ export const overviewCharts: Record<string, ChartQueryBuilder> = {
       LIMIT 1
     `,
   }),
+
+  // Every disk (no LIMIT) for the overview Disk Usage breakdown card. Includes
+  // the engine `type` (local / s3 / cache …) and free space so each disk row
+  // can show its own bar + figures. Mirrors the column shape of diskSpaceConfig
+  // in lib/query-config/system/disks.ts.
+  'disk-size-all': () => ({
+    query: `
+      SELECT name,
+             type,
+             (total_space - unreserved_space) AS used_space,
+             formatReadableSize(used_space) AS readable_used_space,
+             total_space,
+             formatReadableSize(total_space) AS readable_total_space,
+             free_space,
+             formatReadableSize(free_space) AS readable_free_space
+      FROM system.disks
+      ORDER BY name
+    `,
+  }),
 }
