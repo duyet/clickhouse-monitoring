@@ -21,6 +21,9 @@ interface ImportMetaEnv {
   readonly VITE_GIT_REF?: string
   readonly VITE_BUILD_TIMESTAMP?: string
   readonly VITE_CI?: string
+  // Query-config source flag. 'ts' = current TS configs (default); 'declarative'
+  // = load from external declarative catalog. See lib/query-config/declarative/loader.ts.
+  readonly VITE_CONFIG_SOURCE?: string
 }
 
 interface ImportMeta {
