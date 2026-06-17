@@ -2,7 +2,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { BarList } from '@/components/charts/primitives/bar-list'
+import { RankBars } from '@/components/charts/primitives/rank-bars'
 import { useChartData } from '@/lib/swr'
 
 type DataRow = {
@@ -28,10 +28,17 @@ export const ChartCompressionRatio = function ChartCompressionRatio({
     <ChartContainer swr={swr} title={title} className={className}>
       {(dataArray, sql, metadata) => {
         const rows = dataArray as DataRow[]
-        const barData = rows.map((row) => ({
-          name: row.table_path,
-          value: row.compression_ratio,
-          formatted: `${row.compression_ratio}x (${row.compressed_size} → ${row.uncompressed_size})`,
+
+        // Sort ascending — lower ratio is better
+        const sorted = [...rows].sort(
+          (a, b) => a.compression_ratio - b.compression_ratio
+        )
+        const max = Math.max(...sorted.map((r) => r.compression_ratio), 0.0001)
+        const items = sorted.map((row) => ({
+          label: row.table_path,
+          value: `${row.compression_ratio}×`,
+          pct: Math.max(4, (row.compression_ratio / max) * 100),
+          color: 'var(--chart-2)',
         }))
 
         return (
@@ -42,7 +49,14 @@ export const ChartCompressionRatio = function ChartCompressionRatio({
             data={rows}
             metadata={metadata}
           >
-            <BarList data={barData} formatedColumn="formatted" />
+            <div className="flex h-full min-h-0 flex-col gap-3">
+              <div className="flex items-center justify-end text-[11px] text-muted-foreground">
+                compressed / raw · lower is better
+              </div>
+              <div className="min-h-0 flex-1 overflow-auto">
+                <RankBars items={items} />
+              </div>
+            </div>
           </ChartCard>
         )
       }}

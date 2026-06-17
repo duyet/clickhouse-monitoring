@@ -97,3 +97,6 @@ packages/clickhouse-client/src/wasm/generated/*
 .antigravitycli
 .cf-stub-backup/
 .agent-loop/
+
+# Cowork artifacts, context and memory (local strategy/planning)
+cowork/
