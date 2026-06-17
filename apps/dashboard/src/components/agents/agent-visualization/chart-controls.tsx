@@ -242,17 +242,15 @@ export function ChartControls({
           </ToggleButton>
         )}
 
-        {/* Log scale toggle */}
-        {chartType !== 'pie' &&
-          chartType !== 'radial' &&
-          chartType !== 'bar_list' && (
-            <ToggleButton
-              active={logScale}
-              onClick={() => onLogScaleChange(!logScale)}
-            >
-              Log
-            </ToggleButton>
-          )}
+        {/* Log scale toggle (radial/bar_list handled by the early return above) */}
+        {chartType !== 'pie' && (
+          <ToggleButton
+            active={logScale}
+            onClick={() => onLogScaleChange(!logScale)}
+          >
+            Log
+          </ToggleButton>
+        )}
       </div>
       {/* Combo chart: axis assignment per Y key */}
       {chartType === 'combo' && numericColumns.length > 1 && (
