@@ -60,6 +60,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     return {
       query: `
     SELECT name,
+           type,
            (total_space - unreserved_space) AS used_space,
            formatReadableSize(used_space) AS readable_used_space,
            total_space,
@@ -376,6 +377,18 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     HAVING part_count > 50
     ORDER BY part_count DESC
     LIMIT 30
+  `,
+  }),
+
+  'partition-part-health-summary': () => ({
+    query: `
+    SELECT
+      countIf(active) AS active_parts,
+      formatReadableQuantity(active_parts) AS readable_active_parts,
+      countIf(NOT active) AS outdated_parts,
+      uniqExactIf((database, table, partition), active) AS partitions,
+      round(active_parts / nullIf(partitions, 0), 1) AS avg_parts_per_partition
+    FROM system.parts
   `,
   }),
 
