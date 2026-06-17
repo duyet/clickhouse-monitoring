@@ -333,20 +333,22 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  'query-count-heatmap': ({ lastHours = 24 * 7 }) => {
+  // Per-day query volume for the GitHub-style contribution calendar. One row
+  // per calendar day; the client buckets these into week columns. Default
+  // window is one year (24 * 365 hours) so the calendar spans ~53 columns.
+  'query-count-heatmap': ({ lastHours = 24 * 365 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
       query: `
     SELECT
-        toDayOfWeek(event_time) AS day_of_week,
-        toHour(event_time) AS hour_of_day,
+        toString(toDate(event_time)) AS date,
         count() AS query_count,
         formatReadableQuantity(count()) AS readable_count
     FROM merge('system', '^query_log')
     WHERE type = 'QueryFinish'
       ${timeFilter ? `AND ${timeFilter}` : ''}
-    GROUP BY day_of_week, hour_of_day
-    ORDER BY day_of_week, hour_of_day
+    GROUP BY date
+    ORDER BY date ASC
   `,
     }
   },
