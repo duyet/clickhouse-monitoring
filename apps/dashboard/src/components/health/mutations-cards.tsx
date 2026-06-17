@@ -1,11 +1,17 @@
 import { GitMerge, Wrench } from 'lucide-react'
 
 import type { HealthStatus } from './health-card'
+import type { HealthCheckState } from './use-health-checks'
 
 import { useEffect, useRef } from 'react'
 import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
-import { useChartData, useHostId } from '@/lib/swr'
 import { cn } from '@/lib/utils'
+
+interface MutationsCardProps {
+  hostId: number
+  result: HealthCheckState
+  isLoading: boolean
+}
 
 function StatusDot({ status }: { status: HealthStatus }) {
   return (
@@ -55,28 +61,25 @@ function useAlertOnEscalate(
   }, [status, value, label, checkId, title, hostId])
 }
 
-export function StuckMutationsCard() {
-  const hostId = useHostId()
-  const swr = useChartData({
-    chartName: 'summary-stuck-mutations',
-    hostId,
-    refreshInterval: 30000,
-  })
-
+export function StuckMutationsCard({
+  hostId,
+  result,
+  isLoading,
+}: MutationsCardProps) {
   let status: HealthStatus = 'loading'
   let stuck = 0
   let active = 0
   let failed = 0
   let label = ''
 
-  if (swr.isLoading) {
+  if (isLoading) {
     status = 'loading'
     label = 'Loading…'
-  } else if (swr.error) {
+  } else if (result.error) {
     status = 'error'
     label = 'Unavailable'
-  } else if (swr.data && swr.data.length > 0) {
-    const row = swr.data[0] as Record<string, unknown>
+  } else if (result.data && result.data.length > 0) {
+    const row = result.data[0] as Record<string, unknown>
     stuck = Number(row.stuck ?? 0)
     active = Number(row.active ?? 0)
     failed = Number(row.failed ?? 0)
@@ -143,26 +146,23 @@ export function StuckMutationsCard() {
   )
 }
 
-export function RunningMutationsCard() {
-  const hostId = useHostId()
-  const swr = useChartData({
-    chartName: 'summary-used-by-mutations',
-    hostId,
-    refreshInterval: 30000,
-  })
-
+export function RunningMutationsCard({
+  hostId,
+  result,
+  isLoading,
+}: MutationsCardProps) {
   let status: HealthStatus = 'loading'
   let value = 0
   let label = ''
 
-  if (swr.isLoading) {
+  if (isLoading) {
     status = 'loading'
     label = 'Loading…'
-  } else if (swr.error) {
+  } else if (result.error) {
     status = 'error'
     label = 'Unavailable'
-  } else if (swr.data && swr.data.length > 0) {
-    const row = swr.data[0] as Record<string, unknown>
+  } else if (result.data && result.data.length > 0) {
+    const row = result.data[0] as Record<string, unknown>
     value = Number(row.running_count ?? 0)
     if (!Number.isFinite(value)) {
       status = 'error'
