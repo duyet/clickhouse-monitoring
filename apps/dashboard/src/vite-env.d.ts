@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_TELEMETRY_ENABLED?: string
   // Deployment target for telemetry dimensions (docker | helm | cf | dev | unknown).
   readonly VITE_DEPLOY_TARGET?: string
+  // Collection endpoint for the daily instance ping. Empty = no-op.
+  readonly VITE_TELEMETRY_ENDPOINT?: string
   // Build metadata (injected by vite.config define / CI build step)
   readonly VITE_GIT_SHA?: string
   readonly VITE_GIT_REF?: string

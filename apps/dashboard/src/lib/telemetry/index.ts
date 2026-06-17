@@ -25,6 +25,16 @@ export {
   type TelemetryProps,
   type TelemetryPropValue,
 } from './events'
+export {
+  buildPingPayload,
+  getPingEndpoint,
+  maybePingInstance,
+  PING_INTERVAL_MS,
+  type PingDeps,
+  type PingResult,
+  runInstancePing,
+  shouldPing,
+} from './instance-ping'
 export { isBlockedKey, looksSensitive, redactProps } from './redact'
 export {
   clearTelemetrySinks,
