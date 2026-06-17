@@ -11,6 +11,13 @@ export {
 } from './activation'
 export { isTelemetryEnabled, parseTelemetryFlag } from './config'
 export {
+  type ChFlavor,
+  type DeployTarget,
+  detectChFlavor,
+  getDeployTarget,
+  parseMajorMinor,
+} from './environment'
+export {
   isTelemetryEvent,
   TELEMETRY_EVENTS,
   type TelemetryEvent,

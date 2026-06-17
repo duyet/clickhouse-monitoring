@@ -93,6 +93,7 @@ jobs:
           VITE_GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           VITE_GIT_REF: ${{ github.head_ref || github.ref_name }}
           VITE_CI: 'true'
+          VITE_DEPLOY_TARGET: cf
         run: bun run build
 
       - name: Type-check dashboard tests
