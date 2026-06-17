@@ -77,6 +77,7 @@ Developer-facing docs live in `docs/knowledge/` as a linked knowledge graph. Eac
 | Operations | [secret-rotation.md](docs/knowledge/secret-rotation.md) | Redeploy after `wrangler secret put` |
 | Specs | [ai-insights.md](docs/knowledge/ai-insights.md) | AI Insights engine: collect→enrich→persist (findings store), cron + manual generation, stable-key dismissal, overview panel |
 | Specs | [mcp-server.md](docs/knowledge/mcp-server.md) | MCP server at /api/mcp: tools, setup, security |
+| Specs | [agentstate-conversation-store.md](docs/knowledge/agentstate-conversation-store.md) | AgentState conversation backend: store priority, per-user external_id/tag isolation, append-only upsert, AI enrichment, backend/follow-ups routes |
 | Specs | [query-config-format.md](docs/knowledge/query-config-format.md) | QueryConfig type, versioned SQL, BackgroundBar |
 | Specs | [cluster-topology.md](docs/knowledge/cluster-topology.md) | Cluster topology SVG: layout pipeline, constant contracts, OKLCH `hsl(var())` gotcha, shared component, verification harness |
 | Development | [component-ci-stability.md](docs/knowledge/component-ci-stability.md) | Cypress component test fragility and fixes |
