@@ -26,6 +26,24 @@ export const HostPrefixedLink = ({
   const hostId = useHostId()
   const queryClient = useQueryClient()
 
+  // External destinations (e.g. the Docs item → docs.chmonitor.dev) can't go
+  // through the router's client-side navigation — render a real anchor that
+  // leaves the SPA. No host prefix, active state, or route prefetch applies.
+  if (/^https?:\/\//.test(href)) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onMouseEnter={onMouseEnter}
+        {...props}
+      >
+        {children}
+      </a>
+    )
+  }
+
   // TanStack Router's `href` option is for external URLs only; internal links
   // must use `to` + `search` so the rendered <a> element gets the correct href.
   // Pass `host` as a number to match the root route's validateSearch schema —

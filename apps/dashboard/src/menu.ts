@@ -50,6 +50,7 @@ import type { MenuItem } from '@/components/menu/types'
 
 import { PeerDBLogo } from '@/components/icons/peerdb-brand-logo'
 import { EVENTS_TABLE } from '@/lib/app-tables'
+import { DOCS_SITE_URL } from '@/lib/docs-site'
 
 export const menuItemsConfig: MenuItem[] = [
   {
@@ -706,7 +707,7 @@ export const menuItemsConfig: MenuItem[] = [
       },
       {
         title: 'Docs',
-        href: '/docs',
+        href: DOCS_SITE_URL,
         description: 'Documentation and usage guides',
         icon: BookOpenIcon,
         permission: { feature: 'docs' },

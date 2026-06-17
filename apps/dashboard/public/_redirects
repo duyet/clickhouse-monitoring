@@ -17,3 +17,10 @@
 # browsers that have cached a permanent redirect. The path-only match also
 # catches `/?host=0`; `/overview?host=0` does not match `/`, so there is no loop.
 /    /overview?host=0    302
+
+# Docs. The in-dashboard docs reader was removed — documentation now lives on
+# the dedicated site at docs.chmonitor.dev. Permanently redirect /docs and any
+# sub-path at the edge so bookmarks and the old `?host=0` URLs keep working.
+# 301: the docs relocation is permanent (mirrors the landing site's /docs rule).
+/docs/*    https://docs.chmonitor.dev/:splat    301
+/docs    https://docs.chmonitor.dev    301

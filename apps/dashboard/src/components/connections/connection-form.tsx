@@ -4,11 +4,11 @@ import type { BrowserConnection } from '@/lib/types/browser-connection'
 import type { HostStorageMode } from '@/lib/types/host-storage'
 
 import { useState } from 'react'
-import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { docsSiteUrl } from '@/lib/docs-site'
 import { apiFetch } from '@/lib/swr/api-fetch'
 
 export type { BrowserConnection }
@@ -250,12 +250,14 @@ export function ConnectionForm({
               ) : (
                 <>
                   Server storage is disabled on this deployment.{' '}
-                  <AppLink
-                    href="/docs/features/user-connections"
+                  <a
+                    href={docsSiteUrl('features/user-connections')}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline underline-offset-2 hover:text-foreground"
                   >
                     Enable user connections
-                  </AppLink>
+                  </a>
                 </>
               )}
             </p>

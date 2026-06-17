@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { GUEST_USER } from '@/lib/clerk/guest-user'
+import { DOCS_SITE_URL } from '@/lib/docs-site'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 
@@ -32,11 +33,12 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        {/* Small Docs link sitting just above the user button. */}
+        {/* Small Docs link sitting just above the user button. Docs live on
+            the external site (docs.chmonitor.dev), so this leaves the app. */}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="sm" tooltip="Docs">
-              <a href="/docs">
+              <a href={DOCS_SITE_URL} target="_blank" rel="noopener noreferrer">
                 <BookOpenIcon />
                 <span>Docs</span>
               </a>
