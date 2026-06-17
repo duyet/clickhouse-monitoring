@@ -179,7 +179,7 @@ describe('loadDeclarativeConfig — golden fixture (warningsConfig)', () => {
 
     // Loaded config must contain all serializable fields with matching values.
     for (const [key, value] of Object.entries(serializable)) {
-      expect((loaded as Record<string, unknown>)[key]).toEqual(value)
+      expect((loaded as unknown as Record<string, unknown>)[key]).toEqual(value)
     }
   })
 })
