@@ -10,7 +10,13 @@
 import { ChevronRightIcon, SparklesIcon } from 'lucide-react'
 
 import { useScrollLock } from '@assistant-ui/react'
-import { type PropsWithChildren, useRef } from 'react'
+import {
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,25 +31,57 @@ import { cn } from '@/lib/utils'
 interface ReasoningRootProps extends PropsWithChildren {
   className?: string
   defaultOpen?: boolean
+  /**
+   * When the run is streaming the block auto-expands; once it finishes it
+   * auto-collapses. A manual toggle stops the auto-sync for this block's life.
+   */
+  isRunning?: boolean
 }
 
 /**
  * Collapsible container for reasoning / chain-of-thought content.
  * Uses ghost/muted styling so it reads as background-layer content.
+ *
+ * Controlled when `isRunning` is provided: the active (streaming) block stays
+ * expanded while finished blocks collapse. A manual toggle wins permanently.
  */
 export function ReasoningRoot({
   children,
   className,
   defaultOpen = false,
+  isRunning,
 }: ReasoningRootProps) {
   const collapsibleRef = useRef<HTMLDivElement>(null)
   const lockScroll = useScrollLock(collapsibleRef, 220)
 
+  const controlled = isRunning !== undefined
+  const userToggledRef = useRef(false)
+  const [open, setOpen] = useState(isRunning ?? defaultOpen)
+
+  // Follow isRunning until the user takes manual control.
+  useEffect(() => {
+    if (controlled && !userToggledRef.current) {
+      setOpen(isRunning ?? false)
+    }
+  }, [controlled, isRunning])
+
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (controlled) {
+        userToggledRef.current = true
+        setOpen(next)
+      }
+      lockScroll(next)
+    },
+    [controlled, lockScroll]
+  )
+
   return (
     <Collapsible
       ref={collapsibleRef}
-      defaultOpen={defaultOpen}
-      onOpenChange={lockScroll}
+      {...(controlled
+        ? { open, onOpenChange: handleOpenChange }
+        : { defaultOpen, onOpenChange: lockScroll })}
       className={cn('group/reasoning', className)}
     >
       {children}
