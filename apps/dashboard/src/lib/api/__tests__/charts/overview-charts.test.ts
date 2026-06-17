@@ -33,6 +33,17 @@ describe('overview-charts', () => {
     expect(result.query).toContain('LIMIT 1')
   })
 
+  test('disk-size-all returns every disk with type and free space', () => {
+    const result = overviewCharts['disk-size-all']!({}) as any
+    expect(result.query).toContain('system.disks')
+    expect(result.query).toContain('formatReadableSize')
+    // Multi-disk breakdown: must NOT cap to a single disk like disk-size-single.
+    expect(result.query).not.toContain('LIMIT')
+    // Drives the per-disk type badge and the "free" figures in the card.
+    expect(result.query).toContain('type')
+    expect(result.query).toContain('free_space')
+  })
+
   test('table-count counts unique tables', () => {
     const result = overviewCharts['table-count']!({}) as any
     expect(result.query).toContain('countDistinct')
