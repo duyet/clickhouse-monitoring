@@ -34,29 +34,6 @@ const queryResults: Record<string, unknown[]> = {
       query: 'SELECT nonexistent_col FROM analytics.events',
     },
   ],
-  expensive: [
-    {
-      query_id: 'exp-1',
-      user: 'analyst',
-      query_duration_ms: 25000,
-      read_rows: 200000000,
-      read_bytes: 10737418240,
-      memory_usage: 805306368,
-      query: 'SELECT status, count() FROM analytics.events GROUP BY status',
-      event_time: '2026-05-30 08:00:00',
-    },
-  ],
-  patterns: [
-    {
-      normalized_query_hash: 'hash123',
-      sample_query: 'SELECT count() FROM analytics.events WHERE tenant_id = ?',
-      count: 150,
-      avg_duration_ms: 500,
-      max_duration_ms: 3000,
-      total_read_rows: 1500000000,
-      total_read_bytes: 50000000000,
-    },
-  ],
   explain: [
     { explain: 'ExpressionProjection: Transformated output' },
     { explain: '  MergeTree InOrder' },
@@ -77,14 +54,6 @@ function setupQueryMock() {
       return { data: queryResults.slow, error: null }
     if (q.includes('ExceptionWhileProcessing'))
       return { data: queryResults.failed, error: null }
-    if (
-      q.includes('read_bytes') &&
-      q.includes('memory_usage') &&
-      !q.includes('normalized_query_hash')
-    )
-      return { data: queryResults.expensive, error: null }
-    if (q.includes('normalized_query_hash'))
-      return { data: queryResults.patterns, error: null }
     if (q.includes('EXPLAIN'))
       return { data: queryResults.explain, error: null }
 
@@ -95,13 +64,11 @@ function setupQueryMock() {
 const { createQueryTools } = await import('../query-tools')
 
 describe('createQueryTools', () => {
-  test('creates all six query tools', () => {
+  test('creates all query tools', () => {
     const tools = createQueryTools(0) as any
     expect(tools.get_running_queries).toBeDefined()
     expect(tools.get_slow_queries).toBeDefined()
     expect(tools.get_failed_queries).toBeDefined()
-    expect(tools.get_expensive_queries).toBeDefined()
-    expect(tools.get_query_patterns).toBeDefined()
     expect(tools.explain_query).toBeDefined()
   })
 
@@ -159,82 +126,6 @@ describe('createQueryTools', () => {
       const result = await tools.get_failed_queries.execute({
         limit: 5,
         lastHours: 48,
-      })
-
-      expect(Array.isArray(result)).toBe(true)
-    })
-  })
-
-  describe('get_expensive_queries', () => {
-    test('returns queries sorted by memory', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_expensive_queries.execute({
-        sortBy: 'memory',
-      })
-
-      expect(Array.isArray(result)).toBe(true)
-      expect(result[0].memory_usage).toBe(805306368)
-    })
-
-    test('returns queries sorted by read_bytes', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_expensive_queries.execute({
-        sortBy: 'read_bytes',
-      })
-
-      expect(Array.isArray(result)).toBe(true)
-    })
-
-    test('returns queries sorted by duration', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_expensive_queries.execute({
-        sortBy: 'duration',
-      })
-
-      expect(Array.isArray(result)).toBe(true)
-    })
-
-    test('accepts custom limit and lastHours', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_expensive_queries.execute({
-        sortBy: 'memory',
-        limit: 5,
-        lastHours: 12,
-      })
-
-      expect(Array.isArray(result)).toBe(true)
-    })
-  })
-
-  describe('get_query_patterns', () => {
-    test('returns aggregated query fingerprints', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_query_patterns.execute({})
-
-      expect(Array.isArray(result)).toBe(true)
-      expect(result[0].normalized_query_hash).toBe('hash123')
-      expect(result[0].count).toBe(150)
-      expect(result[0].avg_duration_ms).toBe(500)
-    })
-
-    test('accepts custom params', async () => {
-      setupQueryMock()
-
-      const tools = createQueryTools(0) as any
-      const result = await tools.get_query_patterns.execute({
-        limit: 10,
-        lastHours: 48,
-        minCount: 5,
       })
 
       expect(Array.isArray(result)).toBe(true)

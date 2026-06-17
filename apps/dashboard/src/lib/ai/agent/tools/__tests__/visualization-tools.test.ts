@@ -1,10 +1,7 @@
 import { mockFetchData } from './shared-mocks'
 import { describe, expect, test } from 'bun:test'
 
-let _lastQuery = ''
-
 function setupVisualizationMocks() {
-  _lastQuery = ''
   mockFetchData.mockImplementation(
     async ({
       query,
@@ -12,69 +9,7 @@ function setupVisualizationMocks() {
       query: string
       query_params?: Record<string, unknown>
     }) => {
-      _lastQuery = query
       const q = query
-
-      // discover_data_sources: matched tables query
-      if (q.includes('matched_tables')) {
-        return {
-          data: [
-            {
-              database: 'analytics',
-              table: 'events',
-              engine: 'MergeTree',
-              total_rows: 1000000,
-              size: '1.00 GiB',
-              comment: 'Event data table',
-            },
-          ],
-          error: null,
-        }
-      }
-
-      // discover_data_sources: column listing query (batch with IN clause)
-      if (q.includes('system.columns') && q.includes('ORDER BY')) {
-        return {
-          data: [
-            {
-              database: 'analytics',
-              table: 'events',
-              name: 'event_date',
-              type: 'Date',
-              comment: 'Event date',
-            },
-            {
-              database: 'analytics',
-              table: 'events',
-              name: 'tenant_id',
-              type: 'UInt64',
-              comment: 'Tenant identifier',
-            },
-            {
-              database: 'analytics',
-              table: 'events',
-              name: 'event_name',
-              type: 'String',
-              comment: 'Event name',
-            },
-            {
-              database: 'analytics',
-              table: 'events',
-              name: 'value',
-              type: 'Float64',
-              comment: 'Metric value',
-            },
-            {
-              database: 'analytics',
-              table: 'events',
-              name: 'count',
-              type: 'Int64',
-              comment: 'Event count',
-            },
-          ],
-          error: null,
-        }
-      }
 
       // Default: return sample rows with mixed types for query_and_visualize
       if (q.includes('system.tables') && q.includes('total_bytes')) {
@@ -120,10 +55,9 @@ function setupVisualizationMocks() {
 const { createVisualizationTools } = await import('../visualization-tools')
 
 describe('createVisualizationTools', () => {
-  test('creates both visualization tools', () => {
+  test('creates visualization tools', () => {
     const tools = createVisualizationTools(0) as any as any
     expect(tools.query_and_visualize).toBeDefined()
-    expect(tools.discover_data_sources).toBeDefined()
   })
 
   describe('query_and_visualize', () => {
@@ -255,159 +189,6 @@ describe('createVisualizationTools', () => {
       expect(result.viz.sortBy).toBeUndefined()
       expect(result.viz.sortOrder).toBeUndefined()
       expect(result.viz.readable).toBeUndefined()
-    })
-  })
-
-  describe('discover_data_sources', () => {
-    test('returns sources with column classification', async () => {
-      setupVisualizationMocks()
-
-      const tools = createVisualizationTools(0) as any as any
-
-      const result = await tools.discover_data_sources.execute({
-        searchTerm: 'event',
-      })
-
-      expect(result.type).toBe('data_sources')
-      expect(result.searchTerm).toBe('event')
-      expect(result.sources).toHaveLength(1)
-
-      const source = result.sources[0]
-      expect(source.database).toBe('analytics')
-      expect(source.table).toBe('events')
-      expect(source.engine).toBe('MergeTree')
-      expect(source.totalRows).toBe(1000000)
-
-      // Column classification
-      expect(source.matchedColumns.length).toBeGreaterThan(0)
-      expect(source.measures.length).toBeGreaterThan(0)
-      expect(source.dimensions.length).toBeGreaterThan(0)
-    })
-
-    test('returns empty sources when no tables match', async () => {
-      mockFetchData.mockImplementation(async () => ({
-        data: [],
-        error: null,
-      }))
-
-      const tools = createVisualizationTools(0) as any as any
-      const result = await tools.discover_data_sources.execute({
-        searchTerm: 'nonexistent_table_xyz',
-      })
-
-      expect(result.type).toBe('data_sources')
-      expect(result.sources).toHaveLength(0)
-    })
-
-    test('passes database filter via query_params', async () => {
-      let _capturedParams: Record<string, unknown> | undefined
-
-      // Set up mock with param capture
-
-      // Need full setup for this test
-      let matchedParams: Record<string, unknown> | undefined
-      mockFetchData.mockImplementation(
-        async ({
-          query,
-          query_params,
-        }: {
-          query: string
-          query_params?: Record<string, unknown>
-        }) => {
-          if (query.includes('matched_tables')) {
-            matchedParams = query_params
-            return {
-              data: [
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  engine: 'MergeTree',
-                  total_rows: 1000000,
-                  size: '1.00 GiB',
-                  comment: 'Event data table',
-                },
-              ],
-              error: null,
-            }
-          }
-          if (query.includes('system.columns') && query.includes('ORDER BY')) {
-            return {
-              data: [
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  name: 'event_date',
-                  type: 'Date',
-                  comment: 'Event date',
-                },
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  name: 'tenant_id',
-                  type: 'UInt64',
-                  comment: 'Tenant identifier',
-                },
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  name: 'event_name',
-                  type: 'String',
-                  comment: 'Event name',
-                },
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  name: 'value',
-                  type: 'Float64',
-                  comment: 'Metric value',
-                },
-                {
-                  database: 'analytics',
-                  table: 'events',
-                  name: 'count',
-                  type: 'Int64',
-                  comment: 'Event count',
-                },
-              ],
-              error: null,
-            }
-          }
-          return { data: [], error: null }
-        }
-      )
-
-      const tools = createVisualizationTools(0) as any as any
-
-      await tools.discover_data_sources.execute({
-        searchTerm: 'event',
-        database: 'analytics',
-      })
-
-      expect(matchedParams).toBeDefined()
-      expect(matchedParams!.database).toBe('analytics')
-    })
-
-    test('classifies columns into measures and dimensions correctly', async () => {
-      setupVisualizationMocks()
-
-      const tools = createVisualizationTools(0) as any as any
-
-      const result = await tools.discover_data_sources.execute({
-        searchTerm: 'event',
-      })
-
-      const source = result.sources[0]
-
-      const measureNames = source.measures.map((c: { name: string }) => c.name)
-      expect(measureNames).toContain('tenant_id')
-      expect(measureNames).toContain('value')
-      expect(measureNames).toContain('count')
-
-      const dimensionNames = source.dimensions.map(
-        (c: { name: string }) => c.name
-      )
-      expect(dimensionNames).toContain('event_date')
-      expect(dimensionNames).toContain('event_name')
     })
   })
 })

@@ -1,62 +1,54 @@
 /**
- * Tool assembler — imports all category modules and composes the full tool set.
+ * Tool assembler — imports the kept category modules and composes the tool set.
  *
- * This replaces the monolithic mcp-tool-adapter.ts with a modular system.
- * Each category file exports a factory function that returns tools for that domain.
+ * The agent intentionally exposes a small set of powerful primitives. Anything
+ * not covered by a primitive is done with the `query` tool plus a `load_skill`
+ * recipe (see .agents/skills/). Each category file exports a factory that
+ * returns its tools for a given host.
  */
 
-import { createAnomalyTools } from './anomaly-tools'
 import { createAskUserTools } from './ask-user-tools'
-import { createCapacityTools } from './capacity-tools'
-import { createClusterTools } from './cluster-tools'
-import { createComparisonTools } from './comparison-tools'
-import { createContextTools } from './context-tools'
 import { createControlTools } from './control-tools'
-import { createDashboardTools } from './dashboard-tools'
-import { createDiagnosticsTools } from './diagnostics-tools'
-import { createFindingTools } from './finding-tools'
 import { createHealthTools } from './health-tools'
-import { createIncidentTools } from './incident-tools'
-import { createInsightsTools } from './insights-tools'
-import { createLogTools } from './log-tools'
 import { createMergeTools } from './merge-tools'
-import { createMigrationTools } from './migration-tools'
-import { createOptimizerTools } from './optimizer-tools'
 import { createPlanTools } from './plan-tools'
 import { createQueryTools } from './query-tools'
 import { createReplicationTools } from './replication-tools'
-import { createReportTools } from './report-tools'
 import { createSchemaTools } from './schema-tools'
-import { createSecurityTools } from './security-tools'
-import { createSettingsTools } from './settings-tools'
 import { createSkillTools } from './skill-tools'
 import { createStorageTools } from './storage-tools'
 import { createVisualizationTools } from './visualization-tools'
-import { createWorkflowTools } from './workflow-tools'
-import { createZookeeperTools } from './zookeeper-tools'
 
 /**
  * Create all agent tools for a given host.
- * Returns a flat object of all tools across all categories.
+ *
+ * Lean primitive set:
+ *  - Schema & exploration: query, list_databases, list_tables,
+ *    get_table_schema, explore_table_schema
+ *  - Query analysis: get_running_queries, get_slow_queries,
+ *    get_failed_queries, explain_query
+ *  - Health: get_metrics, get_disk_usage
+ *  - Storage: get_table_parts
+ *  - Replication: get_replication_status
+ *  - Merges: get_merge_status
+ *  - Planning: update_plan
+ *  - Knowledge: load_skill
+ *  - Interaction: ask_user
+ *  - Visualization: query_and_visualize
+ *  - Control (destructive, env-gated): kill_query, optimize_table, kill_mutation
  */
 export function createAllTools(hostId: number, includeControlTools = false) {
   const enableControlTools = process.env.AGENT_ENABLE_CONTROL_TOOLS === 'true'
 
-  const tools = {
+  return {
     // Schema & exploration
     ...createSchemaTools(hostId),
 
     // Query analysis
     ...createQueryTools(hostId),
 
-    // Diagnostics and recommendations
-    ...createDiagnosticsTools(hostId),
-
     // System health
     ...createHealthTools(hostId),
-
-    // Merges & mutations
-    ...createMergeTools(hostId),
 
     // Storage & parts
     ...createStorageTools(hostId),
@@ -64,79 +56,24 @@ export function createAllTools(hostId: number, includeControlTools = false) {
     // Replication
     ...createReplicationTools(hostId),
 
-    // Security & audit
-    ...createSecurityTools(hostId),
+    // Merges
+    ...createMergeTools(hostId),
 
-    // Cluster
-    ...createClusterTools(hostId),
+    // Plan & verify
+    ...createPlanTools(),
 
-    // Control actions (destructive)
-    ...(enableControlTools && includeControlTools
-      ? createControlTools(hostId)
-      : {}),
-
-    // Dashboard navigation
-    ...createDashboardTools(),
-
-    // Settings & config
-    ...createSettingsTools(hostId),
-
-    // Logs
-    ...createLogTools(hostId),
-
-    // ZooKeeper
-    ...createZookeeperTools(hostId),
-
-    // Skills
+    // Skills / knowledge
     ...createSkillTools(),
 
     // User interaction
     ...createAskUserTools(),
 
-    // Workflow planning harness
-    ...createPlanTools(),
-
-    // Dynamic workflow templates
-    ...createWorkflowTools(),
-
-    // Anomaly detection
-    ...createAnomalyTools(hostId),
-
-    // Findings persistence
-    ...createFindingTools(hostId),
-
-    // Reports
-    ...createReportTools(hostId),
-
-    // Query optimization
-    ...createOptimizerTools(hostId),
-
-    // Capacity planning
-    ...createCapacityTools(hostId),
-
-    // Incident response
-    ...createIncidentTools(hostId),
-
-    // Schema migration
-    ...createMigrationTools(hostId),
-
-    // Comparison & analysis
-    ...createComparisonTools(hostId),
-
-    // Query & table insights
-    ...createInsightsTools(hostId),
-
-    // Visualization & data source discovery
+    // Visualization
     ...createVisualizationTools(hostId),
-  }
 
-  // Runtime context management — injected with the final tool count (+1 for
-  // get_context itself) to describe the agent's own capabilities without a
-  // circular import back into this assembler.
-  return {
-    ...tools,
-    ...createContextTools(hostId, {
-      toolCount: Object.keys(tools).length + 1,
-    }),
+    // Control actions (destructive) — off unless explicitly enabled
+    ...(enableControlTools && includeControlTools
+      ? createControlTools(hostId)
+      : {}),
   }
 }
