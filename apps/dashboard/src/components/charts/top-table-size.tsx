@@ -1,9 +1,10 @@
 import type { ChartProps } from '@/components/charts/chart-props'
 
+import { useState } from 'react'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { BarList } from '@/components/charts/primitives/bar-list'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RankBars } from '@/components/charts/primitives/rank-bars'
+import { SegmentedControl } from '@/components/filters/segmented-control'
 import { useChartData } from '@/lib/swr'
 
 type DataRow = {
@@ -18,6 +19,11 @@ type DataRow = {
   part_count: number
 }
 
+const MODE_OPTIONS = [
+  { label: 'Size', value: 'size' },
+  { label: 'Rows', value: 'rows' },
+]
+
 export const ChartTopTableSize = function ChartTopTableSize({
   title,
   className,
@@ -25,6 +31,7 @@ export const ChartTopTableSize = function ChartTopTableSize({
   hostId,
 }: ChartProps) {
   const limit = 7
+  const [mode, setMode] = useState<'size' | 'rows'>('size')
   const swr = useChartData<DataRow>({
     chartName: 'top-table-size',
     hostId,
@@ -35,20 +42,30 @@ export const ChartTopTableSize = function ChartTopTableSize({
   return (
     <ChartContainer swr={swr} title={title} className={className}>
       {(dataArray, sql, metadata) => {
-        // For this chart, we need to separate by-size and by-count logic
-        // Since the API only returns one query result, we'll use the same data
-        // In a real scenario, you might want to create two separate chart endpoints
-        const dataTopBySize = dataArray.map((row) => ({
-          name: row.table as string,
-          value: row.compressed_bytes as number,
-          formatted: row.compressed as string,
-        }))
+        const max =
+          mode === 'size'
+            ? Math.max(
+                ...dataArray.map((r) => r.compressed_bytes as number),
+                0.0001
+              )
+            : Math.max(...dataArray.map((r) => r.total_rows as number), 0.0001)
 
-        const dataTopByCount = dataArray.map((row) => ({
-          name: row.table as string,
-          value: row.total_rows as number,
-          formatted: row.readable_total_rows as string,
-        }))
+        const items = dataArray.map((row) => {
+          const v =
+            mode === 'size'
+              ? (row.compressed_bytes as number)
+              : (row.total_rows as number)
+          const display =
+            mode === 'size'
+              ? (row.compressed as string)
+              : (row.readable_total_rows as string)
+          return {
+            label: row.table as string,
+            value: display,
+            pct: Math.max(4, (v / max) * 100),
+            color: 'var(--chart-2)',
+          }
+        })
 
         return (
           <ChartCard
@@ -60,40 +77,18 @@ export const ChartTopTableSize = function ChartTopTableSize({
             data-testid="top-table-size-chart"
             contentClassName={chartCardContentClassName}
           >
-            <Tabs
-              id="top-table-tabs"
-              defaultValue="by-size"
-              className="flex min-h-0 flex-1 flex-col overflow-hidden"
-            >
-              <TabsList className="h-11 sm:h-9 gap-1 mb-3 p-1">
-                <TabsTrigger
-                  key="by-size"
-                  value="by-size"
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
-                >
-                  Top tables by Size
-                </TabsTrigger>
-                <TabsTrigger
-                  key="by-count"
-                  value="by-count"
-                  className="!h-auto min-h-10 sm:min-h-0 px-3 sm:px-2 py-2 sm:py-1"
-                >
-                  Top tables by Row Count
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent
-                value="by-size"
-                className="min-h-0 flex-1 overflow-auto"
-              >
-                <BarList data={dataTopBySize} formatedColumn="formatted" />
-              </TabsContent>
-              <TabsContent
-                value="by-count"
-                className="min-h-0 flex-1 overflow-auto"
-              >
-                <BarList data={dataTopByCount} formatedColumn="formatted" />
-              </TabsContent>
-            </Tabs>
+            <div className="flex h-full min-h-0 flex-col gap-3">
+              <div className="flex items-center justify-end">
+                <SegmentedControl
+                  options={MODE_OPTIONS}
+                  value={mode}
+                  onChange={(v) => setMode(v as 'size' | 'rows')}
+                />
+              </div>
+              <div className="min-h-0 flex-1 overflow-auto">
+                <RankBars items={items} />
+              </div>
+            </div>
           </ChartCard>
         )
       }}
