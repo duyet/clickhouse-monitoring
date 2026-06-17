@@ -4,6 +4,7 @@ import { getServerAlertConfig } from './server-alert-config'
 import { fetchData, getClickHouseConfigs } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { HEALTH_CHECKS } from '@/components/health/health-checks'
+import { generateInsights } from '@/lib/insights/generate-insights'
 
 type Severity = 'ok' | 'warning' | 'critical'
 
@@ -40,6 +41,8 @@ export interface SweepSummary {
   totalChecks: number
   totalFindings: number
   alertsDispatched: number
+  /** Total AI insights generated and persisted across all hosts. */
+  insightsGenerated: number
   hosts: SweepHostSummary[]
   findings: SweepFinding[]
 }
@@ -137,6 +140,7 @@ export async function runHealthSweep(): Promise<SweepSummary> {
 
   const hosts: SweepHostSummary[] = []
   const findings: SweepFinding[] = []
+  let insightsGenerated = 0
 
   for (const config of configs) {
     const name = hostLabel(config)
@@ -179,6 +183,17 @@ export async function runHealthSweep(): Promise<SweepSummary> {
       findings: findings.filter((f) => f.hostId === config.id).length,
       errored,
     })
+
+    // Generate + persist AI insights for this host (best-effort; never throws).
+    try {
+      const insights = await generateInsights(config.id)
+      insightsGenerated += insights.length
+    } catch (err) {
+      debug(
+        `[health-sweep] insight generation failed on host ${config.id}`,
+        err instanceof Error ? err.message : String(err)
+      )
+    }
   }
 
   let alertsDispatched = 0
@@ -200,6 +215,7 @@ export async function runHealthSweep(): Promise<SweepSummary> {
     totalChecks: hosts.reduce((sum, h) => sum + h.checksRun, 0),
     totalFindings: findings.length,
     alertsDispatched,
+    insightsGenerated,
     hosts,
     findings,
   }
