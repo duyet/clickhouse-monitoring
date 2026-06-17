@@ -58,6 +58,9 @@ const CLIENT_ENV = {
     e.VITE_RUNNING_QUERIES_REFRESH_MS ??
     e.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS ??
     '',
+  // Opt-in product telemetry: OFF by default — must be explicitly enabled.
+  VITE_TELEMETRY_ENABLED:
+    e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'false',
   VITE_GIT_SHA:
     e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
   VITE_GIT_REF:

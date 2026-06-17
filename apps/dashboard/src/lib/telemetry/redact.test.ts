@@ -1,0 +1,86 @@
+import { isBlockedKey, looksSensitive, redactProps } from './redact'
+import { describe, expect, test } from 'bun:test'
+
+describe('isBlockedKey', () => {
+  test('blocks sensitive-named keys', () => {
+    for (const key of [
+      'password',
+      'apiKey',
+      'api_key',
+      'secret',
+      'authToken',
+      'email',
+      'host',
+      'hostname',
+      'ip',
+      'ipAddress',
+      'url',
+      'endpoint',
+      'dsn',
+      'sql',
+      'query',
+      'queryText',
+    ]) {
+      expect(isBlockedKey(key)).toBe(true)
+    }
+  })
+
+  test('allows safe count / enum keys', () => {
+    for (const key of [
+      'count',
+      'n',
+      'num_hosts',
+      'hosts',
+      'ch_flavor',
+      'duration_ms',
+      'deploy_target',
+      'view_count',
+      'tooltip',
+      'enabled',
+    ]) {
+      expect(isBlockedKey(key)).toBe(false)
+    }
+  })
+})
+
+describe('looksSensitive', () => {
+  test('detects email, IPv4, IPv6, and URL-ish values', () => {
+    expect(looksSensitive('me@example.com')).toBe(true)
+    expect(looksSensitive('10.0.0.1')).toBe(true)
+    expect(looksSensitive('fe80::1')).toBe(true)
+    expect(looksSensitive('https://ch.internal:8443')).toBe(true)
+    expect(looksSensitive('clickhouse://user:pw@host')).toBe(true)
+  })
+
+  test('passes safe enum / count strings', () => {
+    expect(looksSensitive('docker')).toBe(false)
+    expect(looksSensitive('oss')).toBe(false)
+    expect(looksSensitive('24.8')).toBe(false)
+    expect(looksSensitive('cloudflare')).toBe(false)
+  })
+})
+
+describe('redactProps', () => {
+  test('drops sensitive keys and values, keeps safe props', () => {
+    const out = redactProps({
+      deploy_target: 'docker',
+      ch_flavor: 'oss',
+      num_hosts: 3,
+      enabled: true,
+      duration_ms: 1200,
+      host: 'ch.internal', // blocked key
+      email: 'me@example.com', // blocked key
+      note: 'reach me@example.com', // sensitive value
+      endpoint: 'https://x', // blocked key
+      missing: undefined, // dropped (undefined)
+    })
+
+    expect(out).toEqual({
+      deploy_target: 'docker',
+      ch_flavor: 'oss',
+      num_hosts: 3,
+      enabled: true,
+      duration_ms: 1200,
+    })
+  })
+})
