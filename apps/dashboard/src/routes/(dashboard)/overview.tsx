@@ -180,8 +180,8 @@ function OverviewPageContent() {
           onValueChange={handleTabChange}
           className="space-y-2"
         >
-          <div className="overflow-x-auto pb-px">
-            <TabsList className="inline-flex h-auto w-full min-w-max items-center justify-start gap-1 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground">
+          <div className="scrollbar-hide overflow-x-auto pb-px">
+            <TabsList className="inline-flex h-auto w-full items-center justify-start gap-1 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground">
               {OVERVIEW_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.value}

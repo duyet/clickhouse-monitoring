@@ -79,19 +79,10 @@ export const ScatterChartPrimitive = function ScatterChartPrimitive({
           }}
         />
         <Tooltip
-          content={
-            <ChartTooltipContent
-              labelKey={xKey}
-              nameKey={yKey}
-            />
-          }
+          content={<ChartTooltipContent labelKey={xKey} nameKey={yKey} />}
           cursor={{ strokeDasharray: '3 3' }}
         />
-        <Scatter
-          data={chartData}
-          fill="var(--chart-1)"
-          fillOpacity={0.7}
-        />
+        <Scatter data={chartData} fill="var(--chart-1)" fillOpacity={0.7} />
       </ScatterChart>
     </ChartContainer>
   )
