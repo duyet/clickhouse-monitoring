@@ -45,8 +45,6 @@ export const SKILLS: readonly Skill[] = [
       'list_tables',
       'get_table_schema',
       'explore_table_schema',
-      'show_indexes',
-      'lookup_constraint',
     ],
     defaultEnabled: true,
     details:
@@ -58,7 +56,7 @@ export const SKILLS: readonly Skill[] = [
     description: 'Run, explain & optimize SQL on the cluster',
     icon: SearchIcon,
     source: 'system',
-    tools: ['query', 'analyze_query_optimization', 'repair_query'],
+    tools: ['query', 'explain_query'],
     defaultEnabled: true,
     details:
       'Execute read-only SQL with proper parameterisation, analyse the plan for hot-spots and inefficient joins, and repair queries that hit known ClickHouse errors.',
@@ -73,7 +71,6 @@ export const SKILLS: readonly Skill[] = [
       'get_metrics',
       'get_running_queries',
       'get_slow_queries',
-      'spot_issues',
       'get_merge_status',
     ],
     defaultEnabled: true,
@@ -97,7 +94,7 @@ export const SKILLS: readonly Skill[] = [
     description: 'Inspect & nudge MergeTree background ops',
     icon: GitMergeIcon,
     source: 'community',
-    tools: ['get_merge_status', 'spot_issues'],
+    tools: ['get_merge_status'],
     defaultEnabled: true,
     details:
       'Inspect merge queues, spot stuck or oversized merges, and understand which background operations are consuming the merge pool.',
@@ -108,7 +105,7 @@ export const SKILLS: readonly Skill[] = [
     description: 'Disks, parts, retention & TTL analysis',
     icon: HardDriveIcon,
     source: 'community',
-    tools: ['list_databases', 'list_tables', 'get_table_schema', 'spot_issues'],
+    tools: ['list_databases', 'list_tables', 'get_table_schema'],
     defaultEnabled: true,
     details:
       'Audit on-disk usage per table, count active parts, evaluate TTL effectiveness and surface tables that are about to outgrow their volume.',
@@ -119,7 +116,7 @@ export const SKILLS: readonly Skill[] = [
     description: 'Users, grants, row-level policies',
     icon: ShieldIcon,
     source: 'community',
-    tools: ['get_metrics', 'spot_issues', 'list_databases'],
+    tools: ['get_metrics', 'list_databases'],
     defaultEnabled: true,
     details:
       'Review who can do what — users, roles, granted privileges, row policies and quotas — and highlight overly broad access.',
@@ -130,7 +127,7 @@ export const SKILLS: readonly Skill[] = [
     description: 'Replicas, ZK queue, sync lag',
     icon: SquareStackIcon,
     source: 'community',
-    tools: ['get_metrics', 'spot_issues', 'list_databases', 'list_tables'],
+    tools: ['get_metrics', 'list_databases', 'list_tables'],
     defaultEnabled: true,
     details:
       'Diagnose replicated tables: per-replica lag, ZooKeeper queue depth, readonly state, and sync issues that prevent writes from converging across the cluster.',

@@ -1,0 +1,25 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="chmonitor logo mark">
+  <title>chmonitor</title>
+  <defs>
+    <linearGradient id="chmTile" x1="3" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fcd34d"/>
+      <stop offset=".55" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="chmShine" x1="16" y1="1" x2="16" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#chmTile)"/>
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#chmShine)"/>
+  <g fill="#ffffff">
+    <rect x="6.4" y="17" width="2.7" height="8" rx="1.35"/>
+    <rect x="10.6" y="11" width="2.7" height="14" rx="1.35"/>
+    <rect x="14.8" y="15" width="2.7" height="10" rx="1.35"/>
+    <rect x="19" y="8" width="2.7" height="17" rx="1.35"/>
+    <rect x="23.2" y="13" width="2.7" height="12" rx="1.35" fill-opacity=".82"/>
+  </g>
+  <circle cx="20.35" cy="5.2" r="2.7" fill="#34d399" fill-opacity=".35"/>
+  <circle cx="20.35" cy="5.2" r="1.5" fill="#10b981" stroke="#ffffff" stroke-width=".8"/>
+</svg>
