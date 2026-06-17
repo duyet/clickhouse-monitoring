@@ -636,7 +636,8 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
   {
     id: 'disk-size',
     component: ChartDiskSize,
-    className: 'w-full h-full',
+    // taller card: spans 2 rows so the headline + disk rows have room to breathe
+    className: 'w-full h-full row-span-2',
     title: 'Disk Size',
     type: 'metric',
     href: '/disks',
@@ -718,7 +719,7 @@ export const STORAGE_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'storage-policies',
     component: ChartStoragePolicies,
     title: 'Storage Policies',
-    className: 'w-full h-full col-span-1 md:col-span-2 2xl:col-span-3',
+    className: 'w-full h-full col-span-1 md:col-span-2 xl:col-span-3',
     type: 'table',
     href: '/disks',
   },
@@ -960,6 +961,11 @@ const GRID_LAYOUT_3_COL =
   'grid grid-flow-dense auto-rows-[280px] items-stretch gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
 const GRID_LAYOUT_2_COL =
   'grid grid-flow-dense auto-rows-[280px] grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:auto-rows-[300px] 2xl:auto-rows-[320px] min-w-0'
+// Storage tab uses a tighter 16px gap and a smaller base row height so
+// disk-size's row-span-2 lands at a comfortable height without over-stretching
+// the chart-only cards beside it.
+const GRID_LAYOUT_STORAGE =
+  'grid grid-flow-dense auto-rows-[240px] items-stretch gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:auto-rows-[260px] 2xl:auto-rows-[280px] min-w-0'
 
 /**
  * All tab configurations for the overview page
@@ -987,7 +993,7 @@ export const OVERVIEW_TABS: OverviewTabConfig[] = [
   {
     value: 'storage',
     label: 'Storage',
-    gridClassName: GRID_LAYOUT_3_COL,
+    gridClassName: GRID_LAYOUT_STORAGE,
     charts: STORAGE_TAB_CHARTS,
   },
   {

@@ -79,6 +79,12 @@ export const ChartNewPartsCreated = function ChartNewPartsCreated({
         // Convert set to array for categories
         const tables = Array.from(tableSet)
 
+        const rangeLabel = (() => {
+          const h = effectiveLastHours
+          if (h <= 24) return 'Last 24h'
+          return `Last ${Math.round(h / 24)}d`
+        })()
+
         return (
           <ChartCard
             title={title}
@@ -94,16 +100,21 @@ export const ChartNewPartsCreated = function ChartNewPartsCreated({
             contentClassName={chartCardContentClassName}
             data-testid="new-parts-created-chart"
           >
+            <div className="flex justify-end mb-1">
+              <span className="text-xs text-muted-foreground font-mono">
+                {rangeLabel}
+              </span>
+            </div>
             <BarChart
               className={cn('h-full w-full', chartClassName)}
               data={barData}
               index="event_time"
               categories={tables}
               colors={[
-                '--chart-3',
-                '--chart-4',
-                '--chart-1',
                 '--chart-2',
+                '--chart-3',
+                '--chart-1',
+                '--chart-4',
                 '--chart-5',
               ]}
               stack
