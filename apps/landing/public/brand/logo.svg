@@ -1,28 +1,7 @@
 <svg width="208" height="44" viewBox="0 0 208 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="chmonitor">
   <title>chmonitor</title>
-  <defs>
-    <linearGradient id="lkTile" x1="3" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fcd34d"/>
-      <stop offset=".55" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#f97316"/>
-    </linearGradient>
-    <linearGradient id="lkShine" x1="16" y1="1" x2="16" y2="20" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ffffff" stop-opacity=".28"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <g transform="translate(3 6)">
-    <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#lkTile)"/>
-    <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#lkShine)"/>
-    <g fill="#ffffff">
-      <rect x="6.4" y="17" width="2.7" height="8" rx="1.35"/>
-      <rect x="10.6" y="11" width="2.7" height="14" rx="1.35"/>
-      <rect x="14.8" y="15" width="2.7" height="10" rx="1.35"/>
-      <rect x="19" y="8" width="2.7" height="17" rx="1.35"/>
-      <rect x="23.2" y="13" width="2.7" height="12" rx="1.35" fill-opacity=".82"/>
-    </g>
-    <circle cx="20.35" cy="5.2" r="2.7" fill="#34d399" fill-opacity=".35"/>
-    <circle cx="20.35" cy="5.2" r="1.5" fill="#10b981" stroke="#ffffff" stroke-width=".8"/>
+  <g transform="translate(6 6)">
+    <rect x="3.3" y="13.05" width="3.8" height="15.45" fill="#f97316"/><rect x="8.7" y="3.5" width="3.8" height="25" fill="#f97316"/><rect x="14.1" y="13.25" width="3.8" height="15.25" fill="#f97316"/><rect x="19.5" y="6.25" width="3.8" height="22.25" fill="#f97316"/><rect x="24.9" y="16.8" width="3.8" height="11.7" fill="#f97316"/><rect x="3.3" y="9.75" width="3.8" height="3.3" fill="#10b981"/>
   </g>
-  <text x="48" y="30" font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="25" font-weight="650" letter-spacing="-.6" fill="#09090b">chmonitor</text>
+  <text x="48" y="29" font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="650" letter-spacing="-.6" fill="#09090b">chmonitor</text>
 </svg>
