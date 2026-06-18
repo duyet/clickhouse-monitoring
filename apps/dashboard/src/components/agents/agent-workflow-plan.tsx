@@ -70,7 +70,11 @@ export function AgentWorkflowPlan({
         </span>
       </div>
 
-      <Progress value={pct} className="mb-3 h-1.5" />
+      <Progress
+        value={pct}
+        aria-label="Workflow progress"
+        className="mb-3 h-1.5"
+      />
 
       <ol className="space-y-1.5">
         {steps.map((step) => (
