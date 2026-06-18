@@ -49,6 +49,7 @@ import { crashLogDeclarative } from './logs/crashes'
 import { stackTracesDeclarative } from './logs/stack-traces'
 import { textLogDeclarative } from './logs/text-log'
 // Merges
+import { mergePerformanceDeclarative } from './merges/merge-performance'
 import { mergesDeclarative } from './merges/merges'
 // More
 import { asynchronousMetricsDeclarative } from './more/asynchronous-metrics'
@@ -63,6 +64,7 @@ import { zookeeperDeclarative } from './more/zookeeper'
 import { commonErrorsDeclarative } from './queries/common-errors'
 import { parallelizationDeclarative } from './queries/parallelization'
 import { profilerDeclarative } from './queries/profiler'
+import { queryCacheDeclarative } from './queries/query-cache'
 import { queryViewsLogDeclarative } from './queries/query-views-log'
 import { threadAnalysisDeclarative } from './queries/thread-analysis'
 // Security
@@ -148,6 +150,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
 
   // Merges
   mergesDeclarative,
+  mergePerformanceDeclarative,
 
   // More
   asynchronousMetricsDeclarative,
@@ -163,6 +166,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   commonErrorsDeclarative,
   parallelizationDeclarative,
   profilerDeclarative,
+  queryCacheDeclarative,
   queryViewsLogDeclarative,
   threadAnalysisDeclarative,
 

@@ -13,13 +13,14 @@
  *   clickhouseSettings — execution-time settings
  *
  * Skipped configs (runtime-only fields or non-serializable values):
- *   mergePerformanceConfig — docs uses PART_LOG (non-URL string, fails url() validation)
- *   mutationsConfig        — rowClassName function
+ *   mutationsConfig — rowClassName function
  */
 
 import { loadDeclarativeConfig } from '../../loader'
+import { mergePerformanceDeclarative } from './merge-performance'
 import { mergesDeclarative } from './merges'
 import { describe, expect, test } from 'bun:test'
+import { mergePerformanceConfig } from '@/lib/query-config/merges/merge-performance'
 import { mergesConfig } from '@/lib/query-config/merges/merges'
 
 // ---------------------------------------------------------------------------
@@ -68,5 +69,27 @@ describe('merges declarative', () => {
   test('refreshInterval matches legacy', () => {
     const loaded = loadDeclarativeConfig(mergesDeclarative)
     expect(loaded.refreshInterval).toBe(mergesConfig.refreshInterval)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// merge-performance (docs now a plain string via schema-ext)
+// ---------------------------------------------------------------------------
+
+describe('merge-performance declarative', () => {
+  test('loads without error', () => {
+    expect(() =>
+      loadDeclarativeConfig(mergePerformanceDeclarative)
+    ).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(mergePerformanceDeclarative)
+    compareSerializable(loaded, mergePerformanceConfig)
+  })
+
+  test('docs (inlined PART_LOG) matches legacy', () => {
+    const loaded = loadDeclarativeConfig(mergePerformanceDeclarative)
+    expect(loaded.docs).toBe(mergePerformanceConfig.docs)
   })
 })

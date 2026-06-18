@@ -115,16 +115,12 @@ describe('getQueryConfigByName — declarative path parity', () => {
 
       // Compare only fields where BOTH sides have a defined value.
       //
-      // Two intentional gaps exist between TS configs and the declarative schema:
-      //
-      // 1. Schema defaults: the declarative loader applies schema defaults
-      //    (e.g. optional: false) for keys the TS config leaves undefined.
-      //    Comparing those would be false-positives, so skip when ts is undefined.
-      //
-      // 2. Non-representable TS values: some TS configs set `docs` to a plain
-      //    human-readable message (not a URL). The declarative schema enforces
-      //    z.string().url() on `docs`, so those entries deliberately omit `docs`
-      //    in the catalog. Skip when decl is undefined to allow this known gap.
+      // One intentional gap remains between TS configs and the declarative
+      // schema: schema defaults — the declarative loader applies defaults
+      // (e.g. optional: false) for keys the TS config leaves undefined.
+      // Comparing those would be false-positives, so skip when either side is
+      // undefined. (`docs` is now a plain string in the schema, so non-URL
+      // help-text values round-trip and no longer need to be omitted.)
       //
       // The contract: for every field that both sides carry, the values must match.
       for (const key of SERIALIZABLE_KEYS) {

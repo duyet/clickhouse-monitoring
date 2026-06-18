@@ -241,17 +241,19 @@ describe('invalid configs', () => {
     expect(result.errors.some((e) => e.includes('defaultView'))).toBe(true)
   })
 
-  test('rejects non-URL docs field', () => {
+  test('accepts non-URL docs field (table-missing help text)', () => {
+    // docs mirrors QueryConfig.docs (plain string) — a full sentence with an
+    // embedded URL is valid, not just a bare URL.
     const result = validateDeclarativeConfig({
       name: 'my-query',
       sql: 'SELECT 1',
       columns: ['col1'],
-      docs: 'not-a-url',
+      docs: "The 'query_log' table may be missing. See https://clickhouse.com/docs/en/operations/system-tables/query_log",
     })
 
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.errors.some((e) => e.includes('docs'))).toBe(true)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.docs).toContain('query_log')
   })
 
   test('accepts clickhouseSettings with primitive values', () => {
