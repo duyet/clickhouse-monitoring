@@ -2,4 +2,4 @@
 # Release tags are prefixed "helm-" to avoid colliding with app release tags (vX.Y.Z).
 release-name-template: "helm-{{ .Name }}-{{ .Version }}"
 pages-branch: gh-pages
-charts-repo-url: https://duyet.github.io/clickhouse-monitoring
+charts-repo-url: https://charts.chmonitor.dev

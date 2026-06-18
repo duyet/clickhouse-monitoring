@@ -12,6 +12,18 @@
       "changelog-path": "CHANGELOG.md",
       "draft": false,
       "prerelease": false,
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "deploy/helm/chmonitor/Chart.yaml",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "yaml",
+          "path": "deploy/helm/chmonitor/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ],
       "changelog-sections": [
         { "type": "feat", "section": "✨ Features" },
         { "type": "fix", "section": "🐛 Bug Fixes" },

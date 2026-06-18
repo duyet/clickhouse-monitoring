@@ -1,18 +1,21 @@
-name: Helm Chart Release (GitHub Pages)
+name: Helm Chart Release
 
-# Packages and publishes changed Helm charts to the gh-pages Helm repo
-# (https://duyet.github.io/clickhouse-monitoring) whenever the chart source
-# changes on main. chart-releaser detects version bumps in Chart.yaml and
-# only re-packages charts that changed since the last published release.
+# chart-releaser packages changed charts and pushes index.yaml + the .tgz
+# packages to the gh-pages branch; a follow-up job mirrors that branch to the
+# chmonitor-charts Cloudflare Pages project, served at charts.chmonitor.dev.
+# chart-releaser detects Chart.yaml version bumps and only re-packages charts
+# that changed since the last published release. Chart.yaml version + appVersion
+# are auto-bumped by release-please on each app release (see
+# .github/release-please-config.json extra-files), so the shipped image tag
+# (defaults to appVersion) tracks the release.
 #
 # The gh-pages branch is auto-created on first run (see "Bootstrap gh-pages
-# branch" step). One manual step remains: enable GitHub Pages serving —
-# Settings → Pages → Source = "Deploy from a branch" → Branch: gh-pages / root.
-# (This can't be automated: creating a Pages site requires administration:write,
-# which the default GITHUB_TOKEN doesn't hold.)
+# branch" step). charts.chmonitor.dev is bound to the chmonitor-charts Pages
+# project — set the custom domain once in the CF dashboard (Pages →
+# chmonitor-charts → Custom domains → charts.chmonitor.dev).
 #
 # Users install with:
-#   helm repo add chmonitor https://duyet.github.io/clickhouse-monitoring
+#   helm repo add chmonitor https://charts.chmonitor.dev
 #   helm install my-chm chmonitor/chmonitor --set clickhouse.host=http://ch:8123
 
 on:
@@ -71,3 +74,35 @@ jobs:
           config: .github/cr.yaml
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # chart-releaser pushes index.yaml + .tgz to the gh-pages BRANCH, but pushes
+  # made by GITHUB_TOKEN do not trigger downstream push workflows (anti-loop),
+  # so a separate on:push:gh-pages workflow would never fire. Deploy from this
+  # same run instead, right after chart-releaser has updated gh-pages.
+  deploy-pages:
+    name: deploy to Cloudflare Pages
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+
+      # Mirror the gh-pages branch (index.yaml + .tgz) to the chmonitor-charts
+      # Cloudflare Pages project → https://charts.chmonitor.dev. --branch gh-pages
+      # is required so CF Pages promotes the deploy to the production URL.
+      # Skipped until the first chart release writes index.yaml to gh-pages.
+      - name: Deploy chart repo to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ ! -f index.yaml ]; then
+            echo "No index.yaml on gh-pages yet — nothing to deploy (expected until the first chart release)"
+            exit 0
+          fi
+          npx --yes --package=wrangler@4 wrangler pages deploy . \
+            --project-name=chmonitor-charts --branch gh-pages

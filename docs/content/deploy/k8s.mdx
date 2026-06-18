@@ -8,13 +8,13 @@ The chart is published in two registries:
 
 | Registry | Install command |
 |----------|----------------|
-| **Helm repo** (GitHub Pages) | `helm repo add chmonitor https://duyet.github.io/clickhouse-monitoring` |
+| **Helm repo** (Cloudflare Pages) | `helm repo add chmonitor https://charts.chmonitor.dev` |
 | **OCI** (GHCR) | `helm install my-chm oci://ghcr.io/duyet/chmonitor --version X.Y.Z` |
 
 ### From the Helm repository
 
 ```bash
-helm repo add chmonitor https://duyet.github.io/clickhouse-monitoring
+helm repo add chmonitor https://charts.chmonitor.dev
 helm repo update
 
 helm install my-chm chmonitor/chmonitor \
