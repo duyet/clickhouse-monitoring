@@ -1,0 +1,177 @@
+/**
+ * Tests for the GET /api/v1/charts/$name handler, focused on graceful
+ * degradation when an *optional* chart's backing table is missing.
+ *
+ * Regression for the production bug where the overview page fired hard 500s
+ * (and use-chart-data retried each 3x) for charts like `thread-utilization`
+ * whenever `system.query_thread_log` was disabled on the target ClickHouse.
+ */
+
+import type { FetchDataError } from '@chm/clickhouse-client'
+
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
+
+mock.module('cloudflare:workers', () => ({
+  env: {
+    CLICKHOUSE_HOST: 'http://localhost:8123',
+    CLICKHOUSE_USER: 'default',
+    CLICKHOUSE_PASSWORD: '',
+  },
+}))
+
+// Feature gate always allows in these tests.
+mock.module('@/lib/feature-permissions/server', () => ({
+  authorizeFeatureRequest: async () => null,
+}))
+
+// Controllable chart registry: an optional chart and a non-optional one. Spread
+// the real module first so other named exports (registerChartQuery, ...) survive
+// bun's global module mock.
+import * as realRegistry from '@/lib/api/chart-registry'
+
+mock.module('@/lib/api/chart-registry', () => ({
+  ...realRegistry,
+  hasChart: (n: string) => n === 'opt-chart' || n === 'plain-chart',
+  getAvailableCharts: () => ['opt-chart', 'plain-chart'],
+  getChartQuery: (n: string) =>
+    n === 'opt-chart'
+      ? {
+          query: 'SELECT 1 FROM system.query_thread_log',
+          optional: true,
+          tableCheck: 'system.query_thread_log',
+        }
+      : { query: 'SELECT 1', optional: false },
+}))
+
+// Controllable executor: real exports preserved, executeChartQuery overridden.
+import * as realExecutor from '@/lib/api/query-executor'
+
+const mockExecuteChartQuery = mock(
+  async (): Promise<{
+    dataJson: string | null
+    metadata: Record<string, string | number>
+    error?: FetchDataError
+    executedSql: string
+    clickhouseVersion: string | null
+  }> => ({
+    dataJson: '[]',
+    metadata: {},
+    error: undefined,
+    executedSql: 'SELECT 1',
+    clickhouseVersion: null,
+  })
+)
+mock.module('@/lib/api/query-executor', () => ({
+  ...realExecutor,
+  executeChartQuery: mockExecuteChartQuery,
+}))
+
+const tableNotFound: FetchDataError = {
+  type: 'table_not_found',
+  message: 'Missing required tables: system.query_thread_log',
+  details: { missingTables: ['system.query_thread_log'] },
+}
+
+const realQueryError: FetchDataError = {
+  type: 'query_error',
+  message:
+    '(total) memory limit exceeded: would use 1.35 GiB ... MEMORY_LIMIT_EXCEEDED',
+}
+
+async function call(name: string): Promise<Response> {
+  const { handler } = await import('../$name')
+  return handler(
+    new Request(`http://localhost/api/v1/charts/${name}?hostId=0`),
+    name
+  )
+}
+
+describe('GET /api/v1/charts/$name — optional table degradation', () => {
+  beforeEach(() => {
+    mockExecuteChartQuery.mockClear()
+  })
+
+  test('optional chart with missing table → 200 empty + unavailable note (not 500)', async () => {
+    mockExecuteChartQuery.mockResolvedValueOnce({
+      dataJson: null,
+      metadata: {},
+      error: tableNotFound,
+      executedSql: 'SELECT 1 FROM system.query_thread_log',
+      clickhouseVersion: null,
+    })
+
+    const response = await call('opt-chart')
+    expect(response.status).toBe(200)
+
+    const body = (await response.json()) as {
+      success: boolean
+      data: unknown[]
+      metadata: {
+        unavailable?: { reason: string; missingTables: string[] }
+      }
+    }
+    expect(body.success).toBe(true)
+    expect(body.data).toEqual([])
+    expect(body.metadata.unavailable?.reason).toBe('table_not_found')
+    expect(body.metadata.unavailable?.missingTables).toContain(
+      'system.query_thread_log'
+    )
+  })
+
+  test('optional chart with a REAL query error still → 500 (errors not swallowed)', async () => {
+    mockExecuteChartQuery.mockResolvedValueOnce({
+      dataJson: null,
+      metadata: {},
+      error: realQueryError,
+      executedSql: 'SELECT 1',
+      clickhouseVersion: null,
+    })
+
+    const response = await call('opt-chart')
+    expect(response.status).toBe(500)
+
+    const body = (await response.json()) as {
+      success: boolean
+      error: { type: string; message: string }
+    }
+    expect(body.success).toBe(false)
+    expect(body.error.type).toBe('query_error')
+  })
+
+  test('non-optional chart with table_not_found is NOT degraded → 500', async () => {
+    mockExecuteChartQuery.mockResolvedValueOnce({
+      dataJson: null,
+      metadata: {},
+      error: tableNotFound,
+      executedSql: 'SELECT 1',
+      clickhouseVersion: null,
+    })
+
+    const response = await call('plain-chart')
+    expect(response.status).toBe(500)
+  })
+
+  test('healthy optional chart returns data normally → 200', async () => {
+    mockExecuteChartQuery.mockResolvedValueOnce({
+      dataJson: '[{"x":1}]',
+      metadata: { rows: 1, duration: 5 },
+      error: undefined,
+      executedSql: 'SELECT 1 FROM system.query_thread_log',
+      clickhouseVersion: '24.1',
+    })
+
+    const response = await call('opt-chart')
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as {
+      success: boolean
+      data: { x: number }[]
+    }
+    expect(body.success).toBe(true)
+    expect(body.data).toEqual([{ x: 1 }])
+  })
+
+  test('unknown chart → 404', async () => {
+    const response = await call('does-not-exist')
+    expect(response.status).toBe(404)
+  })
+})
