@@ -1,0 +1,9 @@
+{
+  "projectId": "66864c42-e923-4c22-996e-968effad844a",
+  "shape": "package",
+  "pkg": "dashboard",
+  "globalName": "ChmUI",
+  "srcDir": "src/components/ui",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": ".ds-tailwind.css"
+}

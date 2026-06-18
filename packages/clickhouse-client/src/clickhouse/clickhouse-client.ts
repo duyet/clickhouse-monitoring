@@ -34,9 +34,13 @@ export const getClient = async ({
   clientConfig?: ClickHouseConfig
   hostId?: number
 }): Promise<ClickHouseClient | WebClickHouseClient> => {
-  // Auto-detect environment: use web client for Cloudflare Workers
-  // Cloudflare Workers don't support Node.js APIs like https.request
-  const isWeb = web === true || (web === undefined && isCloudflareWorkers())
+  // This app only ships @clickhouse/client-web. The node @clickhouse/client
+  // is aliased to a throwing stub on BOTH build targets (see apps/dashboard
+  // vite.config.ts '@clickhouse/client' alias → empty.ts), so any path that
+  // selects the node client throws at runtime. The web client is fetch()-based
+  // and works in Node 18+ AND Cloudflare Workers, so default to it; only an
+  // explicit `web: false` selects the (stubbed) node path.
+  const isWeb = web !== false
   const clientFactory = isWeb ? createClientWeb : createClient
 
   const config: ClickHouseConfig = clientConfig
@@ -79,7 +83,7 @@ export const releaseClient = ({
   hostId?: number
   web?: boolean
 }): void => {
-  const isWeb = web === true || (web === undefined && isCloudflareWorkers())
+  const isWeb = web !== false
   const config = clientConfig
     ? clientConfig
     : getAndValidateClientConfig(hostId ?? 0)
