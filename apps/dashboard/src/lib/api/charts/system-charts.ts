@@ -85,7 +85,8 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
         formatReadableSize(DiskAvailable_default) as readable_DiskAvailable_default,
         formatReadableSize(DiskUsed_default) as readable_DiskUsed_default
     FROM merge('system', '^asynchronous_metric_log')
-    ${timeFilter ? `WHERE ${timeFilter}` : ''}
+    WHERE metric IN ('DiskAvailable_default', 'DiskUsed_default')
+    ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1 ASC
   `,

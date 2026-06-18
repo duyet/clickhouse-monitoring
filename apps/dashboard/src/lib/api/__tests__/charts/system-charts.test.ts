@@ -57,5 +57,25 @@ describe('systemCharts', () => {
         }
       })
     }
+
+    if (name === 'disks-usage') {
+      // Regression: the chart used to sumMap() over every async metric for
+      // 30 days, materializing a hundreds-of-keys map per group and OOMing
+      // small instances (MEMORY_LIMIT_EXCEEDED). The query must pre-filter to
+      // only the two disk metrics it actually reads, before aggregation.
+      test('pre-filters to the two disk metrics before aggregating', () => {
+        const result = builder({ interval: 'toStartOfDay', lastHours: 720 })
+        if ('query' in result) {
+          expect(result.query).toContain('metric IN (')
+          expect(result.query).toContain('DiskAvailable_default')
+          expect(result.query).toContain('DiskUsed_default')
+          // The metric filter must precede GROUP BY (cuts rows + map width).
+          const whereIdx = result.query.indexOf('metric IN (')
+          const groupIdx = result.query.indexOf('GROUP BY')
+          expect(whereIdx).toBeGreaterThan(0)
+          expect(whereIdx).toBeLessThan(groupIdx)
+        }
+      })
+    }
   })
 })
