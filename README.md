@@ -215,6 +215,8 @@ plus a short list of what you changed:
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
     - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
     - [Editions](docs/content/advanced/editions.mdx) — open-core model: GPL-3.0 community is free forever; enterprise features gated by `CHM_EDITION`
+  - [Reference](https://duyet.github.io/clickhouse-monitoring/reference)
+    - [Platform Support Matrix](docs/content/reference/support-matrix.mdx) — ClickHouse versions and distributions (supported / best-effort / untested)
 
 ### AI Agent Access
 
