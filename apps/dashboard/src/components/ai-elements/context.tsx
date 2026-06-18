@@ -169,7 +169,11 @@ export const ContextContentHeader = ({
             </p>
           </div>
           <div className="space-y-2">
-            <Progress className="bg-muted" value={usedPercent * PERCENT_MAX} />
+            <Progress
+              aria-label="Model context usage"
+              className="bg-muted"
+              value={usedPercent * PERCENT_MAX}
+            />
           </div>
         </>
       )}
