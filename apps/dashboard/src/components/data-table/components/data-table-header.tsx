@@ -358,7 +358,10 @@ export const DataTableHeader = memo(function DataTableHeader<
                           updateFilterDraft(draft.id, { columnId: val })
                         }
                       >
-                        <SelectTrigger className="h-8 flex-1 text-xs">
+                        <SelectTrigger
+                          aria-label="Filter column"
+                          className="h-8 flex-1 text-xs"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -383,7 +386,10 @@ export const DataTableHeader = memo(function DataTableHeader<
                           })
                         }
                       >
-                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                        <SelectTrigger
+                          aria-label="Filter operator"
+                          className="h-8 w-[130px] text-xs"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
