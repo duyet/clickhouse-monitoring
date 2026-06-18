@@ -57,15 +57,31 @@ const GENERIC_TITLES = new Set([
 ])
 
 /**
- * Maximum number of list pages to scan when filtering by user. Bounds the work
- * done for users with many conversations while still returning a full page.
- */
-const MAX_LIST_PAGES = 5
-
-/**
  * Page size used when paginating AgentState's conversation list.
  */
 const LIST_PAGE_SIZE = 100
+
+/**
+ * Maximum number of conversations to scan across pages when filtering by user.
+ *
+ * AgentState's list endpoint has no server-side user filter, so {@link
+ * AgentStateStore.list} pages newest-first through the shared project and keeps
+ * client-side only the requesting user's conversations. The previous bound of 5
+ * pages (500 conversations) meant that once a shared project accumulated more
+ * than 500 newer conversations from other users, an inactive user's own older
+ * conversations fell outside the scan window and silently vanished from their
+ * history.
+ *
+ * Scanning by conversation count (not page count) and raising the budget keeps
+ * the common case cheap — for an active user, their `limit` conversations are
+ * collected from the first page or two and the loop exits early — while still
+ * covering realistically large shared projects. The cap remains a deliberate,
+ * bounded trade-off: a user whose oldest conversations sit beneath more than
+ * {@link MAX_LIST_SCAN} newer global conversations can still miss the tail. The
+ * proper long-term fix is a server-side per-user filter (absent from the SDK)
+ * or a per-user conversation index.
+ */
+const MAX_LIST_SCAN = 5000
 
 /**
  * Constructor options for {@link AgentStateStore}.
@@ -370,9 +386,11 @@ export class AgentStateStore implements ConversationStore {
    *
    * AgentState's list endpoint has no server-side tag/user filter, so this
    * pages through results (newest first) and keeps only conversations whose
-   * stored `metadata.userId` matches, for defensive isolation. Scanning is
-   * bounded by {@link MAX_LIST_PAGES} and stops early once `limit` matches are
-   * collected or pagination is exhausted.
+   * stored `metadata.userId` matches, for defensive isolation. Scanning stops
+   * early once `limit` of the user's conversations are collected or pagination
+   * is exhausted, and is bounded overall by {@link MAX_LIST_SCAN} conversations
+   * scanned (not pages) so an inactive user's older conversations are not
+   * dropped just because newer conversations from other users precede them.
    *
    * @param userId - User ID to scope queries
    * @param limit - Maximum number of conversations to return (default: 50)
@@ -382,9 +400,9 @@ export class AgentStateStore implements ConversationStore {
     try {
       const matches: ConversationMeta[] = []
       let cursor: string | undefined
-      let pages = 0
+      let scanned = 0
 
-      while (pages < MAX_LIST_PAGES && matches.length < limit) {
+      while (matches.length < limit && scanned < MAX_LIST_SCAN) {
         const response = await this.client.listConversations({
           order: 'desc',
           limit: LIST_PAGE_SIZE,
@@ -392,6 +410,7 @@ export class AgentStateStore implements ConversationStore {
         })
 
         for (const conv of response.data) {
+          scanned += 1
           const metadata = (conv.metadata ??
             {}) as Partial<StoredConversationMetadata>
           if (metadata.userId !== userId) {
@@ -404,7 +423,6 @@ export class AgentStateStore implements ConversationStore {
         }
 
         cursor = response.pagination.next_cursor ?? undefined
-        pages += 1
         if (!cursor) {
           break
         }

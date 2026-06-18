@@ -480,6 +480,55 @@ describe('list', () => {
     expect(cursors[0]).toBeUndefined()
     expect(cursors[1]).toBe('cursor-2')
   })
+
+  test('still returns a user conversation buried under >500 newer ones from others (regression)', async () => {
+    // 6 pages of 100. Pages 1-5 are all from other users (500 conversations);
+    // the target user's conversations only appear on page 6. The previous
+    // 5-page (500-conversation) cap dropped them entirely.
+    const totalPages = 6
+    let page = 0
+    impl.listConversations = () => {
+      page += 1
+      const isLast = page === totalPages
+      const data = isLast
+        ? [
+            conv('mine-1', 'user-a', 'user-a:mine-1'),
+            conv('mine-2', 'user-a', 'user-a:mine-2'),
+          ]
+        : Array.from({ length: 100 }, (_, i) =>
+            conv(`other-${page}-${i}`, 'other', `other:other-${page}-${i}`)
+          )
+      return {
+        data,
+        pagination: {
+          limit: 100,
+          next_cursor: isLast ? null : `cursor-${page + 1}`,
+        },
+      }
+    }
+    const store = new AgentStateStore({ apiKey: 'k' })
+    const result = await store.list('user-a')
+    expect(result.map((r) => r.id)).toEqual(['mine-1', 'mine-2'])
+  })
+
+  test('bounds the scan so a never-matching user terminates (cap = 5000 scanned)', async () => {
+    let calls = 0
+    impl.listConversations = () => {
+      calls += 1
+      return {
+        data: Array.from({ length: 100 }, (_, i) =>
+          conv(`o-${calls}-${i}`, 'other', `other:o-${calls}-${i}`)
+        ),
+        // next_cursor never null: without the scan cap this would loop forever.
+        pagination: { limit: 100, next_cursor: `cursor-${calls + 1}` },
+      }
+    }
+    const store = new AgentStateStore({ apiKey: 'k' })
+    const result = await store.list('nobody')
+    expect(result).toEqual([])
+    // 5000 scan budget / 100 per page = 50 pages, then it stops.
+    expect(calls).toBe(50)
+  })
 })
 
 // ============================================================================
