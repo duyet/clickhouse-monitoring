@@ -57,13 +57,16 @@ export const TreeNode = function TreeNode({
   const paddingLeft = level * 12
 
   return (
-    <Collapsible open={isExpanded} onOpenChange={onToggle}>
-      <SidebarMenuItem
-        className={cn(
-          'transition-colors',
-          isHighlighted && !isSelected && 'bg-sidebar-accent/50'
-        )}
-      >
+    // SidebarMenuItem (<li>) must be the direct child of its SidebarMenu (<ul>),
+    // so the Collapsible wrapper lives *inside* the <li> — which also gives the
+    // tree its correct semantics (a node's nested <ul> sits within its <li>).
+    <SidebarMenuItem
+      className={cn(
+        'transition-colors',
+        isHighlighted && !isSelected && 'bg-sidebar-accent/50'
+      )}
+    >
+      <Collapsible open={isExpanded} onOpenChange={onToggle}>
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${paddingLeft}px` }}
@@ -72,6 +75,7 @@ export const TreeNode = function TreeNode({
             <CollapsibleTrigger asChild>
               <button
                 type="button"
+                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
                 className="flex size-4 items-center justify-center rounded-sm hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 onClick={(e) => {
                   e.stopPropagation()
@@ -141,7 +145,7 @@ export const TreeNode = function TreeNode({
             <SidebarMenuSub>{children}</SidebarMenuSub>
           </CollapsibleContent>
         )}
-      </SidebarMenuItem>
-    </Collapsible>
+      </Collapsible>
+    </SidebarMenuItem>
   )
 }

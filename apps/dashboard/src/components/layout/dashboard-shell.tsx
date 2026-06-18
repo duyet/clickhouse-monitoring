@@ -27,6 +27,12 @@ import { Toaster } from '@/components/ui/sonner'
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Skip to main content
+      </a>
       <Suspense fallback={null}>
         <DynamicTitle />
       </Suspense>
@@ -49,7 +55,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <HeaderActions />
             </div>
           </header>
-          <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pt-0 sm:gap-4 sm:p-4 sm:pt-0">
+          <div
+            id="main-content"
+            tabIndex={-1}
+            className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pt-0 outline-none sm:gap-4 sm:p-4 sm:pt-0"
+          >
             {children}
           </div>
         </SidebarInset>

@@ -358,7 +358,10 @@ export const DataTableHeader = memo(function DataTableHeader<
                           updateFilterDraft(draft.id, { columnId: val })
                         }
                       >
-                        <SelectTrigger className="h-8 flex-1 text-xs">
+                        <SelectTrigger
+                          aria-label="Filter column"
+                          className="h-8 flex-1 text-xs"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -383,7 +386,10 @@ export const DataTableHeader = memo(function DataTableHeader<
                           })
                         }
                       >
-                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                        <SelectTrigger
+                          aria-label="Filter operator"
+                          className="h-8 w-[130px] text-xs"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -478,7 +484,7 @@ export const DataTableHeader = memo(function DataTableHeader<
       {!filterBarSlot && (
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs px-1 min-h-[24px]">
           {/* Count */}
-          <span className="text-[12.5px] font-semibold text-muted-foreground/80">
+          <span className="text-[12.5px] font-semibold text-muted-foreground">
             {table.getFilteredRowModel().rows.length} records
           </span>
 

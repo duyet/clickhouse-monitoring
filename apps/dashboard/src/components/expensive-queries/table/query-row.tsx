@@ -187,6 +187,7 @@ export const QueryRow = memo(function QueryRow({
                   variant="ghost"
                   size="icon"
                   className="hidden size-7 text-muted-foreground hover:text-foreground md:inline-flex"
+                  aria-label="Open in Explorer"
                   asChild
                 >
                   <Link href={buildExplorerQueryUrl(d.query, hostId)}>

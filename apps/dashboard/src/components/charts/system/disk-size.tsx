@@ -94,6 +94,7 @@ export const ChartDiskSize = createCustomChart({
         <div className="mt-3.5 mb-4">
           <Progress
             value={primaryPct}
+            aria-label={`${primary.name} disk usage`}
             className={cn('h-2.5 bg-muted', {
               '[&>div]:bg-rose-500': primaryPct >= 90,
               '[&>div]:bg-amber-500': primaryPct >= 70 && primaryPct < 90,
