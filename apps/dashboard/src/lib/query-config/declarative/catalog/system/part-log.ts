@@ -1,0 +1,80 @@
+import type { DeclarativeQueryConfig } from '../../schema'
+
+export const partLogDeclarative: DeclarativeQueryConfig = {
+  name: 'part-log',
+  defaultView: 'auto',
+  card: { primary: 'part_name', badges: ['event_type', 'merge_reason'] },
+  description:
+    'Part lifecycle timeline: creation, merges, mutations, downloads, and removals from system.part_log',
+  // Inlined from table-notes PART_LOG (docs is a plain string)
+  docs: `The required table 'part_log' may be missing. Please follow the documentation at https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#part-log to ensure the necessary table is available.`,
+  refreshInterval: 30_000,
+  // system.part_log is opt-in and may not exist on every server / version
+  optional: true,
+  tableCheck: 'system.part_log',
+  sql: `
+      SELECT
+        event_time,
+        toUnixTimestamp(event_time) AS event_unixtime,
+        event_type,
+        database,
+        table AS table_name,
+        database || '.' || table AS table,
+        part_name,
+        partition_id,
+        merge_reason,
+        part_type,
+        toUInt32OrZero(splitByChar('_', part_name)[-1]) AS part_level,
+        size_in_bytes,
+        formatReadableSize(size_in_bytes) AS readable_size,
+        round(size_in_bytes * 100.0 / nullIf(max(size_in_bytes) OVER (), 0), 2) AS pct_size,
+        rows,
+        formatReadableQuantity(rows) AS readable_rows,
+        round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows,
+        read_rows,
+        duration_ms,
+        formatReadableTimeDelta(duration_ms / 1000) AS readable_duration,
+        round(duration_ms * 100.0 / nullIf(max(duration_ms) OVER (), 0), 2) AS pct_duration,
+        peak_memory_usage,
+        formatReadableSize(peak_memory_usage) AS readable_peak_memory,
+        error,
+        exception
+      FROM system.part_log
+      ORDER BY event_time DESC
+      LIMIT 1000
+    `,
+  columns: [
+    'event_time',
+    'event_type',
+    'table',
+    'part_name',
+    'partition_id',
+    'merge_reason',
+    'readable_size',
+    'readable_rows',
+    'readable_duration',
+    'readable_peak_memory',
+    'error',
+    'exception',
+  ],
+  columnFormats: {
+    event_type: 'colored-badge',
+    table: 'colored-badge',
+    merge_reason: 'colored-badge',
+    readable_size: 'background-bar',
+    readable_rows: 'background-bar',
+    readable_duration: 'background-bar',
+    exception: 'code-dialog',
+  },
+  // Replaces the legacy rowClassName: highlight rows with a non-zero error.
+  // default '' matches the legacy no-match return.
+  rowStyle: {
+    rules: [
+      {
+        when: { column: 'error', op: 'truthy' },
+        className: 'bg-red-50 dark:bg-red-950/20',
+      },
+    ],
+    default: '',
+  },
+}

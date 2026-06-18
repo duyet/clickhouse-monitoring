@@ -12,16 +12,19 @@
  *   filterSchema  — contains Icon refs and dynamic option fns
  *   clickhouseSettings — execution-time settings
  *
- * Skipped configs (runtime-only fields or non-serializable values):
- *   mutationsConfig — rowClassName function
+ * mutations migrates its rowClassName via the declarative `rowStyle` rules;
+ * rowClassName is excluded from the deep-equal (it's a function) but is verified
+ * separately by applying both functions to boundary rows.
  */
 
 import { loadDeclarativeConfig } from '../../loader'
 import { mergePerformanceDeclarative } from './merge-performance'
 import { mergesDeclarative } from './merges'
+import { mutationsDeclarative } from './mutations'
 import { describe, expect, test } from 'bun:test'
 import { mergePerformanceConfig } from '@/lib/query-config/merges/merge-performance'
 import { mergesConfig } from '@/lib/query-config/merges/merges'
+import { mutationsConfig } from '@/lib/query-config/merges/mutations'
 
 // ---------------------------------------------------------------------------
 // Helper: compare serializable fields between loaded declarative config and
@@ -91,5 +94,46 @@ describe('merge-performance declarative', () => {
   test('docs (inlined PART_LOG) matches legacy', () => {
     const loaded = loadDeclarativeConfig(mergePerformanceDeclarative)
     expect(loaded.docs).toBe(mergePerformanceConfig.docs)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// mutations — rowClassName (is_stuck red; !is_done & elapsed>300 amber)
+// migrated to declarative rowStyle (compound `all` condition).
+// ---------------------------------------------------------------------------
+
+describe('mutations declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(mutationsDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(mutationsDeclarative)
+    compareSerializable(loaded, mutationsConfig)
+  })
+
+  test('compiled rowClassName matches legacy across boundary rows', () => {
+    const loaded = loadDeclarativeConfig(mutationsDeclarative)
+    const compiled = loaded.rowClassName
+    const legacy = mutationsConfig.rowClassName
+    expect(typeof compiled).toBe('function')
+    expect(typeof legacy).toBe('function')
+    if (!compiled || !legacy) return
+
+    // Cover the full truth table: is_stuck (red, highest priority),
+    // !is_done & elapsed boundaries (amber at >300), and the no-match default.
+    const rows: Record<string, unknown>[] = [
+      { is_stuck: 1, is_done: 0, elapsed: 0 }, // red wins over amber
+      { is_stuck: 1, is_done: 1, elapsed: 999 }, // red
+      { is_stuck: 0, is_done: 0, elapsed: 301 }, // amber (just over)
+      { is_stuck: 0, is_done: 0, elapsed: 300 }, // not strict-gt → default
+      { is_stuck: 0, is_done: 0, elapsed: 500 }, // amber
+      { is_stuck: 0, is_done: 1, elapsed: 999 }, // done → default
+      { is_stuck: 0, is_done: 0, elapsed: 0 }, // default
+      {}, // missing keys → default
+    ]
+    for (const row of rows) {
+      expect(compiled(row)).toBe(legacy(row))
+    }
   })
 })
