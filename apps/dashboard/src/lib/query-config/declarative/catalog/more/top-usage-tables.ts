@@ -6,7 +6,8 @@ export const topUsageTablesDeclarative: DeclarativeQueryConfig = {
   card: { primary: 'table' },
   description:
     'Most usage tables, ignore system tables, based on system.query_log (top 50). Click on table name to see top usage columns.',
-  // docs: QUERY_LOG — not a URL, cannot be expressed declaratively; omitted
+  // Inlined from table-notes QUERY_LOG (docs is now a plain string)
+  docs: `The required table 'query_log' may be missing. Please follow the documentation at https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#query-log and https://clickhouse.com/docs/en/operations/system-tables/query_log to ensure the necessary table is available.`,
   optional: false,
   tableCheck: 'system.query_log',
   sql: [

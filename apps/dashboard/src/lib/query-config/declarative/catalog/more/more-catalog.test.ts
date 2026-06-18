@@ -11,10 +11,10 @@
  *   permission    — FeaturePermission
  *   filterSchema  — contains Icon refs and dynamic option fns
  *
- * Non-URL docs fields excluded from comparison:
- *   docs — schema requires z.string().url(); BACKUP_LOG, QUERY_LOG, ZOOKEEPER
- *           are descriptive strings, not URLs; omitted from declarative objects
- *           and skipped here
+ * docs is now a plain string in the schema, so the descriptive table-missing
+ * help text (BACKUP_LOG, QUERY_LOG, ZOOKEEPER) is inlined into the declarative
+ * objects and IS compared here (verifies the inlined text matches the legacy
+ * table-notes constants).
  *
  * Skipped configs (runtime-only fields that the schema cannot express):
  *   mergetree-settings — permission field
@@ -59,9 +59,6 @@ const RUNTIME_ONLY_KEYS = new Set([
   'columnFilters',
   'clickhouseSettings',
   'variants',
-  // docs is a URL-only field in the schema; configs whose docs is a descriptive
-  // string (BACKUP_LOG, QUERY_LOG, ZOOKEEPER) cannot express it declaratively
-  'docs',
 ])
 
 function compareSerializable(

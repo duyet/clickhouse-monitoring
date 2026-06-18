@@ -188,7 +188,10 @@ export const declarativeQueryConfigSchema = z.object({
   // Identity
   name: z.string().min(1, 'name is required'),
   description: z.string().optional(),
-  docs: z.string().url().optional(),
+  // docs is help text shown when a table is missing — often a full sentence
+  // with embedded URLs (e.g. table-notes constants), not a bare URL. Mirrors
+  // QueryConfig.docs (plain string); do NOT constrain to .url().
+  docs: z.string().optional(),
   suggestion: z.string().optional(),
 
   // SQL

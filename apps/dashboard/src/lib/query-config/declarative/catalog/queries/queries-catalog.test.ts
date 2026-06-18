@@ -21,7 +21,6 @@
  *   history-queries            — rowClassName, expandable, filterSchema (icons + runtime env), clickhouseSettings
  *   running-queries            — rowClassName, expandable (JSX), filterSchema (icons), columnFilters
  *   query-detail               — permission (FeaturePermission)
- *   query-cache                — docs is non-URL prose string (schema requires URL)
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -29,6 +28,7 @@ import { loadDeclarativeConfig } from '../../loader'
 import { commonErrorsDeclarative } from './common-errors'
 import { parallelizationDeclarative } from './parallelization'
 import { profilerDeclarative } from './profiler'
+import { queryCacheDeclarative } from './query-cache'
 import { queryViewsLogDeclarative } from './query-views-log'
 import { threadAnalysisDeclarative } from './thread-analysis'
 import { describe, expect, test } from 'bun:test'
@@ -36,6 +36,7 @@ import { describe, expect, test } from 'bun:test'
 import { commonErrorsConfig } from '@/lib/query-config/queries/common-errors'
 import { parallelizationConfig } from '@/lib/query-config/queries/parallelization'
 import { profilerConfig } from '@/lib/query-config/queries/profiler'
+import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
 import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { threadAnalysisConfig } from '@/lib/query-config/queries/thread-analysis'
 
@@ -136,6 +137,26 @@ describe('query-views-log declarative', () => {
     if (Array.isArray(loaded.sql) && Array.isArray(legacySql)) {
       expect(loaded.sql.length).toBe(legacySql.length)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// query-cache (docs now a plain string via schema-ext)
+// ---------------------------------------------------------------------------
+
+describe('query-cache declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(queryCacheDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(queryCacheDeclarative)
+    compareSerializable(loaded, queryCacheConfig)
+  })
+
+  test('docs (inlined QUERY_CACHE) matches legacy', () => {
+    const loaded = loadDeclarativeConfig(queryCacheDeclarative)
+    expect(loaded.docs).toBe(queryCacheConfig.docs)
   })
 })
 

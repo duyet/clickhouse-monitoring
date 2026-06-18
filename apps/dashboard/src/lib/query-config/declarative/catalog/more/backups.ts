@@ -6,7 +6,8 @@ export const backupsDeclarative: DeclarativeQueryConfig = {
   card: { primary: 'name', badges: ['status'] },
   description: `To restore a backup:
       RESTORE TABLE data_lake.events AS data_lake.events_restore FROM Disk('s3_backup', 'data_lake.events_20231212')`,
-  // docs: BACKUP_LOG — not a URL, cannot be expressed declaratively; omitted
+  // Inlined from table-notes BACKUP_LOG (docs is now a plain string)
+  docs: `The required table 'backup_log' may be missing. Please follow the documentation at https://clickhouse.com/docs/en/operations/server-configuration-parameters/settings#backup_log to ensure the necessary table is available. Make sure you have at least one backup to have this table available.`,
   optional: true,
   tableCheck: 'system.backup_log',
   sql: `
