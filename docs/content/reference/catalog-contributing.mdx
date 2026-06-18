@@ -41,10 +41,23 @@ apps/dashboard/src/lib/query-config/declarative/schema.ts
 | `relatedCharts` | `(string \| [string, Record])[]` | Chart names (or `[name, params]` tuples) to render above the table. |
 | `card` | `{ primary?, badges?, metrics?, hidden? }` | Card view layout hints. |
 | `defaultView` | `'table' \| 'cards' \| 'auto'` | Default display mode. |
+| `docs` | `string` | Help text shown when the table is missing (a sentence with links — not required to be a bare URL). |
+| `suggestion` | `string` | A short suggestion/tip rendered with the view. |
+| `columnSizing` | `Record<string, { size?, minSize?, maxSize? }>` | Per-column width hints (pixels). |
+| `tableBehavior` | `{ enableColumnResizing?, enableSorting?, … }` | Table interaction toggles. |
+| `sortingFns` | `Record<string, SortingFn>` | Named sort function per column. Allowed: `sort_column_using_pct`, `sort_column_using_pct_inverted`, `sort_column_using_actual_value`. |
+| `clickhouseSettings` | `Record<string, string \| number \| boolean>` | Execution-time ClickHouse settings applied per query (e.g. `{ allow_introspection_functions: 1 }`). |
+| `rowStyle` | `{ rules: [{ when, className }], default? }` | Conditional row CSS classes — the declarative replacement for `rowClassName`. See [Conditional row styling](#conditional-row-styling). |
+| `permission` | `{ feature, defaultAccess?, operation? }` | Feature-permission gate. See [Feature permissions](#feature-permissions). |
+| `bulkActions` / `bulkActionKey` | `string[]` / `string` | Bulk row actions and the row key they operate on. |
 
 **Fields intentionally absent from the declarative format** (runtime-only, cannot be serialized):
-`rowClassName`, `expandable`, `columnIcons`, `permission`, `filterSchema`.
+`expandable`, `columnIcons`, `filterSchema`.
 If your check needs any of these, it must stay as a TypeScript config for now.
+
+> Two former exclusions are now expressible as data: `rowClassName` via
+> [`rowStyle`](#conditional-row-styling) rules, and `permission` via the
+> [`permission`](#feature-permissions) field.
 
 ---
 
@@ -195,3 +208,62 @@ tableCheck: 'system.backup_log',
 
 The dashboard will surface a graceful "table not available" message instead of
 an error.
+
+---
+
+## Conditional row styling
+
+To highlight rows based on their data (e.g. errored or stuck rows), use
+`rowStyle` instead of a `rowClassName` function. It is an ordered list of
+`{ when, className }` rules; the **first** matching rule's `className` wins, and
+`default` (or nothing) applies when no rule matches.
+
+```typescript
+rowStyle: {
+  rules: [
+    // first match wins — put the most severe condition first
+    { when: { column: 'is_stuck', op: 'truthy' }, className: 'bg-red-50 dark:bg-red-950/20' },
+    {
+      when: {
+        all: [
+          { column: 'is_done', op: 'falsy' },
+          { column: 'elapsed', op: 'gt', value: 300 },
+        ],
+      },
+      className: 'bg-amber-50 dark:bg-amber-950/20',
+    },
+  ],
+  default: '',
+},
+```
+
+**Condition operators:**
+
+| Operator | Meaning | Coercion |
+|---|---|---|
+| `gt` / `gte` / `lt` / `lte` | numeric comparison against `value` | cell coerced with `Number()` |
+| `truthy` / `falsy` | numeric truthiness (non-zero / zero) | cell coerced with `Number()` |
+| `nonempty` / `empty` | string is non-empty / empty | cell coerced with `String()` |
+| `all` / `any` | AND / OR of nested conditions | — |
+
+Comparison operators (`gt`/`gte`/`lt`/`lte`) require a numeric `value`.
+`className` is any Tailwind class string.
+
+---
+
+## Feature permissions
+
+To gate a view behind a feature, set `permission`. This is plain data (no
+import needed) mirroring the app's `FeaturePermission`:
+
+```typescript
+permission: { feature: 'queries' },
+// or, with explicit access/operation:
+permission: { feature: 'metrics', defaultAccess: 'authenticated', operation: 'read' },
+```
+
+`feature` must be one of the known feature ids (`overview`, `agent`, `insights`,
+`health`, `queries`, `tables`, `metrics`, `dashboard`, `security`, `logs`,
+`settings`, `cluster`, `operations`, `actions`, `mcp`, `peerdb`, `docs`,
+`about`). `defaultAccess` is `public` | `authenticated`; `operation` is
+`read` | `write`. Both are optional.
