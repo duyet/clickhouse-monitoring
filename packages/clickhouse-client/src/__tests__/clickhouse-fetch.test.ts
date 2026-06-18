@@ -14,6 +14,9 @@ const mockCreateClient = mock(() => ({}))
 mock.module('@clickhouse/client', () => ({
   createClient: mockCreateClient,
 }))
+mock.module('@clickhouse/client-web', () => ({
+  createClient: mockCreateClient,
+}))
 
 const mockValidateTableExistence = mock(() =>
   Promise.resolve({ shouldProceed: true, missingTables: [] })

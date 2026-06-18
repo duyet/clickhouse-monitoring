@@ -31,6 +31,10 @@ const { _resetEnvCache } = await import(
 const { getClickHouseHosts, getClient } = await import(
   new URL('../index.ts?test=clickhouse', import.meta.url).href
 )
+const { clientPool } = await import(
+  new URL('../clickhouse/connection-pool.ts?test=clickhouse', import.meta.url)
+    .href
+)
 
 describe('getClickHouseHosts', () => {
   const originalEnv = { ...process.env }
@@ -90,6 +94,7 @@ describe('getClient', () => {
   bunBeforeEach(() => {
     process.env = { ...originalEnv }
     _resetEnvCache() // Reset cached environment between tests
+    clientPool.clear()
     mockCreateClient.mockReset()
     mockCreateClientWeb.mockReset()
     mockCookies.mockReset()
@@ -136,6 +141,26 @@ describe('getClient', () => {
         max_execution_time: 60,
       },
     })
+    expect(client).toBe(mockClient)
+  })
+
+  it('should default to the web client when web is undefined (Node/Docker regression guard)', async () => {
+    // No `web` flag is how every production caller (fetchData,
+    // fetchJsonEachRowAsNormalizedJson, /api/v1/explain) invokes getClient.
+    // The node @clickhouse/client is stubbed out on both build targets, so a
+    // node default throws at runtime — this is the Docker/k8s regression.
+    // Defaulting to the web client (fetch-based, works on Node + Workers) is
+    // the contract this test locks in.
+    process.env.CLICKHOUSE_HOST = 'localhost'
+    process.env.CLICKHOUSE_USER = 'default'
+    process.env.CLICKHOUSE_PASSWORD = ''
+    const mockClient = {}
+    mockCreateClientWeb.mockReturnValue(mockClient)
+
+    const client = await getClient({})
+
+    expect(mockCreateClientWeb).toHaveBeenCalled()
+    expect(mockCreateClient).not.toHaveBeenCalled()
     expect(client).toBe(mockClient)
   })
 

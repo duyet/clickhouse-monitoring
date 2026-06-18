@@ -192,8 +192,9 @@ export const fetchData = async <
       }
     }
 
-    // getClient will auto-detect and use web client for Cloudflare Workers
-    // Cloudflare Workers don't support Node.js APIs like https.request
+    // getClient() defaults to the web client (web !== false) — fetch()-based,
+    // works on both Node/Docker and Cloudflare Workers. The node client is
+    // stubbed out of this app's bundle, so no web flag is needed here.
     const client = await getClient({
       clientConfig,
     })

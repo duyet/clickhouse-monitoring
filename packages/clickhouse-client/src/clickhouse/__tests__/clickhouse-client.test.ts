@@ -89,26 +89,31 @@ describe('getClient', () => {
     expect(client).toBe(fakeClient)
   })
 
-  it('auto-detects cloudflare workers and uses web client', async () => {
-    mockIsCloudflareWorkers.mockReturnValue(true)
+  it('defaults to web client when no web flag is provided', async () => {
+    // getClient() defaults to web (web !== false) regardless of runtime.
+    // isCloudflareWorkers() is no longer consulted.
     const fakeClient = { query: mock(() => {}) }
     mockCreateClientWeb.mockReturnValue(fakeClient)
 
     const client = await getClient({}) // no web flag
 
-    expect(mockIsCloudflareWorkers).toHaveBeenCalled()
+    expect(mockIsCloudflareWorkers).not.toHaveBeenCalled()
     expect(mockCreateClientWeb).toHaveBeenCalled()
+    expect(mockCreateClient).not.toHaveBeenCalled()
     expect(client).toBe(fakeClient)
   })
 
-  it('uses standard client when not on cloudflare and no web flag', async () => {
+  it('defaults to web client even when isCloudflareWorkers would return false', async () => {
+    // Docker/k8s regression: previously defaulted to node client when
+    // isCloudflareWorkers() returned false, which hit the empty.ts stub.
+    mockIsCloudflareWorkers.mockReturnValue(false)
     const fakeClient = { query: mock(() => {}) }
-    mockCreateClient.mockReturnValue(fakeClient)
+    mockCreateClientWeb.mockReturnValue(fakeClient)
 
     const client = await getClient({})
 
-    expect(mockIsCloudflareWorkers).toHaveBeenCalled()
-    expect(mockCreateClient).toHaveBeenCalled()
+    expect(mockCreateClientWeb).toHaveBeenCalled()
+    expect(mockCreateClient).not.toHaveBeenCalled()
     expect(client).toBe(fakeClient)
   })
 

@@ -20,12 +20,15 @@ mock.module('@chm/logger', () => ({
   warn: mockWarn,
 }))
 
-// Mock @clickhouse/client at the package level so the real getClient() in
-// clickhouse-client.ts creates a mock client instead of a real one.
-// This avoids mock.module('../clickhouse-client') which is process-global and
-// contaminates other test files that need the real module.
+// Mock @clickhouse/client and @clickhouse/client-web at the package level so
+// the real getClient() in clickhouse-client.ts creates a mock client regardless
+// of which branch (web vs node) is selected. getClient() defaults to the web
+// client (web !== false), so the web mock is the one that fires in fetchData.
 const mockCreateClient = mock(() => ({}))
 mock.module('@clickhouse/client', () => ({
+  createClient: mockCreateClient,
+}))
+mock.module('@clickhouse/client-web', () => ({
   createClient: mockCreateClient,
 }))
 
