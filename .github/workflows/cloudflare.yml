@@ -136,6 +136,7 @@ jobs:
           ANYROUTER_API_BASE: ${{ secrets.ANYROUTER_API_BASE }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_SECRET_KEY_TEST: ${{ secrets.CLERK_SECRET_KEY_TEST }}
+          AGENTSTATE_API_KEY: ${{ secrets.AGENTSTATE_API_KEY }}
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
