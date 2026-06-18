@@ -120,8 +120,6 @@ export const CommandPalette = function CommandPalette({
         type="button"
         onClick={() => setOpen(true)}
         className="relative hidden h-8 w-30 items-center gap-2 rounded-md border bg-muted/30 px-2.5 text-xs transition-[border-color,box-shadow,background-color] hover:bg-muted/50 hover:ring-1 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30 md:inline-flex md:w-40"
-        aria-label="Search pages and commands"
-        aria-describedby="search-shortcut"
       >
         <Search
           aria-hidden="true"

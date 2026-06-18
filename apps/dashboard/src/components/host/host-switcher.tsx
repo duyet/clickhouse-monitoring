@@ -99,40 +99,33 @@ export function HostSwitcher() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className={cn(
+                    'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+                    !showExpanded && 'justify-center'
+                  )}
                   data-testid="host-switcher-empty"
                   aria-label={label}
-                  asChild
                 >
-                  <div
-                    className={cn(
-                      'flex gap-2',
-                      showExpanded
-                        ? 'items-center'
-                        : 'items-center justify-center'
-                    )}
-                  >
-                    <div className="relative">
-                      <ChmonitorLogo
-                        width={20}
-                        height={20}
-                        className="size-5 opacity-50"
-                      />
-                    </div>
-                    {showExpanded && (
-                      <>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
-                          <span className="truncate font-medium text-muted-foreground">
-                            {label}
-                          </span>
-                          <span className="truncate text-xs text-muted-foreground/70">
-                            {hint}
-                          </span>
-                        </div>
-                        <ChevronsUpDown className="ml-auto size-4" />
-                      </>
-                    )}
+                  <div className="relative">
+                    <ChmonitorLogo
+                      width={20}
+                      height={20}
+                      className="size-5 opacity-50"
+                    />
                   </div>
+                  {showExpanded && (
+                    <>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-medium text-muted-foreground">
+                          {label}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground/70">
+                          {hint}
+                        </span>
+                      </div>
+                      <ChevronsUpDown className="ml-auto size-4" />
+                    </>
+                  )}
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" sideOffset={4}>
@@ -163,49 +156,38 @@ export function HostSwitcher() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className={cn(
+                    'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+                    !showExpanded && 'justify-center'
+                  )}
                   data-testid="host-switcher"
                   aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
-                  asChild
                 >
-                  <div
-                    className={cn(
-                      'flex gap-2',
-                      showExpanded
-                        ? 'items-center'
-                        : 'items-center justify-center'
-                    )}
-                  >
-                    <div className="relative">
-                      <ChmonitorLogo
-                        width={20}
-                        height={20}
-                        className="size-5"
-                      />
-                      {!showExpanded && activeHost.source === 'env' && (
-                        <LogoStatusIndicator hostId={activeHost.id} />
-                      )}
-                    </div>
-                    {showExpanded && (
-                      <>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
-                          <span className="truncate font-semibold">
-                            {activeHost.name || getHost(activeHost.host)}
-                          </span>
-                          {activeHost.source === 'env' ? (
-                            <HostVersionWithStatus hostId={activeHost.id} />
-                          ) : (
-                            <span className="truncate text-xs text-muted-foreground">
-                              {activeHost.source === 'database'
-                                ? 'Saved to server'
-                                : 'Saved in browser'}
-                            </span>
-                          )}
-                        </div>
-                        <ChevronsUpDown className="ml-auto size-4" />
-                      </>
+                  <div className="relative">
+                    <ChmonitorLogo width={20} height={20} className="size-5" />
+                    {!showExpanded && activeHost.source === 'env' && (
+                      <LogoStatusIndicator hostId={activeHost.id} />
                     )}
                   </div>
+                  {showExpanded && (
+                    <>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">
+                          {activeHost.name || getHost(activeHost.host)}
+                        </span>
+                        {activeHost.source === 'env' ? (
+                          <HostVersionWithStatus hostId={activeHost.id} />
+                        ) : (
+                          <span className="truncate text-xs text-muted-foreground">
+                            {activeHost.source === 'database'
+                              ? 'Saved to server'
+                              : 'Saved in browser'}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronsUpDown className="ml-auto size-4" />
+                    </>
+                  )}
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
