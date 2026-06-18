@@ -95,22 +95,31 @@ wins, else `default`. Condition operators — `gt`/`gte`/`lt`/`lte` (numeric),
 `String(v || '')`) mirror the legacy `rowClassName` idioms **exactly**, so a
 compiled function is behaviourally identical to the TS function it replaced.
 
+## expandable — partially serializable (#1728)
+
+`expandable` renders a per-row detail panel. Its two stable factory shapes are
+data-describable, so a serializable spec carries them and the loader compiles
+each back into an `ExpandableConfig` via `compileExpandable`. The schema uses a
+discriminated union on `type` so variants can land incrementally:
+
+- **`config-details`** (`createConfigExpandedDetails({ primaryColumns, descriptionKey })`)
+  — **done** (#1728). An auto-grid of every row column not already in
+  `primaryColumns`. `settings` and `users` are migrated using it.
+- **`panel`** (`createExpandedPanel({ sections })`) — **follow-up**; room is
+  reserved in the union but not yet implemented. Unblocks the remaining query
+  configs (`expensive`/`slow`/`failed`/`history`).
+- **inline-JSX expandables** (bespoke React per row — `running-queries`,
+  `keeper-connections`, `readonly-tables`) — genuinely **not** serializable,
+  stay TS-only.
+
 ## What stays TS-only (and why)
 
 These fields are intentionally **excluded** from the schema because they require
 runtime code, not data:
 
-- **`expandable`** — renders a per-row detail panel. The specs are actually
-  factory-driven (`createConfigExpandedDetails({ primaryColumns })` and
-  `createExpandedPanel({ sections })`), so the *spec* is serializable — but
-  wiring it would require the config-resolution loader to import React component
-  factories, coupling config resolution to rendering. That is an open
-  architecture decision, not a mechanical migration. This blocks the remaining
-  query configs (`expensive`/`slow`/`failed`/`history`/`running`) and
-  `settings`/`users`.
-- **`columnIcons`** — React component refs. (Migrating it alone unblocks no
-  config, since every config that uses it also uses `expandable`.)
-- **`filterSchema`** — contains `Icon` refs and dynamic option functions.
+- **`columnIcons`** — React component refs (blocks `expensive-queries`).
+- **`filterSchema`** / **`columnFilters`** — contain `Icon` refs and dynamic
+  option functions.
 - Runtime-templated SQL — e.g. `more/page-views` interpolates the runtime
   `EVENTS_TABLE` env var into its SQL, which cannot be inlined as data.
 
@@ -133,11 +142,28 @@ parity across the whole catalog. Two verification shapes:
 `DECLARATIVE_CATALOG` (catalog/index.ts) also asserts unique `name`s at module
 load and throws on a duplicate.
 
+**Flip-safety invariants** (`catalog/flip-safety.test.ts`, #1729) enforce
+catalog-wide what the per-domain suites can't, gating the 02L default flip:
+
+- **Resolver parity** — `getQueryConfigByName(name, env)` under both
+  `CHM_CONFIG_SOURCE` values deep-equals on the serializable surface (default
+  `false` booleans normalized, so explicit `optional: false` ≡ omitted).
+- **No silent drop** — for every behavior field (`expandable`/`rowClassName`/
+  `permission`/`columnIcons`/`filterSchema`/`columnFilters`), a value the
+  TS-resolved config defines must remain defined after loading the declarative
+  one. Self-adjusting: as the loader gains support (e.g. #1728's `expandable`),
+  the check follows without a hardcoded drop-list.
+- **Orphan guard** — every catalog name maps to a same-named TS config, except a
+  documented allowlist (`keeper-presence`, `cluster-live-metrics-all`) consumed
+  by direct import in `routes/api/v1/cluster-topology.ts`.
+
 ## Status
 
-Foundation + opt-in wiring complete; ~75 configs migrated across all 10 domains,
-all dormant behind `CHM_CONFIG_SOURCE=ts`. The catalog is bundled (imported by
-the registry) but tree-shaken from rendering paths until the flag flips. Adding
-a check is a single-file PR — see the contributor guide. There are no external
-catalog consumers yet, so the `rowStyle` and `permission` contracts remain
-freely revisable until the 02L default-flip.
+Foundation + opt-in wiring complete; ~80 configs migrated across all 10 domains
+(including `settings`/`users` via the `config-details` expandable, #1728), all
+dormant behind `CHM_CONFIG_SOURCE=ts`. The catalog is bundled (imported by the
+registry) but tree-shaken from rendering paths until the flag flips. Adding a
+check is a single-file PR — see the contributor guide. There are no external
+catalog consumers yet, so the `rowStyle`, `permission`, and `expandable`
+contracts remain freely revisable until the 02L default-flip — whose safety is
+now machine-enforced by the flip-safety invariants above.
