@@ -214,6 +214,7 @@ plus a short list of what you changed:
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
     - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
+    - [Editions](docs/content/advanced/editions.mdx) — open-core model: GPL-3.0 community is free forever; enterprise features gated by `CHM_EDITION`
 
 ### AI Agent Access
 
