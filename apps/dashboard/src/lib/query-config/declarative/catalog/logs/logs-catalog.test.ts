@@ -10,17 +10,15 @@
  *   columnIcons   — React component refs
  *   permission    — FeaturePermission
  *   filterSchema  — contains Icon refs and dynamic option fns
- *   clickhouseSettings — execution-time settings
- *
- * Skipped configs (runtime-only fields that the schema cannot express):
- *   stackTracesConfig — clickhouseSettings (allow_introspection_functions)
  */
 
 import { loadDeclarativeConfig } from '../../loader'
 import { crashLogDeclarative } from './crashes'
+import { stackTracesDeclarative } from './stack-traces'
 import { textLogDeclarative } from './text-log'
 import { describe, expect, test } from 'bun:test'
 import { crashLogConfig } from '@/lib/query-config/logs/crashes'
+import { stackTracesConfig } from '@/lib/query-config/logs/stack-traces'
 import { textLogConfig } from '@/lib/query-config/logs/text-log'
 
 // ---------------------------------------------------------------------------
@@ -35,7 +33,6 @@ const RUNTIME_ONLY_KEYS = new Set([
   'permission',
   'filterSchema',
   'columnFilters',
-  'clickhouseSettings',
   'variants',
 ])
 
@@ -85,6 +82,28 @@ describe('text-log declarative', () => {
     const loaded = loadDeclarativeConfig(textLogDeclarative)
     expect(loaded.filterParamPresets?.length).toBe(
       textLogConfig.filterParamPresets?.length
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// stack-traces (clickhouseSettings now serializable via schema-ext)
+// ---------------------------------------------------------------------------
+
+describe('stack-traces declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(stackTracesDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(stackTracesDeclarative)
+    compareSerializable(loaded, stackTracesConfig)
+  })
+
+  test('clickhouseSettings round-trips through the loader', () => {
+    const loaded = loadDeclarativeConfig(stackTracesDeclarative)
+    expect(loaded.clickhouseSettings).toEqual(
+      stackTracesConfig.clickhouseSettings
     )
   })
 })

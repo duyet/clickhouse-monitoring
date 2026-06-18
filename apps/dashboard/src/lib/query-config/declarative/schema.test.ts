@@ -254,6 +254,42 @@ describe('invalid configs', () => {
     expect(result.errors.some((e) => e.includes('docs'))).toBe(true)
   })
 
+  test('accepts clickhouseSettings with primitive values', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      clickhouseSettings: {
+        allow_introspection_functions: 1,
+        allow_experimental_analyzer: 0,
+        log_comment: 'chmonitor',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.clickhouseSettings).toEqual({
+      allow_introspection_functions: 1,
+      allow_experimental_analyzer: 0,
+      log_comment: 'chmonitor',
+    })
+  })
+
+  test('rejects clickhouseSettings with non-primitive values', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      clickhouseSettings: { nested: { not: 'allowed' } },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors.some((e) => e.includes('clickhouseSettings'))).toBe(
+      true
+    )
+  })
+
   test('rejects unknown columnFormat enum value', () => {
     const result = validateDeclarativeConfig({
       name: 'my-query',

@@ -46,6 +46,7 @@ import { keeperPresenceDeclarative } from './keeper/keeper-presence'
 import { keeperWatchesDeclarative } from './keeper/keeper-watches'
 // Logs
 import { crashLogDeclarative } from './logs/crashes'
+import { stackTracesDeclarative } from './logs/stack-traces'
 import { textLogDeclarative } from './logs/text-log'
 // Merges
 import { mergesDeclarative } from './merges/merges'
@@ -99,6 +100,7 @@ import { projectionsDeclarative } from './tables/projections'
 import { replicasDeclarative } from './tables/replicas'
 import { replicatedFetchesDeclarative } from './tables/replicated-fetches'
 import { replicationQueueDeclarative } from './tables/replication-queue'
+import { tablesOverviewDeclarative } from './tables/tables-overview'
 import { userProcessesDeclarative } from './tables/user-processes'
 import { viewRefreshesDeclarative } from './tables/view-refreshes'
 
@@ -141,6 +143,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
 
   // Logs
   crashLogDeclarative,
+  stackTracesDeclarative,
   textLogDeclarative,
 
   // Merges
@@ -192,6 +195,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   replicasDeclarative,
   replicatedFetchesDeclarative,
   replicationQueueDeclarative,
+  tablesOverviewDeclarative,
   userProcessesDeclarative,
   viewRefreshesDeclarative,
 ]
