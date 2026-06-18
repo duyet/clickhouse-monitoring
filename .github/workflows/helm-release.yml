@@ -1,0 +1,51 @@
+name: Helm Chart Release (GitHub Pages)
+
+# Packages and publishes changed Helm charts to the gh-pages Helm repo
+# (https://duyet.github.io/clickhouse-monitoring) whenever the chart source
+# changes on main. chart-releaser detects version bumps in Chart.yaml and
+# only re-packages charts that changed since the last published release.
+#
+# Prerequisites (one-time):
+#   1. Create the gh-pages branch: git checkout --orphan gh-pages && git commit --allow-empty -m "init" && git push
+#   2. Go to Settings → Pages → Source = "Deploy from a branch" → Branch: gh-pages / root.
+#
+# Users install with:
+#   helm repo add chmonitor https://duyet.github.io/clickhouse-monitoring
+#   helm install my-chm chmonitor/chmonitor --set clickhouse.host=http://ch:8123
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/helm/**'
+      - '.github/cr.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: chart-releaser
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: deploy/helm
+          config: .github/cr.yaml
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
