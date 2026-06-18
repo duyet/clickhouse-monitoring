@@ -162,6 +162,7 @@ const relatedChartSchema = z.union([
 const sortingFnValues = [
   'sort_column_using_pct',
   'sort_column_using_pct_inverted',
+  'sort_column_using_actual_value',
 ] as const
 
 const sortingFnsSchema = z.record(z.string(), z.enum(sortingFnValues))
