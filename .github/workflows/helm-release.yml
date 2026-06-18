@@ -6,10 +6,10 @@ name: Helm Chart Release (GitHub Pages)
 # only re-packages charts that changed since the last published release.
 #
 # The gh-pages branch is auto-created on first run (see "Bootstrap gh-pages
-# branch" step) and GitHub Pages serving is enabled best-effort — no manual
-# one-time setup required. If Pages enablement is skipped (e.g. already
-# configured differently), set it manually: Settings → Pages →
-# Source = "Deploy from a branch" → Branch: gh-pages / root.
+# branch" step). One manual step remains: enable GitHub Pages serving —
+# Settings → Pages → Source = "Deploy from a branch" → Branch: gh-pages / root.
+# (This can't be automated: creating a Pages site requires administration:write,
+# which the default GITHUB_TOKEN doesn't hold.)
 #
 # Users install with:
 #   helm repo add chmonitor https://duyet.github.io/clickhouse-monitoring
@@ -21,14 +21,13 @@ on:
     paths:
       - 'deploy/helm/**'
       - '.github/cr.yaml'
-  # Manual trigger: lets us (re)publish without a chart bump — useful for
-  # bootstrapping the index after the gh-pages branch is first created, and
-  # for retroactively indexing a release whose cr index step failed.
+  # Manual trigger to (re)run chart-releaser without a chart bump — handy for
+  # bootstrapping the gh-pages branch. Note: cr index is a no-op when no chart
+  # changed, so actually populating index.yaml still requires a Chart.yaml bump.
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
 
 jobs:
   release:
@@ -61,20 +60,6 @@ jobs:
           EMPTY_TREE="$(git mktree </dev/null)"
           COMMIT="$(git commit-tree "$EMPTY_TREE" -m "Initialize gh-pages for Helm chart repository")"
           git push origin "$COMMIT:refs/heads/gh-pages"
-
-      # Best-effort: serve gh-pages / root via GitHub Pages so the helm repo
-      # URL (https://duyet.github.io/clickhouse-monitoring) works. Never fails
-      # the build — Pages may already be configured or need manual enablement.
-      - name: Enable GitHub Pages serving (best-effort)
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api --method POST "repos/$GITHUB_REPOSITORY/pages" \
-            -f "source[branch]=gh-pages" -f "source[path]=/" 2>/dev/null \
-            || gh api --method PUT "repos/$GITHUB_REPOSITORY/pages" \
-                 -f "source[branch]=gh-pages" -f "source[path]=/" 2>/dev/null \
-            || echo "Pages enablement skipped — configure manually in Settings → Pages"
 
       - name: Install Helm
         uses: azure/setup-helm@v4
