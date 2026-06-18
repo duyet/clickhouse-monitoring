@@ -212,6 +212,7 @@ plus a short list of what you changed:
     - [Vercel](https://duyet.github.io/clickhouse-monitoring/deploy/vercel)
     - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
+    - [One-Click Deploy](docs/content/deploy/one-click.mdx) — Railway / Render / Fly.io community templates
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
     - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
     - [Editions](docs/content/advanced/editions.mdx) — open-core model: GPL-3.0 community is free forever; enterprise features gated by `CHM_EDITION`
@@ -219,6 +220,8 @@ plus a short list of what you changed:
     - [Platform Support Matrix](docs/content/reference/support-matrix.mdx) — ClickHouse versions and distributions (supported / best-effort / untested)
     - [Connection Presets](docs/content/reference/connection-presets.mdx) — least-privilege read-only user setup for ClickHouse OSS, Altinity, and Cloud
     - [Contributing a config / check](docs/content/reference/catalog-contributing.mdx) — how to add a declarative monitoring check to the catalog
+    - [MCP Clients](docs/content/reference/mcp-clients.mdx) — connect Claude Desktop, Cursor, or any MCP client
+    - [Grafana Bridge](docs/content/reference/grafana-bridge.mdx) — read chmonitor's ClickHouse from Grafana (community recipe)
 
 ### AI Agent Access
 
