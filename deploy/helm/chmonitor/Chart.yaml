@@ -2,16 +2,8 @@ apiVersion: v2
 name: chmonitor
 description: A Helm chart for the chmonitor dashboard
 type: application
-
-# version is the chart version. Bump on any chart change.
-# release-please auto-bumps both `version` and `appVersion` on each app
-# release (see .github/release-please-config.json extra-files), so the
-# shipped image tag (defaults to appVersion) tracks the release.
-version: 0.2.9
-
-# appVersion tracks the chmonitor app release this chart ships.
-appVersion: "0.2.9"
-
+version: 0.2.10
+appVersion: 0.2.10
 home: https://github.com/duyet/clickhouse-monitoring
 sources:
   - https://github.com/duyet/clickhouse-monitoring
