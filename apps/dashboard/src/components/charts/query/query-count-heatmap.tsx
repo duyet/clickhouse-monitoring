@@ -1,4 +1,12 @@
-import { ArrowUpRightIcon } from 'lucide-react'
+import {
+  ActivityIcon,
+  ArrowUpRightIcon,
+  CircleAlertIcon,
+  HardDriveIcon,
+  type LucideIcon,
+  MemoryStickIcon,
+  TimerIcon,
+} from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
 import type {
@@ -32,6 +40,16 @@ const LABELLED_ROWS = new Set([1, 3, 5])
 const CELL = 'size-[11px]'
 const CELL_GAP = 'gap-[2px]'
 
+// Icon per metric for the toggle pills. Kept here (not in the pure calendar
+// module) so that file stays React-free and unit-testable.
+const METRIC_ICONS: Record<MetricKey, LucideIcon> = {
+  queries: ActivityIcon,
+  failed: CircleAlertIcon,
+  memory: MemoryStickIcon,
+  duration: TimerIcon,
+  written: HardDriveIcon,
+}
+
 interface HoverState {
   day: CalendarDay
   x: number
@@ -63,19 +81,24 @@ function ModePill({
   active: boolean
   onSelect: (key: MetricKey) => void
 }) {
+  const Icon = METRIC_ICONS[metric.key]
   return (
     <button
       type="button"
       onClick={() => onSelect(metric.key)}
       aria-pressed={active}
       className={cn(
-        'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
           ? 'border-foreground bg-foreground text-background'
           : 'border-border bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground'
       )}
     >
+      <Icon
+        className={cn('size-3.5', !active && metric.accentText)}
+        aria-hidden
+      />
       {metric.label}
     </button>
   )
@@ -94,20 +117,20 @@ function StatCardView({
   accentClass?: string
 }) {
   return (
-    <div className="flex min-w-0 flex-col rounded-xl border border-border/60 bg-card/40 px-4 py-3">
-      <span className="text-muted-foreground truncate text-[11px] font-medium uppercase tracking-wide">
+    <div className="flex min-w-0 flex-col rounded-lg border border-border/60 bg-card/40 px-3 py-2">
+      <span className="text-muted-foreground truncate text-[10px] font-medium uppercase tracking-wide">
         {label}
       </span>
       <span
         className={cn(
-          'mt-1.5 truncate text-2xl font-semibold tabular-nums leading-none',
+          'mt-1 truncate text-lg font-semibold tabular-nums leading-tight',
           accentClass
         )}
       >
         {value}
       </span>
       {sub ? (
-        <span className="text-muted-foreground mt-1.5 truncate text-xs">
+        <span className="text-muted-foreground mt-0.5 truncate text-[11px]">
           {sub}
         </span>
       ) : null}
@@ -209,7 +232,7 @@ function CalendarBody({
   return (
     <div
       data-calendar-root
-      className="relative flex h-full w-full flex-col justify-center gap-4"
+      className="relative flex h-full w-full flex-col justify-center gap-3"
     >
       {/* Range caption + metric switcher */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -229,7 +252,7 @@ function CalendarBody({
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <StatCardView
             key={card.label}
@@ -244,9 +267,10 @@ function CalendarBody({
       {/* Year calendar: a weekday gutter plus one self-contained block per
           month. Dots are a fixed small size (CELL) so the whole year stays
           compact, and each month is its own mini-grid so month boundaries read
-          clearly. Horizontal scroll on narrow screens (auto-scrolled to the
-          latest month, like GitHub). */}
-      <div ref={scrollRef} className="overflow-x-auto pb-1">
+          clearly. Scrolls horizontally on narrow screens and is auto-anchored
+          to the latest month (older months clip off the left); the scrollbar is
+          hidden for a cleaner look — swipe/wheel still scrolls back in time. */}
+      <div ref={scrollRef} className="scrollbar-hide overflow-x-auto">
         <div className="flex w-max items-start gap-3">
           {/* Weekday gutter (Sun-first; GitHub shows Mon/Wed/Fri). The leading
               spacer aligns the rows with each block's month label. */}
