@@ -1,5 +1,11 @@
+import type { ChClient } from './capabilities'
+
 import { detectChFlavor, parseMajorMinor } from '../telemetry/environment'
-import { diffCapabilities, normalizeCapabilities } from './capabilities'
+import {
+  diffCapabilities,
+  discoverCapabilities,
+  normalizeCapabilities,
+} from './capabilities'
 import { describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
@@ -268,5 +274,118 @@ describe('import contract — detectChFlavor', () => {
 
   it('returns unknown for empty string', () => {
     expect(detectChFlavor('')).toBe('unknown')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// discoverCapabilities (mocked ChClient — exercises the live transform offline)
+// ---------------------------------------------------------------------------
+
+/**
+ * A fake ChClient that records every query and answers from canned payloads,
+ * routed by which system object the query references. Lets us cover the
+ * query-result → snapshot transform without a real ClickHouse.
+ */
+function mockClient(
+  responses: {
+    version?: unknown
+    tables?: unknown
+    columns?: unknown
+    buildOptions?: unknown
+  },
+  recorder?: string[]
+): ChClient {
+  return {
+    query: ({ query }) => {
+      recorder?.push(query)
+      let data: unknown
+      if (query.includes('version()')) data = responses.version
+      else if (query.includes('system.tables')) data = responses.tables
+      else if (query.includes('system.columns')) data = responses.columns
+      else if (query.includes('system.build_options'))
+        data = responses.buildOptions
+      else data = { data: [] }
+      return Promise.resolve({ json: () => Promise.resolve(data) })
+    },
+  }
+}
+
+describe('discoverCapabilities', () => {
+  it('maps the four query results into a normalized snapshot', async () => {
+    const snap = await discoverCapabilities(
+      mockClient({
+        version: { data: [{ version: '24.8.1.2' }] },
+        tables: {
+          data: [
+            { database: 'system', name: 'query_log' },
+            { database: 'system', name: 'metrics' },
+          ],
+        },
+        columns: {
+          data: [
+            { database: 'system', table: 'query_log', name: 'event_time' },
+            { database: 'system', table: 'query_log', name: 'query_id' },
+          ],
+        },
+        buildOptions: {
+          data: [{ name: 'BUILD_TYPE', value: 'RelWithDebInfo' }],
+        },
+      })
+    )
+
+    expect(snap.version).toBe('24.8.1.2')
+    expect(snap.majorMinor).toBe('24.8')
+    expect(snap.flavor).toBe('oss')
+    expect(Object.keys(snap.tables)).toEqual([
+      'system.metrics',
+      'system.query_log',
+    ])
+    expect(snap.tables['system.query_log']).toEqual(['event_time', 'query_id'])
+    expect(snap.buildFlags).toEqual({ BUILD_TYPE: 'RelWithDebInfo' })
+  })
+
+  it('falls back to an empty version when version() returns no rows', async () => {
+    const snap = await discoverCapabilities(
+      mockClient({
+        version: { data: [] },
+        tables: { data: [] },
+        columns: { data: [] },
+        buildOptions: { data: [] },
+      })
+    )
+
+    expect(snap.version).toBe('')
+    expect(snap.majorMinor).toBeUndefined()
+    expect(snap.flavor).toBe('unknown')
+    expect(snap.tables).toEqual({})
+    // Empty build options → buildFlags omitted entirely.
+    expect(snap.buildFlags).toBeUndefined()
+  })
+
+  it('issues exactly the four documented discovery queries', async () => {
+    const queries: string[] = []
+    await discoverCapabilities(
+      mockClient(
+        {
+          version: { data: [{ version: '24.3.1.1' }] },
+          tables: { data: [] },
+          columns: { data: [] },
+          buildOptions: { data: [] },
+        },
+        queries
+      )
+    )
+
+    expect(queries).toHaveLength(4)
+    expect(queries.some((q) => q.includes('version()'))).toBe(true)
+    expect(
+      queries.some((q) => q.includes("system.tables WHERE database = 'system'"))
+    ).toBe(true)
+    expect(
+      queries.some((q) =>
+        q.includes("system.columns WHERE database = 'system'")
+      )
+    ).toBe(true)
+    expect(queries.some((q) => q.includes('system.build_options'))).toBe(true)
   })
 })
