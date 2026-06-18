@@ -6,7 +6,7 @@ v0.3 rebuilds the dashboard on TanStack Start, ships a pluggable authentication 
 
 ## TanStack Start (new framework)
 
-The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with Vite. Every page is pre-rendered at build time so the initial shell loads from cache before ClickHouse is contacted. The legacy Next.js app (`apps/dashboard`) is removed.
+The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with Vite. Every page is pre-rendered at build time so the initial shell loads from cache before ClickHouse is contacted. The legacy Next.js app is removed.
 
 - Static prerender for all 75+ dashboard pages ([#1392](https://github.com/duyet/clickhouse-monitoring/issues/1392)).
 - TanStack Query replaces SWR for client-side data fetching ([#1562](https://github.com/duyet/clickhouse-monitoring/issues/1562)).
