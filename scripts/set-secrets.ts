@@ -183,6 +183,13 @@ function resolveValue(
   if (key === 'CLERK_SECRET_KEY' && isPreview) {
     return src.CLERK_SECRET_KEY_TEST ?? src.CLERK_SECRET_KEY ?? ''
   }
+  // Preview must NOT reuse the production AgentState project key — otherwise PR
+  // preview conversations would land in the prod data plane. Use a dedicated
+  // AGENTSTATE_API_KEY_TEST if provided; with none, the value is empty and the
+  // secret is skipped, so preview falls back to a non-AgentState backend.
+  if (key === 'AGENTSTATE_API_KEY' && isPreview) {
+    return src.AGENTSTATE_API_KEY_TEST ?? ''
+  }
   return src[key] ?? DEFAULTS[key] ?? ''
 }
 
