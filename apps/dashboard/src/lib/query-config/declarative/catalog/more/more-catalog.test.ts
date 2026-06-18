@@ -13,11 +13,17 @@
  * docs (table-missing help text) and permission (FeaturePermission as plain
  * data) are now serializable and ARE compared here.
  *
+ * settings/users now migrate too: their factory-based `expandable` is expressed
+ * via the declarative `expandable` config-details spec. The compiled
+ * renderExpanded is a function (not deep-equalled by compareSerializable); a
+ * dedicated behavioral test asserts it binds the same factory + primaryColumns
+ * as the legacy config.
+ *
  * Skipped configs (runtime-only fields that the schema cannot express):
  *   page-views — tableCheck + SQL reference runtime EVENTS_TABLE env var
- *   settings   — expandable field (also has permission, but expandable blocks it)
- *   users      — expandable field
  */
+
+import type { ExpandableConfig } from '@/types/query-config'
 
 import { loadDeclarativeConfig } from '../../loader'
 // Declarative catalog objects
@@ -28,8 +34,10 @@ import { errorsDeclarative } from './errors'
 import { mergeTreeSettingsDeclarative } from './mergetree-settings'
 import { metricsDeclarative } from './metrics'
 import { rolesDeclarative } from './roles'
+import { settingsDeclarative } from './settings'
 import { topUsageColumnsDeclarative } from './top-usage-columns'
 import { topUsageTablesDeclarative } from './top-usage-tables'
+import { usersDeclarative } from './users'
 import { zookeeperDeclarative } from './zookeeper'
 import { describe, expect, test } from 'bun:test'
 // Legacy TS configs
@@ -40,8 +48,10 @@ import { errorsConfig } from '@/lib/query-config/more/errors'
 import { mergeTreeSettingsConfig } from '@/lib/query-config/more/mergetree-settings'
 import { metricsConfig } from '@/lib/query-config/more/metrics'
 import { rolesConfig } from '@/lib/query-config/more/roles'
+import { settingsConfig } from '@/lib/query-config/more/settings'
 import { topUsageColumnsConfig } from '@/lib/query-config/more/top-usage-columns'
 import { topUsageTablesConfig } from '@/lib/query-config/more/top-usage-tables'
+import { usersConfig } from '@/lib/query-config/more/users'
 import { zookeeperConfig } from '@/lib/query-config/more/zookeeper'
 
 // ---------------------------------------------------------------------------
@@ -70,6 +80,39 @@ function compareSerializable(
     if (RUNTIME_ONLY_KEYS.has(key)) continue
     expect(loadedRec[key]).toEqual(legacyRec[key])
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helper: a compiled `expandable` is a function, so it can't be deep-equalled.
+// createConfigExpandedDetails returns (row) => <ConfigExpandedDetails .../>, so
+// we inspect the React element it produces WITHOUT rendering: the same factory
+// yields the same element .type (component reference identity) and the same
+// `primaryColumns` prop. That proves the loader bound the same panel + columns.
+// ---------------------------------------------------------------------------
+
+function expectExpandableMatchesLegacy(
+  loaded: ReturnType<typeof loadDeclarativeConfig>,
+  legacyExpandable: ExpandableConfig
+): void {
+  expect(loaded.expandable).toBeDefined()
+  const loadedRenderer = (loaded.expandable as ExpandableConfig).renderExpanded
+  const sampleRow = { name: 'sample', extra_column: 'value' }
+  const ctx = { row: {} } as unknown as Parameters<typeof loadedRenderer>[1]
+
+  const loadedEl = loadedRenderer(sampleRow, ctx) as unknown as {
+    type: unknown
+    props: Record<string, unknown>
+  }
+  const legacyEl = legacyExpandable.renderExpanded(
+    sampleRow,
+    ctx
+  ) as unknown as {
+    type: unknown
+    props: Record<string, unknown>
+  }
+
+  expect(loadedEl.type).toBe(legacyEl.type)
+  expect(loadedEl.props.primaryColumns).toEqual(legacyEl.props.primaryColumns)
 }
 
 // ---------------------------------------------------------------------------
@@ -253,5 +296,56 @@ describe('metrics declarative', () => {
   test('permission matches legacy', () => {
     const loaded = loadDeclarativeConfig(metricsDeclarative)
     expect(loaded.permission).toEqual(metricsConfig.permission)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// settings — expandable (config-details) + permission migrated to declarative
+// ---------------------------------------------------------------------------
+
+describe('settings declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(settingsDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(settingsDeclarative)
+    compareSerializable(loaded, settingsConfig)
+  })
+
+  test('permission matches legacy', () => {
+    const loaded = loadDeclarativeConfig(settingsDeclarative)
+    expect(loaded.permission).toEqual(settingsConfig.permission)
+  })
+
+  test('expandable binds the same factory + primaryColumns as legacy', () => {
+    const loaded = loadDeclarativeConfig(settingsDeclarative)
+    expectExpandableMatchesLegacy(
+      loaded,
+      settingsConfig.expandable as ExpandableConfig
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// users — expandable (config-details) migrated to declarative
+// ---------------------------------------------------------------------------
+
+describe('users declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(usersDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(usersDeclarative)
+    compareSerializable(loaded, usersConfig)
+  })
+
+  test('expandable binds the same factory + primaryColumns as legacy', () => {
+    const loaded = loadDeclarativeConfig(usersDeclarative)
+    expectExpandableMatchesLegacy(
+      loaded,
+      usersConfig.expandable as ExpandableConfig
+    )
   })
 })
