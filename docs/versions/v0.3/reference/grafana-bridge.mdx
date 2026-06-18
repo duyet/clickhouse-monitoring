@@ -2,7 +2,7 @@
 
 chmonitor and Grafana can coexist on the same ClickHouse cluster. There is no official integration and no special bridge process — both tools query ClickHouse system tables directly using the ClickHouse HTTP or native protocol. This page explains the setup and provides copy-paste panel queries derived from the same SQL that chmonitor uses internally.
 
-> **Community recipe.** This is a community starting point, not an officially maintained integration. The queries are adapted from chmonitor's query configs and tested against ClickHouse v23.8+. Use them as a baseline and adjust to your schema version.
+> **Community recipe.** This is a community starting point, not an officially maintained integration. The queries are adapted from chmonitor's query configs and target ClickHouse v23.8+. Use them as a baseline and adjust to your schema version.
 
 ---
 
