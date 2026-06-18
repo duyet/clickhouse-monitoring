@@ -87,9 +87,11 @@ export function DataTablePagination({ table }: DataTablePaginationProps) {
         <Select
           value={`${table.getState().pagination.pageSize}`}
           onValueChange={handlePageSizeChange}
-          aria-label="Rows per page"
         >
-          <SelectTrigger className="h-10 sm:h-8 w-16 sm:w-[70px]">
+          <SelectTrigger
+            aria-label="Rows per page"
+            className="h-10 sm:h-8 w-16 sm:w-[70px]"
+          >
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
