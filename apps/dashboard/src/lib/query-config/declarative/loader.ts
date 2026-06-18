@@ -11,7 +11,6 @@
  *   - permission     — FeaturePermission (app-level import)
  *   - filterSchema   — FilterSchema (contains Icon refs and dynamic option fns)
  *   - columnFilters  — ColumnFilterDef (UI sugar over filterSchema)
- *   - clickhouseSettings — ClickHouseSettings (execution-time; not serializable declaratively)
  *   - variants       — deprecated; use versioned sql[] in the declarative format
  *
  * These fields can be merged in by the caller after loading if needed.
@@ -65,8 +64,8 @@ export function getConfigSource(
  *
  * Runtime-only fields absent from DeclarativeQueryConfig (columnIcons,
  * rowClassName, expandable, permission, filterSchema, columnFilters,
- * clickhouseSettings, variants) are simply omitted from the result. Callers
- * that need those fields must merge them in after loading.
+ * variants) are simply omitted from the result. Callers that need those
+ * fields must merge them in after loading.
  *
  * @throws Error when `input` fails schema validation (message includes all
  *   field-level errors joined by '; ').
@@ -104,6 +103,12 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   if (d.refreshInterval !== undefined)
     config.refreshInterval = d.refreshInterval
   if (d.defaultParams !== undefined) config.defaultParams = d.defaultParams
+  if (d.clickhouseSettings !== undefined) {
+    // Schema validates values to serializable primitives; cast to the precise
+    // ClickHouseSettings type from @clickhouse/client.
+    config.clickhouseSettings =
+      d.clickhouseSettings as QueryConfig['clickhouseSettings']
+  }
 
   // Column display
   if (d.columnFormats !== undefined) {

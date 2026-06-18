@@ -7,11 +7,10 @@
  *
  * Runtime-only fields absent from DeclarativeQueryConfig are excluded from
  * comparison: columnIcons, rowClassName, expandable, permission, filterSchema,
- * columnFilters, clickhouseSettings, variants.
+ * columnFilters, variants.
  *
  * SKIPPED configs (non-serializable fields block migration):
  *   - readonly-tables  : expandable contains JSX (React component ref)
- *   - tables-overview  : clickhouseSettings not serializable declaratively
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -24,6 +23,7 @@ import { projectionsDeclarative } from './projections'
 import { replicasDeclarative } from './replicas'
 import { replicatedFetchesDeclarative } from './replicated-fetches'
 import { replicationQueueDeclarative } from './replication-queue'
+import { tablesOverviewDeclarative } from './tables-overview'
 import { userProcessesDeclarative } from './user-processes'
 import { viewRefreshesDeclarative } from './view-refreshes'
 import { describe, expect, test } from 'bun:test'
@@ -36,6 +36,7 @@ import { projectionsConfig } from '@/lib/query-config/tables/projections'
 import { replicasConfig } from '@/lib/query-config/tables/replicas'
 import { replicatedFetchesConfig } from '@/lib/query-config/tables/replicated-fetches'
 import { replicationQueueConfig } from '@/lib/query-config/tables/replication-queue'
+import { tablesOverviewConfig } from '@/lib/query-config/tables/tables-overview'
 import { userProcessesConfig } from '@/lib/query-config/tables/user-processes'
 import { viewRefreshesConfig } from '@/lib/query-config/tables/view-refreshes'
 
@@ -67,6 +68,7 @@ const SERIALIZABLE_KEYS = [
   'bulkActions',
   'bulkActionKey',
   'sortingFns',
+  'clickhouseSettings',
 ] as const
 
 type SerializableKey = (typeof SERIALIZABLE_KEYS)[number]
@@ -243,4 +245,14 @@ assertDeclarativeMatchesLegacy(
   userProcessesDeclarative,
   userProcessesConfig as unknown as Record<string, unknown>,
   'user-processes'
+)
+
+// ---------------------------------------------------------------------------
+// tables-overview (clickhouseSettings now serializable via schema-ext)
+// ---------------------------------------------------------------------------
+
+assertDeclarativeMatchesLegacy(
+  tablesOverviewDeclarative,
+  tablesOverviewConfig as unknown as Record<string, unknown>,
+  'tables-overview'
 )

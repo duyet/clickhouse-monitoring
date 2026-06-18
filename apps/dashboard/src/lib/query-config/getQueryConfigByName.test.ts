@@ -20,8 +20,8 @@ const TS_ENV = {} as const
 // Serializable fields — the intersection of DeclarativeQueryConfig and
 // QueryConfig that the loader carries through. Runtime-only fields
 // (columnIcons, rowClassName, expandable, permission, filterSchema,
-// columnFilters, clickhouseSettings, variants) are deliberately absent from
-// the declarative schema and must not be compared here.
+// columnFilters, variants) are deliberately absent from the declarative
+// schema and must not be compared here.
 const SERIALIZABLE_KEYS = [
   'name',
   'sql',
@@ -45,6 +45,7 @@ const SERIALIZABLE_KEYS = [
   'bulkActions',
   'bulkActionKey',
   'sortingFns',
+  'clickhouseSettings',
 ] as const
 
 // ---------------------------------------------------------------------------

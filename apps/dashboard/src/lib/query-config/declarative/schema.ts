@@ -19,6 +19,7 @@
  *   columnDescriptions, columnSizing, tableBehavior
  *   defaultParams, filterParamPresets (icon omitted — not serializable)
  *   optional, tableCheck, disableSqlValidation, refreshInterval
+ *   clickhouseSettings:  execution-time settings (serializable primitives)
  *   relatedCharts:  string[] | [string, params][]
  *   card, defaultView, bulkActions, bulkActionKey
  *   sortingFns
@@ -168,6 +169,18 @@ const sortingFnValues = [
 const sortingFnsSchema = z.record(z.string(), z.enum(sortingFnValues))
 
 // ---------------------------------------------------------------------------
+// clickhouseSettings — execution-time ClickHouse settings applied per query
+// (e.g. { allow_introspection_functions: 1 }). Mirrors the serializable subset
+// of ClickHouseSettings from @clickhouse/client; the loader casts to the
+// precise type. Values are limited to serializable primitives.
+// ---------------------------------------------------------------------------
+
+const clickhouseSettingsSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.number(), z.boolean()])
+)
+
+// ---------------------------------------------------------------------------
 // Main declarative schema
 // ---------------------------------------------------------------------------
 
@@ -213,6 +226,9 @@ export const declarativeQueryConfigSchema = z.object({
 
   // Refresh
   refreshInterval: z.number().positive().optional(),
+
+  // Execution-time ClickHouse settings (applied per query)
+  clickhouseSettings: clickhouseSettingsSchema.optional(),
 
   // Related charts
   relatedCharts: z.array(relatedChartSchema).optional(),

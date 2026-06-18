@@ -163,8 +163,8 @@ describe('loadDeclarativeConfig — golden fixture (warningsConfig)', () => {
 
     // Pick only the serializable fields present on warningsConfig for the
     // comparison. Runtime-only fields (columnIcons, rowClassName, expandable,
-    // permission, filterSchema, clickhouseSettings, variants) are absent from
-    // warningsConfig so nothing to exclude here.
+    // permission, filterSchema, variants) are absent from warningsConfig so
+    // nothing to exclude here.
     const serializable = {
       name: warningsConfig.name,
       sql: warningsConfig.sql,
