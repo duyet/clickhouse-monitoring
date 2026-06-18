@@ -110,8 +110,8 @@ env:
 Install or upgrade:
 
 ```bash
-helm repo add duyet https://duyet.github.io/charts
-helm upgrade --install chmonitor duyet/clickhouse-monitoring -f values.yaml
+helm repo add chmonitor https://charts.chmonitor.dev
+helm upgrade --install chmonitor chmonitor/chmonitor -f values.yaml
 ```
 
 ---
