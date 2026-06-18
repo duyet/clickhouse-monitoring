@@ -100,3 +100,11 @@ packages/clickhouse-client/src/wasm/generated/*
 
 # Cowork artifacts, context and memory (local strategy/planning)
 cowork/
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/previews/
+.design-sync/node_modules
+apps/dashboard/.ds-tailwind.css
+apps/dashboard/node_modules/dashboard

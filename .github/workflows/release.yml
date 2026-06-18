@@ -135,17 +135,21 @@ jobs:
 
           # Create minimal Dockerfile for ARM64 (just copies pre-built JS artifacts)
           cat > /tmp/cross-build/Dockerfile <<'EOFX'
-          FROM oven/bun:1-alpine
+          FROM node:24-alpine
           WORKDIR /app
           ENV NODE_ENV=production \
               PORT=3000 \
-              HOSTNAME="0.0.0.0"
-          RUN addgroup --system --gid 1001 app && \
-              adduser --system --uid 1001 app
+              HOST="0.0.0.0"
+          RUN apk add --no-cache libc6-compat curl && \
+              addgroup -S -g 1001 app && \
+              adduser -S -u 1001 -G app app && \
+              chown -R app:app /app
           COPY --chown=app:app . ./
           USER app
           EXPOSE 3000
-          CMD ["node", "server.js"]
+          HEALTHCHECK --interval=10s --timeout=5s --retries=3 --start-period=30s \
+            CMD curl -sf http://localhost:3000/healthz || exit 1
+          CMD ["node", "server/index.mjs"]
           EOFX
 
       - name: Build and push ARM64 image

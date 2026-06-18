@@ -59,12 +59,21 @@ spec:
                 secretKeyRef:
                   name: chmonitor
                   key: CLICKHOUSE_PASSWORD
+          # Startup probe gives the Nitro Node server up to 60s to bind before
+          # liveness kicks in. Prevents kill-loops on slow-start nodes.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
           # Static liveness: /healthz always returns 200 while the process is up.
           livenessProbe:
             httpGet:
               path: /healthz
               port: http
-            initialDelaySeconds: 10
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
@@ -74,9 +83,8 @@ spec:
             httpGet:
               path: /api/healthz
               port: http
-            initialDelaySeconds: 10
             periodSeconds: 15
-            timeoutSeconds: 5
+            timeoutSeconds: 10
             failureThreshold: 3
           resources:
             requests:

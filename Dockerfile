@@ -69,6 +69,6 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/apps/dashboard/.output ./
 USER app
 EXPOSE 3000
-HEALTHCHECK --interval=10s --timeout=5s --retries=3 --start-period=20s \
-  CMD curl -sf http://localhost:3000/api/healthz || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 --start-period=30s \
+  CMD curl -sf http://localhost:3000/healthz || exit 1
 CMD ["node", "server/index.mjs"]
