@@ -6,10 +6,12 @@ import type {
   HeatmapDayRow,
   MetricConfig,
   MetricKey,
+  MonthBlock,
 } from './query-count-calendar'
 
 import {
   buildCalendarModel,
+  buildMonthBlocks,
   buildStatCards,
   CALENDAR_DAY_LABELS,
   formatCalendarDate,
@@ -24,6 +26,11 @@ import { cn } from '@/lib/utils'
 
 // Day-of-week rows that get a left-gutter label (GitHub shows Mon/Wed/Fri).
 const LABELLED_ROWS = new Set([1, 3, 5])
+
+// Fixed dot size for every day cell. Kept small so the full year stays compact
+// and the month blocks read as a calendar rather than a stretched strip.
+const CELL = 'size-[11px]'
+const CELL_GAP = 'gap-[2px]'
 
 interface HoverState {
   day: CalendarDay
@@ -131,6 +138,7 @@ function CalendarBody({
     () => buildStatCards(metric, model),
     [metric, model]
   )
+  const monthBlocks = useMemo(() => buildMonthBlocks(model), [model])
   const todayIso = isoDate(new Date())
 
   // Auto-focus the latest date: scroll the calendar to its right edge on mount
@@ -154,8 +162,49 @@ function CalendarBody({
     )
   }
 
-  const { weeks, monthLabels, max, rangeLabel } = model
+  const { max, rangeLabel } = model
   const hasTraffic = max > 0
+
+  // Render one day cell (or an empty spacer for masked/out-of-range slots).
+  const renderDay = (day: CalendarDay | null, dow: number) => {
+    if (!day) {
+      return <div key={dow} className={CELL} aria-hidden />
+    }
+    const intensity = getIntensityClass(day.value, max, metric.tiers)
+    const isToday = day.iso === todayIso
+    const href = buildDrilldownHref(hostId, day, mode)
+    const onEnter = (e: React.SyntheticEvent<HTMLElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const host = e.currentTarget.closest(
+        '[data-calendar-root]'
+      ) as HTMLElement | null
+      const hostRect = host?.getBoundingClientRect()
+      setHover({
+        day,
+        x: rect.left + rect.width / 2 - (hostRect?.left ?? 0),
+        y: rect.top - (hostRect?.top ?? 0),
+      })
+    }
+    return (
+      <Link
+        key={day.iso}
+        to={href}
+        aria-label={`${day.readable} on ${formatCalendarDate(day.date)}`}
+        onMouseEnter={onEnter}
+        onFocus={onEnter}
+        onMouseLeave={() => setHover(null)}
+        onBlur={() => setHover(null)}
+        className={cn(
+          CELL,
+          'rounded-[2px] transition-transform duration-100',
+          'hover:scale-125 hover:ring-1 hover:ring-foreground/40',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          intensity,
+          isToday && 'ring-1 ring-foreground/60'
+        )}
+      />
+    )
+  }
 
   return (
     <div
@@ -192,93 +241,45 @@ function CalendarBody({
         ))}
       </div>
 
-      {/* Calendar: month labels + weekday gutter + week columns. The columns are
-          fluid (flex-1) so the grid fills the card/dialog width; a min width
-          keeps it legible on phones (horizontal scroll, like GitHub). */}
+      {/* Year calendar: a weekday gutter plus one self-contained block per
+          month. Dots are a fixed small size (CELL) so the whole year stays
+          compact, and each month is its own mini-grid so month boundaries read
+          clearly. Horizontal scroll on narrow screens (auto-scrolled to the
+          latest month, like GitHub). */}
       <div ref={scrollRef} className="overflow-x-auto pb-1">
-        <div className="min-w-[680px]">
-          {/* Month labels, aligned to week columns (pl matches the gutter). */}
-          <div className="flex gap-[3px] pb-1.5 pl-9">
-            {monthLabels.map((label, i) => (
+        <div className="flex w-max items-start gap-3">
+          {/* Weekday gutter (Sun-first; GitHub shows Mon/Wed/Fri). The leading
+              spacer aligns the rows with each block's month label. */}
+          <div className={cn('flex flex-shrink-0 flex-col', CELL_GAP)}>
+            <div className="mb-1 h-[10px]" aria-hidden />
+            {CALENDAR_DAY_LABELS.map((label, dow) => (
               <div
-                key={weeks[i].find(Boolean)?.iso ?? `col-${i}`}
-                className="text-muted-foreground min-w-0 flex-1 text-[11px] leading-none"
+                key={label}
+                className="text-muted-foreground flex h-[11px] items-center justify-end pr-1 text-[9px] leading-none"
               >
-                {label ?? ''}
+                {LABELLED_ROWS.has(dow) ? label : ''}
               </div>
             ))}
           </div>
 
-          <div className="flex gap-[3px]">
-            {/* Weekday gutter */}
-            <div className="flex w-9 flex-shrink-0 flex-col gap-[3px]">
-              {CALENDAR_DAY_LABELS.map((label, dow) => (
-                <div
-                  key={label}
-                  className="text-muted-foreground flex aspect-square items-center justify-end pr-1.5 text-[10px] leading-none"
-                >
-                  {LABELLED_ROWS.has(dow) ? label : ''}
-                </div>
-              ))}
+          {/* One block per month */}
+          {monthBlocks.map((block: MonthBlock) => (
+            <div key={block.key} className="flex flex-col">
+              <div className="text-muted-foreground mb-1 h-[10px] text-[10px] leading-none">
+                {block.label}
+              </div>
+              <div className={cn('flex', CELL_GAP)}>
+                {block.weeks.map((week, wi) => (
+                  <div
+                    key={week.find(Boolean)?.iso ?? `${block.key}-w${wi}`}
+                    className={cn('flex flex-col', CELL_GAP)}
+                  >
+                    {week.map((day, dow) => renderDay(day, dow))}
+                  </div>
+                ))}
+              </div>
             </div>
-
-            {/* Week columns */}
-            {weeks.map((week, i) => (
-              <div
-                key={week.find(Boolean)?.iso ?? `week-${i}`}
-                className="flex min-w-0 flex-1 flex-col gap-[3px]"
-              >
-                {week.map((day, dow) => {
-                  if (!day) {
-                    return (
-                      <div
-                        key={dow}
-                        className="aspect-square w-full"
-                        aria-hidden
-                      />
-                    )
-                  }
-                  const intensity = getIntensityClass(
-                    day.value,
-                    max,
-                    metric.tiers
-                  )
-                  const isToday = day.iso === todayIso
-                  const href = buildDrilldownHref(hostId, day, mode)
-                  const onEnter = (e: React.SyntheticEvent<HTMLElement>) => {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    const host = e.currentTarget.closest(
-                      '[data-calendar-root]'
-                    ) as HTMLElement | null
-                    const hostRect = host?.getBoundingClientRect()
-                    setHover({
-                      day,
-                      x: rect.left + rect.width / 2 - (hostRect?.left ?? 0),
-                      y: rect.top - (hostRect?.top ?? 0),
-                    })
-                  }
-                  return (
-                    <Link
-                      key={day.iso}
-                      to={href}
-                      aria-label={`${day.readable} on ${formatCalendarDate(day.date)}`}
-                      onMouseEnter={onEnter}
-                      onFocus={onEnter}
-                      onMouseLeave={() => setHover(null)}
-                      onBlur={() => setHover(null)}
-                      className={cn(
-                        'aspect-square w-full rounded-[3px] transition-transform duration-100',
-                        'hover:scale-125 hover:ring-1 hover:ring-foreground/40',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        intensity,
-                        isToday && 'ring-1 ring-foreground/60'
-                      )}
-                    />
-                  )
-                })}
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
