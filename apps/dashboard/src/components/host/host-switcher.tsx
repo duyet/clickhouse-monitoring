@@ -104,7 +104,7 @@ export function HostSwitcher() {
                     !showExpanded && 'justify-center'
                   )}
                   data-testid="host-switcher-empty"
-                  aria-label={label}
+                  aria-label={showExpanded ? undefined : label}
                 >
                   <div className="relative">
                     <ChmonitorLogo
@@ -161,7 +161,15 @@ export function HostSwitcher() {
                     !showExpanded && 'justify-center'
                   )}
                   data-testid="host-switcher"
-                  aria-label={`Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`}
+                  // When expanded the host name + version are visible, so the
+                  // accessible name comes from that content (WCAG 2.5.3 Label
+                  // in Name — a static aria-label can't include the live
+                  // version). When collapsed to an icon, supply the name.
+                  aria-label={
+                    showExpanded
+                      ? undefined
+                      : `Select ClickHouse host. Current: ${activeHost.name || getHost(activeHost.host)}`
+                  }
                 >
                   <div className="relative">
                     <ChmonitorLogo width={20} height={20} className="size-5" />
