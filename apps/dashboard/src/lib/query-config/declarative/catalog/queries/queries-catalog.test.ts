@@ -8,10 +8,12 @@
  *   rowClassName  — function (row) => string | undefined
  *   expandable    — function-based ExpandableConfig
  *   columnIcons   — React component refs
- *   permission    — FeaturePermission
  *   filterSchema  — contains Icon refs and dynamic option fns
  *   columnFilters — UI sugar over filterSchema
  *   clickhouseSettings — ClickHouseSettings (execution-time; not serializable)
+ *
+ * permission (FeaturePermission as plain data) is now serializable and IS
+ * compared (e.g. query-detail).
  *
  * Skipped configs (runtime-only fields the schema cannot express):
  *   expensive-queries          — rowClassName, expandable (JSX), columnIcons
@@ -20,7 +22,6 @@
  *   slow-queries               — rowClassName, expandable (JSX), columnIcons
  *   history-queries            — rowClassName, expandable, filterSchema (icons + runtime env), clickhouseSettings
  *   running-queries            — rowClassName, expandable (JSX), filterSchema (icons), columnFilters
- *   query-detail               — permission (FeaturePermission)
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -29,6 +30,7 @@ import { commonErrorsDeclarative } from './common-errors'
 import { parallelizationDeclarative } from './parallelization'
 import { profilerDeclarative } from './profiler'
 import { queryCacheDeclarative } from './query-cache'
+import { queryDetailDeclarative } from './query-detail'
 import { queryViewsLogDeclarative } from './query-views-log'
 import { threadAnalysisDeclarative } from './thread-analysis'
 import { describe, expect, test } from 'bun:test'
@@ -37,6 +39,7 @@ import { commonErrorsConfig } from '@/lib/query-config/queries/common-errors'
 import { parallelizationConfig } from '@/lib/query-config/queries/parallelization'
 import { profilerConfig } from '@/lib/query-config/queries/profiler'
 import { queryCacheConfig } from '@/lib/query-config/queries/query-cache'
+import { queryDetailConfig } from '@/lib/query-config/queries/query-detail'
 import { queryViewsLogConfig } from '@/lib/query-config/queries/query-views-log'
 import { threadAnalysisConfig } from '@/lib/query-config/queries/thread-analysis'
 
@@ -49,7 +52,6 @@ const RUNTIME_ONLY_KEYS = new Set([
   'rowClassName',
   'expandable',
   'columnIcons',
-  'permission',
   'filterSchema',
   'columnFilters',
   'clickhouseSettings',
@@ -157,6 +159,31 @@ describe('query-cache declarative', () => {
   test('docs (inlined QUERY_CACHE) matches legacy', () => {
     const loaded = loadDeclarativeConfig(queryCacheDeclarative)
     expect(loaded.docs).toBe(queryCacheConfig.docs)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// query-detail (permission + versioned SQL with inlined baseSelect)
+// ---------------------------------------------------------------------------
+
+describe('query-detail declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(queryDetailDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(queryDetailDeclarative)
+    compareSerializable(loaded, queryDetailConfig)
+  })
+
+  test('permission matches legacy', () => {
+    const loaded = loadDeclarativeConfig(queryDetailDeclarative)
+    expect(loaded.permission).toEqual(queryDetailConfig.permission)
+  })
+
+  test('versioned sql (inlined baseSelect) byte-matches legacy', () => {
+    const loaded = loadDeclarativeConfig(queryDetailDeclarative)
+    expect(loaded.sql).toEqual(queryDetailConfig.sql)
   })
 })
 

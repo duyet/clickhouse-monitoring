@@ -7,11 +7,11 @@
  *
  * The companion loader (Plan 02b) will map a DeclarativeQueryConfig into the
  * in-memory QueryConfig that the dashboard consumes at runtime. Fields that
- * are runtime functions (expandable, columnIcons, filterSchema with Icon refs,
- * FeaturePermission) are intentionally excluded here — they cannot be expressed
- * declaratively and must be wired up by the loader. The one exception is
- * rowClassName: simple data-driven row styling is expressible via the
- * declarative `rowStyle` rules, which the loader compiles into a RowClassNameFn.
+ * are runtime functions (expandable, columnIcons, filterSchema with Icon refs)
+ * are intentionally excluded here — they cannot be expressed declaratively and
+ * must be wired up by the loader. Two exceptions: rowClassName (simple
+ * data-driven row styling via `rowStyle`, compiled into a RowClassNameFn) and
+ * FeaturePermission (plain data, carried via the `permission` field).
  *
  * Serializable fields carried here:
  *   identity:       name, description, docs, suggestion
@@ -26,6 +26,7 @@
  *   card, defaultView, bulkActions, bulkActionKey
  *   sortingFns
  *   rowStyle:       ordered condition→className rules (compiles to rowClassName)
+ *   permission:     FeaturePermission gate { feature, defaultAccess?, operation? }
  */
 
 import { z } from 'zod'
@@ -235,6 +236,42 @@ const rowStyleSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// permission — FeaturePermission as plain data (feature + access/operation).
+//
+// The values mirror FEATURE_IDS / FEATURE_ACCESS_VALUES / FEATURE_OPERATIONS in
+// lib/feature-permissions/types.ts. They are hardcoded here (not imported) to
+// keep the declarative schema decoupled from app code — keep this list in sync
+// if a new feature id is added. The loader casts back to FeaturePermission.
+// ---------------------------------------------------------------------------
+
+const featureIdSchema = z.enum([
+  'overview',
+  'agent',
+  'insights',
+  'health',
+  'queries',
+  'tables',
+  'metrics',
+  'dashboard',
+  'security',
+  'logs',
+  'settings',
+  'cluster',
+  'operations',
+  'actions',
+  'mcp',
+  'peerdb',
+  'docs',
+  'about',
+])
+
+const permissionSchema = z.object({
+  feature: featureIdSchema,
+  defaultAccess: z.enum(['public', 'authenticated']).optional(),
+  operation: z.enum(['read', 'write']).optional(),
+})
+
+// ---------------------------------------------------------------------------
 // Main declarative schema
 // ---------------------------------------------------------------------------
 
@@ -304,11 +341,13 @@ export const declarativeQueryConfigSchema = z.object({
   // Row styling — declarative replacement for rowClassName (loader compiles it)
   rowStyle: rowStyleSchema.optional(),
 
+  // Feature-permission gate (plain data; loader casts to FeaturePermission)
+  permission: permissionSchema.optional(),
+
   // Intentionally excluded (not serializable — require runtime code):
   //   columnIcons     — React component refs
   //   rowClassName    — function (row) => string (use declarative rowStyle)
   //   expandable      — function (row, ctx) => ReactNode
-  //   permission      — FeaturePermission (app-level import)
   //   variants        — deprecated; use versioned sql[] instead
 })
 

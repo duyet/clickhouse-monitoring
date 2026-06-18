@@ -348,6 +348,47 @@ describe('invalid configs', () => {
     expect(result.ok).toBe(false)
   })
 
+  test('accepts permission with a valid feature id', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: { feature: 'queries' },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.permission).toEqual({ feature: 'queries' })
+  })
+
+  test('accepts permission with optional access/operation', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: {
+        feature: 'metrics',
+        defaultAccess: 'authenticated',
+        operation: 'read',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  test('rejects permission with an unknown feature id', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: { feature: 'not-a-feature' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors.some((e) => e.includes('permission'))).toBe(true)
+  })
+
   test('rejects unknown columnFormat enum value', () => {
     const result = validateDeclarativeConfig({
       name: 'my-query',

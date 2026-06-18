@@ -7,13 +7,13 @@
  * RUNTIME-ONLY FIELDS NOT PRESENT ON LOADED CONFIGS:
  *   - columnIcons    — React component refs (Icon type)
  *   - expandable     — function-based ExpandableConfig
- *   - permission     — FeaturePermission (app-level import)
  *   - filterSchema   — FilterSchema (contains Icon refs and dynamic option fns)
  *   - columnFilters  — ColumnFilterDef (UI sugar over filterSchema)
  *   - variants       — deprecated; use versioned sql[] in the declarative format
  *
  * The declarative `rowStyle` field IS carried: it is compiled into a
- * rowClassName function on the loaded config (see compileRowStyle).
+ * rowClassName function on the loaded config (see compileRowStyle). The
+ * `permission` field (plain FeaturePermission data) is also carried through.
  *
  * These fields can be merged in by the caller after loading if needed.
  */
@@ -151,6 +151,12 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   // Row styling — compile declarative rules into a rowClassName function.
   if (d.rowStyle !== undefined) {
     config.rowClassName = compileRowStyle(d.rowStyle)
+  }
+
+  // Feature-permission gate — plain data, structurally identical to
+  // FeaturePermission (schema validates feature/access/operation to its domain).
+  if (d.permission !== undefined) {
+    config.permission = d.permission as QueryConfig['permission']
   }
 
   return config
