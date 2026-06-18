@@ -94,9 +94,12 @@ import { detachedPartsDeclarative } from './tables/detached-parts'
 import { distributedDdlQueueDeclarative } from './tables/distributed-ddl-queue'
 import { droppedTablesDeclarative } from './tables/dropped-tables'
 import { movesDeclarative } from './tables/moves'
+import { partInfoDeclarative } from './tables/part-info'
+import { projectionsDeclarative } from './tables/projections'
 import { replicasDeclarative } from './tables/replicas'
 import { replicatedFetchesDeclarative } from './tables/replicated-fetches'
 import { replicationQueueDeclarative } from './tables/replication-queue'
+import { userProcessesDeclarative } from './tables/user-processes'
 import { viewRefreshesDeclarative } from './tables/view-refreshes'
 
 // ---------------------------------------------------------------------------
@@ -184,9 +187,12 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   distributedDdlQueueDeclarative,
   droppedTablesDeclarative,
   movesDeclarative,
+  partInfoDeclarative,
+  projectionsDeclarative,
   replicasDeclarative,
   replicatedFetchesDeclarative,
   replicationQueueDeclarative,
+  userProcessesDeclarative,
   viewRefreshesDeclarative,
 ]
 
