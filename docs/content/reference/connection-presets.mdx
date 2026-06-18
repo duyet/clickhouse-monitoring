@@ -28,7 +28,7 @@ SETTINGS readonly = 2,
          allow_introspection_functions = 0;
 ```
 
-`readonly = 2` allows `SELECT` and `SHOW` but blocks all writes and settings changes from the session itself. `allow_ddl = 0` is redundant under `readonly = 2` but makes the intent explicit.
+`readonly = 2` blocks all writes and DDL while still letting the client set per-query settings such as `max_execution_time` — which chmonitor requires. (The stricter `readonly = 1` also forbids settings changes, so chmonitor would fail under it; use `readonly = 2`.) `allow_ddl = 0` is redundant under `readonly` but makes the intent explicit.
 
 ### 2. Create the user
 
