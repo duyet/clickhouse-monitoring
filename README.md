@@ -34,6 +34,23 @@ A modern dashboard (TanStack Start, as of **v0.3**) that provides real-time insi
 - **Rust CLI**: Standalone terminal and TUI monitoring tool
 
 
+## Quick start
+
+One container, pointed at any reachable ClickHouse (OSS, Altinity, or ClickHouse Cloud):
+
+```bash
+docker run -d --name chmonitor -p 3000:3000 \
+  -e CLICKHOUSE_HOST=https://clickhouse.example.com:8443 \
+  -e CLICKHOUSE_USER=default \
+  -e CLICKHOUSE_PASSWORD=change-me \
+  ghcr.io/duyet/chmonitor:latest
+```
+
+Open **<http://localhost:3000>**. Pin a release tag instead of `latest` for production.
+
+> Just want to look first? The live demo is at **[dash.chmonitor.dev](https://dash.chmonitor.dev/?ref=github)** — no setup required.
+> Other targets (Cloudflare Workers, one-click Railway/Render/Fly, Kubernetes) are under [Deployment](#deployment).
+
 ## Deployment
 
 chmonitor is **self-hosted** — run it next to your ClickHouse with the same
