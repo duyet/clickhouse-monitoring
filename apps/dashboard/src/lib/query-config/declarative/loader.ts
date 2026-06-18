@@ -6,13 +6,15 @@
  *
  * RUNTIME-ONLY FIELDS NOT PRESENT ON LOADED CONFIGS:
  *   - columnIcons    — React component refs (Icon type)
- *   - rowClassName   — function (row) => string | undefined
- *   - expandable     — function-based ExpandableConfig
- *   - permission     — FeaturePermission (app-level import)
  *   - filterSchema   — FilterSchema (contains Icon refs and dynamic option fns)
  *   - columnFilters  — ColumnFilterDef (UI sugar over filterSchema)
- *   - clickhouseSettings — ClickHouseSettings (execution-time; not serializable declaratively)
+ *   - inline-JSX expandable — bespoke per-row React (keep as a TS config)
  *   - variants       — deprecated; use versioned sql[] in the declarative format
+ *
+ * Compiled fields (declarative spec → runtime value on the loaded config):
+ *   - rowStyle    → rowClassName function (see compileRowStyle)
+ *   - permission  → FeaturePermission (plain data, carried through)
+ *   - expandable  → ExpandableConfig (see compileExpandable)
  *
  * These fields can be merged in by the caller after loading if needed.
  */
@@ -20,6 +22,8 @@
 import type { QueryConfig } from '@/types/query-config'
 import type { DeclarativeQueryConfig } from './schema'
 
+import { compileExpandable } from './expandable'
+import { compileRowStyle } from './row-style'
 import { validateDeclarativeConfig } from './validate'
 
 // ---------------------------------------------------------------------------
@@ -64,9 +68,9 @@ export function getConfigSource(
  * is 1-to-1: field names and value shapes are shared by design.
  *
  * Runtime-only fields absent from DeclarativeQueryConfig (columnIcons,
- * rowClassName, expandable, permission, filterSchema, columnFilters,
- * clickhouseSettings, variants) are simply omitted from the result. Callers
- * that need those fields must merge them in after loading.
+ * expandable, permission, filterSchema, columnFilters, variants) are simply
+ * omitted from the result. Callers that need those fields must merge them in
+ * after loading. (rowClassName is produced from the declarative rowStyle rules.)
  *
  * @throws Error when `input` fails schema validation (message includes all
  *   field-level errors joined by '; ').
@@ -104,6 +108,12 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   if (d.refreshInterval !== undefined)
     config.refreshInterval = d.refreshInterval
   if (d.defaultParams !== undefined) config.defaultParams = d.defaultParams
+  if (d.clickhouseSettings !== undefined) {
+    // Schema validates values to serializable primitives; cast to the precise
+    // ClickHouseSettings type from @clickhouse/client.
+    config.clickhouseSettings =
+      d.clickhouseSettings as QueryConfig['clickhouseSettings']
+  }
 
   // Column display
   if (d.columnFormats !== undefined) {
@@ -138,6 +148,23 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   // Sorting
   if (d.sortingFns !== undefined) {
     config.sortingFns = d.sortingFns as QueryConfig['sortingFns']
+  }
+
+  // Row styling — compile declarative rules into a rowClassName function.
+  if (d.rowStyle !== undefined) {
+    config.rowClassName = compileRowStyle(d.rowStyle)
+  }
+
+  // Feature-permission gate — plain data, structurally identical to
+  // FeaturePermission (schema validates feature/access/operation to its domain).
+  if (d.permission !== undefined) {
+    config.permission = d.permission as QueryConfig['permission']
+  }
+
+  // Expandable row-detail panel — compile the declarative spec into an
+  // ExpandableConfig by binding the matching row-detail factory.
+  if (d.expandable !== undefined) {
+    config.expandable = compileExpandable(d.expandable)
   }
 
   return config

@@ -47,7 +47,7 @@
 
         <!-- Cloudflare Workers -->
         <div class="deploy-pane" data-pane="cf" data-on="true">
-          <p class="deploy-note">Edge hosting via the OpenNext adapter — no servers to run.</p>
+          <p class="deploy-note">Edge hosting as a native Cloudflare Workers bundle — no servers to run.</p>
           <div class="terminal">
             <div class="term-bar"><span class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span><span class="ttl">bash</span><button class="copy">Copy</button></div>
             <div class="term-body">
@@ -64,7 +64,7 @@
               <div>EOF</div>
               <div>&nbsp;</div>
               <div><span class="p">$</span> bun run cf:config&nbsp;&nbsp;&nbsp;<span class="c"># push secrets to the Worker</span></div>
-              <div><span class="p">$</span> bun run cf:deploy&nbsp;&nbsp;&nbsp;<span class="c"># build + deploy + populate cache</span></div>
+              <div><span class="p">$</span> bun run cf:deploy&nbsp;&nbsp;&nbsp;<span class="c"># build + deploy</span></div>
             </div>
           </div>
         </div>

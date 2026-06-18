@@ -46,22 +46,31 @@ import { keeperPresenceDeclarative } from './keeper/keeper-presence'
 import { keeperWatchesDeclarative } from './keeper/keeper-watches'
 // Logs
 import { crashLogDeclarative } from './logs/crashes'
+import { stackTracesDeclarative } from './logs/stack-traces'
 import { textLogDeclarative } from './logs/text-log'
 // Merges
+import { mergePerformanceDeclarative } from './merges/merge-performance'
 import { mergesDeclarative } from './merges/merges'
+import { mutationsDeclarative } from './merges/mutations'
 // More
 import { asynchronousMetricsDeclarative } from './more/asynchronous-metrics'
 import { backupsDeclarative } from './more/backups'
 import { dictionariesDeclarative } from './more/dictionaries'
 import { errorsDeclarative } from './more/errors'
+import { mergeTreeSettingsDeclarative } from './more/mergetree-settings'
+import { metricsDeclarative } from './more/metrics'
 import { rolesDeclarative } from './more/roles'
+import { settingsDeclarative } from './more/settings'
 import { topUsageColumnsDeclarative } from './more/top-usage-columns'
 import { topUsageTablesDeclarative } from './more/top-usage-tables'
+import { usersDeclarative } from './more/users'
 import { zookeeperDeclarative } from './more/zookeeper'
 // Queries
 import { commonErrorsDeclarative } from './queries/common-errors'
 import { parallelizationDeclarative } from './queries/parallelization'
 import { profilerDeclarative } from './queries/profiler'
+import { queryCacheDeclarative } from './queries/query-cache'
+import { queryDetailDeclarative } from './queries/query-detail'
 import { queryViewsLogDeclarative } from './queries/query-views-log'
 import { threadAnalysisDeclarative } from './queries/thread-analysis'
 // Security
@@ -83,6 +92,8 @@ import {
   databaseDiskSpaceDeclarative,
   diskSpaceDeclarative,
 } from './system/disks'
+import { kafkaConsumersDeclarative } from './system/kafka-consumers'
+import { partLogDeclarative } from './system/part-log'
 import { queryMetricLogDeclarative } from './system/query-metric-log'
 import {
   clustersReplicasStatusDeclarative,
@@ -94,9 +105,13 @@ import { detachedPartsDeclarative } from './tables/detached-parts'
 import { distributedDdlQueueDeclarative } from './tables/distributed-ddl-queue'
 import { droppedTablesDeclarative } from './tables/dropped-tables'
 import { movesDeclarative } from './tables/moves'
+import { partInfoDeclarative } from './tables/part-info'
+import { projectionsDeclarative } from './tables/projections'
 import { replicasDeclarative } from './tables/replicas'
 import { replicatedFetchesDeclarative } from './tables/replicated-fetches'
 import { replicationQueueDeclarative } from './tables/replication-queue'
+import { tablesOverviewDeclarative } from './tables/tables-overview'
+import { userProcessesDeclarative } from './tables/user-processes'
 import { viewRefreshesDeclarative } from './tables/view-refreshes'
 
 // ---------------------------------------------------------------------------
@@ -138,25 +153,34 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
 
   // Logs
   crashLogDeclarative,
+  stackTracesDeclarative,
   textLogDeclarative,
 
   // Merges
   mergesDeclarative,
+  mergePerformanceDeclarative,
+  mutationsDeclarative,
 
   // More
   asynchronousMetricsDeclarative,
   backupsDeclarative,
   dictionariesDeclarative,
   errorsDeclarative,
+  mergeTreeSettingsDeclarative,
+  metricsDeclarative,
   rolesDeclarative,
+  settingsDeclarative,
   topUsageColumnsDeclarative,
   topUsageTablesDeclarative,
+  usersDeclarative,
   zookeeperDeclarative,
 
   // Queries
   commonErrorsDeclarative,
   parallelizationDeclarative,
   profilerDeclarative,
+  queryCacheDeclarative,
+  queryDetailDeclarative,
   queryViewsLogDeclarative,
   threadAnalysisDeclarative,
 
@@ -175,6 +199,8 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   databaseDiskSpaceDeclarative,
   databaseDiskSpaceByDatabaseDeclarative,
   queryMetricLogDeclarative,
+  kafkaConsumersDeclarative,
+  partLogDeclarative,
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
   replicatedMergeTreeSettingsDeclarative,
@@ -184,9 +210,13 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   distributedDdlQueueDeclarative,
   droppedTablesDeclarative,
   movesDeclarative,
+  partInfoDeclarative,
+  projectionsDeclarative,
   replicasDeclarative,
   replicatedFetchesDeclarative,
   replicationQueueDeclarative,
+  tablesOverviewDeclarative,
+  userProcessesDeclarative,
   viewRefreshesDeclarative,
 ]
 

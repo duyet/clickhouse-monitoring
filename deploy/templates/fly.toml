@@ -1,0 +1,54 @@
+# fly.toml — community template for chmonitor on Fly.io
+# Not yet boot-verified in CI; verify before relying on it in production.
+#
+# Usage:
+#   1. Replace the placeholder env vars below (or set them as secrets:
+#        fly secrets set CLICKHOUSE_PASSWORD=your-password)
+#   2. fly launch --no-deploy  (to import this config)
+#   3. fly deploy
+
+app = "chmonitor"          # Replace with your Fly app name
+primary_region = "iad"     # Replace with your preferred region
+
+[build]
+  image = "ghcr.io/duyet/chmonitor:latest"
+
+[env]
+  # Required — point at your ClickHouse HTTP interface.
+  # Prefer secrets for sensitive values: `fly secrets set CLICKHOUSE_PASSWORD=...`
+  CLICKHOUSE_HOST     = "http://YOUR_CLICKHOUSE_HOST:8123"
+  CLICKHOUSE_USER     = "YOUR_CLICKHOUSE_USER"
+  PORT                = "3000"
+  HOST                = "0.0.0.0"
+
+# CLICKHOUSE_PASSWORD should be set as a Fly secret, not in plain text here:
+#   fly secrets set CLICKHOUSE_PASSWORD=your-password
+
+[[services]]
+  protocol    = "tcp"
+  internal_port = 3000
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [services.concurrency]
+    type       = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.http_checks]]
+    path              = "/api/healthz"
+    interval          = "10s"
+    timeout           = "5s"
+    grace_period      = "20s"
+    restart_limit     = 3
+
+[vm]
+  cpu_kind = "shared"
+  cpus     = 1
+  memory   = "512mb"

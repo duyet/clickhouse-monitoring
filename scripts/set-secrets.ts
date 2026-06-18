@@ -65,6 +65,11 @@ const DASHBOARD_SECRET_KEYS = [
   // Clerk server-side secret. In preview the value comes from
   // CLERK_SECRET_KEY_TEST (see resolveValue).
   'CLERK_SECRET_KEY',
+  // AgentState project key (as_live_...). Presence activates the AgentState
+  // conversation-store backend (resolveStore picks it ahead of D1). Non-secret
+  // AgentState knobs (base URL, AI-enrich, force-backend) live in
+  // wrangler.toml [vars]; only the key is a secret.
+  'AGENTSTATE_API_KEY',
   // HMAC secret for issuing/verifying MCP API keys. Needed on the dashboard
   // (/api/v1/auth/api-key mints keys via issueApiKey) AND the MCP worker.
   'CHM_API_KEY_SECRET',
@@ -177,6 +182,13 @@ function resolveValue(
   // Preview uses the test Clerk key under the prod secret name.
   if (key === 'CLERK_SECRET_KEY' && isPreview) {
     return src.CLERK_SECRET_KEY_TEST ?? src.CLERK_SECRET_KEY ?? ''
+  }
+  // Preview must NOT reuse the production AgentState project key — otherwise PR
+  // preview conversations would land in the prod data plane. Use a dedicated
+  // AGENTSTATE_API_KEY_TEST if provided; with none, the value is empty and the
+  // secret is skipped, so preview falls back to a non-AgentState backend.
+  if (key === 'AGENTSTATE_API_KEY' && isPreview) {
+    return src.AGENTSTATE_API_KEY_TEST ?? ''
   }
   return src[key] ?? DEFAULTS[key] ?? ''
 }
