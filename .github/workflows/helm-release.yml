@@ -72,6 +72,11 @@ jobs:
         with:
           charts_dir: deploy/helm
           config: .github/cr.yaml
+          # Skip (not error) when a release for this chart version already
+          # exists — makes the workflow idempotent across re-runs and
+          # comment-only Chart.yaml touches, and still runs cr index so the
+          # repo index is rebuilt from existing releases.
+          skip_existing: true
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
