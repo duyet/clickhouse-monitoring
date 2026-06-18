@@ -214,6 +214,8 @@ plus a short list of what you changed:
     - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
   - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
     - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
+  - [Reference](https://duyet.github.io/clickhouse-monitoring/reference)
+    - [Platform Support Matrix](docs/content/reference/support-matrix.mdx) — ClickHouse versions and distributions (supported / best-effort / untested)
 
 ### AI Agent Access
 
