@@ -57,6 +57,15 @@ const SHARED_VARS = {
   // Public read-only mode: anonymous visitors can view monitoring data; writes
   // (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
   CHM_CLERK_PUBLIC_READ: 'true',
+  // AgentState conversation-store backend. The AGENTSTATE_API_KEY secret alone
+  // activates it — resolveStore picks AgentState (priority 2) ahead of the D1
+  // binding (priority 3) on key presence, so NO explicit force var is needed.
+  // We deliberately do NOT set CONVERSATION_STORE_BACKEND=agentstate: that would
+  // make resolveStore THROW in any keyless env (local `wrangler dev`, forks),
+  // whereas key-presence auto-selection degrades gracefully. AGENTSTATE_AI_ENRICH
+  // is harmless without a key (only read once AgentState is active). Keep in
+  // sync with wrangler.toml.
+  AGENTSTATE_AI_ENRICH: 'true',
 }
 // NOTE: client auth config (auth provider + Clerk publishable key) is NOT a
 // runtime worker var — it is build-time inlined via import.meta.env.VITE_* (see

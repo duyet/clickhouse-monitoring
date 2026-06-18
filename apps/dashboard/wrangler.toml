@@ -66,6 +66,13 @@ CHM_FEATURE_AGENT_ACCESS = "authenticated"
 # (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
 CHM_CLERK_PUBLIC_READ = "true"
 
+# AgentState conversation-store backend. The AGENTSTATE_API_KEY secret (set via
+# set-secrets.ts) alone activates it — resolveStore picks AgentState ahead of the
+# D1 binding on key presence, so no force var is set (forcing would make
+# resolveStore throw in keyless envs). AGENTSTATE_AI_ENRICH turns on auto-titles +
+# follow-up suggestions. Base URL defaults to agentstate.app/api.
+AGENTSTATE_AI_ENRICH = "true"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Reverse-proxy auth (EXAMPLE — not active; the dashboard uses `clerk` above).
 # Set CHM_AUTH_PROVIDER = "proxy" to authenticate requests via a trusted proxy.
@@ -140,3 +147,9 @@ OPENROUTER_APP_NAME = "chmonitor"
 CHM_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
 CHM_CLERK_PUBLIC_READ = "true"
+
+# AgentState conversation-store backend. Preview only persists to AgentState if a
+# separate AGENTSTATE_API_KEY_TEST secret is provided (see set-secrets.ts) — it
+# does NOT reuse the prod key, keeping preview conversations out of the prod
+# project. Without a test key, preview gracefully falls back (no force var).
+AGENTSTATE_AI_ENRICH = "true"

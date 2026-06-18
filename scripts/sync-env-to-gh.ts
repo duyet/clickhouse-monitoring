@@ -58,6 +58,11 @@ const SECRET_KEYS = [
   // Clerk (server-side secret keys — publishable keys are public)
   'CLERK_SECRET_KEY',
   'CLERK_SECRET_KEY_TEST',
+  // AgentState conversation-store project key (as_live_...). Activates the
+  // AgentState backend on the dashboard worker. _TEST is the optional preview
+  // key — preview uses it instead of the prod key for data isolation.
+  'AGENTSTATE_API_KEY',
+  'AGENTSTATE_API_KEY_TEST',
   // HMAC secret for issuing/verifying MCP API keys. CI (cloudflare.yml) pushes
   // this to BOTH the dashboard and the standalone MCP worker; if it is unset
   // here the MCP worker boots with an empty secret and 503s every /api/mcp
