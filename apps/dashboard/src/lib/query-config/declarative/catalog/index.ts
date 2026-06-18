@@ -60,8 +60,10 @@ import { errorsDeclarative } from './more/errors'
 import { mergeTreeSettingsDeclarative } from './more/mergetree-settings'
 import { metricsDeclarative } from './more/metrics'
 import { rolesDeclarative } from './more/roles'
+import { settingsDeclarative } from './more/settings'
 import { topUsageColumnsDeclarative } from './more/top-usage-columns'
 import { topUsageTablesDeclarative } from './more/top-usage-tables'
+import { usersDeclarative } from './more/users'
 import { zookeeperDeclarative } from './more/zookeeper'
 // Queries
 import { commonErrorsDeclarative } from './queries/common-errors'
@@ -167,8 +169,10 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   mergeTreeSettingsDeclarative,
   metricsDeclarative,
   rolesDeclarative,
+  settingsDeclarative,
   topUsageColumnsDeclarative,
   topUsageTablesDeclarative,
+  usersDeclarative,
   zookeeperDeclarative,
 
   // Queries

@@ -5,13 +5,15 @@
  * a JSON / YAML / TOML file and be contributed by the community without
  * requiring TypeScript knowledge.
  *
- * The companion loader (Plan 02b) will map a DeclarativeQueryConfig into the
+ * The companion loader (Plan 02b) maps a DeclarativeQueryConfig into the
  * in-memory QueryConfig that the dashboard consumes at runtime. Fields that
- * are runtime functions (expandable, columnIcons, filterSchema with Icon refs)
- * are intentionally excluded here — they cannot be expressed declaratively and
- * must be wired up by the loader. Two exceptions: rowClassName (simple
- * data-driven row styling via `rowStyle`, compiled into a RowClassNameFn) and
- * FeaturePermission (plain data, carried via the `permission` field).
+ * are runtime functions (columnIcons, filterSchema with Icon refs, inline-JSX
+ * expandables) are intentionally excluded here — they cannot be expressed
+ * declaratively and must be wired up by the loader. Exceptions where a
+ * data-describable spec is compiled by the loader: rowClassName (via
+ * `rowStyle`, compiled into a RowClassNameFn), FeaturePermission (plain data,
+ * via `permission`), and the factory-based expandable panels (via `expandable`,
+ * compiled into an ExpandableConfig).
  *
  * Serializable fields carried here:
  *   identity:       name, description, docs, suggestion
@@ -27,6 +29,7 @@
  *   sortingFns
  *   rowStyle:       ordered condition→className rules (compiles to rowClassName)
  *   permission:     FeaturePermission gate { feature, defaultAccess?, operation? }
+ *   expandable:     row-detail panel spec (compiles to ExpandableConfig)
  */
 
 import { z } from 'zod'
@@ -272,6 +275,37 @@ const permissionSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// expandable — declarative row-detail panel spec.
+//
+// The two stable factory shapes are data-describable, so a serializable spec
+// can carry them and the loader compiles each back into an ExpandableConfig
+// (see compileExpandable). A discriminated union on `type` keeps room for the
+// `panel` (createExpandedPanel sections) variant as a follow-up.
+//
+//   config-details — createConfigExpandedDetails({ primaryColumns, descriptionKey }):
+//     an auto-grid of every row column NOT already in `primaryColumns`.
+//
+// Inline-JSX expandables (bespoke React per row, e.g. running-queries,
+// keeper-connections, readonly-tables) remain TS-only — genuinely not
+// serializable — and stay excluded.
+// ---------------------------------------------------------------------------
+
+const expandableConfigDetailsSchema = z.object({
+  type: z.literal('config-details'),
+  // Columns already shown in the table; skipped in the detail grid so the
+  // panel only adds new information. Mirrors CreateConfigExpandedDetailsOptions.
+  primaryColumns: z.array(z.string().min(1)).optional(),
+  // Column holding a long description to render as prose (default: description).
+  descriptionKey: z.string().min(1).optional(),
+})
+
+const expandableSpecSchema = z.discriminatedUnion('type', [
+  expandableConfigDetailsSchema,
+])
+
+export type DeclarativeExpandableSpec = z.infer<typeof expandableSpecSchema>
+
+// ---------------------------------------------------------------------------
 // Main declarative schema
 // ---------------------------------------------------------------------------
 
@@ -344,10 +378,15 @@ export const declarativeQueryConfigSchema = z.object({
   // Feature-permission gate (plain data; loader casts to FeaturePermission)
   permission: permissionSchema.optional(),
 
+  // Row-detail panel — declarative spec compiled into an ExpandableConfig by
+  // the loader (config-details variant; inline-JSX expandables stay TS-only).
+  expandable: expandableSpecSchema.optional(),
+
   // Intentionally excluded (not serializable — require runtime code):
   //   columnIcons     — React component refs
   //   rowClassName    — function (row) => string (use declarative rowStyle)
-  //   expandable      — function (row, ctx) => ReactNode
+  //   filterSchema    — FilterField.icon / dynamic-option fns
+  //   inline-JSX expandable — bespoke React per row (use a TS config)
   //   variants        — deprecated; use versioned sql[] instead
 })
 

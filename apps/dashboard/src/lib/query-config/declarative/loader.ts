@@ -6,14 +6,15 @@
  *
  * RUNTIME-ONLY FIELDS NOT PRESENT ON LOADED CONFIGS:
  *   - columnIcons    — React component refs (Icon type)
- *   - expandable     — function-based ExpandableConfig
  *   - filterSchema   — FilterSchema (contains Icon refs and dynamic option fns)
  *   - columnFilters  — ColumnFilterDef (UI sugar over filterSchema)
+ *   - inline-JSX expandable — bespoke per-row React (keep as a TS config)
  *   - variants       — deprecated; use versioned sql[] in the declarative format
  *
- * The declarative `rowStyle` field IS carried: it is compiled into a
- * rowClassName function on the loaded config (see compileRowStyle). The
- * `permission` field (plain FeaturePermission data) is also carried through.
+ * Compiled fields (declarative spec → runtime value on the loaded config):
+ *   - rowStyle    → rowClassName function (see compileRowStyle)
+ *   - permission  → FeaturePermission (plain data, carried through)
+ *   - expandable  → ExpandableConfig (see compileExpandable)
  *
  * These fields can be merged in by the caller after loading if needed.
  */
@@ -21,6 +22,7 @@
 import type { QueryConfig } from '@/types/query-config'
 import type { DeclarativeQueryConfig } from './schema'
 
+import { compileExpandable } from './expandable'
 import { compileRowStyle } from './row-style'
 import { validateDeclarativeConfig } from './validate'
 
@@ -157,6 +159,12 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   // FeaturePermission (schema validates feature/access/operation to its domain).
   if (d.permission !== undefined) {
     config.permission = d.permission as QueryConfig['permission']
+  }
+
+  // Expandable row-detail panel — compile the declarative spec into an
+  // ExpandableConfig by binding the matching row-detail factory.
+  if (d.expandable !== undefined) {
+    config.expandable = compileExpandable(d.expandable)
   }
 
   return config
