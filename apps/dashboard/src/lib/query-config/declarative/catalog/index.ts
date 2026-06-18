@@ -57,6 +57,8 @@ import { asynchronousMetricsDeclarative } from './more/asynchronous-metrics'
 import { backupsDeclarative } from './more/backups'
 import { dictionariesDeclarative } from './more/dictionaries'
 import { errorsDeclarative } from './more/errors'
+import { mergeTreeSettingsDeclarative } from './more/mergetree-settings'
+import { metricsDeclarative } from './more/metrics'
 import { rolesDeclarative } from './more/roles'
 import { topUsageColumnsDeclarative } from './more/top-usage-columns'
 import { topUsageTablesDeclarative } from './more/top-usage-tables'
@@ -66,6 +68,7 @@ import { commonErrorsDeclarative } from './queries/common-errors'
 import { parallelizationDeclarative } from './queries/parallelization'
 import { profilerDeclarative } from './queries/profiler'
 import { queryCacheDeclarative } from './queries/query-cache'
+import { queryDetailDeclarative } from './queries/query-detail'
 import { queryViewsLogDeclarative } from './queries/query-views-log'
 import { threadAnalysisDeclarative } from './queries/thread-analysis'
 // Security
@@ -161,6 +164,8 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   backupsDeclarative,
   dictionariesDeclarative,
   errorsDeclarative,
+  mergeTreeSettingsDeclarative,
+  metricsDeclarative,
   rolesDeclarative,
   topUsageColumnsDeclarative,
   topUsageTablesDeclarative,
@@ -171,6 +176,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   parallelizationDeclarative,
   profilerDeclarative,
   queryCacheDeclarative,
+  queryDetailDeclarative,
   queryViewsLogDeclarative,
   threadAnalysisDeclarative,
 

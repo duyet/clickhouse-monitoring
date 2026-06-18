@@ -8,20 +8,15 @@
  *   rowClassName  — function (row) => string | undefined
  *   expandable    — function-based ExpandableConfig
  *   columnIcons   — React component refs
- *   permission    — FeaturePermission
  *   filterSchema  — contains Icon refs and dynamic option fns
  *
- * docs is now a plain string in the schema, so the descriptive table-missing
- * help text (BACKUP_LOG, QUERY_LOG, ZOOKEEPER) is inlined into the declarative
- * objects and IS compared here (verifies the inlined text matches the legacy
- * table-notes constants).
+ * docs (table-missing help text) and permission (FeaturePermission as plain
+ * data) are now serializable and ARE compared here.
  *
  * Skipped configs (runtime-only fields that the schema cannot express):
- *   mergetree-settings — permission field
- *   metrics            — permission field
- *   page-views         — tableCheck + SQL reference runtime EVENTS_TABLE env var
- *   settings           — expandable + permission fields
- *   users              — expandable field
+ *   page-views — tableCheck + SQL reference runtime EVENTS_TABLE env var
+ *   settings   — expandable field (also has permission, but expandable blocks it)
+ *   users      — expandable field
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -30,6 +25,8 @@ import { asynchronousMetricsDeclarative } from './asynchronous-metrics'
 import { backupsDeclarative } from './backups'
 import { dictionariesDeclarative } from './dictionaries'
 import { errorsDeclarative } from './errors'
+import { mergeTreeSettingsDeclarative } from './mergetree-settings'
+import { metricsDeclarative } from './metrics'
 import { rolesDeclarative } from './roles'
 import { topUsageColumnsDeclarative } from './top-usage-columns'
 import { topUsageTablesDeclarative } from './top-usage-tables'
@@ -40,6 +37,8 @@ import { asynchronousMetricsConfig } from '@/lib/query-config/more/asynchronous-
 import { backupsConfig } from '@/lib/query-config/more/backups'
 import { dictionariesConfig } from '@/lib/query-config/more/dictionaries'
 import { errorsConfig } from '@/lib/query-config/more/errors'
+import { mergeTreeSettingsConfig } from '@/lib/query-config/more/mergetree-settings'
+import { metricsConfig } from '@/lib/query-config/more/metrics'
 import { rolesConfig } from '@/lib/query-config/more/roles'
 import { topUsageColumnsConfig } from '@/lib/query-config/more/top-usage-columns'
 import { topUsageTablesConfig } from '@/lib/query-config/more/top-usage-tables'
@@ -54,7 +53,6 @@ const RUNTIME_ONLY_KEYS = new Set([
   'rowClassName',
   'expandable',
   'columnIcons',
-  'permission',
   'filterSchema',
   'columnFilters',
   'clickhouseSettings',
@@ -213,5 +211,47 @@ describe('zookeeper declarative', () => {
   test('serializable fields match legacy', () => {
     const loaded = loadDeclarativeConfig(zookeeperDeclarative)
     compareSerializable(loaded, zookeeperConfig)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// mergetree-settings — permission migrated to declarative `permission`
+// ---------------------------------------------------------------------------
+
+describe('mergetree-settings declarative', () => {
+  test('loads without error', () => {
+    expect(() =>
+      loadDeclarativeConfig(mergeTreeSettingsDeclarative)
+    ).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(mergeTreeSettingsDeclarative)
+    compareSerializable(loaded, mergeTreeSettingsConfig)
+  })
+
+  test('permission matches legacy', () => {
+    const loaded = loadDeclarativeConfig(mergeTreeSettingsDeclarative)
+    expect(loaded.permission).toEqual(mergeTreeSettingsConfig.permission)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// metrics — permission migrated to declarative `permission`
+// ---------------------------------------------------------------------------
+
+describe('metrics declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(metricsDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(metricsDeclarative)
+    compareSerializable(loaded, metricsConfig)
+  })
+
+  test('permission matches legacy', () => {
+    const loaded = loadDeclarativeConfig(metricsDeclarative)
+    expect(loaded.permission).toEqual(metricsConfig.permission)
   })
 })
