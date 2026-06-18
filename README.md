@@ -218,6 +218,7 @@ plus a short list of what you changed:
   - [Reference](https://duyet.github.io/clickhouse-monitoring/reference)
     - [Platform Support Matrix](docs/content/reference/support-matrix.mdx) — ClickHouse versions and distributions (supported / best-effort / untested)
     - [Connection Presets](docs/content/reference/connection-presets.mdx) — least-privilege read-only user setup for ClickHouse OSS, Altinity, and Cloud
+    - [Contributing a config / check](docs/content/reference/catalog-contributing.mdx) — how to add a declarative monitoring check to the catalog
 
 ### AI Agent Access
 
