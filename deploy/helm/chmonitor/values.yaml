@@ -52,6 +52,39 @@ service:
 # Container port the app listens on (matches PORT=3000 in the Docker image).
 containerPort: 3000
 
+# Kubernetes health probes. Defaults match the container's health endpoints:
+#   liveness  -> GET /healthz     (static 200 while the Node/worker process is up)
+#   readiness -> GET /api/healthz (200 only when every configured ClickHouse host
+#                                 answers its SELECT 1 ping; 503 otherwise)
+#   startup   -> GET /healthz     (~60s grace before liveness can kill a slow boot)
+# Paths rarely need changing; the thresholds are exposed so tight-resource nodes
+# can tune without forking the chart into raw manifests. Keep
+# readiness.timeoutSeconds ABOVE the app's per-host ping timeout
+# (CHM_HEALTHZ_TIMEOUT_MS, default 3000ms in /api/healthz) or a slow ClickHouse
+# host will flap readiness.
+probes:
+  liveness:
+    enabled: true
+    path: /healthz
+    initialDelaySeconds: 0
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    path: /api/healthz
+    initialDelaySeconds: 0
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 3
+  startup:
+    enabled: true
+    path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
+
 ingress:
   enabled: false
   className: ""

@@ -65,33 +65,43 @@ spec:
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          # Startup probe gives the Nitro Node server up to 60s to bind before
+          {{- with .Values.probes }}
+          {{- if .startup.enabled }}
+          # Startup probe gives the Nitro Node server up to ~60s to bind before
           # liveness kicks in. Prevents kill-loops on slow-start nodes.
           startupProbe:
             httpGet:
-              path: /healthz
-              port: {{ .Values.containerPort }}
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 12
+              path: {{ .startup.path | quote }}
+              port: {{ $.Values.containerPort }}
+            initialDelaySeconds: {{ .startup.initialDelaySeconds }}
+            periodSeconds: {{ .startup.periodSeconds }}
+            timeoutSeconds: {{ .startup.timeoutSeconds }}
+            failureThreshold: {{ .startup.failureThreshold }}
+          {{- end }}
+          {{- if .liveness.enabled }}
           # Static liveness: /healthz always returns 200 while the process is up.
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: {{ .Values.containerPort }}
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 3
+              path: {{ .liveness.path | quote }}
+              port: {{ $.Values.containerPort }}
+            initialDelaySeconds: {{ .liveness.initialDelaySeconds }}
+            periodSeconds: {{ .liveness.periodSeconds }}
+            timeoutSeconds: {{ .liveness.timeoutSeconds }}
+            failureThreshold: {{ .liveness.failureThreshold }}
+          {{- end }}
+          {{- if .readiness.enabled }}
           # Readiness gates on ClickHouse reachability: /api/healthz returns 503
-          # when no configured host is up.
+          # when no configured host is up (or a host's SELECT 1 ping times out).
           readinessProbe:
             httpGet:
-              path: /api/healthz
-              port: {{ .Values.containerPort }}
-            periodSeconds: 15
-            timeoutSeconds: 10
-            failureThreshold: 3
+              path: {{ .readiness.path | quote }}
+              port: {{ $.Values.containerPort }}
+            initialDelaySeconds: {{ .readiness.initialDelaySeconds }}
+            periodSeconds: {{ .readiness.periodSeconds }}
+            timeoutSeconds: {{ .readiness.timeoutSeconds }}
+            failureThreshold: {{ .readiness.failureThreshold }}
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
