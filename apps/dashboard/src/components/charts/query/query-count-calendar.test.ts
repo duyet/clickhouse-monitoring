@@ -2,6 +2,7 @@ import type { HeatmapDayRow } from './query-count-calendar'
 
 import {
   buildCalendarModel,
+  buildMonthBlocks,
   buildStatCards,
   formatCalendarDate,
   formatDurationMs,
@@ -157,6 +158,71 @@ describe('buildCalendarModel', () => {
       /^[A-Z][a-z]{2} \d{4} – [A-Z][a-z]{2} \d{4}$/
     )
     expect(model.rangeLabel.endsWith('Jun 2026')).toBe(true)
+  })
+})
+
+describe('buildMonthBlocks', () => {
+  const today = new Date(2026, 5, 17) // Wed Jun 17 2026
+
+  it('groups days into one block per month, in chronological order', () => {
+    // 12 weeks back from mid-June spans Apr→Jun 2026.
+    const model = buildCalendarModel([], today, QUERIES, 12)
+    const blocks = buildMonthBlocks(model)
+
+    // The start snaps back to a Sunday, so a partial leading month (Mar) shows.
+    const labels = blocks.map((b) => b.label)
+    expect(labels).toEqual(['Mar', 'Apr', 'May', 'Jun'])
+    // Keys carry the year so blocks stay distinct across a year boundary.
+    expect(blocks.map((b) => b.key)).toEqual([
+      '2026-2',
+      '2026-3',
+      '2026-4',
+      '2026-5',
+    ])
+    expect(blocks.every((b) => b.year === 2026)).toBe(true)
+  })
+
+  it('keeps every block self-contained: a block only holds its own days', () => {
+    const model = buildCalendarModel([], today, QUERIES, 12)
+    for (const block of buildMonthBlocks(model)) {
+      const month = Number(block.key.split('-')[1])
+      for (const week of block.weeks) {
+        for (const day of week) {
+          if (day) expect(day.date.getMonth()).toBe(month)
+        }
+      }
+    }
+  })
+
+  it('splits a boundary week across both months (masked each way)', () => {
+    // May 31 2026 is a Sunday; Jun 1 is the Monday in the same column. That one
+    // week column must appear in both the May and June blocks.
+    const model = buildCalendarModel([], today, QUERIES, 12)
+    const blocks = buildMonthBlocks(model)
+    const may = blocks.find((b) => b.key === '2026-4')!
+    const jun = blocks.find((b) => b.key === '2026-5')!
+
+    const mayHasMay31 = may.weeks.some((w) =>
+      w.some((d) => d?.iso === '2026-05-31')
+    )
+    const junHasJun1 = jun.weeks.some((w) =>
+      w.some((d) => d?.iso === '2026-06-01')
+    )
+    expect(mayHasMay31).toBe(true)
+    expect(junHasJun1).toBe(true)
+    // The June block must NOT leak May 31 into its masked copy of that week.
+    const junHasMay31 = jun.weeks.some((w) =>
+      w.some((d) => d?.iso === '2026-05-31')
+    )
+    expect(junHasMay31).toBe(false)
+  })
+
+  it('preserves each day cell value from the model', () => {
+    const rows: HeatmapDayRow[] = [row('2026-06-15', { query_count: 100 })]
+    const model = buildCalendarModel(rows, today, QUERIES, 4)
+    const jun = buildMonthBlocks(model).find((b) => b.key === '2026-5')!
+    const cell = jun.weeks.flat().find((d) => d?.iso === '2026-06-15')
+    expect(cell?.value).toBe(100)
   })
 })
 

@@ -45,7 +45,7 @@ There are two kinds of variables:
 
 | Kind | Where to set | Who reads it | Example |
 |---|---|---|---|
-| **Build-time client vars** | CI env / shell before `bun run cf:build` | Browser JS (VITE-inlined) | `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
+| **Build-time client vars** | CI env / shell before `bun run build` | Browser JS (VITE-inlined) | `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
 | **Runtime Worker vars** | `wrangler.toml` `[vars]` or `wrangler secret put` | Worker process only | `CLICKHOUSE_HOST`, `LLM_API_KEY`, `CLERK_SECRET_KEY` |
 
 `VITE_*` vars are baked into the JS bundle at build time. Setting them in `wrangler.toml [vars]` has no effect — they must be in the environment when `bun run build` runs (e.g. CI secrets).
@@ -302,7 +302,7 @@ HEALTH_ALERT_MIN_SEVERITY = "warning"
 
 ### Branding
 
-Set these in CI before running `bun run cf:build` (they are baked into the JS bundle):
+Set these in CI before running `bun run build` (they are baked into the JS bundle):
 
 ```bash
 VITE_TITLE_SHORT=MyCluster
@@ -350,8 +350,8 @@ For breaking changes between major versions, see [Migrating to v0.3](/docs/migra
 
 ## Troubleshooting
 
-**`.open-next/worker.js` not found:** `bun run cf:build` must run before `wrangler deploy`. Make sure CI runs `cf:build`, not just `build`.
+**`wrangler deploy` ships nothing or stale assets:** run `bun run build` (or `bun run cf:deploy`, which does both) before `wrangler deploy` — the Vite build must produce the Workers bundle first.
 
 **Runtime errors / blank pages:** check Workers logs in the Cloudflare dashboard. Verify secrets are set (`wrangler secret list`) and redeploy after any `wrangler secret put`.
 
-**Build-time client var not taking effect:** `VITE_*` vars must be set in the environment when `bun run cf:build` runs, not in `wrangler.toml [vars]`.
+**Build-time client var not taking effect:** `VITE_*` vars must be set in the environment when `bun run build` runs, not in `wrangler.toml [vars]`.

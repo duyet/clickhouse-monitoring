@@ -241,17 +241,152 @@ describe('invalid configs', () => {
     expect(result.errors.some((e) => e.includes('defaultView'))).toBe(true)
   })
 
-  test('rejects non-URL docs field', () => {
+  test('accepts non-URL docs field (table-missing help text)', () => {
+    // docs mirrors QueryConfig.docs (plain string) — a full sentence with an
+    // embedded URL is valid, not just a bare URL.
     const result = validateDeclarativeConfig({
       name: 'my-query',
       sql: 'SELECT 1',
       columns: ['col1'],
-      docs: 'not-a-url',
+      docs: "The 'query_log' table may be missing. See https://clickhouse.com/docs/en/operations/system-tables/query_log",
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.docs).toContain('query_log')
+  })
+
+  test('accepts clickhouseSettings with primitive values', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      clickhouseSettings: {
+        allow_introspection_functions: 1,
+        allow_experimental_analyzer: 0,
+        log_comment: 'chmonitor',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.clickhouseSettings).toEqual({
+      allow_introspection_functions: 1,
+      allow_experimental_analyzer: 0,
+      log_comment: 'chmonitor',
+    })
+  })
+
+  test('rejects clickhouseSettings with non-primitive values', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      clickhouseSettings: { nested: { not: 'allowed' } },
     })
 
     expect(result.ok).toBe(false)
     if (result.ok) return
-    expect(result.errors.some((e) => e.includes('docs'))).toBe(true)
+    expect(result.errors.some((e) => e.includes('clickhouseSettings'))).toBe(
+      true
+    )
+  })
+
+  test('accepts rowStyle with rules and nested all/any conditions', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: {
+        rules: [
+          {
+            when: { column: 'd', op: 'gt', value: 60 },
+            className: 'bg-red-50',
+          },
+          {
+            when: {
+              all: [
+                { column: 'is_done', op: 'falsy' },
+                { column: 'elapsed', op: 'gt', value: 600 },
+              ],
+            },
+            className: 'bg-amber-50',
+          },
+        ],
+        default: '',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.rowStyle?.rules.length).toBe(2)
+  })
+
+  test('rejects rowStyle with empty rules array', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: { rules: [] },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors.some((e) => e.includes('rowStyle'))).toBe(true)
+  })
+
+  test('rejects rowStyle comparison op without a numeric value', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: {
+        rules: [{ when: { column: 'd', op: 'gt' }, className: 'bg-red-50' }],
+      },
+    })
+
+    expect(result.ok).toBe(false)
+  })
+
+  test('accepts permission with a valid feature id', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: { feature: 'queries' },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.permission).toEqual({ feature: 'queries' })
+  })
+
+  test('accepts permission with optional access/operation', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: {
+        feature: 'metrics',
+        defaultAccess: 'authenticated',
+        operation: 'read',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  test('rejects permission with an unknown feature id', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      permission: { feature: 'not-a-feature' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors.some((e) => e.includes('permission'))).toBe(true)
   })
 
   test('rejects unknown columnFormat enum value', () => {

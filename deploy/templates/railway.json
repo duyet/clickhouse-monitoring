@@ -1,0 +1,34 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "IMAGE",
+    "image": "ghcr.io/duyet/chmonitor:latest"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "node server/index.mjs",
+    "healthcheckPath": "/api/healthz",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "environments": {
+    "production": {
+      "CLICKHOUSE_HOST": {
+        "default": "http://YOUR_CLICKHOUSE_HOST:8123"
+      },
+      "CLICKHOUSE_USER": {
+        "default": "YOUR_CLICKHOUSE_USER"
+      },
+      "CLICKHOUSE_PASSWORD": {
+        "default": "YOUR_CLICKHOUSE_PASSWORD"
+      },
+      "PORT": {
+        "default": "3000"
+      },
+      "HOST": {
+        "default": "0.0.0.0"
+      }
+    }
+  }
+}

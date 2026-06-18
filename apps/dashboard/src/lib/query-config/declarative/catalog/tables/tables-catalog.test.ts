@@ -7,14 +7,10 @@
  *
  * Runtime-only fields absent from DeclarativeQueryConfig are excluded from
  * comparison: columnIcons, rowClassName, expandable, permission, filterSchema,
- * columnFilters, clickhouseSettings, variants.
+ * columnFilters, variants.
  *
  * SKIPPED configs (non-serializable fields block migration):
- *   - part-info        : sortingFns uses 'sort_column_using_actual_value'
- *   - projections      : sortingFns uses 'sort_column_using_actual_value'
  *   - readonly-tables  : expandable contains JSX (React component ref)
- *   - tables-overview  : clickhouseSettings + sortingFns 'sort_column_using_actual_value'
- *   - user-processes   : sortingFns uses 'sort_column_using_actual_value'
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -22,18 +18,26 @@ import { detachedPartsDeclarative } from './detached-parts'
 import { distributedDdlQueueDeclarative } from './distributed-ddl-queue'
 import { droppedTablesDeclarative } from './dropped-tables'
 import { movesDeclarative } from './moves'
+import { partInfoDeclarative } from './part-info'
+import { projectionsDeclarative } from './projections'
 import { replicasDeclarative } from './replicas'
 import { replicatedFetchesDeclarative } from './replicated-fetches'
 import { replicationQueueDeclarative } from './replication-queue'
+import { tablesOverviewDeclarative } from './tables-overview'
+import { userProcessesDeclarative } from './user-processes'
 import { viewRefreshesDeclarative } from './view-refreshes'
 import { describe, expect, test } from 'bun:test'
 import { detachedPartsConfig } from '@/lib/query-config/tables/detached-parts'
 import { distributedDdlQueueConfig } from '@/lib/query-config/tables/distributed-ddl-queue'
 import { droppedTablesConfig } from '@/lib/query-config/tables/dropped-tables'
 import { movesConfig } from '@/lib/query-config/tables/moves'
+import { partInfoConfig } from '@/lib/query-config/tables/part-info'
+import { projectionsConfig } from '@/lib/query-config/tables/projections'
 import { replicasConfig } from '@/lib/query-config/tables/replicas'
 import { replicatedFetchesConfig } from '@/lib/query-config/tables/replicated-fetches'
 import { replicationQueueConfig } from '@/lib/query-config/tables/replication-queue'
+import { tablesOverviewConfig } from '@/lib/query-config/tables/tables-overview'
+import { userProcessesConfig } from '@/lib/query-config/tables/user-processes'
 import { viewRefreshesConfig } from '@/lib/query-config/tables/view-refreshes'
 
 // ---------------------------------------------------------------------------
@@ -64,6 +68,7 @@ const SERIALIZABLE_KEYS = [
   'bulkActions',
   'bulkActionKey',
   'sortingFns',
+  'clickhouseSettings',
 ] as const
 
 type SerializableKey = (typeof SERIALIZABLE_KEYS)[number]
@@ -210,4 +215,44 @@ assertDeclarativeMatchesLegacy(
   viewRefreshesDeclarative,
   viewRefreshesConfig as unknown as Record<string, unknown>,
   'view-refreshes'
+)
+
+// ---------------------------------------------------------------------------
+// part-info
+// ---------------------------------------------------------------------------
+
+assertDeclarativeMatchesLegacy(
+  partInfoDeclarative,
+  partInfoConfig as unknown as Record<string, unknown>,
+  'part-info'
+)
+
+// ---------------------------------------------------------------------------
+// projections
+// ---------------------------------------------------------------------------
+
+assertDeclarativeMatchesLegacy(
+  projectionsDeclarative,
+  projectionsConfig as unknown as Record<string, unknown>,
+  'projections'
+)
+
+// ---------------------------------------------------------------------------
+// user-processes
+// ---------------------------------------------------------------------------
+
+assertDeclarativeMatchesLegacy(
+  userProcessesDeclarative,
+  userProcessesConfig as unknown as Record<string, unknown>,
+  'user-processes'
+)
+
+// ---------------------------------------------------------------------------
+// tables-overview (clickhouseSettings now serializable via schema-ext)
+// ---------------------------------------------------------------------------
+
+assertDeclarativeMatchesLegacy(
+  tablesOverviewDeclarative,
+  tablesOverviewConfig as unknown as Record<string, unknown>,
+  'tables-overview'
 )

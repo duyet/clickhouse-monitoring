@@ -377,6 +377,68 @@ export function buildCalendarModel(
   }
 }
 
+/**
+ * A month's worth of day cells, grouped out of the continuous week grid for the
+ * "broken-down" year-calendar layout. Each `weeks` column keeps the Sunday-first
+ * row alignment of {@link CalendarModel.weeks}, but days belonging to a
+ * neighbouring month are masked to `null` so the block renders only its own
+ * days (partial first/last weeks, exactly like a wall calendar).
+ */
+export interface MonthBlock {
+  /** Stable key, `YYYY-M` (month 0-indexed). */
+  key: string
+  /** Short month name, e.g. "Jun". */
+  label: string
+  year: number
+  /** Week columns touching this month, oldest → newest, masked to this month. */
+  weeks: CalendarWeek[]
+}
+
+/**
+ * Re-group a {@link CalendarModel}'s continuous week columns into per-month
+ * blocks. A boundary week (one spanning two months) is emitted into both blocks,
+ * masked to the relevant month each time — so every block shows its own partial
+ * leading/trailing week. Pure derivation: no new date math, just a regrouping of
+ * the already-built cells, keeping the tested {@link buildCalendarModel} intact.
+ */
+export function buildMonthBlocks(model: CalendarModel): MonthBlock[] {
+  const blocks: MonthBlock[] = []
+  const byKey = new Map<string, MonthBlock>()
+  const keyOf = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`
+
+  for (const week of model.weeks) {
+    // Distinct months this week touches, in chronological (Sun→Sat) order.
+    const monthsInWeek: string[] = []
+    for (const day of week) {
+      if (day) {
+        const k = keyOf(day.date)
+        if (!monthsInWeek.includes(k)) monthsInWeek.push(k)
+      }
+    }
+
+    for (const k of monthsInWeek) {
+      let block = byKey.get(k)
+      if (!block) {
+        const sample = week.find((d) => d && keyOf(d.date) === k) as CalendarDay
+        block = {
+          key: k,
+          label: MONTH_NAMES_SHORT[sample.date.getMonth()],
+          year: sample.date.getFullYear(),
+          weeks: [],
+        }
+        byKey.set(k, block)
+        blocks.push(block)
+      }
+      // Keep only this month's days in the column; others become gaps.
+      block.weeks.push(
+        week.map((day) => (day && keyOf(day.date) === k ? day : null))
+      )
+    }
+  }
+
+  return blocks
+}
+
 /** A single KPI/stat card shown above the calendar. */
 export interface StatCard {
   label: string
