@@ -18,6 +18,58 @@ related:
 
 Dual deployment support: Docker and Cloudflare Workers from the same codebase.
 
+> **Current architecture (TanStack Start, v0.3+):** the dual-runtime mechanism
+> below is authoritative. The Next.js / OpenNext content further down (`.next`,
+> `next build`, KV/R2/D1 cache populate) is **historical** and no longer applies
+> — the app now builds via Vite + Nitro. See `apps/dashboard/vite.config.ts`.
+
+## Dual-runtime compatibility (Node Docker + Cloudflare Workers)
+
+The TanStack Start app builds to **two targets** from one codebase, selected by
+`BUILD_TARGET` in `apps/dashboard/vite.config.ts`:
+
+| Target | Build | Runtime | `cloudflare:workers` resolves to |
+|--------|-------|---------|-----------------------------------|
+| `node` (Docker / k8s) | `bun run build:node:ci` → `.output/server/index.mjs` | Nitro `node-server` on `node:24-alpine` | `src/lib/cloudflare-workers-shim.ts` (`env` = `process.env`) |
+| `cloudflare` (default `bun run build` / `cf:build`) | `@cloudflare/vite-plugin` → workerd bundle | Cloudflare Workers | workerd built-in binding |
+
+### The contract (enforced by test)
+
+Server routes read config via `import { env } from 'cloudflare:workers'`. On the
+Node target that import is **aliased** to `cloudflare-workers-shim.ts`, which
+re-exports `env` backed by `process.env`. The shim re-exports **only `env`** —
+any other `cloudflare:workers` symbol (`WorkerEntrypoint`, `DurableObject`,
+`ExecutionContext`, …) would be `undefined` under Node and break the Node build
+**silently** (the Cloudflare target would still build and pass).
+
+Guarded by `apps/dashboard/src/lib/__tests__/cloudflare-workers-shim.test.ts`:
+the suite fails if any source file imports a symbol other than `env` from
+`cloudflare:workers`. To use a new binding under Node, re-export it (Node-safe)
+from the shim first.
+
+### Audit (2026-06-18)
+
+- Only `env` is imported from `cloudflare:workers` app-wide. ✅
+- `/api/healthz` host ping is bounded by `AbortSignal.timeout()` on both runtimes
+  (Node 18+ and workerd) — see [k8s-health-probes.md](k8s-health-probes.md).
+- Worker-critical paths (`/api/healthz`, `/api/v1/host-status`,
+  `/api/v1/notifications`) call `getClient({ web: true })` explicitly, so the
+  fetch-based `@clickhouse/client-web` is selected regardless of runtime
+  auto-detection.
+
+### Known follow-ups (not blocking either runtime)
+
+- `isCloudflareWorkers()` (`packages/clickhouse-client/.../runtime/cloudflare-workers.ts`)
+  gates its global-shape check behind `typeof process === 'undefined'`, which is
+  **false under `nodejs_compat`**. Auto-detection can mis-fire on a
+  nodejs_compat Worker; mitigated today by explicit `web: true` on critical
+  paths. Revisit (check `globalThis.caches` / `WebSocketPair` independently of
+  `process`) if a new route relies on auto-detection.
+- Most user-facing routes call `client.query()` with no client-side
+  `abort_signal` (they rely on server-side `max_execution_time`). A hung
+  ClickHouse host can stall those requests on both runtimes. Bounding them is a
+  latency-hardening pass, not a runtime-compat fix.
+
 ## Build Artifacts
 
 | Platform | Build Command | Entry Point |

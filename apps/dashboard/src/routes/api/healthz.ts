@@ -41,6 +41,20 @@ export const Route = createFileRoute('/api/healthz')({
           )
         }
 
+        // Per-host ping timeout (default 3s; override via CHM_HEALTHZ_TIMEOUT_MS).
+        // Without an explicit abort a hung ClickHouse host stalls this readiness
+        // check past the kubelet probe timeout — @clickhouse/client-web's fetch
+        // otherwise waits on the TCP timeout (often >30s). Keep this BELOW the
+        // chart's readinessProbe.timeoutSeconds (default 10s). abort_signal +
+        // AbortSignal.timeout() are supported on both runtimes (Node 18+ and
+        // workerd), so this route stays runtime-agnostic.
+        const pingTimeoutMs =
+          Number.parseInt(
+            (env as Record<string, string | undefined>)
+              .CHM_HEALTHZ_TIMEOUT_MS ?? '',
+            10
+          ) || 3000
+
         const hosts: HostHealth[] = await Promise.all(
           configs.map(async (config) => {
             const start = Date.now()
@@ -53,6 +67,7 @@ export const Route = createFileRoute('/api/healthz')({
               const resultSet = await client.query({
                 query: 'SELECT 1',
                 format: 'JSON',
+                abort_signal: AbortSignal.timeout(pingTimeoutMs),
               })
               // Drain the response so the ping is a real round-trip.
               await resultSet.text()
