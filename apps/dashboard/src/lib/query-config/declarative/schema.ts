@@ -7,9 +7,11 @@
  *
  * The companion loader (Plan 02b) will map a DeclarativeQueryConfig into the
  * in-memory QueryConfig that the dashboard consumes at runtime. Fields that
- * are runtime functions (rowClassName, expandable, columnIcons, filterSchema
- * with Icon refs, FeaturePermission) are intentionally excluded here — they
- * cannot be expressed declaratively and must be wired up by the loader.
+ * are runtime functions (expandable, columnIcons, filterSchema with Icon refs,
+ * FeaturePermission) are intentionally excluded here — they cannot be expressed
+ * declaratively and must be wired up by the loader. The one exception is
+ * rowClassName: simple data-driven row styling is expressible via the
+ * declarative `rowStyle` rules, which the loader compiles into a RowClassNameFn.
  *
  * Serializable fields carried here:
  *   identity:       name, description, docs, suggestion
@@ -23,6 +25,7 @@
  *   relatedCharts:  string[] | [string, params][]
  *   card, defaultView, bulkActions, bulkActionKey
  *   sortingFns
+ *   rowStyle:       ordered condition→className rules (compiles to rowClassName)
  */
 
 import { z } from 'zod'
@@ -181,6 +184,57 @@ const clickhouseSettingsSchema = z.record(
 )
 
 // ---------------------------------------------------------------------------
+// rowStyle — declarative replacement for the rowClassName function.
+//
+// A serializable, ordered list of { when, className } rules. The loader
+// compiles them into a RowClassNameFn: the first matching rule's className is
+// returned; if none match, `default` (or undefined) is returned.
+//
+// Condition operators mirror the legacy rowClassName coercion idioms exactly:
+//   gt/gte/lt/lte   numeric comparison via Number(value || 0)
+//   truthy/falsy    numeric truthiness  (Number(value || 0) !== 0)
+//   empty/nonempty  string emptiness    (String(value || '') === '')
+//   all/any         combine sub-conditions (AND / OR)
+// ---------------------------------------------------------------------------
+
+const comparisonOpSchema = z.enum(['gt', 'gte', 'lt', 'lte'])
+const truthinessOpSchema = z.enum(['truthy', 'falsy', 'empty', 'nonempty'])
+
+// Recursive condition type (all/any nest conditions) — declared explicitly so
+// z.lazy can be given a precise type.
+export type RowStyleCondition =
+  | { column: string; op: 'gt' | 'gte' | 'lt' | 'lte'; value: number }
+  | { column: string; op: 'truthy' | 'falsy' | 'empty' | 'nonempty' }
+  | { all: RowStyleCondition[] }
+  | { any: RowStyleCondition[] }
+
+const rowStyleConditionSchema: z.ZodType<RowStyleCondition> = z.lazy(() =>
+  z.union([
+    z.object({
+      column: z.string().min(1),
+      op: comparisonOpSchema,
+      value: z.number(),
+    }),
+    z.object({ column: z.string().min(1), op: truthinessOpSchema }),
+    z.object({ all: z.array(rowStyleConditionSchema).min(1) }),
+    z.object({ any: z.array(rowStyleConditionSchema).min(1) }),
+  ])
+)
+
+const rowStyleSchema = z.object({
+  rules: z
+    .array(
+      z.object({
+        when: rowStyleConditionSchema,
+        className: z.string().min(1),
+      })
+    )
+    .min(1, 'rowStyle must have at least one rule'),
+  // className returned when no rule matches; omit for undefined (no class).
+  default: z.string().optional(),
+})
+
+// ---------------------------------------------------------------------------
 // Main declarative schema
 // ---------------------------------------------------------------------------
 
@@ -247,9 +301,12 @@ export const declarativeQueryConfigSchema = z.object({
   // Sorting
   sortingFns: sortingFnsSchema.optional(),
 
+  // Row styling — declarative replacement for rowClassName (loader compiles it)
+  rowStyle: rowStyleSchema.optional(),
+
   // Intentionally excluded (not serializable — require runtime code):
   //   columnIcons     — React component refs
-  //   rowClassName    — function (row) => string
+  //   rowClassName    — function (row) => string (use declarative rowStyle)
   //   expandable      — function (row, ctx) => ReactNode
   //   permission      — FeaturePermission (app-level import)
   //   variants        — deprecated; use versioned sql[] instead

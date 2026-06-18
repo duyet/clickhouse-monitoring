@@ -6,12 +6,14 @@
  *
  * RUNTIME-ONLY FIELDS NOT PRESENT ON LOADED CONFIGS:
  *   - columnIcons    — React component refs (Icon type)
- *   - rowClassName   — function (row) => string | undefined
  *   - expandable     — function-based ExpandableConfig
  *   - permission     — FeaturePermission (app-level import)
  *   - filterSchema   — FilterSchema (contains Icon refs and dynamic option fns)
  *   - columnFilters  — ColumnFilterDef (UI sugar over filterSchema)
  *   - variants       — deprecated; use versioned sql[] in the declarative format
+ *
+ * The declarative `rowStyle` field IS carried: it is compiled into a
+ * rowClassName function on the loaded config (see compileRowStyle).
  *
  * These fields can be merged in by the caller after loading if needed.
  */
@@ -19,6 +21,7 @@
 import type { QueryConfig } from '@/types/query-config'
 import type { DeclarativeQueryConfig } from './schema'
 
+import { compileRowStyle } from './row-style'
 import { validateDeclarativeConfig } from './validate'
 
 // ---------------------------------------------------------------------------
@@ -63,9 +66,9 @@ export function getConfigSource(
  * is 1-to-1: field names and value shapes are shared by design.
  *
  * Runtime-only fields absent from DeclarativeQueryConfig (columnIcons,
- * rowClassName, expandable, permission, filterSchema, columnFilters,
- * variants) are simply omitted from the result. Callers that need those
- * fields must merge them in after loading.
+ * expandable, permission, filterSchema, columnFilters, variants) are simply
+ * omitted from the result. Callers that need those fields must merge them in
+ * after loading. (rowClassName is produced from the declarative rowStyle rules.)
  *
  * @throws Error when `input` fails schema validation (message includes all
  *   field-level errors joined by '; ').
@@ -143,6 +146,11 @@ export function loadDeclarativeConfig(input: unknown): QueryConfig {
   // Sorting
   if (d.sortingFns !== undefined) {
     config.sortingFns = d.sortingFns as QueryConfig['sortingFns']
+  }
+
+  // Row styling — compile declarative rules into a rowClassName function.
+  if (d.rowStyle !== undefined) {
+    config.rowClassName = compileRowStyle(d.rowStyle)
   }
 
   return config
