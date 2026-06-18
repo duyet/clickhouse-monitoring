@@ -224,4 +224,4 @@ See [Least-privilege connection presets](/reference/least-privilege-presets) for
 - **No real-time streaming.** Grafana polls ClickHouse on a configurable interval (minimum ~5 s). chmonitor's running-queries view also polls every 5 s. Neither tool provides push-based streaming from ClickHouse.
 - **`system.query_log` retention.** Slow query history depends on your `query_log` TTL. Default retention is 30 days; adjust via `system.query_log` `flush_interval_milliseconds` and partition TTL in your ClickHouse config.
 - **`system.replicas` requires ZooKeeper/Keeper.** If your cluster does not use replication, the replicas panel returns no rows.
-- **ClickHouse version.** Queries are tested against v23.8+. Some columns (`query_cache_usage`, `peak_threads_usage`) are only available on newer versions — the queries fall back gracefully or note the version requirement inline.
+- **ClickHouse version.** Queries target v23.8+. Some columns (`query_cache_usage`, `peak_threads_usage`) are only available on newer versions — the queries fall back gracefully or note the version requirement inline.
