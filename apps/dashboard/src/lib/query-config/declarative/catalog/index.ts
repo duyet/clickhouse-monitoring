@@ -51,6 +51,7 @@ import { textLogDeclarative } from './logs/text-log'
 // Merges
 import { mergePerformanceDeclarative } from './merges/merge-performance'
 import { mergesDeclarative } from './merges/merges'
+import { mutationsDeclarative } from './merges/mutations'
 // More
 import { asynchronousMetricsDeclarative } from './more/asynchronous-metrics'
 import { backupsDeclarative } from './more/backups'
@@ -87,6 +88,7 @@ import {
   diskSpaceDeclarative,
 } from './system/disks'
 import { kafkaConsumersDeclarative } from './system/kafka-consumers'
+import { partLogDeclarative } from './system/part-log'
 import { queryMetricLogDeclarative } from './system/query-metric-log'
 import {
   clustersReplicasStatusDeclarative,
@@ -152,6 +154,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   // Merges
   mergesDeclarative,
   mergePerformanceDeclarative,
+  mutationsDeclarative,
 
   // More
   asynchronousMetricsDeclarative,
@@ -187,6 +190,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   databaseDiskSpaceByDatabaseDeclarative,
   queryMetricLogDeclarative,
   kafkaConsumersDeclarative,
+  partLogDeclarative,
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
   replicatedMergeTreeSettingsDeclarative,
