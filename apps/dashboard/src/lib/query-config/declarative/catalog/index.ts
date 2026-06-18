@@ -86,6 +86,7 @@ import {
   databaseDiskSpaceDeclarative,
   diskSpaceDeclarative,
 } from './system/disks'
+import { kafkaConsumersDeclarative } from './system/kafka-consumers'
 import { queryMetricLogDeclarative } from './system/query-metric-log'
 import {
   clustersReplicasStatusDeclarative,
@@ -185,6 +186,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   databaseDiskSpaceDeclarative,
   databaseDiskSpaceByDatabaseDeclarative,
   queryMetricLogDeclarative,
+  kafkaConsumersDeclarative,
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
   replicatedMergeTreeSettingsDeclarative,

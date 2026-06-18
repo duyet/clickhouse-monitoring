@@ -4,16 +4,20 @@
  * For each migrated config, assert that loadDeclarativeConfig(declarativeObj)
  * deep-equals the legacy TS config on its serializable fields.
  *
- * Runtime-only fields excluded from comparison:
+ * Runtime-only fields excluded from deep-equal comparison (functions can't be
+ * compared by value):
  *   rowClassName  — function (row) => string | undefined
  *   expandable    — function-based ExpandableConfig
  *   columnIcons   — React component refs
  *   permission    — FeaturePermission
  *   filterSchema  — contains Icon refs and dynamic option fns
  *
+ * kafka-consumers migrates its rowClassName via the declarative `rowStyle`
+ * rules; rowClassName is excluded from the deep-equal (it's a function) but is
+ * verified separately by applying both functions to boundary rows.
+ *
  * Skipped configs (runtime-only fields that the schema cannot express):
- *   kafkaConsumersConfig    — rowClassName
- *   partLogConfig           — rowClassName
+ *   partLogConfig           — rowClassName (truthy on error) — see follow-up
  */
 
 import { loadDeclarativeConfig } from '../../loader'
@@ -33,6 +37,7 @@ import {
   databaseDiskSpaceDeclarative,
   diskSpaceDeclarative,
 } from './disks'
+import { kafkaConsumersDeclarative } from './kafka-consumers'
 import { queryMetricLogDeclarative } from './query-metric-log'
 import {
   clustersReplicasStatusDeclarative,
@@ -56,6 +61,7 @@ import {
   databaseDiskSpaceConfig,
   diskSpaceConfig,
 } from '@/lib/query-config/system/disks'
+import { kafkaConsumersConfig } from '@/lib/query-config/system/kafka-consumers'
 import { queryMetricLogConfig } from '@/lib/query-config/system/query-metric-log'
 import {
   clustersReplicasStatusConfig,
@@ -286,5 +292,44 @@ describe('replicated-merge-tree-settings declarative', () => {
   test('serializable fields match legacy', () => {
     const loaded = loadDeclarativeConfig(replicatedMergeTreeSettingsDeclarative)
     compareSerializable(loaded, replicatedMergeTreeSettingsConfig)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// kafka-consumers — rowClassName migrated to declarative rowStyle.
+// rowClassName is a function (excluded from deep-equal); verify behavioural
+// equivalence by applying both the compiled and legacy functions to rows that
+// cover every boundary of the last_exception condition.
+// ---------------------------------------------------------------------------
+
+describe('kafka-consumers declarative', () => {
+  test('loads without error', () => {
+    expect(() => loadDeclarativeConfig(kafkaConsumersDeclarative)).not.toThrow()
+  })
+
+  test('serializable fields match legacy', () => {
+    const loaded = loadDeclarativeConfig(kafkaConsumersDeclarative)
+    compareSerializable(loaded, kafkaConsumersConfig)
+  })
+
+  test('compiled rowClassName matches legacy across boundary rows', () => {
+    const loaded = loadDeclarativeConfig(kafkaConsumersDeclarative)
+    const compiled = loaded.rowClassName
+    const legacy = kafkaConsumersConfig.rowClassName
+    expect(typeof compiled).toBe('function')
+    expect(typeof legacy).toBe('function')
+    if (!compiled || !legacy) return
+
+    const rows: Record<string, unknown>[] = [
+      { last_exception: '' },
+      { last_exception: 'Cannot connect to broker' },
+      { last_exception: null },
+      { last_exception: undefined },
+      {}, // missing key
+      { last_exception: 0 }, // numeric falsy → String(0 || '') === ''
+    ]
+    for (const row of rows) {
+      expect(compiled(row)).toBe(legacy(row))
+    }
   })
 })

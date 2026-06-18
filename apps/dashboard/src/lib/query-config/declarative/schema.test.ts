@@ -292,6 +292,62 @@ describe('invalid configs', () => {
     )
   })
 
+  test('accepts rowStyle with rules and nested all/any conditions', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: {
+        rules: [
+          {
+            when: { column: 'd', op: 'gt', value: 60 },
+            className: 'bg-red-50',
+          },
+          {
+            when: {
+              all: [
+                { column: 'is_done', op: 'falsy' },
+                { column: 'elapsed', op: 'gt', value: 600 },
+              ],
+            },
+            className: 'bg-amber-50',
+          },
+        ],
+        default: '',
+      },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.config.rowStyle?.rules.length).toBe(2)
+  })
+
+  test('rejects rowStyle with empty rules array', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: { rules: [] },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.errors.some((e) => e.includes('rowStyle'))).toBe(true)
+  })
+
+  test('rejects rowStyle comparison op without a numeric value', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT 1',
+      columns: ['col1'],
+      rowStyle: {
+        rules: [{ when: { column: 'd', op: 'gt' }, className: 'bg-red-50' }],
+      },
+    })
+
+    expect(result.ok).toBe(false)
+  })
+
   test('rejects unknown columnFormat enum value', () => {
     const result = validateDeclarativeConfig({
       name: 'my-query',
