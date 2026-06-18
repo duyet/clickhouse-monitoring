@@ -484,7 +484,7 @@ export const DataTableHeader = memo(function DataTableHeader<
       {!filterBarSlot && (
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs px-1 min-h-[24px]">
           {/* Count */}
-          <span className="text-[12.5px] font-semibold text-muted-foreground/80">
+          <span className="text-[12.5px] font-semibold text-muted-foreground">
             {table.getFilteredRowModel().rows.length} records
           </span>
 
