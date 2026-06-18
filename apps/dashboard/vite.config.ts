@@ -58,6 +58,19 @@ const CLIENT_ENV = {
     e.VITE_RUNNING_QUERIES_REFRESH_MS ??
     e.NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS ??
     '',
+  // Edition: 'community' (default, OSS, fail-open) | 'enterprise' (paid).
+  // Unset or unrecognised values always resolve to 'community' in parseEdition().
+  VITE_EDITION: e.VITE_EDITION ?? 'community',
+  // Opt-in product telemetry: OFF by default — must be explicitly enabled.
+  VITE_TELEMETRY_ENABLED:
+    e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'false',
+  // Deployment target (docker | helm | cf | dev | unknown). Set in CI build
+  // steps so telemetry can distinguish deployment environments.
+  VITE_DEPLOY_TARGET: e.VITE_DEPLOY_TARGET ?? 'unknown',
+  // Collection endpoint for the opt-in daily instance ping. Empty by default —
+  // no network call is made unless this is explicitly set. No production
+  // endpoint is provisioned yet (TODO for a human).
+  VITE_TELEMETRY_ENDPOINT: e.VITE_TELEMETRY_ENDPOINT ?? '',
   VITE_GIT_SHA:
     e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
   VITE_GIT_REF:
@@ -69,6 +82,11 @@ const CLIENT_ENV = {
     e.NEXT_PUBLIC_BUILD_TIMESTAMP ??
     new Date().toISOString(),
   VITE_CI: e.VITE_CI ?? e.NEXT_PUBLIC_CI ?? (e.CI ? 'true' : ''),
+  // Query-config source: 'ts' (default, current TS configs) | 'declarative'
+  // (load from external declarative catalog). Anything other than 'declarative'
+  // falls back to 'ts' — fail-safe to the current behaviour. DARK: no views
+  // use declarative configs yet.
+  VITE_CONFIG_SOURCE: e.VITE_CONFIG_SOURCE ?? 'ts',
 } as const
 
 // Explicit text-replacement of each `import.meta.env.VITE_*` read. Deterministic

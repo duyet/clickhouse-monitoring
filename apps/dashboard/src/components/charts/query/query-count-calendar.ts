@@ -1,46 +1,199 @@
 /**
- * Pure helpers for the GitHub-style query-activity contribution calendar.
+ * Pure helpers for the GitHub-style "Activity Calendar" contribution heatmap.
  *
- * The backing query (`query-count-heatmap`) returns one row per calendar day:
- * `{ date: 'YYYY-MM-DD', query_count, readable_count }`. These helpers bucket
- * those rows into week columns (Sunday-first, matching GitHub) and derive the
- * summary stats shown in the KPI strip. All logic here is timezone-naive on
- * purpose: it operates on the date *strings* ClickHouse returns and on a local
- * "today" anchor, so it stays deterministic and unit-testable.
+ * The backing query (`query-count-heatmap`) returns one row per calendar day
+ * carrying several metrics (query volume, failures, peak memory, avg duration,
+ * bytes written). These helpers bucket those rows into Sunday-first week
+ * columns (matching GitHub) for a chosen {@link MetricConfig} and derive the
+ * summary stats shown in the KPI strip.
+ *
+ * All logic here is timezone-naive on purpose: it operates on the date *strings*
+ * ClickHouse returns and on a local "today" anchor, so it stays deterministic
+ * and unit-testable.
  */
 
-/** One row of the per-day query-count payload. */
-export interface DayCell {
+import { formatCompactNumber, formatReadableSize } from '@/lib/format-readable'
+
+/** One row of the per-day heatmap payload (all metrics for a single day). */
+export interface HeatmapDayRow {
   date: string // 'YYYY-MM-DD'
   query_count: number
-  readable_count: string
+  failed_count: number
+  memory_peak: number // bytes
+  avg_duration_ms: number // milliseconds
+  written_bytes: number // bytes
+}
+
+/** Backwards-compatible alias used by older imports. */
+export type DayCell = HeatmapDayRow
+
+/** Identifier for a heatmap metric / display mode. */
+export type MetricKey = 'queries' | 'failed' | 'memory' | 'duration' | 'written'
+
+/**
+ * How a metric aggregates across days:
+ * - `sum`: a daily volume that adds up (queries, failures, bytes written).
+ * - `gauge`: a daily reading that does not sum (peak memory, avg duration).
+ */
+export type MetricAggregation = 'sum' | 'gauge'
+
+export interface MetricConfig {
+  key: MetricKey
+  /** Pill + heading label, e.g. "Query Count". */
+  label: string
+  /** Aggregation behaviour, drives which KPI cards are shown. */
+  aggregation: MetricAggregation
+  /** Pull this metric's numeric value out of a day row. */
+  getValue: (row: HeatmapDayRow) => number
+  /** Format a value for KPIs / tooltips, e.g. 13247 → "13.2K". */
+  format: (value: number) => string
+  /**
+   * Tailwind background classes, low → high. Tier 0 is the empty/no-activity
+   * cell. Six entries: one empty tier + five intensity tiers. Class strings are
+   * written out in full so Tailwind's JIT can see (and emit) them.
+   */
+  tiers: readonly [string, string, string, string, string, string]
+  /** Accent text class for the highlighted ("peak") KPI value + legend. */
+  accentText: string
+  /** Accent background class for the active-mode dot / legend swatch. */
+  accentDot: string
+}
+
+/** Format milliseconds as a compact human duration ("420ms", "1.8s", "18s"). */
+export function formatDurationMs(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return '0ms'
+  if (ms < 1000) return `${Math.round(ms)}ms`
+  const s = ms / 1000
+  return s >= 10 ? `${Math.round(s)}s` : `${s.toFixed(1)}s`
 }
 
 /**
- * Intensity tiers, low → high. Tier 0 is the empty/no-activity cell. Kept in
- * sync with TIER_THRESHOLDS (one threshold per tier). Uses `--chart-2` so the
- * calendar matches the rest of the query charts' accent.
+ * Metric definitions, in display order. Each entry is fully self-describing so
+ * the component stays a thin renderer over the chosen config.
  */
-export const INTENSITY_TIERS = [
-  'bg-muted/50',
-  'bg-chart-2/20',
-  'bg-chart-2/35',
-  'bg-chart-2/50',
-  'bg-chart-2/70',
-  'bg-chart-2',
-] as const
+export const METRIC_CONFIGS: Record<MetricKey, MetricConfig> = {
+  queries: {
+    key: 'queries',
+    label: 'Query Count',
+    aggregation: 'sum',
+    getValue: (r) => r.query_count ?? 0,
+    format: formatCompactNumber,
+    // Keeps the existing chart-2 accent so the default mode matches the other
+    // query charts across the dashboard.
+    tiers: [
+      'bg-muted/50',
+      'bg-chart-2/20',
+      'bg-chart-2/40',
+      'bg-chart-2/60',
+      'bg-chart-2/80',
+      'bg-chart-2',
+    ],
+    accentText: 'text-chart-2',
+    accentDot: 'bg-chart-2',
+  },
+  failed: {
+    key: 'failed',
+    label: 'Failed Queries',
+    aggregation: 'sum',
+    getValue: (r) => r.failed_count ?? 0,
+    format: formatCompactNumber,
+    tiers: [
+      'bg-muted/50',
+      'bg-rose-500/20',
+      'bg-rose-500/40',
+      'bg-rose-500/60',
+      'bg-rose-500/80',
+      'bg-rose-500',
+    ],
+    accentText: 'text-rose-500',
+    accentDot: 'bg-rose-500',
+  },
+  memory: {
+    key: 'memory',
+    label: 'Memory Peak',
+    aggregation: 'gauge',
+    getValue: (r) => r.memory_peak ?? 0,
+    format: (v) => formatReadableSize(v),
+    tiers: [
+      'bg-muted/50',
+      'bg-amber-500/20',
+      'bg-amber-500/40',
+      'bg-amber-500/60',
+      'bg-amber-500/80',
+      'bg-amber-500',
+    ],
+    accentText: 'text-amber-600 dark:text-amber-500',
+    accentDot: 'bg-amber-500',
+  },
+  duration: {
+    key: 'duration',
+    label: 'Avg Duration',
+    aggregation: 'gauge',
+    getValue: (r) => r.avg_duration_ms ?? 0,
+    format: formatDurationMs,
+    tiers: [
+      'bg-muted/50',
+      'bg-violet-500/20',
+      'bg-violet-500/40',
+      'bg-violet-500/60',
+      'bg-violet-500/80',
+      'bg-violet-500',
+    ],
+    accentText: 'text-violet-500',
+    accentDot: 'bg-violet-500',
+  },
+  written: {
+    key: 'written',
+    label: 'Data Written',
+    aggregation: 'sum',
+    getValue: (r) => r.written_bytes ?? 0,
+    format: (v) => formatReadableSize(v),
+    tiers: [
+      'bg-muted/50',
+      'bg-emerald-500/20',
+      'bg-emerald-500/40',
+      'bg-emerald-500/60',
+      'bg-emerald-500/80',
+      'bg-emerald-500',
+    ],
+    accentText: 'text-emerald-600 dark:text-emerald-500',
+    accentDot: 'bg-emerald-500',
+  },
+}
+
+/** Metric configs in the order their switch pills should appear. */
+export const METRIC_ORDER: MetricKey[] = [
+  'queries',
+  'failed',
+  'memory',
+  'duration',
+  'written',
+]
+
+/**
+ * Default intensity ramp (query mode). Exported for the legend fallback and for
+ * back-compat with existing tests. Tier 0 is empty / no-activity.
+ */
+export const INTENSITY_TIERS = METRIC_CONFIGS.queries.tiers
 
 // Ratio (value / max) at or above which a cell takes the matching tier.
 export const TIER_THRESHOLDS = [0, 0.01, 0.25, 0.5, 0.75] as const
 
-/** Map an absolute count to a Tailwind background class for its intensity. */
-export function getIntensityClass(value: number, max: number): string {
-  if (max <= 0 || value <= 0) return INTENSITY_TIERS[0]
+/**
+ * Map an absolute value to a Tailwind background class for its intensity within
+ * the given tier ramp (defaults to the query ramp).
+ */
+export function getIntensityClass(
+  value: number,
+  max: number,
+  tiers: readonly string[] = INTENSITY_TIERS
+): string {
+  if (max <= 0 || value <= 0) return tiers[0]
   const ratio = value / max
   for (let i = TIER_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (ratio >= TIER_THRESHOLDS[i]) return INTENSITY_TIERS[i + 1]
+    if (ratio >= TIER_THRESHOLDS[i]) return tiers[i + 1]
   }
-  return INTENSITY_TIERS[0]
+  return tiers[0]
 }
 
 const MONTH_NAMES_SHORT = [
@@ -82,11 +235,23 @@ export function formatCalendarDate(d: Date): string {
   return `${WEEKDAY_NAMES_SHORT[d.getDay()]}, ${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`
 }
 
+/** Compact day label for KPI sublabels, e.g. "Jun 1". */
+export function formatShortDate(d: Date): string {
+  return `${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getDate()}`
+}
+
+/** "Mon YYYY" for the date-range caption. */
+function formatMonthYear(d: Date): string {
+  return `${MONTH_NAMES_SHORT[d.getMonth()]} ${d.getFullYear()}`
+}
+
 /** A single day cell once placed in the calendar grid. */
 export interface CalendarDay {
   iso: string
   date: Date
-  count: number
+  /** The selected metric's value for this day. */
+  value: number
+  /** Pre-formatted value for tooltips/labels. */
   readable: string
 }
 
@@ -105,22 +270,26 @@ export interface CalendarModel {
   totalDays: number
   avgActive: number
   peak: CalendarDay | null
+  /** Caption like "Jun 2025 – Jun 2026", or '' when there are no days. */
+  rangeLabel: string
 }
 
 /**
- * Bucket per-day counts into Sunday-first week columns spanning the `weeksBack`
- * weeks ending at `today`. The first column is snapped back to a Sunday so each
- * column is a clean week; future slots in the last column are left `null`.
+ * Bucket per-day metric values into Sunday-first week columns spanning the
+ * `weeksBack` weeks ending at `today`, for the chosen `metric`. The first column
+ * is snapped back to a Sunday so each column is a clean week; future slots in
+ * the last column are left `null`.
  */
 export function buildCalendarModel(
-  cells: DayCell[],
+  rows: HeatmapDayRow[],
   today: Date,
+  metric: MetricConfig,
   weeksBack = 53
 ): CalendarModel {
-  const counts = new Map<string, DayCell>()
-  for (const c of cells) counts.set(c.date, c)
+  const byDate = new Map<string, HeatmapDayRow>()
+  for (const r of rows) byDate.set(r.date, r)
 
-  // Anchor at midnight-ish (noon avoids DST edge cases when stepping days).
+  // Anchor at noon to avoid DST edge cases when stepping days.
   const end = new Date(
     today.getFullYear(),
     today.getMonth(),
@@ -140,6 +309,8 @@ export function buildCalendarModel(
   let totalDays = 0
   let peak: CalendarDay | null = null
   let prevMonth = -1
+  let firstDay: Date | null = null
+  let lastDay: Date | null = null
 
   const cursor = new Date(start)
   while (cursor <= end) {
@@ -155,21 +326,24 @@ export function buildCalendarModel(
       }
 
       const iso = isoDate(cursor)
-      const rec = counts.get(iso)
-      const count = rec?.query_count ?? 0
+      const rec = byDate.get(iso)
+      const value = rec ? metric.getValue(rec) : 0
       const day: CalendarDay = {
         iso,
         date: new Date(cursor),
-        count,
-        readable: rec?.readable_count ?? '0',
+        value,
+        readable: metric.format(value),
       }
       week[dow] = day
 
+      if (!firstDay) firstDay = day.date
+      lastDay = day.date
+
       totalDays += 1
-      total += count
-      if (count > 0) activeDays += 1
-      if (count > max) max = count
-      if (!peak || count > peak.count) peak = day
+      total += value
+      if (value > 0) activeDays += 1
+      if (value > max) max = value
+      if (!peak || value > peak.value) peak = day
 
       // Label the column at the first day that opens a new month.
       const month = cursor.getMonth()
@@ -185,6 +359,11 @@ export function buildCalendarModel(
     monthLabels.push(label)
   }
 
+  const rangeLabel =
+    firstDay && lastDay
+      ? `${formatMonthYear(firstDay)} – ${formatMonthYear(lastDay)}`
+      : ''
+
   return {
     weeks,
     monthLabels,
@@ -194,5 +373,106 @@ export function buildCalendarModel(
     totalDays,
     avgActive: activeDays > 0 ? total / activeDays : 0,
     peak,
+    rangeLabel,
   }
+}
+
+/** A single KPI/stat card shown above the calendar. */
+export interface StatCard {
+  label: string
+  value: string
+  sub?: string
+  /** Highlight the value with the metric accent colour (used for the peak). */
+  accent?: boolean
+}
+
+/**
+ * Build the four KPI cards for a metric + model. `sum` metrics lead with a
+ * grand total; `gauge` metrics lead with the peak reading (a sum would be
+ * meaningless for e.g. peak memory).
+ */
+export function buildStatCards(
+  metric: MetricConfig,
+  model: CalendarModel
+): StatCard[] {
+  const { total, max, activeDays, totalDays, avgActive, peak } = model
+  const hasTraffic = max > 0
+  const pct = totalDays > 0 ? Math.round((activeDays * 100) / totalDays) : 0
+  const peakDate = peak && hasTraffic ? formatShortDate(peak.date) : '—'
+
+  if (metric.aggregation === 'gauge') {
+    return [
+      {
+        label: `Peak ${metric.label.split(' ')[0]}`,
+        value: hasTraffic ? metric.format(max) : '—',
+        sub: 'highest daily reading',
+        accent: true,
+      },
+      {
+        label: 'Average',
+        value: hasTraffic ? metric.format(avgActive) : '—',
+        sub: 'across active days',
+      },
+      {
+        label: 'Busiest day',
+        value: peakDate,
+        sub: hasTraffic ? 'when the peak occurred' : undefined,
+      },
+      {
+        label: 'Active days',
+        value: formatCompactNumber(activeDays),
+        sub: `of ${totalDays} (${pct}%)`,
+      },
+    ]
+  }
+
+  // sum metrics — vary the wording per metric so the cards read naturally.
+  const wording: Record<
+    'queries' | 'failed' | 'written',
+    { total: string; peak: string; active: string; avgNoun: string }
+  > = {
+    queries: {
+      total: 'Total queries',
+      peak: 'Busiest day',
+      active: 'Active days',
+      avgNoun: 'queries per active day',
+    },
+    failed: {
+      total: 'Total failed',
+      peak: 'Worst day',
+      active: 'Days with errors',
+      avgNoun: 'errors per active day',
+    },
+    written: {
+      total: 'Total written',
+      peak: 'Biggest day',
+      active: 'Active days',
+      avgNoun: 'per active day',
+    },
+  }
+  const w = wording[metric.key as 'queries' | 'failed' | 'written']
+
+  return [
+    {
+      label: w.total,
+      value: metric.format(total),
+      sub: `over ${totalDays} days`,
+    },
+    {
+      label: w.peak,
+      value: hasTraffic ? metric.format(max) : '—',
+      sub: hasTraffic ? `${peakDate} · peak daily volume` : undefined,
+      accent: true,
+    },
+    {
+      label: w.active,
+      value: formatCompactNumber(activeDays),
+      sub: `of ${totalDays} (${pct}%)`,
+    },
+    {
+      label: 'Avg / active day',
+      value: hasTraffic ? metric.format(avgActive) : '—',
+      sub: w.avgNoun,
+    },
+  ]
 }

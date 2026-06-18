@@ -6,9 +6,11 @@ import {
   type SetStateAction,
   use,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+import { getDeployTarget, maybePingInstance, track } from '@/lib/telemetry'
 
 export interface ContextValue {
   interval: ClickHouseInterval
@@ -83,6 +85,14 @@ export const AppProvider = ({
         return next
       })
     }, [])
+
+  // Fire-and-forget product telemetry — no-op unless enabled. Once per app load.
+  useEffect(() => {
+    track('app_loaded', { deploy_target: getDeployTarget() })
+    // Daily anonymous instance ping — no-op unless telemetry is explicitly
+    // enabled AND CHM_TELEMETRY_ENDPOINT is configured.
+    maybePingInstance()
+  }, [])
 
   const value = useMemo<ContextValue>(
     () => ({

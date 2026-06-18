@@ -17,6 +17,7 @@ import {
 } from '@/components/agents/welcome/add-context-dialog'
 import { ComposerToolbar } from '@/components/agents/welcome/composer-toolbar'
 import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
+import { track } from '@/lib/telemetry'
 
 /**
  * Welcome-screen composer card: mentions textarea + toolbar (model · skills ·
@@ -43,6 +44,7 @@ export function WelcomeComposer() {
             role: 'user',
             content: [{ type: 'text', text: full }],
           })
+          track('ai_query_sent')
           setContextItems([])
         }}
         onStop={() => threadRuntime.cancelRun()}
@@ -75,6 +77,7 @@ export function ThreadComposer() {
             role: 'user',
             content: [{ type: 'text', text: trimmed }],
           })
+          track('ai_query_sent')
         }}
         onStop={() => threadRuntime.cancelRun()}
       />

@@ -10,6 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { docsSiteUrl } from '@/lib/docs-site'
 import { apiFetch } from '@/lib/swr/api-fetch'
+import {
+  detectChFlavor,
+  getDeployTarget,
+  parseMajorMinor,
+  track,
+} from '@/lib/telemetry'
 
 export type { BrowserConnection }
 
@@ -102,6 +108,11 @@ export function ConnectionForm({
           message: json.version
             ? `Connected — ClickHouse ${json.version}`
             : 'Connected',
+        })
+        track('cluster_connected', {
+          deploy_target: getDeployTarget(),
+          ch_version: parseMajorMinor(json.version),
+          ch_flavor: detectChFlavor(json.version),
         })
       } else {
         setTestStatus({

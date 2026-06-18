@@ -333,19 +333,26 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     }
   },
 
-  // Per-day query volume for the GitHub-style contribution calendar. One row
-  // per calendar day; the client buckets these into week columns. Default
-  // window is one year (24 * 365 hours) so the calendar spans ~53 columns.
+  // Per-day activity metrics for the GitHub-style "Activity Calendar" heatmap.
+  // One row per calendar day carrying every switchable metric (query volume,
+  // failures, peak memory, avg duration, bytes written) so the client can flip
+  // modes without a refetch. Conditional aggregation keeps it a single daily
+  // scan. Default window is one year (24 * 365 hours) → ~53 calendar columns.
   'query-count-heatmap': ({ lastHours = 24 * 365 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
       query: `
     SELECT
         toString(toDate(event_time)) AS date,
-        count() AS query_count,
-        formatReadableQuantity(count()) AS readable_count
+        countIf(type = 'QueryFinish') AS query_count,
+        countIf(type = 'ExceptionBeforeStart' OR type = 'ExceptionWhileProcessing') AS failed_count,
+        max(memory_usage) AS memory_peak,
+        round(avgIf(query_duration_ms, type = 'QueryFinish'), 2) AS avg_duration_ms,
+        sumIf(written_bytes, type = 'QueryFinish') AS written_bytes
     FROM merge('system', '^query_log')
-    WHERE type = 'QueryFinish'
+    WHERE (type = 'QueryFinish'
+           OR type = 'ExceptionBeforeStart'
+           OR type = 'ExceptionWhileProcessing')
       ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY date
     ORDER BY date ASC
