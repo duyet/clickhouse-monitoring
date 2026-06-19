@@ -36,6 +36,7 @@ Agents discover knowledge in this order:
 | **Operations** | [release-automation.md](release-automation.md) | workflow | release-please + release.yml pipeline: versioning rules, PR-title guard, labeler, CHANGELOG ownership, migration prompt |
 | **Specs** | [ai-insights.md](ai-insights.md) | spec | AI Insights engine: collect→enrich→persist (findings store), cron + manual generation, stable-key dismissal, overview panel |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
+| **Security** | [sql-validator-threat-model.md](sql-validator-threat-model.md) | decision | validateSqlQuery gates all free-form SQL; whole-query (not fragment) threat model; UNION/replace()/OR-disjunction false-positive class + corpus regression guard |
 | **Specs** | [agent-conversation-storage.md](agent-conversation-storage.md) | spec | Runtime-selected agent chat persistence backends and fallback rules |
 | **Specs** | [agentstate-conversation-store.md](agentstate-conversation-store.md) | spec | AgentState backend: resolveStore priority, external_id/tag isolation, append-only upsert, AI enrichment, backend/follow-ups routes |
 | **Specs** | [query-config-format.md](query-config-format.md) | spec | QueryConfig type format, versioned SQL, BackgroundBar columns |
