@@ -6,20 +6,17 @@
   "type": "module",
   "scripts": {
     "sync": "node scripts/sync-docs.mjs",
-    "snapshot": "node scripts/snapshot-version.mjs",
     "dev": "node scripts/sync-docs.mjs && astro dev",
-    "build": "node scripts/sync-docs.mjs && astro build && pagefind --site dist",
+    "build": "node scripts/sync-docs.mjs && astro build",
     "preview": "astro preview",
     "cf:deploy": "wrangler deploy"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource-variable/geist": "^5.2.9",
-    "@fontsource/geist-mono": "^5.2.8",
-    "astro": "^6.1.10"
+    "@astrojs/starlight": "^0.40.0",
+    "astro": "^6.4.5"
   },
   "devDependencies": {
-    "pagefind": "^1.5.2",
     "wrangler": "4.65.0"
   }
 }

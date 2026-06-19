@@ -204,10 +204,11 @@ of local files.
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 - Code-smell automation workflow now records findings in `docs/knowledge/core-memory.md`, then validates `gh run list --branch main --limit 10 ...` and keeps a dedicated memory note under `/Users/duet/.codex/automations/code-smell-detector/memory.md`.
 
-**Docs content workflow**: `/docs` pages are rendered by the main app and read source files from `docs/content`.
+**Docs content workflow**: `docs/content/**` is the committed source of truth for the docs. The standalone Astro **Starlight** site at `apps/docs` (→ docs.chmonitor.dev) generates its content collection from it via `scripts/sync-docs.mjs` on every build. There is no per-release versioning.
 
-- `bun run dev` then open `/docs` - Preview docs through the main app shell
-- `DOCS_CONTENT_ROOT=<path> bun run dev` - Override docs source root for local validation
+- `cd apps/docs && bun run dev` - Preview the docs site locally (http://localhost:4321)
+- `cd apps/docs && bun run build` - Full static build (sync-docs → astro build incl. Pagefind)
+- Edit only `docs/content/**`; `apps/docs/src/content/docs/**` is regenerated and gitignored.
 
 **IMPORTANT — keep the AI Agent docs in sync**: `docs/content/ai-agent.mdx` is
 the user-facing reference for the agent's tools, skills, and configuration.

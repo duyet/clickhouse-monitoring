@@ -1,24 +1,21 @@
 name: Docs
 
-# Builds the standalone Astro docs app (apps/docs), a custom theme ported from
-# jordienr/astro-design-system with per-release versioning. It is intentionally
+# Builds the standalone Astro Starlight docs app (apps/docs). It is intentionally
 # outside the root bun workspace (see apps/docs/README.md), so it installs and
-# builds on its own rather than via turbo. docs/versions/** holds the committed
-# per-release snapshots the site is generated from.
+# builds on its own rather than via turbo. docs/content/** is the committed
+# source the site is generated from by scripts/sync-docs.mjs.
 
 on:
   pull_request:
     paths:
       - 'apps/docs/**'
       - 'docs/content/**'
-      - 'docs/versions/**'
       - '.github/workflows/docs.yml'
   push:
     branches: [main]
     paths:
       - 'apps/docs/**'
       - 'docs/content/**'
-      - 'docs/versions/**'
       - '.github/workflows/docs.yml'
 
 permissions:
