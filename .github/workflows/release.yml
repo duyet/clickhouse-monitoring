@@ -38,7 +38,7 @@ jobs:
     timeout-minutes: 50
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
           fetch-depth: 0
@@ -54,7 +54,7 @@ jobs:
             image=moby/buildkit:latest
 
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -97,7 +97,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -167,7 +167,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
           fetch-depth: 0
@@ -196,7 +196,7 @@ jobs:
           echo "minor=$MINOR" >> "$GITHUB_OUTPUT"
 
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -242,7 +242,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
 
@@ -259,7 +259,7 @@ jobs:
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
 
       - name: Sync Chart.yaml to release version
         run: |
@@ -289,7 +289,7 @@ jobs:
       tag: ${{ steps.meta.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag || github.ref }}
           fetch-depth: 0
