@@ -22,7 +22,7 @@ export const DEFAULT_FEATURE_STATE: FeatureState = {
  *
  *  - `none`                       → read + write   (everyone is authenticated)
  *  - `clerk` + CHM_CLERK_PUBLIC_READ → read only   (the dash / dash posture)
- *  - `clerk` (default) / `proxy`  → nothing        (sign in / proxy-auth required)
+ *  - `clerk` (default) / `proxy` / `trusted` → nothing (sign in / proxy-auth required)
  *
  * Authenticated callers always get read + write; this only describes the
  * anonymous baseline. Pure (publicRead passed in) so it is shared by the server

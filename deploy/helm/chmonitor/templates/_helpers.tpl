@@ -82,3 +82,16 @@ when provided, otherwise the chart-managed one.
 {{- include "chmonitor.fullname" . }}
 {{- end }}
 {{- end }}
+
+{{/*
+The name of the Secret holding CHM_TRUSTED_AUTH_SECRET. Uses an existing Secret
+when auth.trusted.existingSecret is provided, otherwise the chart-managed one
+(same Secret object as the ClickHouse password, keyed separately).
+*/}}
+{{- define "chmonitor.trustedSecretName" -}}
+{{- if .Values.auth.trusted.existingSecret }}
+{{- .Values.auth.trusted.existingSecret }}
+{{- else }}
+{{- include "chmonitor.fullname" . }}
+{{- end }}
+{{- end }}

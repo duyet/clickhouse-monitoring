@@ -82,7 +82,7 @@ export interface UserConnectionsPublicConfig {
 }
 
 export interface PublicFeaturePermissionConfig {
-  authProvider: 'none' | 'clerk' | 'proxy'
+  authProvider: 'none' | 'clerk' | 'proxy' | 'trusted'
   principal: Principal
   features: FeatureOverrides
   resolved?: ResolvedFeatureStates

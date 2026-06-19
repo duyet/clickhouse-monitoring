@@ -2,7 +2,7 @@
 
 chmonitor has two independent auth layers that work together on every `/api/v1/*` route:
 
-- **Auth provider** — one of `none`, `clerk`, or `proxy`. Controls whether browser sessions are authenticated. Set with `CHM_AUTH_PROVIDER` (server) and `VITE_AUTH_PROVIDER` (client, build-time inlined).
+- **Auth provider** — one of `none`, `clerk`, `proxy`, or `trusted`. Controls whether browser sessions are authenticated. Set with `CHM_AUTH_PROVIDER` (server) and `VITE_AUTH_PROVIDER` (client, build-time inlined).
 - **API key layer** — always active when `CHM_API_KEY_SECRET` is set. Authenticates programmatic clients (MCP, scripts, CI) with signed `chm_` Bearer tokens, independent of the provider.
 
 A request is allowed when either layer accepts it. The only fully public setup is `CHM_AUTH_PROVIDER=none` with no `CHM_API_KEY_SECRET`.
@@ -16,7 +16,8 @@ A request is allowed when either layer accepts it. The only fully public setup i
 | Clerk | `clerk` provider | Clerk `__session` cookie | Clerk token or `chm_` key |
 | Clerk OAuth (MCP only) | MCP server | — | OAuth bearer token |
 | Proxy → Cloudflare Access | `proxy` provider | `Cf-Access-Jwt-Assertion` JWT | — |
-| Proxy → trusted header | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
+| Proxy → trusted header (bare subject) | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
+| Proxy → trusted headers (full profile) | `trusted` provider | forwarded headers (oauth2-proxy / Dex / Authelia) | shared secret header |
 
 ## How enforcement decides
 
@@ -36,7 +37,9 @@ All paths fail closed: a missing config or verification error resolves to "not a
 |---|---|
 | Local dev or internal network, no login needed | Public (`none`) — default |
 | Hosted dashboard with user accounts and sign-in | Clerk |
-| Behind Cloudflare Access or nginx/SSO | Proxy (`cloudflare-access` or `trusted-header`) |
+| Behind Cloudflare Access | Proxy — `cloudflare-access` |
+| Behind nginx/SSO with a bare identity header | Proxy — `trusted-header` |
+| Behind oauth2-proxy / Dex / Authelia / Traefik ForwardAuth | Trusted (`trusted`) |
 | MCP clients, scripts, CI pipelines | API key (`CHM_API_KEY_SECRET`) — add alongside any provider |
 
 ## Provider pages
@@ -44,8 +47,9 @@ All paths fail closed: a missing config or verification error resolves to "not a
 - [Public / no auth](/docs/authentication/public) — default open dashboard
 - [API keys](/docs/authentication/api-keys) — `chm_` Bearer tokens for programmatic access
 - [Clerk](/docs/authentication/clerk) — browser sign-in with Clerk sessions
-- [Cloudflare Access](/docs/authentication/cloudflare-access) — reverse proxy JWT verification
-- [Trusted header](/docs/authentication/trusted-header) — reverse proxy with shared secret
+- [Cloudflare Access](/docs/authentication/cloudflare-access) — `proxy` provider; Cloudflare Access JWT verification
+- [Trusted header](/docs/authentication/trusted-header) — `proxy` provider; bare subject via shared secret
+- [Trusted proxy](/docs/authentication/trusted-proxy) — `trusted` provider; full profile from forwarded headers (oauth2-proxy, Dex, Authelia)
 
 ## Related
 
