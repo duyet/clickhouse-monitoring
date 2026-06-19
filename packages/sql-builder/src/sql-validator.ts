@@ -18,9 +18,17 @@
 export const SQL_PATTERNS = {
   /**
    * Dangerous SQL keywords that modify data or schema
+   *
+   * Note: `REPLACE` is intentionally NOT listed here. ClickHouse exposes a
+   * read-only `replace()` / `replaceRegexpAll()` string function, and the bare
+   * `replace(` call collides with a `\bREPLACE\b` keyword match. The dangerous
+   * DDL forms are still blocked: statement-level `REPLACE TABLE` fails the
+   * "must start with SELECT/WITH/DESCRIBE/EXPLAIN" check, `CREATE OR REPLACE`
+   * is caught by `CREATE`, and chained `; REPLACE` is caught by
+   * {@link SQL_PATTERNS.CHAINED_DANGEROUS}.
    */
   DANGEROUS_KEYWORDS:
-    /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|RENAME|REPLACE)\b/i,
+    /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|RENAME)\b/i,
 
   /**
    * SQL execution commands
@@ -42,10 +50,17 @@ export const SQL_PATTERNS = {
 
   /**
    * SQL injection via string manipulation
+   *
+   * The OR-comparison patterns detect a literal-to-literal comparison guarded
+   * by OR — the shape of a tautology bypass such as `' OR '1'='1` or
+   * `" OR "a"="a`. They deliberately require a quoted/numeric literal (not an
+   * identifier) on the left of `=` so that ordinary disjunctive filters like
+   * `type = 'A' OR type = 'B'` are NOT flagged. The standalone numeric
+   * tautology `OR 1=1` is covered by {@link SQL_PATTERNS.TAUTOLOGY}.
    */
   STRING_INJECTION_SINGLE: /';.*--/,
-  STRING_INJECTION_DOUBLE: /".*OR.*".*=.*"/i,
-  STRING_INJECTION_OR_SINGLE: /'.*OR.*'.*=.*'/i,
+  STRING_INJECTION_DOUBLE: /\bOR\s+("[^"]*"?|\d+)\s*=\s*("[^"]*"?|\d+)/i,
+  STRING_INJECTION_OR_SINGLE: /\bOR\s+('[^']*'?|\d+)\s*=\s*('[^']*'?|\d+)/i,
 
   /**
    * Tautology attacks (always true conditions)
@@ -54,6 +69,13 @@ export const SQL_PATTERNS = {
 
   /**
    * UNION-based injection attacks
+   *
+   * Kept for reference/back-compat but NOT enforced (see
+   * {@link SQL_INJECTION_PATTERNS}). This validator gates the whole query to
+   * SELECT/WITH/DESCRIBE/EXPLAIN, so `SELECT secret FROM system.users` is
+   * already permitted on its own — a `UNION ALL SELECT` of the same adds no
+   * read surface, while legitimate queries (and several shipped query-configs)
+   * use `UNION ALL SELECT` routinely.
    */
   UNION_INJECTION: /\bunion\s+(all\s+)?select\b/i,
 
@@ -91,7 +113,8 @@ const SQL_INJECTION_PATTERNS = [
   SQL_PATTERNS.STRING_INJECTION_OR_SINGLE,
   SQL_PATTERNS.STRING_INJECTION_DOUBLE,
   SQL_PATTERNS.TAUTOLOGY,
-  SQL_PATTERNS.UNION_INJECTION,
+  // UNION_INJECTION intentionally omitted: the query is already gated to
+  // SELECT/WITH and `UNION ALL SELECT` adds no read surface (see its docstring).
   SQL_PATTERNS.SET_COMMAND,
   SQL_PATTERNS.SYSTEM_COMMAND,
   SQL_PATTERNS.KILL_COMMAND,

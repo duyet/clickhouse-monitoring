@@ -94,10 +94,18 @@ describe('SQL_PATTERNS', () => {
       ).toBe(true)
     })
 
-    test('should match REPLACE keyword', () => {
+    // Regression: REPLACE is NOT a DANGEROUS_KEYWORD because it collides with
+    // ClickHouse's read-only `replace()` string function. DDL REPLACE is still
+    // blocked end-to-end (statement-prefix check + CHAINED_DANGEROUS) — see the
+    // "should reject REPLACE statements" / "should allow replace() function"
+    // tests below.
+    test('should NOT match REPLACE keyword (collides with replace() function)', () => {
       expect(SQL_PATTERNS.DANGEROUS_KEYWORDS.test('REPLACE TABLE t1')).toBe(
-        true
+        false
       )
+      expect(
+        SQL_PATTERNS.DANGEROUS_KEYWORDS.test("replace(query, 'a', 'b')")
+      ).toBe(false)
     })
 
     test('should not match SELECT', () => {
@@ -543,9 +551,24 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
     })
 
     test('should reject REPLACE statements', () => {
-      expect(() => validateSqlQuery('REPLACE TABLE t1 (id UInt32)')).toThrow(
-        'Potentially dangerous SQL detected'
-      )
+      // Now caught by the statement-prefix check (does not start with
+      // SELECT/WITH/DESCRIBE/EXPLAIN) rather than the keyword denylist.
+      expect(() => validateSqlQuery('REPLACE TABLE t1 (id UInt32)')).toThrow()
+    })
+
+    test('should allow the read-only replace() string function', () => {
+      // Regression for shipped query-configs (expensive-queries, slow-queries)
+      // which use replace()/replaceRegexpAll() in SELECT projections.
+      expect(() =>
+        validateSqlQuery(
+          "SELECT replace(substr(query, 1, 100), '\\n', ' ') FROM system.query_log"
+        )
+      ).not.toThrow()
+      expect(() =>
+        validateSqlQuery(
+          "SELECT replaceRegexpAll(query, '\\\\d+', '?') FROM system.query_log"
+        )
+      ).not.toThrow()
     })
 
     test('should reject chained RENAME/REPLACE', () => {
@@ -613,17 +636,35 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       ).toThrow('Potentially dangerous SQL detected')
     })
 
-    test('should reject UNION injection', () => {
+    // Regression: UNION between SELECTs is legitimate read-only SQL and is used
+    // by several shipped query-configs (anomaly-summary, explorer dependency
+    // graphs). The validator already gates the whole query to SELECT/WITH, so
+    // the UNIONed SELECT is independently permitted and adds no read surface.
+    // It must NOT be rejected. See sql-validator.ts UNION_INJECTION docstring.
+    test('should allow UNION SELECT (no extra read surface over plain SELECT)', () => {
       expect(() =>
         validateSqlQuery(
           "SELECT * FROM users WHERE name = '' UNION SELECT * FROM passwords"
         )
+      ).not.toThrow()
+    })
+
+    test('should allow UNION ALL SELECT', () => {
+      expect(() =>
+        validateSqlQuery('SELECT 1 UNION ALL SELECT secret FROM system.users')
+      ).not.toThrow()
+    })
+
+    test('should still reject DDL chained after a UNION query', () => {
+      // UNION is allowed, but a chained dangerous statement is still caught.
+      expect(() =>
+        validateSqlQuery('SELECT 1 UNION ALL SELECT 2; DROP TABLE t')
       ).toThrow('Potentially dangerous SQL detected')
     })
 
-    test('should reject UNION ALL injection', () => {
+    test('should still reject dangerous table functions inside a UNION', () => {
       expect(() =>
-        validateSqlQuery('SELECT 1 UNION ALL SELECT secret FROM system.users')
+        validateSqlQuery("SELECT 1 UNION ALL SELECT * FROM remote('x', t)")
       ).toThrow('Potentially dangerous SQL detected')
     })
 
@@ -631,6 +672,41 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       expect(() =>
         validateSqlQuery("SELECT * FROM users WHERE name = '' OR '1'='1")
       ).toThrow('Potentially dangerous SQL detected')
+      // Also the fully-terminated variant.
+      expect(() =>
+        validateSqlQuery("SELECT * FROM users WHERE name = '' OR '1'='1'")
+      ).toThrow('Potentially dangerous SQL detected')
+    })
+
+    // Regression: the OR-comparison patterns must distinguish a tautology
+    // (literal = literal) from an ordinary disjunctive filter (column =
+    // literal). Several shipped query-configs (e.g. error-rate-baseline) use
+    // `col = 'A' OR col = 'B'`; the old broad `'.*OR.*'.*=.*'` pattern wrongly
+    // rejected them.
+    test('should allow disjunctive equality filters on columns', () => {
+      const ok = [
+        "SELECT * FROM system.query_log WHERE type = 'ExceptionBeforeStart' OR type = 'ExceptionWhileProcessing'",
+        "SELECT * FROM t WHERE db = 'default' OR db = 'system'",
+        `SELECT * FROM system.columns WHERE name = "id" OR name = "ts"`,
+        "SELECT a OR b FROM t WHERE x = 'y' OR z = 'w' OR q = 'r'",
+      ]
+      for (const sql of ok) {
+        expect(() => validateSqlQuery(sql)).not.toThrow()
+      }
+    })
+
+    test('should still reject literal=literal tautologies guarded by OR', () => {
+      const bad = [
+        "SELECT * FROM t WHERE x = '' OR 'a'='a",
+        "SELECT * FROM t WHERE x = '' OR 'a'='a'",
+        `SELECT * FROM t WHERE x = "" OR "a"="a`,
+        'SELECT * FROM t WHERE id = 0 OR 5=5',
+      ]
+      for (const sql of bad) {
+        expect(() => validateSqlQuery(sql)).toThrow(
+          'Potentially dangerous SQL detected'
+        )
+      }
     })
   })
 
@@ -721,6 +797,47 @@ describe.skipIf(actuallyMocked)('validateSqlQuery', () => {
       expect(() =>
         validateSqlQuery('/* multi\nline\ncomment */ SELECT 1')
       ).not.toThrow()
+    })
+  })
+
+  // Performance / ReDoS guard. The previous STRING_INJECTION_OR/DOUBLE patterns
+  // (`'.*OR.*'.*=.*'`) had nested unbounded `.*` runs that risk catastrophic
+  // backtracking on adversarial input. The tightened patterns are linear; this
+  // guard fails loudly if a future change reintroduces super-linear behavior.
+  describe('validation performance (ReDoS guard)', () => {
+    test('handles large adversarial input quickly', () => {
+      const adversarial = `SELECT * FROM t WHERE x = '${"a' OR 'a".repeat(2000)}`
+      const start = performance.now()
+      try {
+        validateSqlQuery(adversarial)
+      } catch {
+        // rejection is fine; we only care it returns fast
+      }
+      const elapsed = performance.now() - start
+      // Generous ceiling (typical < 1ms); catches pathological backtracking.
+      expect(elapsed).toBeLessThan(100)
+    })
+
+    test('validates a realistic query corpus quickly', () => {
+      const corpus = [
+        "SELECT replace(query, 'a', 'b') FROM system.query_log WHERE type = 'A' OR type = 'B'",
+        'SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3',
+        'WITH t AS (SELECT 1) SELECT * FROM t',
+        "SELECT * FROM system.parts WHERE active AND database = 'default' OR database = 'system'",
+      ]
+      const start = performance.now()
+      for (let i = 0; i < 1000; i++) {
+        for (const sql of corpus) {
+          try {
+            validateSqlQuery(sql)
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      const elapsed = performance.now() - start
+      // 4000 validations; generous ceiling for CI variance.
+      expect(elapsed).toBeLessThan(500)
     })
   })
 })
