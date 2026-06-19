@@ -73,7 +73,7 @@ export const Route = createFileRoute('/api/v1/explorer/preview')({
           )
         }
         const hostId = Number(hostIdRaw)
-        if (!Number.isFinite(hostId)) {
+        if (!Number.isInteger(hostId) || hostId < 0) {
           return Response.json(
             {
               success: false,

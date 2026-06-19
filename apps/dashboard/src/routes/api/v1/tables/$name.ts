@@ -26,7 +26,7 @@ export const Route = createFileRoute('/api/v1/tables/$name')({
         // Validate hostId
         const hostIdStr = searchParams.get('hostId') ?? '0'
         const hostId = Number(hostIdStr)
-        if (!Number.isFinite(hostId)) {
+        if (!Number.isInteger(hostId) || hostId < 0) {
           return Response.json(
             {
               success: false,

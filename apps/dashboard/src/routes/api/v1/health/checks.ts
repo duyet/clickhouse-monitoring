@@ -49,7 +49,7 @@ export const Route = createFileRoute('/api/v1/health/checks')({
 
         // Validate hostId
         const hostId = Number(searchParams.get('hostId') ?? '0')
-        if (!Number.isFinite(hostId)) {
+        if (!Number.isInteger(hostId) || hostId < 0) {
           return Response.json(
             {
               success: false,
