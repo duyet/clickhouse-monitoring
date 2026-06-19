@@ -7,6 +7,7 @@ import '../styles/global.css'
 import { SITE } from '../config'
 import DocsMobileToolbar from '../components/DocsMobileToolbar.astro'
 import Header from '../components/Header.astro'
+import PageActions from '../components/PageActions.astro'
 import Sidebar from '../components/Sidebar.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 
@@ -104,6 +105,7 @@ const ogImage = new URL('/og/og.png', Astro.site).toString()
           currentSlug={currentSlug}
           headings={headings}
         />
+        <PageActions currentSlug={currentSlug} />
         <article id="article" class="content" data-docs-prose>
           <slot />
         </article>

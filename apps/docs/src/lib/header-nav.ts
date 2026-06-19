@@ -28,7 +28,7 @@ export const HEADER_CATEGORIES: { label: string; groups: string[] }[] = [
   { label: 'Introduction', groups: ['Introduction', 'More'] },
   { label: 'Getting Started', groups: ['Getting Started'] },
   { label: 'Deploy', groups: ['Deployment', 'Authentication'] },
-  { label: 'Features', groups: ['Features'] },
+  { label: 'Features', groups: ['Features', 'Authentication'] },
   { label: 'AI Agent', groups: ['AI Agent'] },
   {
     label: 'Reference',

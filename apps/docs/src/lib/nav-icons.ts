@@ -77,6 +77,7 @@ const PAGE_ICONS: Record<string, NavIconName> = {
   'deploy/k8s': 'boxes',
   'deploy/production-checklist': 'layout-list',
   'deploy/self-host': 'server',
+  'deploy/traefik': 'network',
   'deploy/vercel': 'globe',
   features: 'layout-grid',
   'features/browser-connections': 'globe',
