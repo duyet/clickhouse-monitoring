@@ -29,6 +29,13 @@ describe('parseAuthProvider', () => {
     expect(parseAuthProvider(' CLERK ')).toBe('clerk')
   })
 
+  test('accepts proxy and trusted providers', () => {
+    expect(parseAuthProvider('proxy')).toBe('proxy')
+    expect(parseAuthProvider(' PROXY ')).toBe('proxy')
+    expect(parseAuthProvider('trusted')).toBe('trusted')
+    expect(parseAuthProvider(' Trusted ')).toBe('trusted')
+  })
+
   test('rejects unknown providers', () => {
     expect(() => parseAuthProvider('basic')).toThrow(AuthProviderConfigError)
   })

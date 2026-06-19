@@ -62,6 +62,61 @@ spec:
                 secretKeyRef:
                   name: {{ include "chmonitor.secretName" . }}
                   key: CLICKHOUSE_PASSWORD
+            {{- with .Values.auth }}
+            {{- if .provider }}
+            - name: CHM_AUTH_PROVIDER
+              value: {{ .provider | quote }}
+            {{- end }}
+            {{- with .trusted }}
+            {{- if .allowInsecure }}
+            - name: CHM_TRUSTED_ALLOW_INSECURE
+              value: "true"
+            {{- end }}
+            {{- if or .secret .existingSecret }}
+            - name: CHM_TRUSTED_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chmonitor.trustedSecretName" $ }}
+                  key: CHM_TRUSTED_AUTH_SECRET
+            {{- end }}
+            {{- if .sharedSecretHeader }}
+            - name: CHM_TRUSTED_SHARED_SECRET_HEADER
+              value: {{ .sharedSecretHeader | quote }}
+            {{- end }}
+            {{- if .userHeader }}
+            - name: CHM_TRUSTED_USER_HEADER
+              value: {{ .userHeader | quote }}
+            {{- end }}
+            {{- if .emailHeader }}
+            - name: CHM_TRUSTED_EMAIL_HEADER
+              value: {{ .emailHeader | quote }}
+            {{- end }}
+            {{- if .nameHeader }}
+            - name: CHM_TRUSTED_NAME_HEADER
+              value: {{ .nameHeader | quote }}
+            {{- end }}
+            {{- if .avatarHeader }}
+            - name: CHM_TRUSTED_AVATAR_HEADER
+              value: {{ .avatarHeader | quote }}
+            {{- end }}
+            {{- if .groupsHeader }}
+            - name: CHM_TRUSTED_GROUPS_HEADER
+              value: {{ .groupsHeader | quote }}
+            {{- end }}
+            {{- if .roleHeader }}
+            - name: CHM_TRUSTED_ROLE_HEADER
+              value: {{ .roleHeader | quote }}
+            {{- end }}
+            {{- if .customHeaders }}
+            - name: CHM_TRUSTED_CUSTOM_HEADERS
+              value: {{ .customHeaders | quote }}
+            {{- end }}
+            {{- if .allowedGroups }}
+            - name: CHM_TRUSTED_ALLOWED_GROUPS
+              value: {{ .allowedGroups | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

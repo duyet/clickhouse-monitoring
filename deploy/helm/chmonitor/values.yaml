@@ -126,6 +126,105 @@ clickhouse:
   # The secret must contain a key named `CLICKHOUSE_PASSWORD`.
   existingSecret: ""
 
+# Authentication configuration.
+#
+# auth.provider selects the server-side auth provider at runtime.
+# Valid values: "" (none), "none", "clerk", "proxy", "trusted".
+# The published image supports all providers; this value sets the
+# CHM_AUTH_PROVIDER env var — no rebuild needed.
+#
+# ── Traefik + oauth2-proxy + Dex homelab example ──────────────────────────────
+# oauth2-proxy forwards the authenticated identity as X-Auth-Request-* headers
+# (NOT the generic X-Forwarded-* defaults) when --set-xauthrequest=true is set.
+# The Traefik ForwardAuth Middleware must copy those headers back via
+# authResponseHeaders so chmonitor sees them.
+#
+# 1. oauth2-proxy flags (relevant subset):
+#      --provider=oidc
+#      --oidc-issuer-url=https://dex.example.com
+#      --set-xauthrequest=true
+#      --scope="openid profile email groups"
+#
+# 2. Traefik Middleware (middlewares.yaml or CRD):
+#      apiVersion: traefik.io/v1alpha1
+#      kind: Middleware
+#      metadata:
+#        name: oauth2-proxy-auth
+#        namespace: chmonitor
+#      spec:
+#        forwardAuth:
+#          address: http://oauth2-proxy.auth.svc.cluster.local/oauth2/auth
+#          authResponseHeaders:
+#            - X-Auth-Request-User
+#            - X-Auth-Request-Email
+#            - X-Auth-Request-Preferred-Username
+#            - X-Auth-Request-Groups
+#
+# 3. Ingress annotation to activate the middleware (add to ingress.annotations):
+#      traefik.ingress.kubernetes.io/router.middlewares: chmonitor-oauth2-proxy-auth@kubernetescrd
+#
+# 4. values.yaml snippet for this setup:
+#    auth:
+#      provider: trusted
+#      trusted:
+#        # RECOMMENDED: also set a shared secret so the app double-checks
+#        # the request came through the proxy, not a direct pod call.
+#        secret: "change-me-strong-random-value"
+#        userHeader: "X-Auth-Request-User"
+#        emailHeader: "X-Auth-Request-Email"
+#        nameHeader: "X-Auth-Request-Preferred-Username"
+#        groupsHeader: "X-Auth-Request-Groups"
+#        # Optional: restrict access to members of specific groups from Dex.
+#        allowedGroups: "chmonitor-admins,platform-team"
+# ──────────────────────────────────────────────────────────────────────────────
+auth:
+  # Auth provider: "" | none | clerk | proxy | trusted
+  provider: ""
+
+  trusted:
+    # allowInsecure: trust forwarded identity headers with NO shared secret.
+    # Safe ONLY when the pod is ClusterIP-isolated and reachable exclusively
+    # via the ingress/oauth2-proxy path. Prefer setting `secret` instead.
+    allowInsecure: false
+
+    # secret: shared secret string the proxy must send in the secret header.
+    # Sets CHM_TRUSTED_AUTH_SECRET; rendered into the chart Secret when non-empty
+    # and existingSecret is not set. RECOMMENDED over allowInsecure.
+    secret: ""
+
+    # existingSecret: name of a pre-existing Secret with key CHM_TRUSTED_AUTH_SECRET.
+    # When set, `secret` above is ignored and the chart Secret is not created for it.
+    existingSecret: ""
+
+    # sharedSecretHeader: header the proxy sends the shared secret in.
+    # Default in the app: "X-Chm-Proxy-Secret". Override here if needed.
+    sharedSecretHeader: ""
+
+    # Identity header overrides. Leave empty to use the app's built-in defaults
+    # (X-Forwarded-User, X-Forwarded-Email, X-Forwarded-Preferred-Username, etc.).
+    # When using Traefik + oauth2-proxy, set these to the X-Auth-Request-* names.
+
+    # userHeader: header carrying the user subject/ID. Default: X-Forwarded-User
+    userHeader: ""
+    # emailHeader: header carrying the user email. Default: X-Forwarded-Email
+    emailHeader: ""
+    # nameHeader: header carrying the display name. Default: X-Forwarded-Preferred-Username
+    nameHeader: ""
+    # avatarHeader: header carrying an avatar URL. Default: X-Forwarded-Avatar
+    avatarHeader: ""
+    # groupsHeader: header carrying comma/space-separated group list. Default: X-Forwarded-Groups
+    groupsHeader: ""
+    # roleHeader: header carrying a single role string merged into groups. Default: X-Forwarded-Role
+    roleHeader: ""
+    # customHeaders: comma-separated "field:Header-Name" pairs for custom claims.
+    # Example: "team:X-Forwarded-Team,dept:X-User-Dept"
+    customHeaders: ""
+
+    # allowedGroups: comma-separated list of groups/roles that are permitted access.
+    # If set, the user's forwarded groups must intersect (case-insensitive) or the
+    # request is denied. Works alongside CHM_FEATURE_<ID>_ACCESS and CHM_API_KEY_SECRET.
+    allowedGroups: ""
+
 # Extra environment variables injected into the container, e.g.
 # extraEnv:
 #   - name: CLICKHOUSE_NAME

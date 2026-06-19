@@ -116,6 +116,7 @@ const PAGE_ICONS: Record<string, NavIconName> = {
   'authentication/public': 'unlock',
   'authentication/cloudflare-access': 'shield-check',
   'authentication/trusted-header': 'badge-check',
+  'authentication/trusted-proxy': 'badge-check',
   'migrating/v0-3': 'arrow-right-left',
   'releases/v0-3': 'gift',
   faq: 'help-circle',

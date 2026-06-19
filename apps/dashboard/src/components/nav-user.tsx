@@ -3,6 +3,7 @@ import { ChevronsUpDown, ExternalLink, Info, Settings } from 'lucide-react'
 import { ClerkNavWrapper as ClerkNavWrapperImpl } from './nav-user/clerk-nav'
 import { useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
+import { useAuthIdentity } from '@/components/nav-user/use-auth-identity'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -44,6 +45,10 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Under reverse-proxy auth (`trusted`/`proxy`), show the forwarded identity
+  // instead of the static guest user. No-op for other providers.
+  const proxyIdentity = useAuthIdentity()
+  const displayUser = proxyIdentity ?? user
   const { config } = useFeaturePermissions()
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
   const openSettings = () => {
@@ -65,15 +70,15 @@ export function NavUser({
       data-testid="nav-user-trigger"
     >
       <Avatar className="avatar size-8 rounded-lg">
-        <AvatarImage src={user.avatar} alt={user.name} />
+        <AvatarImage src={displayUser.avatar} alt={displayUser.name} />
         <AvatarFallback className="rounded-lg">G</AvatarFallback>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-medium" data-testid="nav-user-name">
-          {user.name}
+          {displayUser.name}
         </span>
         <span className="truncate text-xs" data-testid="nav-user-email">
-          {user.email}
+          {displayUser.email}
         </span>
       </div>
       <ChevronsUpDown className="ml-auto size-4" />
@@ -96,12 +101,19 @@ export function NavUser({
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="avatar size-8 rounded-lg">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage
+                        src={displayUser.avatar}
+                        alt={displayUser.name}
+                      />
                       <AvatarFallback className="rounded-lg">G</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{user.name}</span>
-                      <span className="truncate text-xs">{user.email}</span>
+                      <span className="truncate font-medium">
+                        {displayUser.name}
+                      </span>
+                      <span className="truncate text-xs">
+                        {displayUser.email}
+                      </span>
                     </div>
                   </div>
                 </DropdownMenuLabel>

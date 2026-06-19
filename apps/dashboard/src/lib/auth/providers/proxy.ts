@@ -22,6 +22,8 @@
 
 import type { AuthResult, ServerAuthProvider } from './types'
 
+import { constantTimeEqual } from './constant-time'
+
 const CF_ACCESS_JWT_HEADER = 'Cf-Access-Jwt-Assertion'
 const DEFAULT_SHARED_SECRET_HEADER = 'X-Chm-Proxy-Secret'
 const DEFAULT_IDENTITY_HEADER = 'X-Forwarded-User'
@@ -56,17 +58,6 @@ function unb64url(input: string): Uint8Array<ArrayBuffer> | null {
   } catch {
     return null
   }
-}
-
-function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false
-
-  let diff = 0
-  for (let index = 0; index < a.length; index += 1) {
-    diff |= a[index] ^ b[index]
-  }
-
-  return diff === 0
 }
 
 interface JwtParts {

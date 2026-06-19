@@ -107,7 +107,7 @@ The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authent
 
 | Variable | Default | Description |
 |---|---|---|
-| `CHM_AUTH_PROVIDER` | `none` | Server auth provider: `none`, `clerk`, or `proxy`. |
+| `CHM_AUTH_PROVIDER` | `none` | Server auth provider: `none`, `clerk`, `proxy`, or `trusted`. |
 | `VITE_AUTH_PROVIDER` | `none` | Client-side mirror of `CHM_AUTH_PROVIDER`. Set to the same value. Build-time. |
 | `CHM_API_KEY_SECRET` | — | Shared secret for `chm_` API keys. When set, API-key auth is always on alongside the active provider. Issue keys at `/api/v1/auth/api-key`. |
 
@@ -130,7 +130,7 @@ Trust a reverse proxy that already authenticated the user. Either mechanism belo
 | `CHM_CF_ACCESS_TEAM_DOMAIN` | — | Cloudflare Access team URL (`https://<team>.cloudflareaccess.com`). Enables `Cf-Access-Jwt-Assertion` JWT verification. |
 | `CHM_CF_ACCESS_AUD` | — | Access application AUD tag the JWT must carry. |
 
-**Trusted header:**
+**Trusted header (bare subject):**
 
 | Variable | Default | Description |
 |---|---|---|
@@ -139,6 +139,38 @@ Trust a reverse proxy that already authenticated the user. Either mechanism belo
 | `CHM_PROXY_AUTH_HEADER` | `X-Forwarded-User` | Header the proxy sends containing the authenticated user identity. |
 
 > When `CHM_PROXY_AUTH_SECRET` is set, the identity header (`X-Forwarded-User` by default) is honored only when the request also carries a matching shared-secret header (constant-time compared). Without `CHM_PROXY_AUTH_SECRET`, the entire trusted-header mechanism is disabled and identity headers are ignored.
+
+### Trusted reverse proxy (`CHM_AUTH_PROVIDER=trusted`)
+
+Use when an upstream proxy (oauth2-proxy, Authelia, Traefik ForwardAuth, nginx auth-url) forwards the user's full identity as HTTP headers. Extracts a complete principal — name, email, avatar, groups, custom claims.
+
+**Trust gate** — configure exactly one:
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_TRUSTED_AUTH_SECRET` | — | Shared secret (runtime secret). The proxy must send it in `CHM_TRUSTED_SHARED_SECRET_HEADER`. Constant-time compared. Recommended. |
+| `CHM_TRUSTED_ALLOW_INSECURE` | `false` | When `true`, trusts headers with no secret check. Only safe when the service is unreachable except via the proxy (e.g. k8s ClusterIP). |
+| `CHM_TRUSTED_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header name carrying the shared secret. |
+
+**Identity headers** — all optional; defaults match common proxy conventions:
+
+| Variable | Default | Populates |
+|---|---|---|
+| `CHM_TRUSTED_USER_HEADER` | `X-Forwarded-User` | Subject / user id. Falls back to the email header. |
+| `CHM_TRUSTED_EMAIL_HEADER` | `X-Forwarded-Email` | Email address. |
+| `CHM_TRUSTED_NAME_HEADER` | `X-Forwarded-Preferred-Username` | Display name. |
+| `CHM_TRUSTED_AVATAR_HEADER` | `X-Forwarded-Avatar` | Avatar URL. |
+| `CHM_TRUSTED_GROUPS_HEADER` | `X-Forwarded-Groups` | Comma- or space-separated groups. |
+| `CHM_TRUSTED_ROLE_HEADER` | `X-Forwarded-Role` | Single role; merged into the groups list. |
+| `CHM_TRUSTED_CUSTOM_HEADERS` | — | Extra claims. Comma-separated `field:Header-Name` pairs, e.g. `team:X-Forwarded-Team`. |
+
+**Access control:**
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHM_TRUSTED_ALLOWED_GROUPS` | — | Comma-separated group names. When set, users whose forwarded groups do not intersect are denied `403`. Case-insensitive. |
+
+See [Trusted proxy](/docs/authentication/trusted-proxy) for setup examples (oauth2-proxy + Dex + Traefik, nginx).
 
 ---
 
