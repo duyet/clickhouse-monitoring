@@ -1,26 +1,61 @@
 import sitemap from '@astrojs/sitemap'
+import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 //
-// Custom docs theme (ported from jordienr/astro-design-system) — no Starlight.
-// Routing, sidebar, search (Pagefind), and per-release versioning are owned by
-// this app. See scripts/sync-docs.mjs and scripts/snapshot-version.mjs.
-// GitHub-Flavored Markdown is enabled by Astro's default remark pipeline.
+// Native Astro Starlight docs theme. The theme (layout, sidebar, search via
+// Pagefind, dark mode, table of contents, edit links) is owned by Starlight —
+// there is no custom shell to maintain.
+//
+// Content source of truth: docs/content/** (committed). scripts/sync-docs.mjs
+// transforms it into the Starlight content collection (src/content/docs/**,
+// gitignored) on every build. There is no per-release versioning; the working
+// docs are served directly at the site root.
 export default defineConfig({
   // Static HTML at build time → dist/ → Cloudflare Workers ASSETS (no SSR).
   output: 'static',
   site: 'https://docs.chmonitor.dev',
-  build: {
-    // Inline CSS into each page's <head> so first paint never waits on a
-    // separate /_astro/*.css request (prevents theme/layout flash on load).
-    inlineStylesheets: 'always',
-  },
-  integrations: [sitemap()],
-  markdown: {
-    shikiConfig: {
-      themes: { light: 'github-light', dark: 'github-dark' },
-      wrap: true,
-    },
-  },
+  integrations: [
+    starlight({
+      title: 'chmonitor',
+      description:
+        'Documentation for chmonitor — a real-time ClickHouse monitoring dashboard.',
+      logo: { src: './public/favicon.svg', alt: 'chmonitor' },
+      favicon: '/favicon.svg',
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/duyet/clickhouse-monitoring',
+        },
+      ],
+      // "Copy page" / "Open as Markdown" actions next to the page title. Backed
+      // by the raw-markdown route at src/pages/[...slug].md.ts.
+      components: {
+        PageTitle: './src/components/PageTitle.astro',
+      },
+      head: [
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image', content: 'https://docs.chmonitor.dev/og/og.png' },
+        },
+      ],
+      // Curated top-level order; pages within each section are listed
+      // automatically (alphabetically, Overview first via sidebar.order).
+      sidebar: [
+        { label: 'Getting Started', items: [{ autogenerate: { directory: 'getting-started' } }] },
+        { label: 'Deployment', items: [{ autogenerate: { directory: 'deploy' } }] },
+        { label: 'Features', items: [{ autogenerate: { directory: 'features' } }] },
+        { label: 'AI Agent', items: [{ autogenerate: { directory: 'ai-agent' } }] },
+        { label: 'Authentication', items: [{ autogenerate: { directory: 'authentication' } }] },
+        { label: 'Advanced', items: [{ autogenerate: { directory: 'advanced' } }] },
+        { label: 'Reference', items: [{ autogenerate: { directory: 'reference' } }] },
+        { label: 'Migrating', items: [{ autogenerate: { directory: 'migrating' } }] },
+        { label: 'Releases', items: [{ autogenerate: { directory: 'releases' } }] },
+        { label: 'More', items: [{ slug: 'faq' }, { slug: 'settings' }] },
+      ],
+    }),
+    sitemap(),
+  ],
 })
