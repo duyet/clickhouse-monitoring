@@ -8,7 +8,7 @@ Plans 001–017 and 019–023 were completed, merged to `main`, and their plan f
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| [018](018-remove-deprecated-variants-query-config.md) | Remove Deprecated variants Property from QueryConfig Type Schema | P3 | S | — | TODO |
+| [018](018-remove-deprecated-variants-query-config.md) | Remove Deprecated variants Property from QueryConfig Type Schema | P3 | S | — | DONE |
 
 *Status values: TODO \| IN PROGRESS \| DONE \| BLOCKED (with one-line reason) \| REJECTED (with one-line rationale — finding fixed independently or approach abandoned)*
 

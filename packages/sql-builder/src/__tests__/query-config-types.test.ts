@@ -4,11 +4,7 @@
  * Tests for version-aware SQL definition types and helpers.
  */
 
-import type {
-  QueryConfigLike,
-  QueryConfigVariant,
-  VersionedSql,
-} from '../query-config-types'
+import type { QueryConfigLike, VersionedSql } from '../query-config-types'
 
 import { getAllSqlStrings } from '../query-config-types'
 import { describe, expect, it } from 'bun:test'
@@ -121,15 +117,6 @@ describe('getAllSqlStrings', () => {
       expect(v.columns).toEqual(['1'])
     })
 
-    it('QueryConfigVariant should have required fields', () => {
-      const v: QueryConfigVariant = {
-        versions: '24.1',
-        sql: 'SELECT 1',
-      }
-      expect(v.versions).toBe('24.1')
-      expect(v.sql).toBe('SELECT 1')
-    })
-
     it('QueryConfigLike should accept string sql', () => {
       const config: QueryConfigLike = {
         name: 'test',
@@ -164,16 +151,6 @@ describe('getAllSqlStrings', () => {
         tableCheck: ['system.query_log', 'system.processes'],
       }
       expect(Array.isArray(config.tableCheck)).toBe(true)
-    })
-
-    it('QueryConfigLike should accept variants', () => {
-      const config: QueryConfigLike = {
-        name: 'test',
-        sql: 'SELECT 1',
-        variants: [{ versions: '24.1', sql: 'SELECT 1, 2' }],
-      }
-      expect(config.variants).toBeDefined()
-      expect(config.variants!.length).toBe(1)
     })
   })
 
