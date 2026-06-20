@@ -15,7 +15,7 @@ import type {
 } from './types'
 
 import { intervalToMs } from './interval'
-import { toFindingRow } from './types'
+import { clampLimit, toFindingRow } from './types'
 
 /** Bound the per-host buffer so a long-lived worker cannot grow unbounded. */
 const MAX_ROWS_PER_HOST = 1000
@@ -40,7 +40,7 @@ export class MemoryInsightsStore implements InsightsStore {
     hostId: number,
     opts: ListFindingsOptions = {}
   ): Promise<FindingRow[]> {
-    const { severity, since, limit = 100 } = opts
+    const { severity, since } = opts
     let rows = [...(this.rows.get(hostId) ?? [])].reverse() // newest first
 
     if (severity) rows = rows.filter((r) => r.severity === severity)
@@ -53,7 +53,6 @@ export class MemoryInsightsStore implements InsightsStore {
       }
     }
 
-    const safeLimit = Math.min(Math.max(Math.trunc(limit) || 0, 1), 1000)
-    return rows.slice(0, safeLimit)
+    return rows.slice(0, clampLimit(opts.limit))
   }
 }

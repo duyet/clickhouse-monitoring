@@ -28,6 +28,7 @@ import type {
 } from './types'
 
 import { intervalToMs } from './interval'
+import { clampLimit, rowFromStored } from './types'
 import { AgentState } from '@agentstate/sdk'
 import { ErrorLogger } from '@chm/logger'
 
@@ -138,7 +139,7 @@ export class AgentStateInsightsStore implements InsightsStore {
     hostId: number,
     opts: ListFindingsOptions = {}
   ): Promise<FindingRow[]> {
-    const { severity, since, limit = 100 } = opts
+    const { severity, since } = opts
     try {
       const tags = [`host:${hostId}`]
       if (severity) tags.push(`severity:${severity}`)
@@ -150,38 +151,21 @@ export class AgentStateInsightsStore implements InsightsStore {
         else warn(`ignoring invalid "since" value: ${since}`)
       }
 
-      const safeLimit = Math.min(Math.max(Math.trunc(limit) || 0, 1), 1000)
       const response = await this.client.queryStates({
         agent_id: AGENT_ID,
         tags,
         updated_after: updatedAfter,
-        limit: safeLimit,
+        limit: clampLimit(opts.limit),
       })
 
+      // Skip malformed records (no usable title), then map through the shared
+      // stored-row normalizer so the read contract matches the other backends.
       return (response.data ?? [])
-        .map((rec) => this.toRow(rec.data))
-        .filter((r): r is FindingRow => r !== null)
+        .filter((rec) => typeof rec.data?.title === 'string')
+        .map((rec) => rowFromStored(rec.data))
     } catch (err) {
       warn(`failed to list findings on host ${hostId}: ${err}`)
       return []
-    }
-  }
-
-  /** Map a stored state `data` object back to the shared FindingRow shape. */
-  private toRow(data: JsonObject): FindingRow | null {
-    if (!data || typeof data.title !== 'string') return null
-    const num = (v: unknown) => (typeof v === 'number' ? v : Number(v) || 0)
-    const str = (v: unknown) => (typeof v === 'string' ? v : '')
-    return {
-      event_time: new Date(num(data.event_time)).toISOString(),
-      host_id: str(data.host_id),
-      severity: str(data.severity),
-      category: str(data.category),
-      source: str(data.source),
-      title: str(data.title),
-      detail: str(data.detail),
-      metric: str(data.metric),
-      value: num(data.value),
     }
   }
 }

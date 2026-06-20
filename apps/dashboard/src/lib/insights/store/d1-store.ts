@@ -21,6 +21,7 @@ import type {
 } from './types'
 
 import { intervalToMs } from './interval'
+import { clampLimit, rowFromStored } from './types'
 import { ErrorLogger } from '@chm/logger'
 import { getPlatformBindings } from '@chm/platform'
 
@@ -125,7 +126,7 @@ export class D1InsightsStore implements InsightsStore {
     hostId: number,
     opts: ListFindingsOptions = {}
   ): Promise<FindingRow[]> {
-    const { severity, since, limit = 100 } = opts
+    const { severity, since } = opts
     try {
       const db = this.getDb()
       if (!db) return []
@@ -148,8 +149,7 @@ export class D1InsightsStore implements InsightsStore {
         }
       }
 
-      const safeLimit = Math.min(Math.max(Math.trunc(limit) || 0, 1), 1000)
-      binds.push(safeLimit)
+      binds.push(clampLimit(opts.limit))
 
       const stmt = db
         .prepare(
@@ -162,17 +162,7 @@ export class D1InsightsStore implements InsightsStore {
         .bind(...binds)
 
       const result = await stmt.all<D1FindingRow>()
-      return (result.results ?? []).map((r) => ({
-        event_time: new Date(r.event_time).toISOString(),
-        host_id: r.host_id,
-        severity: r.severity,
-        category: r.category,
-        source: r.source,
-        title: r.title,
-        detail: r.detail,
-        metric: r.metric,
-        value: r.value,
-      }))
+      return (result.results ?? []).map(rowFromStored)
     } catch (err) {
       warn(`failed to list findings on host ${hostId}: ${err}`)
       return []

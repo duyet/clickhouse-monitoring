@@ -22,6 +22,7 @@ import type {
 } from './types'
 
 import { intervalToMs } from './interval'
+import { clampLimit, rowFromStored } from './types'
 import { ErrorLogger } from '@chm/logger'
 import postgres from 'postgres'
 
@@ -109,11 +110,11 @@ export class PostgresInsightsStore implements InsightsStore {
     hostId: number,
     opts: ListFindingsOptions = {}
   ): Promise<FindingRow[]> {
-    const { severity, since, limit = 100 } = opts
+    const { severity, since } = opts
     try {
       await this.ensureMigrated()
 
-      const safeLimit = Math.min(Math.max(Math.trunc(limit) || 0, 1), 1000)
+      const safeLimit = clampLimit(opts.limit)
       const sinceMs = since ? intervalToMs(since) : null
       if (since && sinceMs === null)
         warn(`ignoring invalid "since" value: ${since}`)
@@ -129,17 +130,7 @@ export class PostgresInsightsStore implements InsightsStore {
         LIMIT ${safeLimit}
       `) as unknown as PgFindingRow[]
 
-      return result.map((r) => ({
-        event_time: new Date(Number(r.event_time)).toISOString(),
-        host_id: r.host_id,
-        severity: r.severity,
-        category: r.category,
-        source: r.source,
-        title: r.title,
-        detail: r.detail,
-        metric: r.metric,
-        value: Number(r.value),
-      }))
+      return result.map(rowFromStored)
     } catch (err) {
       warn(`failed to list findings on host ${hostId}: ${err}`)
       return []

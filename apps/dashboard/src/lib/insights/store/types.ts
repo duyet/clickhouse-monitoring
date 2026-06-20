@@ -100,3 +100,51 @@ export function toFindingRow(
     value: finding.value ?? 0,
   }
 }
+
+/**
+ * Clamp a caller-supplied row limit into the supported `[1, 1000]` range,
+ * defaulting when unset. Shared by every backend so the page-size policy lives
+ * in one place rather than being copy-pasted per adapter.
+ */
+export function clampLimit(limit: number | undefined, fallback = 100): number {
+  return Math.min(Math.max(Math.trunc(limit ?? fallback) || 0, 1), 1000)
+}
+
+/** Loose shape of a row read back from a DB-backed store before normalization. */
+export interface StoredFindingRow {
+  /** Unix epoch milliseconds (or anything `Number()`-coercible to it). */
+  event_time?: unknown
+  host_id?: unknown
+  severity?: unknown
+  category?: unknown
+  source?: unknown
+  title?: unknown
+  detail?: unknown
+  metric?: unknown
+  value?: unknown
+}
+
+/**
+ * Convert a stored backend row (numeric `event_time` in ms, possibly
+ * string-typed `value` from the driver) into the canonical `FindingRow` read
+ * shape. The inverse of {@link toFindingRow}'s write mapping — centralized so
+ * the D1 / Postgres / AgentState read paths cannot drift on the
+ * ms→ISO / value→number contract. Defensive coercion keeps a malformed field
+ * from throwing.
+ */
+export function rowFromStored(s: StoredFindingRow): FindingRow {
+  const str = (v: unknown): string => (typeof v === 'string' ? v : '')
+  const num = (v: unknown): number =>
+    typeof v === 'number' ? v : Number(v) || 0
+  return {
+    event_time: new Date(num(s.event_time)).toISOString(),
+    host_id: str(s.host_id),
+    severity: str(s.severity),
+    category: str(s.category),
+    source: str(s.source),
+    title: str(s.title),
+    detail: str(s.detail),
+    metric: str(s.metric),
+    value: num(s.value),
+  }
+}
