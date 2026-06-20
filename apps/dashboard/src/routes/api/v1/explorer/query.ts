@@ -318,13 +318,13 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
         }
 
         const hostId = Number(hostIdParam)
-        if (Number.isNaN(hostId)) {
+        if (!Number.isInteger(hostId) || hostId < 0) {
           return Response.json(
             {
               success: false,
               error: {
                 type: ApiErrorType.ValidationError,
-                message: `Invalid hostId: ${String(hostIdParam)}. Must be a valid number.`,
+                message: `Invalid hostId: ${String(hostIdParam)}. Must be a non-negative integer.`,
               },
             },
             { status: 400 }
