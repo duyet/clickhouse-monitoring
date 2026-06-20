@@ -136,7 +136,7 @@ export function createQueryTools(hostId: number) {
 
     explain_query: dynamicTool({
       description:
-        'Get the execution plan for a query (EXPLAIN PLAN/PIPELINE/INDEXES). Useful for understanding query optimization and identifying performance issues.',
+        'Get the execution plan for a query (EXPLAIN PLAN / PIPELINE / PLAN indexes=1). Useful for understanding query optimization and identifying performance issues.',
       inputSchema: z.object({
         sql: z.string().describe('SQL query to explain'),
         type: z
@@ -158,17 +158,19 @@ export function createQueryTools(hostId: number) {
         }
         const resolvedHostId = resolveHostId(toolHostId, hostId)
 
-        // Map type to ClickHouse EXPLAIN type
+        // Map type to ClickHouse EXPLAIN keyword.
+        // 'indexes' is not a standalone EXPLAIN mode; it is a PLAN setting.
         const typeMap: Record<string, string> = {
           plan: 'PLAN',
           pipeline: 'PIPELINE',
-          indexes: 'INDEXES',
         }
-        const explainType = typeMap[type]
 
         validateSqlQuery(sql)
 
-        const explainQuery = `EXPLAIN ${explainType} ${sql}`
+        const explainQuery =
+          type === 'indexes'
+            ? `EXPLAIN PLAN indexes=1 ${sql}`
+            : `EXPLAIN ${typeMap[type]} ${sql}`
 
         const result = await readOnlyQuery({
           query: explainQuery,
