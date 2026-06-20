@@ -5,10 +5,8 @@ const {
   compareVersions,
   meetsMinVersion,
   versionMatchesRange,
-  selectQueryVariant,
   parseSemverRange,
   matchesSemverRange,
-  selectQueryVariantSemver,
   selectVersionedSql,
   getTableInfoMessage,
   SYSTEM_TABLE_INFO,
@@ -274,100 +272,6 @@ describe('matchesSemverRange', () => {
   it('matches plain version 24.1 for 24.3.5', () => {
     const v = parseVersion('24.3.5')
     expect(matchesSemverRange(v, '24.1')).toBe(true) // >=24.1 <25.0
-  })
-})
-
-describe('selectQueryVariant', () => {
-  it('returns default query when no version provided', () => {
-    const result = selectQueryVariant(
-      {
-        query: 'SELECT 1',
-        variants: [{ versions: { minVersion: '24.1' }, query: 'SELECT 2' }],
-      },
-      null
-    )
-    expect(result).toBe('SELECT 1')
-  })
-
-  it('returns default query when no variants', () => {
-    const v = parseVersion('24.3.1')
-    const result = selectQueryVariant({ query: 'SELECT 1' }, v)
-    expect(result).toBe('SELECT 1')
-  })
-
-  it('returns matching variant', () => {
-    const v = parseVersion('24.3.1')
-    const result = selectQueryVariant(
-      {
-        query: 'SELECT 1',
-        variants: [
-          {
-            versions: { minVersion: '24.1', maxVersion: '25.0' },
-            query: 'SELECT 2',
-          },
-        ],
-      },
-      v
-    )
-    expect(result).toBe('SELECT 2')
-  })
-
-  it('returns default when no variant matches', () => {
-    const v = parseVersion('23.8.1')
-    const result = selectQueryVariant(
-      {
-        query: 'SELECT 1',
-        variants: [{ versions: { minVersion: '24.1' }, query: 'SELECT 2' }],
-      },
-      v
-    )
-    expect(result).toBe('SELECT 1')
-  })
-})
-
-describe('selectQueryVariantSemver', () => {
-  it('returns default query when no version', () => {
-    const result = selectQueryVariantSemver(
-      {
-        query: 'SELECT 1',
-        variants: [{ versions: '>=24.1', query: 'SELECT 2' }],
-      },
-      null
-    )
-    expect(result).toBe('SELECT 1')
-  })
-
-  it('returns matching variant by semver range', () => {
-    const v = parseVersion('24.3.1')
-    const result = selectQueryVariantSemver(
-      {
-        query: 'SELECT 1',
-        variants: [{ versions: '>=24.1', query: 'SELECT 2' }],
-      },
-      v
-    )
-    expect(result).toBe('SELECT 2')
-  })
-
-  it('returns default when no variants', () => {
-    const v = parseVersion('24.3.1')
-    const result = selectQueryVariantSemver({ query: 'SELECT 1' }, v)
-    expect(result).toBe('SELECT 1')
-  })
-
-  it('returns first matching variant when multiple match', () => {
-    const v = parseVersion('24.3.1')
-    const result = selectQueryVariantSemver(
-      {
-        query: 'DEFAULT',
-        variants: [
-          { versions: '>=24.1', query: 'FIRST' },
-          { versions: '>=24.3', query: 'SECOND' },
-        ],
-      },
-      v
-    )
-    expect(result).toBe('FIRST')
   })
 })
 

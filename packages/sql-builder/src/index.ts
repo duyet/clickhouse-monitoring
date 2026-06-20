@@ -34,7 +34,6 @@
 
 export type {
   QueryConfigLike,
-  QueryConfigVariant,
   VersionedSql,
 } from './query-config-types'
 

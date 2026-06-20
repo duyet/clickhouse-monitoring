@@ -8,11 +8,7 @@ import type { DataFormat, QueryParams } from '@clickhouse/client'
 import type { QueryConfigLike } from '@chm/sql-builder'
 import type { FetchDataErrorType, FetchDataResult } from './types'
 
-import {
-  getClickHouseVersion,
-  selectQueryVariantSemver,
-  selectVersionedSql,
-} from '../clickhouse-version'
+import { getClickHouseVersion, selectVersionedSql } from '../clickhouse-version'
 import { validateTableExistence } from '../table-validator'
 import { transformClickHouseJsonEachRowWasmJson } from '../wasm/monitor-core'
 import { getClient, releaseClient } from './clickhouse-client'
@@ -227,26 +223,6 @@ export const fetchData = async <
         // Simple string sql
         else if (typeof queryConfig.sql === 'string') {
           effectiveQuery = queryConfig.sql
-        }
-
-        // Deprecated: old variants format (backward compatibility)
-        if (queryConfig.variants && queryConfig.variants.length > 0) {
-          effectiveQuery = selectQueryVariantSemver(
-            {
-              query: typeof queryConfig.sql === 'string' ? queryConfig.sql : '',
-              variants: queryConfig.variants.map((v) => ({
-                versions: v.versions,
-                query: v.sql,
-              })),
-            },
-            clickhouseVersion
-          )
-
-          if (clickhouseVersion) {
-            debug(
-              `[fetchData] Using query for ClickHouse ${clickhouseVersion.raw} via variants (config: ${queryConfig.name})`
-            )
-          }
         }
       }
 

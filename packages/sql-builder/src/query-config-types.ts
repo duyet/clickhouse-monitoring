@@ -21,17 +21,6 @@ export interface VersionedSql {
 }
 
 /**
- * @deprecated Use `VersionedSql` instead. Will be removed in v0.3.0.
- */
-export interface QueryConfigVariant {
-  /** @deprecated Use VersionedSql.since instead */
-  versions: string
-  sql: string
-  description?: string
-  columns?: string[]
-}
-
-/**
  * Minimal shape of a query config consumed by `@chm/clickhouse-client`.
  *
  * The full `QueryConfig` interface lives in the web app; this captures only the
@@ -43,7 +32,6 @@ export interface QueryConfigLike {
   sql?: string | VersionedSql[]
   optional?: boolean
   tableCheck?: string | string[]
-  variants?: QueryConfigVariant[]
 }
 
 /**

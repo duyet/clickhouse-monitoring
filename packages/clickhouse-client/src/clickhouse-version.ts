@@ -340,41 +340,6 @@ export function versionMatchesRange(
 }
 
 /**
- * Select the appropriate query variant for the given ClickHouse version
- * Returns the first matching variant or the default query if no variant matches
- */
-export function selectQueryVariant<
-  T extends {
-    query: string
-    variants?: Array<{
-      versions: { minVersion?: string; maxVersion?: string }
-      query: string
-    }>
-  },
->(queryDef: T, version: ClickHouseVersion | null): string {
-  // If no version info or no variants, use default query
-  if (!version || !queryDef.variants || queryDef.variants.length === 0) {
-    return queryDef.query
-  }
-
-  // Find first matching variant
-  for (const variant of queryDef.variants) {
-    if (
-      versionMatchesRange(
-        version,
-        variant.versions.minVersion,
-        variant.versions.maxVersion
-      )
-    ) {
-      return variant.query
-    }
-  }
-
-  // No variant matched, use default
-  return queryDef.query
-}
-
-/**
  * Structured bounds for semver range parsing
  */
 export interface SemverRangeBounds {
@@ -538,60 +503,6 @@ export function matchesSemverRange(
   }
 
   return true
-}
-
-/**
- * Select query variant based on version using semver range strings
- *
- * Enhanced version of selectQueryVariant that accepts semver range strings
- * instead of separate minVersion/maxVersion parameters.
- *
- * @param queryDef - Query definition with default query and optional variants
- * @param version - ClickHouse version to match against (null-safe)
- * @returns Selected query string (default or first matching variant)
- *
- * @example
- * // Select with version range strings
- * const query = selectQueryVariantSemver({
- *   query: 'SELECT * FROM system.processes',
- *   variants: [
- *     { versions: '<24.1', query: 'SELECT a, b FROM system.processes' },
- *     { versions: '>=24.1', query: 'SELECT a, b, c FROM system.processes' }
- *   ]
- * }, version)
- *
- * @example
- * // Select with caret range
- * const query = selectQueryVariantSemver({
- *   query: 'SELECT * FROM system.query_log',
- *   variants: [
- *     { versions: '^24.1', query: 'SELECT a FROM system.query_log' }
- *   ]
- * }, version)
- */
-export function selectQueryVariantSemver<
-  T extends {
-    query: string
-    variants?: Array<{
-      versions: string
-      query: string
-    }>
-  },
->(queryDef: T, version: ClickHouseVersion | null): string {
-  // If no version info or no variants, use default query
-  if (!version || !queryDef.variants || queryDef.variants.length === 0) {
-    return queryDef.query
-  }
-
-  // Find first matching variant
-  for (const variant of queryDef.variants) {
-    if (matchesSemverRange(version, variant.versions)) {
-      return variant.query
-    }
-  }
-
-  // No variant matched, use default
-  return queryDef.query
 }
 
 /**

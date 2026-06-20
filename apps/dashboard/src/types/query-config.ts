@@ -1,7 +1,7 @@
 import type { Row } from '@tanstack/react-table'
 import type { ClickHouseSettings } from '@clickhouse/client'
 
-import type { QueryConfigVariant, VersionedSql } from '@chm/sql-builder'
+import type { VersionedSql } from '@chm/sql-builder'
 import type { Icon } from '@chm/types/icon'
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { CustomSortingFnNames } from '@/components/data-table/sorting-fns'
@@ -202,15 +202,10 @@ export type ColumnNames<T extends string> = [T, ...T[]]
  * When using `merge()` across shards with different schemas, use `toInt8()`
  * for Enum columns to ensure compatibility.
  */
-// VersionedSql, QueryConfigVariant, and getAllSqlStrings now live in
-// @chm/sql-builder so lower-level packages can consume them without depending
-// on this web-app god-type. Re-exported here for backward compatibility with
-// the many existing `@/types/query-config` consumers.
-export {
-  getAllSqlStrings,
-  type QueryConfigVariant,
-  type VersionedSql,
-} from '@chm/sql-builder'
+// VersionedSql and getAllSqlStrings live in @chm/sql-builder so lower-level
+// packages can consume them without depending on this web-app god-type.
+// Re-exported here for backward compatibility with existing consumers.
+export { getAllSqlStrings, type VersionedSql } from '@chm/sql-builder'
 
 export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   name: string
@@ -495,14 +490,6 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
    * Defaults to 'query_id' if not specified.
    */
   bulkActionKey?: string
-  /**
-   * @deprecated Use `sql: VersionedSql[]` instead. Will be removed in v0.3.0.
-   *
-   * Version-specific query variants (legacy format).
-   * Evaluated in order - first matching variant is used.
-   * Falls back to main `sql` if no variant matches.
-   */
-  variants?: QueryConfigVariant[]
 }
 
 /**
