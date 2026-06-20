@@ -105,7 +105,7 @@ jobs:
 
       - name: Setup Rust
         if: ${{ inputs.job-type == 'build' }}
-        uses: dtolnay/rust-toolchain@1.94.0
+        uses: dtolnay/rust-toolchain@1.100.0
 
       - name: Download pre-built WASM
         if: ${{ inputs.skip-rust }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: Login to Container registry
         if: ${{ inputs.job-type == 'docker' && inputs.push-image }}
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
