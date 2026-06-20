@@ -10,6 +10,7 @@
 
 import { z } from 'zod'
 
+import type { InsightPromptStyle } from './prompts'
 import type { InsightCandidate } from './types'
 
 import {
@@ -17,18 +18,32 @@ import {
   resolveAgentChatModel,
 } from '../ai/agent/provider-chat-model'
 import { isProviderConfigured, resolveProvider } from '../ai/providers'
+import { promptSystemFor } from './prompts'
 import { ErrorLogger } from '@chm/logger'
 import { generateObject } from 'ai'
 
 const COMPONENT = 'insights-enrich'
 
-/** True when the default model's provider has an API key on this deployment. */
-export function isLlmAvailable(): boolean {
+/** Per-request overrides for enrichment. */
+export interface EnrichOptions {
+  /** Validated `provider:model` id; falls back to `DEFAULT_MODEL` when unset. */
+  readonly model?: string
+  /** Tone of the rewrite (see `prompts.ts`). */
+  readonly promptStyle?: InsightPromptStyle
+}
+
+/** True when the given model's provider has an API key on this deployment. */
+export function isModelAvailable(model: string): boolean {
   try {
-    return isProviderConfigured(resolveProvider(DEFAULT_MODEL).providerId)
+    return isProviderConfigured(resolveProvider(model).providerId)
   } catch {
     return false
   }
+}
+
+/** True when the default model's provider has an API key on this deployment. */
+export function isLlmAvailable(): boolean {
+  return isModelAvailable(DEFAULT_MODEL)
 }
 
 const EnrichedSchema = z.object({
@@ -53,20 +68,23 @@ const EnrichedSchema = z.object({
  * the human-facing copy.
  */
 export async function enrichInsights(
-  candidates: InsightCandidate[]
+  candidates: InsightCandidate[],
+  opts: EnrichOptions = {}
 ): Promise<InsightCandidate[]> {
-  if (candidates.length === 0 || !isLlmAvailable()) return candidates
+  if (candidates.length === 0) return candidates
+
+  const effectiveModel = opts.model?.trim() || DEFAULT_MODEL
+  if (!isModelAvailable(effectiveModel)) return candidates
 
   try {
-    const { model } = resolveAgentChatModel({ model: DEFAULT_MODEL })
+    const { model } = resolveAgentChatModel({ model: effectiveModel })
 
     const { object } = await generateObject({
       model,
       schema: EnrichedSchema,
       maxRetries: 1,
       abortSignal: AbortSignal.timeout(20_000),
-      system:
-        'You are a senior ClickHouse SRE. Rewrite each monitoring signal into a crisp, actionable insight for an operator. Keep the same meaning and severity. Be specific and avoid filler. Return exactly one entry per input, in order.',
+      system: promptSystemFor(opts.promptStyle),
       prompt: JSON.stringify(
         candidates.map((c) => ({
           severity: c.severity,
