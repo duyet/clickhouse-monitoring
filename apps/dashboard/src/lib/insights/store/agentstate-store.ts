@@ -39,8 +39,11 @@ const warn = (msg: string) =>
 
 /** Logical agent under which every insight record is grouped. */
 const AGENT_ID = 'clickhouse-monitoring-insights'
-/** Cap on the title slice baked into the state key to keep keys bounded. */
-const KEY_TITLE_MAX = 120
+/** Cap on the readable prefix baked into the state key to keep keys bounded. */
+const KEY_PREFIX_MAX = 120
+/** NUL separator: cannot appear in the source strings, so the hashed
+ * composite is unambiguous (no field-boundary aliasing between parts). */
+const SEP = String.fromCharCode(0)
 
 export interface AgentStateInsightsStoreOptions {
   /** AgentState API key (`as_live_...`). Required. */
@@ -49,12 +52,37 @@ export interface AgentStateInsightsStoreOptions {
   baseUrl?: string
 }
 
-/** Build the stable, bounded state key for an insight. */
+/**
+ * FNV-1a 32-bit — a tiny, fast, dependency-free string hash. Used only to make
+ * the state key collision-resistant; not security-sensitive.
+ */
+function fnv1a(str: string): string {
+  let h = 0x811c9dc5
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return (h >>> 0).toString(16).padStart(8, '0')
+}
+
+/**
+ * Build the stable, bounded state key for an insight.
+ *
+ * The key must be (a) stable across regenerations of the SAME insight so
+ * `upsertState` dedups in place, and (b) DISTINCT for different insights. A
+ * naive truncated `category:metric:title` fails (b): two long titles sharing a
+ * 120-char prefix collide and silently overwrite each other (data loss). So we
+ * append a hash of the FULL untruncated composite — identical insight → identical
+ * hash → in-place upsert; different insight → different hash → no collision —
+ * while keeping a human-readable (truncated) prefix for debuggability.
+ */
 function stateKey(hostId: number, finding: Finding): string {
-  const part = (s: string) => encodeURIComponent(s).slice(0, KEY_TITLE_MAX)
-  return `insight:${hostId}:${part(finding.category)}:${part(
-    finding.metric ?? ''
-  )}:${part(finding.title)}`
+  const composite = `${finding.category}${SEP}${finding.metric ?? ''}${SEP}${finding.title}`
+  const readable = encodeURIComponent(composite.split(SEP).join(':')).slice(
+    0,
+    KEY_PREFIX_MAX
+  )
+  return `insight:${hostId}:${readable}:${fnv1a(`${hostId}${SEP}${composite}`)}`
 }
 
 export class AgentStateInsightsStore implements InsightsStore {

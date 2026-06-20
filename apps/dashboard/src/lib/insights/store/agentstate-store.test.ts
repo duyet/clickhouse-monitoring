@@ -104,11 +104,43 @@ describe('AgentStateInsightsStore', () => {
   test('records each finding under a stable, host-scoped state key with tags', async () => {
     expect(await store().record(0, [finding()])).toBe(true)
     expect(upsertCalls).toHaveLength(1)
-    expect(upsertCalls[0].key).toBe(
-      'insight:0:storage:max_active_parts:table%20X%20fragmented'
-    )
+    // Key shape: insight:<host>:<readable-prefix>:<8-hex hash>. The hash suffix
+    // makes it collision-proof regardless of how long the title is (see the
+    // long-prefix regression test below); the readable prefix aids debugging.
+    expect(upsertCalls[0].key).toMatch(/^insight:0:storage.*:[0-9a-f]{8}$/)
     expect(upsertCalls[0].agent_id).toBe('clickhouse-monitoring-insights')
     expect(upsertCalls[0].tags).toEqual(['host:0', 'severity:info'])
+  })
+
+  test('regression: long titles sharing a 120+ char prefix do NOT collide', async () => {
+    // BUG (found by the realistic-scenario battery): the old key truncated each
+    // part to 120 chars, so two distinct insights whose titles share a long
+    // prefix produced the SAME state_key and silently overwrote each other.
+    const s = store()
+    const prefix = 'P'.repeat(150)
+    await s.record(0, [
+      finding({ metric: 'm', title: `${prefix}-alpha`, value: 1 }),
+      finding({ metric: 'm', title: `${prefix}-beta`, value: 2 }),
+    ])
+    // Two distinct state keys → both persisted, no data loss.
+    expect(states.size).toBe(2)
+    expect(upsertCalls[0].key).not.toBe(upsertCalls[1].key)
+    const rows = await s.list(0)
+    expect(rows.map((r) => r.title).sort()).toEqual([
+      `${prefix}-alpha`,
+      `${prefix}-beta`,
+    ])
+  })
+
+  test('regression: the same insight maps to a STABLE key across regenerations', async () => {
+    // Dedup correctness: an unchanged insight must upsert in place, so the key
+    // must be deterministic for identical (category, metric, title).
+    const s = store()
+    await s.record(0, [finding({ metric: 'm', title: 'stable', value: 1 })])
+    const firstKey = upsertCalls[0].key
+    await s.record(0, [finding({ metric: 'm', title: 'stable', value: 2 })])
+    expect(upsertCalls[1].key).toBe(firstKey)
+    expect(states.size).toBe(1) // upserted in place, not duplicated
   })
 
   test('re-recording the same insight upserts in place (natural dedup)', async () => {
@@ -166,5 +198,28 @@ describe('AgentStateInsightsStore', () => {
   test('empty batch is a no-op success', async () => {
     expect(await store().record(0, [])).toBe(true)
     expect(upsertCalls).toHaveLength(0)
+  })
+
+  // Benchmark / scale guard for the hashed key (paired with the collision fix):
+  // many adversarial near-identical insights must all get DISTINCT keys, and
+  // key generation must stay cheap. This is the perf+correctness backstop for
+  // the FNV-1a state_key scheme.
+  test('benchmark: 2000 near-identical long-prefix insights → 2000 distinct keys, fast', async () => {
+    const s = store()
+    const N = 2000
+    const prefix = 'X'.repeat(200) // forces all keys past the readable cap
+    const batch = Array.from({ length: N }, (_, i) =>
+      finding({ metric: 'm', title: `${prefix}-${i}`, value: i })
+    )
+
+    const t0 = performance.now()
+    await s.record(0, batch)
+    const elapsedMs = performance.now() - t0
+
+    // No collisions: every distinct insight persisted to its own state key.
+    expect(states.size).toBe(N)
+    expect(new Set(upsertCalls.map((c) => c.key)).size).toBe(N)
+    // Cheap: well under a generous budget on CI hardware (keygen is O(title)).
+    expect(elapsedMs).toBeLessThan(1500)
   })
 })

@@ -113,8 +113,14 @@ Files: `clickhouse-store.ts`, `d1-store.ts`, `postgres-store.ts`,
 - **AgentState** reuses `AGENTSTATE_API_KEY` + optional `AGENTSTATE_BASE_URL` and
   stores each insight as a generic **State** record (not a conversation):
   - `agent_id` = `clickhouse-monitoring-insights`
-  - `state_key` = `insight:<hostId>:<category>:<metric>:<title>` (bounded; stable
-    across regenerations so an unchanged insight upserts in place — natural dedup)
+  - `state_key` = `insight:<hostId>:<readable-prefix>:<fnv1a-hash>` — a bounded,
+    human-readable prefix plus an FNV-1a hash of the full
+    `host\0category\0metric\0title` composite. The hash makes the key both
+    **stable** (an unchanged insight upserts in place — natural dedup) and
+    **collision-proof**: a plain truncated `category:metric:title` would alias
+    two long titles sharing a 120-char prefix into one key and silently
+    overwrite one (data loss). Regression + benchmark coverage in
+    `store/agentstate-store.test.ts`.
   - `tags` = [`host:<id>`, `severity:<sev>`] for server-side filtering
 
 ### Endpoint and UI
