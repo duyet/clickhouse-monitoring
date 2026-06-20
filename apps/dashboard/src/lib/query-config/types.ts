@@ -10,24 +10,19 @@
  * here. `filterSchema` IS included — it drives server-side WHERE injection
  * (see the table registry), and `@/lib/filters/types` is ported.
  *
- * VersionedSql / QueryConfigVariant / getAllSqlStrings come from
- * @chm/sql-builder (aliased to source in tsconfig.json) so this app never
- * depends on the dashboard package.
+ * VersionedSql / getAllSqlStrings come from @chm/sql-builder (aliased to
+ * source in tsconfig.json) so this app never depends on the dashboard package.
  */
 
 import type { ClickHouseSettings } from '@clickhouse/client'
 
-import type { QueryConfigVariant, VersionedSql } from '@chm/sql-builder'
+import type { VersionedSql } from '@chm/sql-builder'
 import type { FilterSchema } from '@/lib/filters/types'
 
 // Re-export the version-compat SQL primitives from the shared package so
 // `@/lib/query-config/types` consumers can import them from one place,
 // mirroring the dashboard's `@/types/query-config` re-export.
-export {
-  getAllSqlStrings,
-  type QueryConfigVariant,
-  type VersionedSql,
-} from '@chm/sql-builder'
+export { getAllSqlStrings, type VersionedSql } from '@chm/sql-builder'
 
 /**
  * Foundation QueryConfig.
@@ -35,7 +30,7 @@ export {
  * Generic over the column-name tuple, exactly like the dashboard. Only the
  * fields the executor / registry need are kept:
  * - identity + SQL (name, sql, columns)
- * - version compat (sql: VersionedSql[] | string, deprecated `variants`)
+ * - version compat (sql: VersionedSql[] | string)
  * - execution knobs (defaultParams, clickhouseSettings, optional, tableCheck)
  * - validation toggle (disableSqlValidation)
  *
@@ -90,11 +85,6 @@ export interface QueryConfig<TColumns extends readonly string[] = string[]> {
   disableSqlValidation?: boolean
   /** Optional docs URL surfaced on query error. */
   docs?: string
-  /**
-   * @deprecated Use `sql: VersionedSql[]`. Legacy min/max version variants,
-   * kept only so ported configs that still use it resolve correctly.
-   */
-  variants?: QueryConfigVariant[]
 }
 
 /** Map a column-name tuple to a permissive row-data shape. */
