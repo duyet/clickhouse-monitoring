@@ -1,28 +1,32 @@
 /**
- * Tests for the AgentState branch of {@link resolveStore}.
+ * Tests for {@link resolveStore} and {@link isPersistentStore}.
  *
  * resolveStore() consults several collaborators before reaching a backend:
  *   1. `featureFlags.conversationDb()` — gated on a Vite env flag + Clerk auth.
  *   2. `process.env.CONVERSATION_STORE_BACKEND` / `AGENTSTATE_API_KEY`.
  *   3. `getPlatformBindings().getD1Database(...)` for the D1 fallback.
  *
- * To isolate the AgentState branch in a unit test we mock:
- *   - `@/lib/feature-flags` so conversationDb() returns true (avoids needing
- *     import.meta.env + Clerk).
+ * To isolate branches in a unit test we mock:
+ *   - `@/lib/feature-flags` with a controllable `conversationDb` mock (defaults
+ *     to true; flipped to false to exercise the disabled-feature branch).
  *   - `@chm/platform` so getD1Database() returns undefined (no D1 binding).
  *   - `@agentstate/sdk` with a minimal fake so `new AgentStateStore(...)` works
  *     without a real network client.
  *
- * We then exercise the forced-`agentstate` backend: missing key throws, present
- * key returns an AgentStateStore. Env is set/reset around each test.
+ * Covers: feature-flag-off → BrowserStore, the AgentState branch, the
+ * MemoryStore fallback, and the isPersistentStore predicate. Env is
+ * snapshot/restored around each test.
  */
 
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // ── Mocks (process-global; registered before importing resolve-store). ──
+// conversationDb is a controllable mock so we can exercise both the enabled and
+// disabled feature-flag branches; reset to `true` before each test.
+const mockConversationDb = mock(() => true)
 mock.module('@/lib/feature-flags', () => ({
   featureFlags: {
-    conversationDb: () => true,
+    conversationDb: mockConversationDb,
   },
 }))
 
@@ -50,8 +54,10 @@ mock.module('@agentstate/sdk', () => ({
   AgentStateError: FakeAgentStateError,
 }))
 
-const { resolveStore } = await import('./resolve-store')
+const { resolveStore, isPersistentStore } = await import('./resolve-store')
 const { AgentStateStore } = await import('./agentstate-store')
+const { BrowserStore } = await import('./browser-store')
+const { MemoryStore } = await import('./memory-store')
 const { ConversationStoreError } = await import('./types')
 
 // ── Env snapshot/restore so tests don't leak state. ──
@@ -66,6 +72,7 @@ const ENV_KEYS = [
 let snapshot: Record<string, string | undefined> = {}
 
 beforeEach(() => {
+  mockConversationDb.mockReturnValue(true)
   snapshot = {}
   for (const key of ENV_KEYS) {
     snapshot[key] = process.env[key]
@@ -81,6 +88,16 @@ afterEach(() => {
       process.env[key] = snapshot[key]
     }
   }
+})
+
+describe('resolveStore — feature flag disabled', () => {
+  test('returns a BrowserStore when conversationDb() is false', async () => {
+    mockConversationDb.mockReturnValue(false)
+    // Even with an AgentState key set, the disabled flag wins (checked first).
+    process.env.AGENTSTATE_API_KEY = 'as_live_key'
+    const store = await resolveStore()
+    expect(store).toBeInstanceOf(BrowserStore)
+  })
 })
 
 describe('resolveStore — AgentState branch', () => {
@@ -111,5 +128,35 @@ describe('resolveStore — AgentState branch', () => {
     process.env.CONVERSATION_STORE_BACKEND = 'memory'
     const store = await resolveStore()
     expect(store).not.toBeInstanceOf(AgentStateStore)
+  })
+})
+
+describe('resolveStore — MemoryStore fallback', () => {
+  test('no backend config (flag on, no key/D1/DATABASE_URL) falls back to MemoryStore', async () => {
+    const store = await resolveStore()
+    expect(store).toBeInstanceOf(MemoryStore)
+  })
+
+  test('CONVERSATION_STORE_BACKEND=memory forces MemoryStore even with an AgentState key', async () => {
+    process.env.CONVERSATION_STORE_BACKEND = 'memory'
+    process.env.AGENTSTATE_API_KEY = 'as_live_key'
+    const store = await resolveStore()
+    expect(store).toBeInstanceOf(MemoryStore)
+  })
+})
+
+describe('isPersistentStore', () => {
+  test('MemoryStore is NOT persistent', () => {
+    expect(isPersistentStore(new MemoryStore())).toBe(false)
+  })
+
+  test('BrowserStore is persistent', () => {
+    expect(isPersistentStore(new BrowserStore())).toBe(true)
+  })
+
+  test('AgentStateStore is persistent', () => {
+    expect(
+      isPersistentStore(new AgentStateStore({ apiKey: 'as_live_key' }))
+    ).toBe(true)
   })
 })
