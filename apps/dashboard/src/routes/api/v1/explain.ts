@@ -140,7 +140,7 @@ async function fetchExplainAsText(
     return {
       error: {
         type: 'query_error',
-        message: `${msg} (host: ${clientConfig.host})`,
+        message: `${msg} (host: ${hostId})`,
       },
     }
   }

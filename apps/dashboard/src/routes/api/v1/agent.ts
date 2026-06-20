@@ -586,12 +586,14 @@ async function handlePost(request: Request): Promise<Response> {
               (inputTokenDetails.cacheReadTokens ||
                 inputTokenDetails.cacheWriteTokens)
             ) {
-              console.log('[Agent API] Cache token stats:', {
-                cacheReadTokens: inputTokenDetails.cacheReadTokens,
-                cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
-                inputTokens: step.usage.inputTokens,
-                outputTokens: step.usage.outputTokens,
-              })
+              if (AGENT_DEBUG_LOGS) {
+                console.log('[Agent API] Cache token stats:', {
+                  cacheReadTokens: inputTokenDetails.cacheReadTokens,
+                  cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
+                  inputTokens: step.usage.inputTokens,
+                  outputTokens: step.usage.outputTokens,
+                })
+              }
             }
           },
           timeout: {
@@ -670,7 +672,7 @@ async function handlePost(request: Request): Promise<Response> {
       return JSON.stringify(classified)
     },
     onFinish: () => {
-      if (usageSteps.length > 0) {
+      if (AGENT_DEBUG_LOGS && usageSteps.length > 0) {
         const stats = {
           ...aggregateUsageWithCost(usageSteps, model),
           model,
