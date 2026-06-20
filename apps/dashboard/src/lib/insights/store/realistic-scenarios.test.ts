@@ -296,7 +296,11 @@ async function runBackend(
   opts?: { since?: string; limit?: number }
 ): Promise<CanonicalCard[]> {
   const store = backend.make()
-  for (const batch of batches) await store.record(host, batch)
+  for (const batch of batches) {
+    // Assert the write succeeded — a degraded write must not pass silently and
+    // let a parity/contract check pass on an empty store.
+    expect(await store.record(host, batch)).toBe(true)
+  }
   const rows = await store.list(host, opts)
   return dedupeByKey(host, rows)
 }

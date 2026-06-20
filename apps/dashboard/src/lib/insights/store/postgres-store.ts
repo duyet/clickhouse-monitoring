@@ -64,7 +64,9 @@ interface PgFindingRow {
 export class PostgresInsightsStore implements InsightsStore {
   readonly backend = 'postgres' as const
   private readonly sql: ReturnType<typeof postgres>
-  private initialized = false
+  // Single-flight migration: concurrent first calls share one promise so the
+  // idempotent DDL runs at most once; a failure clears it so the next call retries.
+  private migration: Promise<void> | null = null
 
   constructor(connectionString?: string) {
     const url = connectionString ?? process.env.DATABASE_URL
@@ -76,10 +78,17 @@ export class PostgresInsightsStore implements InsightsStore {
     this.sql = postgres(url, { max: 5, idle_timeout: 20 })
   }
 
-  private async ensureMigrated(): Promise<void> {
-    if (this.initialized) return
-    await this.sql.unsafe(MIGRATION_SQL)
-    this.initialized = true
+  private ensureMigrated(): Promise<void> {
+    if (!this.migration) {
+      this.migration = this.sql
+        .unsafe(MIGRATION_SQL)
+        .then(() => undefined)
+        .catch((err) => {
+          this.migration = null
+          throw err
+        })
+    }
+    return this.migration
   }
 
   async record(hostId: number, findings: Finding[]): Promise<boolean> {

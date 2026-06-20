@@ -79,9 +79,11 @@ function fnv1a(str: string): string {
  */
 function stateKey(hostId: number, finding: Finding): string {
   const composite = `${finding.category}${SEP}${finding.metric ?? ''}${SEP}${finding.title}`
-  const readable = encodeURIComponent(composite.split(SEP).join(':')).slice(
-    0,
-    KEY_PREFIX_MAX
+  // Slice the RAW string before encoding so we never cut a percent-escape in
+  // half (e.g. truncating `%20` to `%2`). Uniqueness comes from the hash suffix,
+  // so a shorter readable prefix is purely cosmetic.
+  const readable = encodeURIComponent(
+    composite.split(SEP).join(':').slice(0, KEY_PREFIX_MAX)
   )
   return `insight:${hostId}:${readable}:${fnv1a(`${hostId}${SEP}${composite}`)}`
 }

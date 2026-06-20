@@ -68,11 +68,14 @@ async function fetchBackend(): Promise<InsightsBackendData> {
       if (!backend || !VALID.has(backend)) {
         throw new Error('Malformed insights backend response')
       }
+      // Cache only a real success, so the backend is fetched once for the page.
       cachedData = { backend }
       return cachedData
     } catch {
-      cachedData = FAIL_SAFE
-      return cachedData
+      // Do NOT cache the fail-safe: a transient error (offline, deploy blip)
+      // must not permanently pin the UI to 'clickhouse'. Leave cachedData null
+      // so the next mount retries; return the fail-safe for this call only.
+      return FAIL_SAFE
     } finally {
       inFlight = null
     }

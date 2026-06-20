@@ -17,12 +17,14 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test'
 // Mutable hooks the mock reads so each test controls behavior.
 let recordResults: boolean[] = []
 let recordCalls: Array<{ hostId: number; finding: Finding }> = []
+let recordThrows = false
 let listImpl: () => Promise<FindingRow[]> = async () => []
 let listCalls: Array<{ hostId: number; opts: unknown }> = []
 
 mock.module('@/lib/findings/findings-store', () => ({
   recordFinding: async (hostId: number, finding: Finding) => {
     recordCalls.push({ hostId, finding })
+    if (recordThrows) throw new Error('simulated recordFinding rejection')
     return recordResults.shift() ?? true
   },
   listRecentFindings: (hostId: number, opts: unknown) => {
@@ -44,6 +46,7 @@ const finding = (over: Partial<Finding> = {}): Finding => ({
 beforeEach(() => {
   recordResults = []
   recordCalls = []
+  recordThrows = false
   listCalls = []
   listImpl = async () => []
 })
@@ -74,6 +77,14 @@ describe('ClickHouseInsightsStore', () => {
     const store = new ClickHouseInsightsStore()
     expect(await store.record(0, [])).toBe(true)
     expect(recordCalls).toHaveLength(0)
+  })
+
+  test('record returns false (does NOT throw) when the delegate rejects', async () => {
+    // The InsightsStore contract is no-throw; a recordFinding rejection must be
+    // swallowed into a false result, not propagated.
+    recordThrows = true
+    const store = new ClickHouseInsightsStore()
+    expect(await store.record(0, [finding()])).toBe(false)
   })
 
   test('list delegates straight through to listRecentFindings', async () => {

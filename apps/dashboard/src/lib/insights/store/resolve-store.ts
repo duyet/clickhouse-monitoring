@@ -61,7 +61,13 @@ export function resolveInsightsStore(): Promise<InsightsStore> {
 
   if (cached && cached.key === key) return cached.store
 
-  const store = build(key as InsightsBackendKind | 'auto')
+  // Memoize the in-flight/resolved promise, but DON'T let a rejection stick: if
+  // build() rejects (e.g. a transient dynamic-import failure), clear the cache
+  // so the next call retries instead of replaying the rejected promise forever.
+  const store = build(key as InsightsBackendKind | 'auto').catch((err) => {
+    if (cached?.store === store) cached = null
+    throw err
+  })
   cached = { key, store }
   return store
 }

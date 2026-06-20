@@ -67,7 +67,9 @@ interface D1FindingRow {
 
 export class D1InsightsStore implements InsightsStore {
   readonly backend = 'd1' as const
-  private migrated = false
+  // Single-flight migration: concurrent first calls share one promise so the
+  // idempotent DDL runs at most once; a failure clears it so the next call retries.
+  private migration: Promise<void> | null = null
 
   private getDb(): D1Database | null {
     const bindings = getPlatformBindings()
@@ -78,10 +80,17 @@ export class D1InsightsStore implements InsightsStore {
     return null
   }
 
-  private async ensureMigrated(db: D1Database): Promise<void> {
-    if (this.migrated) return
-    await db.batch([db.prepare(MIGRATION_SQL), db.prepare(INDEX_SQL)])
-    this.migrated = true
+  private ensureMigrated(db: D1Database): Promise<void> {
+    if (!this.migration) {
+      this.migration = db
+        .batch([db.prepare(MIGRATION_SQL), db.prepare(INDEX_SQL)])
+        .then(() => undefined)
+        .catch((err) => {
+          this.migration = null
+          throw err
+        })
+    }
+    return this.migration
   }
 
   async record(hostId: number, findings: Finding[]): Promise<boolean> {
