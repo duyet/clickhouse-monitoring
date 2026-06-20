@@ -178,7 +178,7 @@ export function createSchemaTools(hostId: number) {
           // Get partition info
           readOnlyQuery({
             query:
-              'SELECT partition, parts, is_inactive FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active = 1 ORDER BY partition LIMIT 500',
+              'SELECT partition, count() AS parts, countIf(active = 0) AS inactive_parts FROM system.parts WHERE database = {database:String} AND table = {table:String} GROUP BY partition ORDER BY partition LIMIT 500',
             hostId: effectiveHostId,
             query_params: { database, table },
           }),
