@@ -1,6 +1,7 @@
 import { ArrowLeft, Sparkles } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 
+import { InsightsPreview } from '@/components/insights/insights-preview'
 import { InsightsSettingsForm } from '@/components/insights/insights-settings-form'
 import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
@@ -40,6 +41,7 @@ function InsightsSettingsPage() {
       </div>
 
       <InsightsSettingsForm />
+      <InsightsPreview hostId={hostId} />
     </div>
   )
 }
