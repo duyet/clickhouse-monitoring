@@ -14,7 +14,7 @@ Plans 001–017 and 019–023 were completed, merged to `main`, and their plan f
 
 ## Dependency notes
 
-- **Plan 018 (Remove `variants`)** was coupled to **015** (now DONE). The legacy `apps/dashboard` (Next.js) has been deleted, removing that consumer. The remaining work is the runtime backward-compat shim in `packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts` (~L227–245, via `selectQueryVariantSemver`). Expand the in-scope list to include `clickhouse-fetch.ts` when executing 018.
+- **Plan 018 (Remove `variants`)** — DONE. It was coupled to **015** (DONE; legacy Next.js `apps/dashboard` deleted, removing that consumer). The final blocker — the runtime backward-compat shim in `packages/clickhouse-client/src/clickhouse/clickhouse-fetch.ts` (via `selectQueryVariantSemver`) — has been removed along with `QueryConfigVariant` and the `variants` property. No remaining work.
 
 ## Findings considered and rejected
 
