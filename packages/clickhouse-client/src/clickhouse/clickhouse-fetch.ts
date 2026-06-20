@@ -3,7 +3,7 @@
  * Main fetchData function for executing queries with error handling
  */
 
-import type { DataFormat, QueryParams } from '@clickhouse/client'
+import type { QueryParams } from '@clickhouse/client'
 
 import type { QueryConfigLike } from '@chm/sql-builder'
 import type { FetchDataErrorType, FetchDataResult } from './types'
@@ -714,78 +714,4 @@ function countJsonEachRowRows(input: string): number {
 
 export function __testCountJsonEachRowRows(input: string): number {
   return countJsonEachRowRows(input)
-}
-
-/**
- * Simple query helper for basic queries
- */
-export const query = async (
-  query: string,
-  params: Record<string, unknown> = {},
-  format: DataFormat = 'JSON'
-) => {
-  const client = await getClient({
-    web: false,
-    clickhouseSettings: {},
-  })
-  try {
-    const resultSet = await client.query({
-      query: QUERY_COMMENT + query,
-      format,
-      query_params: params,
-    })
-
-    let released = false
-    const releaseOnce = () => {
-      if (!released) {
-        released = true
-        releaseClient({ web: false })
-      }
-    }
-
-    // Intercept data consumption methods to release client after stream is consumed
-    const rs = resultSet as any
-    const originalJson = rs.json
-    const originalText = rs.text
-    const originalStream = rs.stream
-
-    if (typeof originalJson === 'function') {
-      rs.json = async function (this: any, ...args: any[]) {
-        try {
-          return await originalJson.apply(this, args)
-        } finally {
-          releaseOnce()
-        }
-      }
-    }
-
-    if (typeof originalText === 'function') {
-      rs.text = async function (this: any, ...args: any[]) {
-        try {
-          return await originalText.apply(this, args)
-        } finally {
-          releaseOnce()
-        }
-      }
-    }
-
-    if (typeof originalStream === 'function') {
-      rs.stream = function (this: any, ...args: any[]) {
-        const stream = originalStream.apply(this, args)
-        if (stream && typeof stream === 'object') {
-          if (typeof stream.on === 'function') {
-            stream.on('end', () => releaseOnce())
-            stream.on('close', () => releaseOnce())
-            stream.on('error', () => releaseOnce())
-          }
-        }
-        return stream
-      }
-    }
-
-    return resultSet
-  } catch (err) {
-    releaseClient({ web: false })
-    throw err
-  }
 }
