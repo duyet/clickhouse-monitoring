@@ -25,30 +25,14 @@ let cacheTimestamp = 0
 /** Default cache TTL: 5 minutes */
 const DEFAULT_CACHE_TTL = 5 * 60 * 1000
 
-/** Current TTL value (can be configured) */
-let currentCacheTTL = DEFAULT_CACHE_TTL
+/** Current TTL value */
+const currentCacheTTL = DEFAULT_CACHE_TTL
 
 /**
  * Get the current cache TTL in milliseconds
  */
 export function getCacheTTL(): number {
   return currentCacheTTL
-}
-
-/**
- * Set a custom cache TTL (for testing or configuration)
- *
- * @param ttl - Time to live in milliseconds
- */
-export function setCacheTTL(ttl: number): void {
-  currentCacheTTL = ttl
-}
-
-/**
- * Reset the cache TTL to default
- */
-export function resetCacheTTL(): void {
-  currentCacheTTL = DEFAULT_CACHE_TTL
 }
 
 /**
@@ -122,20 +106,6 @@ export function updateDashboardQueryCache(
 }
 
 /**
- * Clear all cached dashboard queries
- * Useful for testing or manual cache invalidation
- *
- * @example
- * ```ts
- * clearAllCache()
- * ```
- */
-export function clearAllCache(): void {
-  cache.clear()
-  cacheTimestamp = Date.now()
-}
-
-/**
  * Clear cache for a specific host
  *
  * @param hostId - The host identifier
@@ -179,23 +149,4 @@ export function getCacheStats(): {
       queryCount: entry.queries.size,
     })),
   }
-}
-
-/**
- * Check if a specific query is cached for a host
- *
- * @param hostId - The host identifier
- * @param query - The query string to check
- * @returns True if the query is in the cache
- *
- * @example
- * ```ts
- * if (isQueryCached(0, 'SELECT count() FROM system.tables')) {
- *   // Query is cached
- * }
- * ```
- */
-export function isQueryCached(hostId: number, query: string): boolean {
-  const queries = getCachedDashboardQueries(hostId)
-  return queries?.has(query) ?? false
 }
