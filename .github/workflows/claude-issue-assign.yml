@@ -1,0 +1,218 @@
+name: Claude Issue Resolver
+
+# Auto-resolve issues that are ASSIGNED to the bot (duyetbot).
+#
+# GitHub fires the `issues.assigned` activity even when the assignee is set at
+# creation time, so this single trigger covers both:
+#   - an issue created with duyetbot already assigned, and
+#   - an existing issue later assigned to duyetbot.
+#
+# Claude reads the code + in-repo knowledge graph + docs + any CodeRabbit plan
+# FIRST, then either comments (analysis / questions) or opens a PR that closes
+# the issue via a `Resolves #<n>` keyword.
+#
+# Auth notes:
+#   - CLAUDE_CODE_OAUTH_TOKEN  -> the model (already used by claude.yml).
+#   - GITHUB_TOKEN             -> git checkout + all bot gh/PR/comment operations.
+#
+# NOTE: this uses the built-in GITHUB_TOKEN. A bot PAT (DUYETBOT_GITHUB_TOKEN)
+# would be preferable so the bot's PRs run downstream CI (PRs opened with the
+# default GITHUB_TOKEN do NOT trigger other workflows) and so comments/PRs show
+# the `duyetbot` identity. The PAT currently stored in this repo is invalid
+# (the resolver's checkout failed 401 -> "could not read Username"), so to swap
+# it back in: refresh DUYETBOT_GITHUB_TOKEN, then replace the three
+# `secrets.GITHUB_TOKEN` references below with
+# `secrets.DUYETBOT_GITHUB_TOKEN`.
+
+on:
+  issues:
+    types: [assigned]
+
+# One resolver run per issue at a time (guards against rapid re-assignment).
+concurrency:
+  group: claude-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-issue:
+    # Only run when the NEWLY assigned user is the bot.
+    if: github.event.action == 'assigned' && github.event.assignee.login == 'duyetbot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read # Required for Claude to read CI results
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity (duyetbot)
+        run: |
+          git config --global user.name "duyetbot"
+          git config --global user.email "bot@duyet.net"
+
+      - name: Run Claude Code Issue Resolver
+        id: resolve
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          additional_permissions: |
+            contents: write
+            pull-requests: write
+            actions: read
+
+          claude_args: |
+            --allowed-tools "Read,Write,Edit,Bash,Glob,Grep,Plan,TodoWrite,Skill,Task"
+
+          prompt: |
+            You are duyetbot, resolving a GitHub issue you were just assigned in
+            the ClickHouse monitoring dashboard monorepo.
+
+            REPO:  ${{ github.repository }}
+            ISSUE: #${{ github.event.issue.number }}
+            TITLE: ${{ github.event.issue.title }}
+
+            ## Issue body
+            ```markdown
+            ${{ github.event.issue.body }}
+            ```
+
+            # Operating principle: UNDERSTAND BEFORE YOU CHANGE ANYTHING.
+            # Do every read step below before writing a single line of code. The
+            # quality of the fix depends entirely on loading the right context first.
+
+            ## Phase 0 — Load context (REQUIRED, in this order)
+
+            1. **Conventions & workflow.** Read `CLAUDE.md` (root) and, if the issue
+               touches the dashboard, `apps/dashboard/CLAUDE.md`. Note: commit
+               convention (semantic, with `Co-Authored-By: duyetbot <bot@duyet.net>`),
+               PR workflow, shadcn/ui rules, the static-first / multi-host patterns.
+
+            2. **In-repo knowledge graph (this is the project "KB").** Start at
+               `docs/knowledge/README.md`, then `grep -ri "<keyword from the issue>"
+               docs/knowledge/` and read every note that matches. These encode past
+               incidents, "always do X" rules, and architecture decisions — honour
+               them. The local `~/kb` does NOT exist on this runner; `docs/knowledge/`
+               is the canonical knowledge here.
+
+            3. **Product / design intent.** Skim `docs/PRD.md` for the relevant
+               feature so your change matches the intended product behaviour, not just
+               the literal request.
+
+            4. **Domain skills.** Invoke the `clickhouse-monitor` skill for dashboard
+               feature/API/query-config knowledge. For anything involving ClickHouse
+               SQL, schemas, or system tables, also consult the `clickhouse` /
+               `clickhouse-best-practices` skill and the version-compatibility docs in
+               `docs/clickhouse-schemas/`.
+
+            5. **Explore the actual source.** Use Glob/Grep/Read to find and read the
+               files the issue implicates BEFORE editing. For non-trivial issues,
+               use the `Task` tool with the `Explore` or `Plan` agent to map the code
+               paths and design a plan first.
+
+            6. **CodeRabbit / bot plan.** Run
+               `gh issue view ${{ github.event.issue.number }} --comments` and look for
+               a plan or analysis from CodeRabbit (`coderabbitai`) or another bot. If a
+               plan exists, FOLLOW it — treat it as the agreed approach and call out
+               where you deviate and why.
+
+            ## Phase 1 — Classify, then pick the lightest correct action
+
+            Judge the issue's complexity and certainty:
+
+            - **Question / analysis / "how do I" / architecture discussion** → DO NOT
+              open a PR. Post a thorough answer as an issue comment.
+            - **Ambiguous, or needs a product/design decision, or risky scope** → post
+              a comment with your proposed plan + specific clarifying questions and
+              STOP. Do not guess at a destructive or far-reaching change.
+            - **Clear bug fix / small feature / docs / config change you can verify**
+              → implement it and open a PR (Phase 2).
+
+            When in doubt between commenting and a PR, prefer a short plan comment over
+            a speculative PR.
+
+            ## Phase 2 — Implement (only for the PR path)
+
+            1. Branch off `main` with a semantic name:
+               `git checkout -b fix/${{ github.event.issue.number }}-short-slug`
+               (types: `fix`, `feat`, `docs`, `refactor`, `perf`, `chore`, `test`,
+               `ci`, `build`).
+            2. Make the SMALLEST change that fully resolves the issue. Touch only what
+               the issue requires — do not refactor or "improve" adjacent code. Match
+               existing conventions exactly (read neighbours first).
+            3. For ClickHouse query configs, respect versioned-SQL patterns and the
+               column-availability docs. Never customise `components/ui/` directly.
+            4. Verify locally before pushing (best-effort on the runner):
+               `bun install` then `bun run lint && bun run build`, plus the narrowest
+               relevant tests (`bun run test:unit` / `bun run test:query-config`).
+               If a check cannot run in CI, say so explicitly in the PR — do not claim
+               it passed.
+            5. Commit with semantic format and the required co-author trailer:
+               ```
+               <type>(<scope>): <subject>
+
+               Co-Authored-By: duyetbot <bot@duyet.net>
+               ```
+               IMPORTANT: the subject line (everything before the first newline) MUST
+               be <= 100 characters. This repo's `commitlint.config.js` enforces
+               `header-max-length: 100`, and CI's `conventional-title` check FAILS
+               otherwise (squash-merge uses the PR title as the commit subject). Keep
+               it tight and do NOT pad it with `(#issue)` — the `Resolves #` keyword in
+               the PR body handles closing.
+            6. Push the branch: `git push origin <branch-name>`.
+
+            ## Phase 3 — Open the PR and link the issue
+
+            - `gh pr create --base main --title "<semantic title, <= 100 chars>" --body "<body below>"`
+              The title must pass `conventional-title` CI: `<type>(<scope>): <subject>`
+              and <= 100 characters total. Do NOT append `(#issue)` to the title.
+            - The PR body MUST contain a closing keyword so the issue auto-closes on
+              merge: **`Resolves #${{ github.event.issue.number }}`**.
+            - Per project policy, arm auto-merge after creating the PR:
+              `gh pr merge --auto --squash <pr-number>` (known non-required checks
+              `e2e-test`, `e2e-test-tsr`, `component-test`, `unit-tests` do not block).
+            - Comment on the issue linking the PR:
+              `gh issue comment ${{ github.event.issue.number }} --body "Opened #<pr-number> — Resolves this on merge."`
+
+            PR body template:
+            ```markdown
+            ## Summary
+            <what changed and why, grounded in the issue + knowledge-graph notes you read>
+
+            ## Changes
+            - <key change 1>
+            - <key change 2>
+
+            ## Verification
+            - <lint/build/test you ran and their result, or why a check could not run>
+
+            Resolves #${{ github.event.issue.number }}
+
+            ---
+            <details>
+            <summary>🤖 Resolved by duyetbot</summary>
+
+            | Property | Value |
+            |----------|-------|
+            | Issue | #${{ github.event.issue.number }} |
+            | Run | [job log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+
+            </details>
+            ```
+
+            ## Rules
+            - ALWAYS leave at least one issue comment (the answer, the plan, or the PR link).
+            - Never push directly to `main`; never force-push; never run destructive git.
+            - Read before you write; surface uncertainty instead of guessing.
+            - "Done" is only true if every step you claim actually ran and passed.
