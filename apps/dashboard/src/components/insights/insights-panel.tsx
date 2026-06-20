@@ -1,11 +1,13 @@
-import { RefreshCw, Sparkles, X } from 'lucide-react'
+import { RefreshCw, Settings2, Sparkles, X } from 'lucide-react'
 
 import { useState } from 'react'
 import { InsightCard } from '@/components/insights/insight-card'
+import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useInsights } from '@/lib/query/use-insights'
+import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
 
 interface InsightsPanelProps {
@@ -52,19 +54,33 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
             No AI insights right now. Generate a fresh analysis of this cluster.
           </span>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={generate}
-          disabled={isGenerating}
-        >
-          <RefreshCw
-            className={cn('size-3.5', isGenerating && 'animate-spin')}
-          />
-          {isGenerating ? 'Generating…' : 'Generate insights'}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={generate}
+            disabled={isGenerating}
+          >
+            <RefreshCw
+              className={cn('size-3.5', isGenerating && 'animate-spin')}
+            />
+            {isGenerating ? 'Generating…' : 'Generate insights'}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground hover:text-foreground"
+            aria-label="AI Insights settings"
+            asChild
+          >
+            <AppLink href={buildUrl('/insights-settings', { host: hostId })}>
+              <Settings2 className="size-3.5" />
+            </AppLink>
+          </Button>
+        </div>
       </section>
     )
   }
@@ -123,6 +139,18 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
               Dismiss all
             </Button>
           ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground hover:text-foreground"
+            aria-label="AI Insights settings"
+            asChild
+          >
+            <AppLink href={buildUrl('/insights-settings', { host: hostId })}>
+              <Settings2 className="size-3.5" />
+            </AppLink>
+          </Button>
         </div>
       </div>
 
