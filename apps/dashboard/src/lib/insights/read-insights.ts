@@ -12,7 +12,7 @@
 import type { FindingRow } from '../findings/findings-store'
 import type { InsightAction, InsightCard, InsightSeverity } from './types'
 
-import { listRecentFindings } from '../findings/findings-store'
+import { resolveInsightsStore } from './store/resolve-store'
 import { INSIGHT_SOURCES, insightKey } from './types'
 
 /** Default lookback for the panel — recent enough that insights stay relevant. */
@@ -76,7 +76,8 @@ export async function readInsights(
   opts: { since?: string; limit?: number } = {}
 ): Promise<InsightCard[]> {
   const since = opts.since ?? DEFAULT_SINCE
-  const rows = await listRecentFindings(hostId, {
+  const store = await resolveInsightsStore()
+  const rows = await store.list(hostId, {
     since,
     limit: opts.limit ?? 200,
   })

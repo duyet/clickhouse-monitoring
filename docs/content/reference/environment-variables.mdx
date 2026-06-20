@@ -260,6 +260,21 @@ See [Conversation History — Backends](/docs/ai-agent/conversation-history/back
 
 ---
 
+## AI Insights Store
+
+The AI Insights panel on `/overview` persists its findings through a pluggable store. It is additive opt-in and defaults to ClickHouse; the D1, Postgres, and AgentState backends reuse the conversation-store env above.
+
+| Variable | Default | Description |
+|---|---|---|
+| `INSIGHTS_STORE_BACKEND` | `auto` | Backend: `auto`, `clickhouse`, `d1`, `postgres`, `agentstate`, or `memory`. `auto` and `clickhouse` both use the ClickHouse `monitoring_findings` table. `auto` never silently follows other env; a selected backend missing its prerequisite falls back to ClickHouse. |
+| `INSIGHTS_D1` | — | Optional dedicated D1 binding for the `d1` backend. Falls back to `CONVERSATIONS_D1` when unset. |
+
+`postgres` reuses `DATABASE_URL`; `agentstate` reuses `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`).
+
+See [AI Agent — AI Insights persistence](/docs/ai-agent#ai-insights-persistence) for setup and fallback behavior. `GET /api/v1/insights/backend` reports the active backend.
+
+---
+
 ## PeerDB Monitoring
 
 Optional. Set `PEERDB_API_URL` to enable the PeerDB section (Mirrors and Peers) in the sidebar.

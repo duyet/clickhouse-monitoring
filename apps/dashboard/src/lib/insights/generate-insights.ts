@@ -9,9 +9,9 @@
 
 import type { InsightCard } from './types'
 
-import { recordFinding } from '../findings/findings-store'
 import { collectInsights } from './collectors'
 import { enrichInsights } from './llm-enrich'
+import { resolveInsightsStore } from './store/resolve-store'
 import { insightKey } from './types'
 
 const SOURCE = 'ai-insight'
@@ -28,19 +28,21 @@ export async function generateInsights(hostId: number): Promise<InsightCard[]> {
     const enriched = await enrichInsights(candidates)
     const generatedAt = new Date().toISOString()
 
-    // Persist each insight (best-effort; failures are swallowed by recordFinding).
-    await Promise.all(
-      enriched.map((c) =>
-        recordFinding(hostId, {
-          severity: c.severity,
-          category: c.category,
-          source: SOURCE,
-          title: c.title,
-          detail: c.detail,
-          metric: c.metric,
-          value: c.value,
-        })
-      )
+    // Persist the batch through the configured backend (ClickHouse by default;
+    // D1 / Postgres / AgentState / Memory via INSIGHTS_STORE_BACKEND). The store
+    // is best-effort — a read-only cluster or missing binding degrades silently.
+    const store = await resolveInsightsStore()
+    await store.record(
+      hostId,
+      enriched.map((c) => ({
+        severity: c.severity,
+        category: c.category,
+        source: SOURCE,
+        title: c.title,
+        detail: c.detail,
+        metric: c.metric,
+        value: c.value,
+      }))
     )
 
     return enriched.map((c) => ({
