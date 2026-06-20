@@ -11,7 +11,8 @@
  * new settings on its next refresh.
  */
 
-import { RotateCcw, Sparkles } from 'lucide-react'
+import { AlertTriangle, RotateCcw, Sparkles } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -43,13 +44,34 @@ import {
 } from '@/lib/insights/prompts'
 import { INSIGHT_WINDOWS } from '@/lib/insights/settings'
 import { useInsightsSettings } from '@/lib/query/use-insights-settings'
+import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_MODEL_VALUE = '__default__'
 
+interface InsightsStatus {
+  enrichmentAvailable: boolean
+  defaultModel: string
+}
+
 export function InsightsSettingsForm({ className }: { className?: string }) {
   const { settings, update, reset } = useInsightsSettings()
   const { models } = useAgentModel()
+
+  // Whether LLM enrichment is actually configured on this deployment, so the
+  // "Enhance with AI" toggle doesn't silently no-op on a key-less install.
+  const { data: status } = useQuery<InsightsStatus>({
+    queryKey: ['/api/v1/insights/status'],
+    queryFn: async () => {
+      const res = await apiFetch('/api/v1/insights/status')
+      if (!res.ok) throw new Error('Failed to fetch insights status')
+      return res.json()
+    },
+    staleTime: 5 * 60_000,
+    retry: 1,
+  })
+  const enrichmentUnavailable =
+    settings.enrich && status?.enrichmentAvailable === false
 
   // Group available models by provider for the dropdown.
   const grouped = new Map<string, ModelDisplayInfo[]>()
@@ -94,6 +116,18 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
           />
         </div>
 
+        {enrichmentUnavailable ? (
+          <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <span>
+              No LLM provider is configured on this deployment, so enrichment is
+              unavailable — the original deterministic copy will be shown. Set a
+              provider API key (e.g. <code>OPENROUTER_API_KEY</code>) to enable
+              it.
+            </span>
+          </div>
+        ) : null}
+
         <Separator />
 
         {/* Model */}
@@ -106,7 +140,16 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
           <Label className="text-sm font-medium">Model</Label>
           <p className="text-muted-foreground text-sm">
             Which model writes the insights. “Deployment default” uses the
-            server-configured model.
+            server-configured model
+            {status?.defaultModel ? (
+              <>
+                {' '}
+                (
+                <code className="font-mono text-xs">{status.defaultModel}</code>
+                )
+              </>
+            ) : null}
+            .
           </p>
           <Select
             value={settings.model ?? DEFAULT_MODEL_VALUE}
