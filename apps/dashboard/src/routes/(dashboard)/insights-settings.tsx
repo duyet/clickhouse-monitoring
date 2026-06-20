@@ -12,7 +12,7 @@ function InsightsSettingsPage() {
   const hostId = useHostId()
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 py-8">
+    <div className="mx-auto max-w-5xl space-y-6 py-8">
       <div className="space-y-3">
         <Button
           variant="ghost"
@@ -40,8 +40,13 @@ function InsightsSettingsPage() {
         </div>
       </div>
 
-      <InsightsSettingsForm />
-      <InsightsPreview hostId={hostId} />
+      {/* Settings left, live example right — stacks on mobile. */}
+      <div className="grid gap-5 lg:grid-cols-[1fr_minmax(320px,380px)]">
+        <InsightsSettingsForm />
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <InsightsPreview hostId={hostId} autoRun />
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,27 +1,31 @@
 'use client'
 
 /**
- * AI Insights settings form.
+ * AI Insights settings form — compact, icon-driven, template-first.
  *
- * Self-contained controls for the per-user insight preferences persisted by
- * `useInsightsSettings`: enrichment on/off, which model enriches, the prompt
- * tone, and the panel's read window. The available model list is read from the
- * same source as the agent model picker (`/api/v1/agents/models`, configured
- * providers only). Changes apply immediately — the overview panel reflects the
- * new settings on its next refresh.
+ * Per-user insight preferences persisted by `useInsightsSettings`: enrichment,
+ * model, prompt tone, and lookback window. Operators can one-click a template
+ * (Quick scan / Deep dive / Learning / Raw) or fine-tune the individual
+ * controls. The available model list comes from the same source as the agent
+ * model picker (configured providers only). Changes apply immediately.
  */
 
-import { AlertTriangle, RotateCcw, Sparkles } from 'lucide-react'
+import {
+  Activity,
+  AlertTriangle,
+  Clock,
+  Cpu,
+  FileText,
+  GraduationCap,
+  type LucideIcon,
+  RotateCcw,
+  Sparkles,
+  Zap,
+} from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -32,7 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
   type ModelDisplayInfo,
@@ -40,9 +43,14 @@ import {
 } from '@/lib/hooks/use-agent-model'
 import {
   INSIGHT_PROMPT_STYLES,
-  resolvePromptStyle,
+  type InsightPromptStyle,
 } from '@/lib/insights/prompts'
 import { INSIGHT_WINDOWS } from '@/lib/insights/settings'
+import {
+  INSIGHT_TEMPLATES,
+  type InsightTemplate,
+  matchTemplate,
+} from '@/lib/insights/templates'
 import { useInsightsSettings } from '@/lib/query/use-insights-settings'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { cn } from '@/lib/utils'
@@ -54,12 +62,23 @@ interface InsightsStatus {
   defaultModel: string
 }
 
+const TEMPLATE_ICONS: Record<InsightTemplate['icon'], LucideIcon> = {
+  Zap,
+  FileText,
+  GraduationCap,
+  Activity,
+}
+
+const STYLE_ICONS: Record<InsightPromptStyle, LucideIcon> = {
+  concise: Zap,
+  detailed: FileText,
+  beginner: GraduationCap,
+}
+
 export function InsightsSettingsForm({ className }: { className?: string }) {
   const { settings, update, reset } = useInsightsSettings()
   const { models } = useAgentModel()
 
-  // Whether LLM enrichment is actually configured on this deployment, so the
-  // "Enhance with AI" toggle doesn't silently no-op on a key-less install.
   const { data: status } = useQuery<InsightsStatus>({
     queryKey: ['/api/v1/insights/status'],
     queryFn: async () => {
@@ -73,7 +92,6 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
   const enrichmentUnavailable =
     settings.enrich && status?.enrichmentAvailable === false
 
-  // Group available models by provider for the dropdown.
   const grouped = new Map<string, ModelDisplayInfo[]>()
   for (const m of models) {
     const list = grouped.get(m.provider) ?? []
@@ -81,33 +99,68 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
     grouped.set(m.provider, list)
   }
 
-  const enrichDisabled = !settings.enrich
-  const activeStyle = resolvePromptStyle(settings.promptStyle)
+  const off = !settings.enrich
+  const activeTemplate = matchTemplate(settings)
 
   return (
     <Card className={cn(className)}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="size-4 text-sky-500" />
-          AI Insights
-        </CardTitle>
-        <CardDescription>
-          Tune how cluster insights are generated and how far back the overview
-          panel looks. Settings are stored in this browser.
-        </CardDescription>
-      </CardHeader>
+      <CardContent className="space-y-5 pt-6">
+        {/* Templates — pick a vibe in one click */}
+        <div className="space-y-2">
+          <Label className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Templates
+          </Label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {INSIGHT_TEMPLATES.map((t) => {
+              const Icon = TEMPLATE_ICONS[t.icon]
+              const active = activeTemplate === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => update(t.settings)}
+                  aria-pressed={active}
+                  className={cn(
+                    'flex flex-col items-start gap-1 rounded-lg border p-2.5 text-left transition-colors',
+                    active
+                      ? 'border-sky-500/50 bg-sky-500/10'
+                      : 'border-border hover:bg-muted/50'
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'size-4',
+                      active
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : 'text-muted-foreground'
+                    )}
+                  />
+                  <span className="text-sm font-medium leading-none">
+                    {t.label}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {t.hint}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
-      <CardContent className="space-y-6">
-        {/* Enrichment toggle */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <Label htmlFor="insights-enrich" className="text-sm font-medium">
-              Enhance with AI
-            </Label>
-            <p className="text-muted-foreground text-sm">
-              Rewrite raw monitoring signals into clearer, actionable insights.
-              When off, the original deterministic copy is shown.
-            </p>
+        {/* Enhance with AI */}
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sky-500/10">
+              <Sparkles className="size-4 text-sky-500" />
+            </span>
+            <div className="leading-tight">
+              <Label htmlFor="insights-enrich" className="text-sm font-medium">
+                Enhance with AI
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Rewrite signals into clear, actionable insights.
+              </p>
+            </div>
           </div>
           <Switch
             id="insights-enrich"
@@ -117,142 +170,140 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
         </div>
 
         {enrichmentUnavailable ? (
-          <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             <span>
-              No LLM provider is configured on this deployment, so enrichment is
-              unavailable — the original deterministic copy will be shown. Set a
-              provider API key (e.g. <code>OPENROUTER_API_KEY</code>) to enable
-              it.
+              No LLM provider configured — deterministic copy will be shown. Set
+              a provider key (e.g. <code>OPENROUTER_API_KEY</code>).
             </span>
           </div>
         ) : null}
 
-        <Separator />
-
-        {/* Model */}
+        {/* Prompt style — segmented icon control */}
         <div
-          className={cn(
-            'space-y-2 transition-opacity',
-            enrichDisabled && 'pointer-events-none opacity-50'
-          )}
+          className={cn('space-y-2', off && 'pointer-events-none opacity-50')}
         >
-          <Label className="text-sm font-medium">Model</Label>
-          <p className="text-muted-foreground text-sm">
-            Which model writes the insights. “Deployment default” uses the
-            server-configured model
-            {status?.defaultModel ? (
-              <>
-                {' '}
-                (
-                <code className="font-mono text-xs">{status.defaultModel}</code>
-                )
-              </>
-            ) : null}
-            .
-          </p>
-          <Select
-            value={settings.model ?? DEFAULT_MODEL_VALUE}
-            onValueChange={(value) =>
-              update({ model: value === DEFAULT_MODEL_VALUE ? null : value })
-            }
-            disabled={enrichDisabled}
-          >
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Deployment default" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={DEFAULT_MODEL_VALUE}>
-                Deployment default
-              </SelectItem>
-              {Array.from(grouped.entries()).map(([provider, list]) => (
-                <SelectGroup key={provider}>
-                  <SelectLabel className="capitalize">{provider}</SelectLabel>
-                  {list.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      <span className="font-mono text-xs">{m.name}</span>
-                      {m.isFree ? (
-                        <span className="text-emerald-600 dark:text-emerald-400">
-                          {' '}
-                          · free
-                        </span>
-                      ) : null}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="flex items-center gap-1.5 text-sm font-medium">
+            <FileText className="size-3.5 text-muted-foreground" />
+            Prompt style
+          </Label>
+          <div className="grid grid-cols-3 gap-2">
+            {INSIGHT_PROMPT_STYLES.map((s) => {
+              const Icon = STYLE_ICONS[s.id]
+              const active = settings.promptStyle === s.id
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  disabled={off}
+                  onClick={() => update({ promptStyle: s.id })}
+                  aria-pressed={active}
+                  className={cn(
+                    'flex flex-col items-center gap-1 rounded-lg border px-2 py-2.5 text-center transition-colors',
+                    active
+                      ? 'border-sky-500/50 bg-sky-500/10'
+                      : 'border-border hover:bg-muted/50'
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'size-4',
+                      active
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : 'text-muted-foreground'
+                    )}
+                  />
+                  <span className="text-xs font-medium">{s.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-        {/* Prompt style */}
-        <div
-          className={cn(
-            'space-y-2 transition-opacity',
-            enrichDisabled && 'pointer-events-none opacity-50'
-          )}
-        >
-          <Label className="text-sm font-medium">Prompt style</Label>
-          <p className="text-muted-foreground text-sm">
-            {activeStyle.description}
-          </p>
-          <Select
-            value={settings.promptStyle}
-            onValueChange={(value) =>
-              update({ promptStyle: value as typeof settings.promptStyle })
-            }
-            disabled={enrichDisabled}
+        {/* Model + Window — 2-col grid */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div
+            className={cn(
+              'space-y-1.5',
+              off && 'pointer-events-none opacity-50'
+            )}
           >
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {INSIGHT_PROMPT_STYLES.map((style) => (
-                <SelectItem key={style.id} value={style.id}>
-                  {style.label}
+            <Label className="flex items-center gap-1.5 text-sm font-medium">
+              <Cpu className="size-3.5 text-muted-foreground" />
+              Model
+            </Label>
+            <Select
+              value={settings.model ?? DEFAULT_MODEL_VALUE}
+              onValueChange={(value) =>
+                update({ model: value === DEFAULT_MODEL_VALUE ? null : value })
+              }
+              disabled={off}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={DEFAULT_MODEL_VALUE}>
+                  Default
+                  {status?.defaultModel ? (
+                    <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                      {status.defaultModel}
+                    </span>
+                  ) : null}
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                {Array.from(grouped.entries()).map(([provider, list]) => (
+                  <SelectGroup key={provider}>
+                    <SelectLabel className="capitalize">{provider}</SelectLabel>
+                    {list.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        <span className="font-mono text-xs">{m.name}</span>
+                        {m.isFree ? (
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            {' '}
+                            · free
+                          </span>
+                        ) : null}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-sm font-medium">
+              <Clock className="size-3.5 text-muted-foreground" />
+              Lookback
+            </Label>
+            <Select
+              value={settings.window}
+              onValueChange={(value) => update({ window: value })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {INSIGHT_WINDOWS.map((w) => (
+                  <SelectItem key={w.value} value={w.value}>
+                    {w.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-
-        <Separator />
-
-        {/* Read window */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Lookback window</Label>
-          <p className="text-muted-foreground text-sm">
-            How far back the overview panel reads insights before they age out.
-          </p>
-          <Select
-            value={settings.window}
-            onValueChange={(value) => update({ window: value })}
-          >
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {INSIGHT_WINDOWS.map((w) => (
-                <SelectItem key={w.value} value={w.value}>
-                  {w.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Separator />
 
         <div className="flex justify-end">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-muted-foreground"
+            className="h-7 gap-1.5 text-xs text-muted-foreground"
             onClick={reset}
           >
-            <RotateCcw className="size-3.5" />
-            Reset to defaults
+            <RotateCcw className="size-3" />
+            Reset
           </Button>
         </div>
       </CardContent>
