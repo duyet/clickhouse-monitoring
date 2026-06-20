@@ -53,7 +53,39 @@ is fragmented", "replication is lagging" — generated and **cached server-side*
   `generateInsights(hostId)` per host on the existing 5-minute Cloudflare trigger
   (`api/cron/health-sweep`). No new trigger.
 - **Manual**: `POST /api/v1/insights/generate?host=<id>` (the panel's Refresh
-  button).
+  button), optionally carrying the user's config (see below).
+
+## Configuration (per-user)
+
+Insight generation is configurable per-user, persisted client-side (localStorage,
+like dismissals + the agent model picker). All overrides are **optional and
+validated server-side** — omitting them reproduces the original behavior.
+
+- **Settings model** — `src/lib/insights/settings.ts` (`InsightsSettings`:
+  `model` | `promptStyle` | `enrich` | `window`), pure/isomorphic with
+  `sanitizeInsightsSettings` + `generateParamsFromSettings`. Hook:
+  `src/lib/query/use-insights-settings.ts` (localStorage + `CustomEvent`/`storage`
+  broadcast so the panel, settings page, and header popover stay in sync).
+- **Prompt styles** — `src/lib/insights/prompts.ts`: `concise` (default) /
+  `detailed` / `beginner`, each a distinct enrichment system prompt. The
+  deterministic baseline copy is unchanged.
+- **Model override** — validated server-side in
+  `src/lib/insights/resolve-model.ts` against the *configured* registry
+  (`getModelRegistry()` + `isProviderConfigured`); an unknown/unconfigured id
+  falls back to the deployment default (`DEFAULT_MODEL`).
+- **Generate API params** — `POST /api/v1/insights/generate` accepts
+  `enrich` (`false` skips LLM), `model` (`provider:model`), `promptStyle`. The
+  read endpoint (`GET /api/v1/insights`) takes `since` = the chosen window.
+- `enrichInsights(candidates, { model, promptStyle })` /
+  `generateInsights(hostId, { enrich, model, promptStyle })` thread the overrides.
+
+## Settings page
+
+- `/insights-settings` (`src/routes/(dashboard)/insights-settings.tsx`) renders
+  `InsightsSettingsForm` (`src/components/insights/insights-settings-form.tsx`):
+  enrichment toggle, model picker (configured providers from
+  `/api/v1/agents/models`), prompt style, lookback window, reset-to-defaults.
+- Reachable from the overview panel's settings gear and the header popover.
 
 ## Read + dismissal
 
@@ -74,6 +106,11 @@ is fragmented", "replication is lagging" — generated and **cached server-side*
 - `src/components/insights/insight-card.tsx` — shadcn `Card` wrapper (never edits
   `components/ui/`), severity-toned accent, dismiss `X`, and a derived action
   link (e.g. View tables / Open running queries / Ask the agent).
+- `src/components/insights/insights-popover.tsx` — **global header popover**
+  (mirrors `NotificationsPopover`), mounted in `header-actions.tsx` so insights
+  surface on every page: severity-toned count badge, top insights with deep
+  links, Refresh, and footer links to the overview panel + settings page. Reuses
+  `useInsights`, so counts/dismissals stay in sync with the panel.
 
 ## Gotchas
 
