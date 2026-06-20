@@ -13,9 +13,16 @@ name: Claude Issue Resolver
 #
 # Auth notes:
 #   - CLAUDE_CODE_OAUTH_TOKEN  -> the model (already used by claude.yml).
-#   - DUYETBOT_GITHUB_TOKEN    -> optional bot PAT. If present, the bot's PR will
-#     trigger downstream CI (the default GITHUB_TOKEN does NOT trigger CI on
-#     PRs it opens). Falls back to GITHUB_TOKEN when the PAT is not configured.
+#   - GITHUB_TOKEN             -> git checkout + all bot gh/PR/comment operations.
+#
+# NOTE: this uses the built-in GITHUB_TOKEN. A bot PAT (DUYETBOT_GITHUB_TOKEN)
+# would be preferable so the bot's PRs run downstream CI (PRs opened with the
+# default GITHUB_TOKEN do NOT trigger other workflows) and so comments/PRs show
+# the `duyetbot` identity. The PAT currently stored in this repo is invalid
+# (the resolver's checkout failed 401 -> "could not read Username"), so to swap
+# it back in: refresh DUYETBOT_GITHUB_TOKEN, then replace the three
+# `secrets.GITHUB_TOKEN` references below with
+# `secrets.DUYETBOT_GITHUB_TOKEN`.
 
 on:
   issues:
@@ -39,14 +46,14 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results
     env:
-      GH_TOKEN: ${{ secrets.DUYETBOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.DUYETBOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git identity (duyetbot)
         run: |
@@ -58,7 +65,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.DUYETBOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
           additional_permissions: |
             contents: write
