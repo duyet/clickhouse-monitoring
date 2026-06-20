@@ -82,13 +82,14 @@ export class D1InsightsStore implements InsightsStore {
 
   private ensureMigrated(db: D1Database): Promise<void> {
     if (!this.migration) {
-      this.migration = db
-        .batch([db.prepare(MIGRATION_SQL), db.prepare(INDEX_SQL)])
-        .then(() => undefined)
-        .catch((err) => {
+      this.migration = (async () => {
+        try {
+          await db.batch([db.prepare(MIGRATION_SQL), db.prepare(INDEX_SQL)])
+        } catch (err) {
           this.migration = null
           throw err
-        })
+        }
+      })()
     }
     return this.migration
   }

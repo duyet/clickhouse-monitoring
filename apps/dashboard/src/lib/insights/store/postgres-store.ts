@@ -80,13 +80,14 @@ export class PostgresInsightsStore implements InsightsStore {
 
   private ensureMigrated(): Promise<void> {
     if (!this.migration) {
-      this.migration = this.sql
-        .unsafe(MIGRATION_SQL)
-        .then(() => undefined)
-        .catch((err) => {
+      this.migration = (async () => {
+        try {
+          await this.sql.unsafe(MIGRATION_SQL)
+        } catch (err) {
           this.migration = null
           throw err
-        })
+        }
+      })()
     }
     return this.migration
   }
