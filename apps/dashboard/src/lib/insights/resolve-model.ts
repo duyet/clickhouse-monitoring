@@ -30,8 +30,8 @@ export function resolveInsightModel(
   const colon = id.indexOf(':')
   if (colon <= 0) return undefined
 
-  const provider = id.slice(0, colon)
-  const modelId = id.slice(colon + 1)
+  const provider = id.slice(0, colon).trim()
+  const modelId = id.slice(colon + 1).trim()
   if (!provider || !modelId) return undefined
 
   try {
