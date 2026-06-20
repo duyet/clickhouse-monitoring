@@ -65,7 +65,7 @@ jobs:
           git push origin "$COMMIT:refs/heads/gh-pages"
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
