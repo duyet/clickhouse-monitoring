@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { CommandPalette } from '@/components/controls/command-palette'
 import { RefreshCountdown } from '@/components/header/refresh-countdown'
 import { GlobalTimeRangePicker } from '@/components/header/time-range-picker'
+import { InsightsPopover } from '@/components/insights/insights-popover'
 import { NotificationsPopover } from '@/components/notifications/notifications-popover'
 import { SettingsDialog } from '@/components/settings'
 import { Button } from '@/components/ui/button'
@@ -78,7 +79,8 @@ export const HeaderActions = function HeaderActions({
         </Button>
       )}
 
-      {/* Notifications - hidden on mobile */}
+      {/* AI Insights + Notifications - hidden on mobile */}
+      <InsightsPopover />
       <NotificationsPopover />
       {menuComponent}
 
