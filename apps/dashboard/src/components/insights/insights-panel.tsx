@@ -1,4 +1,4 @@
-import { RefreshCw, Settings2, Sparkles, X } from 'lucide-react'
+import { Database, RefreshCw, Settings2, Sparkles, X } from 'lucide-react'
 
 import { useState } from 'react'
 import { InsightCard } from '@/components/insights/insight-card'
@@ -6,6 +6,10 @@ import { AppLink } from '@/components/ui/app-link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  INSIGHTS_BACKEND_LABELS,
+  useInsightsBackend,
+} from '@/lib/hooks/use-insights-backend'
 import { useInsights } from '@/lib/query/use-insights'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
@@ -187,8 +191,29 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
               </Button>
             </div>
           ) : null}
+          <InsightsStorageFooter />
         </>
       )}
     </section>
+  )
+}
+
+/**
+ * Read-only footer naming where insights are persisted. The backend is fixed at
+ * deploy time via INSIGHTS_STORE_BACKEND, so nothing here is editable — it just
+ * makes the active store visible, mirroring the agent's conversation-history
+ * panel.
+ */
+function InsightsStorageFooter() {
+  const { backend, isLoading } = useInsightsBackend()
+  if (isLoading) return null
+
+  return (
+    <p className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
+      <Database className="size-3 shrink-0" />
+      <span>
+        Stored in {INSIGHTS_BACKEND_LABELS[backend]} · configured at deploy time
+      </span>
+    </p>
   )
 }

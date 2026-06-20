@@ -127,6 +127,33 @@ When AgentState is active **and** `AGENTSTATE_AI_ENRICH=true`:
 
 With enrichment off, conversations persist normally but titles and follow-up suggestions are not generated.
 
+## AI Insights persistence
+
+Separate from chat history, the AI Insights panel on `/overview` persists the
+short observations it generates through its own pluggable store, mirroring the
+conversation backends above. It is **additive opt-in** via one env var and
+defaults to ClickHouse, so existing deployments are unaffected.
+
+```bash
+INSIGHTS_STORE_BACKEND=auto   # auto | clickhouse | d1 | postgres | agentstate | memory
+```
+
+| Value | Backend | Prerequisite |
+|---|---|---|
+| `auto` (default) | ClickHouse `monitoring_findings` table | writable monitoring connection |
+| `clickhouse` | same as `auto` | writable monitoring connection |
+| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CONVERSATIONS_D1` |
+| `postgres` | Postgres `insights_findings` table | `DATABASE_URL` |
+| `agentstate` | AgentState State store | `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`) |
+| `memory` | in-process (ephemeral) | — |
+
+The D1, Postgres, and AgentState backends reuse the same env / bindings as the
+conversation store. `auto` resolves to ClickHouse and never silently follows
+other env; if an explicitly selected backend is missing its prerequisite, the
+engine logs a warning and falls back to ClickHouse. `GET /api/v1/insights/backend`
+reports the active backend (`{ "backend": "d1" }`), and the overview panel shows
+a read-only "Stored in `<backend>`" footer.
+
 ## HTTP API
 
 ```bash
