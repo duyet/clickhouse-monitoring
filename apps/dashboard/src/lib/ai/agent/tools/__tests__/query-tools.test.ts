@@ -145,8 +145,30 @@ describe('createQueryTools', () => {
       expect(result[0].explain).toBeDefined()
     })
 
-    test('supports pipeline explain type', async () => {
-      setupQueryMock()
+    test('generates EXPLAIN PLAN for default/plan type', async () => {
+      let capturedQuery = ''
+      mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+        capturedQuery = query
+        return { data: queryResults.explain, error: null }
+      })
+
+      const tools = createQueryTools(0) as any
+      await tools.explain_query.execute({
+        sql: 'SELECT count() FROM system.tables',
+        type: 'plan',
+      })
+
+      expect(capturedQuery).toBe(
+        'EXPLAIN PLAN SELECT count() FROM system.tables'
+      )
+    })
+
+    test('generates EXPLAIN PIPELINE for pipeline type', async () => {
+      let capturedQuery = ''
+      mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+        capturedQuery = query
+        return { data: queryResults.explain, error: null }
+      })
 
       const tools = createQueryTools(0) as any
       const result = await tools.explain_query.execute({
@@ -155,10 +177,17 @@ describe('createQueryTools', () => {
       })
 
       expect(Array.isArray(result)).toBe(true)
+      expect(capturedQuery).toBe(
+        'EXPLAIN PIPELINE SELECT count() FROM system.tables'
+      )
     })
 
-    test('supports indexes explain type', async () => {
-      setupQueryMock()
+    test('generates EXPLAIN PLAN indexes=1 for indexes type (not EXPLAIN INDEXES)', async () => {
+      let capturedQuery = ''
+      mockFetchData.mockImplementation(async ({ query }: { query: string }) => {
+        capturedQuery = query
+        return { data: queryResults.explain, error: null }
+      })
 
       const tools = createQueryTools(0) as any
       const result = await tools.explain_query.execute({
@@ -167,6 +196,11 @@ describe('createQueryTools', () => {
       })
 
       expect(Array.isArray(result)).toBe(true)
+      // Must use PLAN setting, not the invalid top-level EXPLAIN INDEXES mode
+      expect(capturedQuery).toBe(
+        'EXPLAIN PLAN indexes=1 SELECT count() FROM system.tables'
+      )
+      expect(capturedQuery).not.toContain('EXPLAIN INDEXES')
     })
 
     test('propagates validation errors', async () => {
