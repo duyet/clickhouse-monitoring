@@ -34,7 +34,7 @@ Agents discover knowledge in this order:
 | **Operations** | [secret-rotation.md](secret-rotation.md) | workflow | Cloudflare Workers secret rotation: redeploy after wrangler secret put |
 | **Operations** | [k8s-health-probes.md](k8s-health-probes.md) | reference | /healthz (liveness, static) vs /api/healthz (readiness, CH-gated); startupProbe; :latest stale-image incident; non-helm manifest + migration prompt |
 | **Operations** | [release-automation.md](release-automation.md) | workflow | release-please + release.yml pipeline: versioning rules, PR-title guard, labeler, CHANGELOG ownership, migration prompt |
-| **Specs** | [ai-insights.md](ai-insights.md) | spec | AI Insights engine: collect→enrich→persist (findings store), cron + manual generation, stable-key dismissal, overview panel |
+| **Specs** | [ai-insights.md](ai-insights.md) | spec | AI Insights engine: collect→enrich→persist (pluggable InsightsStore: clickhouse default / d1 / postgres / agentstate / memory), cron + manual generation, stable-key dismissal, overview panel |
 | **Specs** | [mcp-server.md](mcp-server.md) | reference | MCP server at /api/mcp: tools, setup, security |
 | **Security** | [sql-validator-threat-model.md](sql-validator-threat-model.md) | decision | validateSqlQuery gates all free-form SQL; whole-query (not fragment) threat model; UNION/replace()/OR-disjunction false-positive class + corpus regression guard |
 | **Development** | [api-hostid-validation.md](api-hostid-validation.md) | decision | API routes must validate hostId as non-negative integer (400); `!Number.isFinite` accepted -1/1.5 → 500-retry; 9 routes fixed + cross-route source guard |

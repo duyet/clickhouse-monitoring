@@ -3,7 +3,7 @@ id: ai-insights
 title: AI Insights Engine
 type: spec
 status: active
-updated: 2026-06-17
+updated: 2026-06-20
 tags:
   - insights
   - findings
@@ -14,6 +14,8 @@ related:
   - mcp-server
   - query-config-format
   - conventions
+  - agentstate-conversation-store
+  - agent-conversation-storage
 ---
 
 # AI Insights Engine
@@ -44,8 +46,100 @@ is fragmented", "replication is lagging" — generated and **cached server-side*
   (`isProviderConfigured(resolveProvider(DEFAULT_MODEL).providerId)`), candidates
   pass through one `generateObject` call that tightens wording. With no key (or
   on any error) candidates are returned unchanged — the "if available" half.
-- **Persistence reuses the findings store** (`src/lib/findings/findings-store.ts`,
-  `FINDINGS_TABLE`, 30-day TTL). Insights are recorded with `source: 'ai-insight'`.
+- **Persistence goes through the pluggable `InsightsStore`**
+  (`src/lib/insights/store/`). The default backend is the ClickHouse findings
+  store (`src/lib/findings/findings-store.ts`, `FINDINGS_TABLE`, 30-day TTL),
+  which records insights with `source: 'ai-insight'` — the original behavior.
+  Operators can point persistence at D1 / Postgres / AgentState instead; see
+  **Persistence backends** below.
+
+## Persistence backends
+
+Persistence is pluggable, mirroring the agent's pluggable `ConversationStore`
+(see [agentstate-conversation-store.md](agentstate-conversation-store.md) and
+[agent-conversation-storage.md](agent-conversation-storage.md)). Why it exists:
+the original engine wrote insights straight to a ClickHouse table on the
+monitored cluster. On a read-only monitoring connection that write silently
+fails, so insights never survived a reload. The `InsightsStore` interface lets
+operators point persistence at a writable store instead — without granting the
+monitoring user write access to the cluster it watches.
+
+The interface (`src/lib/insights/store/types.ts`) is small — `record(hostId,
+findings)` and `list(hostId, opts)` — and reuses the `Finding` / `FindingRow`
+shapes from the findings store, so the read path (`read-insights.ts → toCard`)
+is identical regardless of backend. **Every method is best-effort**: a backend
+that cannot write (read-only cluster, missing binding) logs and returns
+`false`/`[]` rather than throwing, so both the manual "Generate" endpoint and the
+cron sweep stay resilient.
+
+### Selection
+
+Selection is **additive opt-in via a single env var**, not flag-gated. Setting
+nothing keeps the original ClickHouse behavior. Backends:
+
+| `INSIGHTS_STORE_BACKEND` | Backend | Prerequisite env / binding |
+|---|---|---|
+| `auto` (default) | ClickHouse | — (original behavior) |
+| `clickhouse` | ClickHouse `monitoring_findings` table on the monitored cluster | writable monitoring connection |
+| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CONVERSATIONS_D1` |
+| `postgres` | Postgres `insights_findings` table | `DATABASE_URL` |
+| `agentstate` | AgentState generic State store | `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`) |
+| `memory` | in-process map (ephemeral) | — |
+
+Files: `clickhouse-store.ts`, `d1-store.ts`, `postgres-store.ts`,
+`agentstate-store.ts`, `memory-store.ts`; resolver `resolve-store.ts`.
+
+- **Default is ClickHouse.** `auto` and `clickhouse` both resolve to the
+  ClickHouse findings store — exactly the original behavior, so existing
+  deployments are unaffected.
+- **`auto` never silently follows other env.** The presence of `DATABASE_URL`
+  (for conversations) does not move insights to Postgres — switching is always an
+  explicit decision.
+- **Fallback to ClickHouse on missing prerequisite.** If an explicitly selected
+  backend is missing its prerequisite (no `DATABASE_URL`, no `AGENTSTATE_API_KEY`),
+  the resolver logs a warning and falls back to ClickHouse so generation keeps
+  working.
+- The resolved store is memoized per process (keyed by the env value) so the
+  Postgres pool / AgentState client is created once.
+
+### Tables and mapping
+
+- **D1 / Postgres** lazily create a dedicated `insights_findings` table on first
+  use (event_time as unix ms, scalar finding columns). D1 reuses the
+  conversation D1 binding (`INSIGHTS_D1` first, then `CONVERSATIONS_D1`); Postgres
+  reuses `DATABASE_URL`.
+- **ClickHouse** uses the existing `monitoring_findings` table with
+  `source = 'ai-insight'`.
+- **AgentState** reuses `AGENTSTATE_API_KEY` + optional `AGENTSTATE_BASE_URL` and
+  stores each insight as a generic **State** record (not a conversation):
+  - `agent_id` = `clickhouse-monitoring-insights`
+  - `state_key` = `insight:<hostId>:<readable-prefix>:<fnv1a-hash>` — a bounded,
+    human-readable prefix plus an FNV-1a hash of the full
+    `host\0category\0metric\0title` composite. The hash makes the key both
+    **stable** (an unchanged insight upserts in place — natural dedup) and
+    **collision-proof**: a plain truncated `category:metric:title` would alias
+    two long titles sharing a 120-char prefix into one key and silently
+    overwrite one (data loss). Regression + benchmark coverage in
+    `store/agentstate-store.test.ts`.
+  - `tags` = [`host:<id>`, `severity:<sev>`] for server-side filtering
+
+### Endpoint and UI
+
+- `GET /api/v1/insights/backend` returns `{ backend }` (no secrets), failing safe
+  to `clickhouse`. Mirrors `/api/v1/conversations/backend`.
+- The overview AI Insights panel (`insights-panel.tsx`) shows a read-only footer
+  — "Stored in `<backend>` · configured at deploy time" — via the
+  `use-insights-backend.ts` hook.
+
+### Environment variables
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `INSIGHTS_STORE_BACKEND` | no | `auto` | `auto` \| `clickhouse` \| `d1` \| `postgres` \| `agentstate` \| `memory`. `auto`/`clickhouse` = ClickHouse findings store |
+| `INSIGHTS_D1` | no | — | optional dedicated D1 binding for the `d1` backend; falls back to `CONVERSATIONS_D1` |
+| `DATABASE_URL` | for `postgres` | — | reused from the conversation Postgres store |
+| `AGENTSTATE_API_KEY` | for `agentstate` | — | reused from the AgentState conversation store |
+| `AGENTSTATE_BASE_URL` | no | SDK default | self-host endpoint for `agentstate` |
 
 ## Generation triggers
 
@@ -53,7 +147,39 @@ is fragmented", "replication is lagging" — generated and **cached server-side*
   `generateInsights(hostId)` per host on the existing 5-minute Cloudflare trigger
   (`api/cron/health-sweep`). No new trigger.
 - **Manual**: `POST /api/v1/insights/generate?host=<id>` (the panel's Refresh
-  button).
+  button), optionally carrying the user's config (see below).
+
+## Configuration (per-user)
+
+Insight generation is configurable per-user, persisted client-side (localStorage,
+like dismissals + the agent model picker). All overrides are **optional and
+validated server-side** — omitting them reproduces the original behavior.
+
+- **Settings model** — `src/lib/insights/settings.ts` (`InsightsSettings`:
+  `model` | `promptStyle` | `enrich` | `window`), pure/isomorphic with
+  `sanitizeInsightsSettings` + `generateParamsFromSettings`. Hook:
+  `src/lib/query/use-insights-settings.ts` (localStorage + `CustomEvent`/`storage`
+  broadcast so the panel, settings page, and header popover stay in sync).
+- **Prompt styles** — `src/lib/insights/prompts.ts`: `concise` (default) /
+  `detailed` / `beginner`, each a distinct enrichment system prompt. The
+  deterministic baseline copy is unchanged.
+- **Model override** — validated server-side in
+  `src/lib/insights/resolve-model.ts` against the *configured* registry
+  (`getModelRegistry()` + `isProviderConfigured`); an unknown/unconfigured id
+  falls back to the deployment default (`DEFAULT_MODEL`).
+- **Generate API params** — `POST /api/v1/insights/generate` accepts
+  `enrich` (`false` skips LLM), `model` (`provider:model`), `promptStyle`. The
+  read endpoint (`GET /api/v1/insights`) takes `since` = the chosen window.
+- `enrichInsights(candidates, { model, promptStyle })` /
+  `generateInsights(hostId, { enrich, model, promptStyle })` thread the overrides.
+
+## Settings page
+
+- `/insights-settings` (`src/routes/(dashboard)/insights-settings.tsx`) renders
+  `InsightsSettingsForm` (`src/components/insights/insights-settings-form.tsx`):
+  enrichment toggle, model picker (configured providers from
+  `/api/v1/agents/models`), prompt style, lookback window, reset-to-defaults.
+- Reachable from the overview panel's settings gear and the header popover.
 
 ## Read + dismissal
 
@@ -74,6 +200,11 @@ is fragmented", "replication is lagging" — generated and **cached server-side*
 - `src/components/insights/insight-card.tsx` — shadcn `Card` wrapper (never edits
   `components/ui/`), severity-toned accent, dismiss `X`, and a derived action
   link (e.g. View tables / Open running queries / Ask the agent).
+- `src/components/insights/insights-popover.tsx` — **global header popover**
+  (mirrors `NotificationsPopover`), mounted in `header-actions.tsx` so insights
+  surface on every page: severity-toned count badge, top insights with deep
+  links, Refresh, and footer links to the overview panel + settings page. Reuses
+  `useInsights`, so counts/dismissals stay in sync with the panel.
 
 ## Gotchas
 

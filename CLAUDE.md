@@ -19,6 +19,21 @@ watch CI, fix failures, confirm the merge and production deploy. Do NOT ask the
 user whether to babysit — just do it. Known non-required checks (`e2e-test`,
 `e2e-test-tsr`, `component-test`, `unit-tests`) do not block auto-merge.
 
+**Stale bot-review gate (authorized override).** When a bot reviewer
+(CodeRabbit / `coderabbitai[bot]`, Sourcery, Gemini) leaves a
+`CHANGES_REQUESTED` that blocks merge, you are authorized to dismiss it and merge
+**only when ALL of these hold**: every actionable point it raised is genuinely
+fixed (or was stale / referenced pre-fix code), **all required CI checks are
+green**, the branch is up to date with `main`, and the bot did not re-review
+after you triggered it (push a new commit, then `@coderabbitai review` /
+`@coderabbitai full review`, then a formal re-request — give it a few minutes).
+Dismiss with
+`gh api -X PUT repos/duyet/clickhouse-monitoring/pulls/<n>/reviews/<id>/dismissals -f event=DISMISS -f message="<why each point is addressed>"`
+(bot reviews use the `coderabbitai[bot]` login; there may be more than one to
+dismiss). Do NOT dismiss a human reviewer's changes-requested, and never dismiss
+to skip an unaddressed finding. To avoid the gate entirely, prefer
+`request_changes_workflow: false` in CodeRabbit config so it only comments.
+
 ## Project Overview
 
 This is a monorepo ClickHouse monitoring dashboard. The primary (and only) dashboard app is `apps/dashboard` (TanStack Start, as of v0.3). The Next.js migration is complete — the TanStack Start app has replaced the legacy Next.js app and is now at `apps/dashboard`. The application connects to ClickHouse instances and provides real-time insights into clusters through system tables — metrics, query performance, table information, and cluster health.

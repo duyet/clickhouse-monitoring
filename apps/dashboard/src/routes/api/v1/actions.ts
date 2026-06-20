@@ -13,6 +13,7 @@ import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, log } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { quoteTableIdentifier } from '@/lib/api/shared/sql-identifier'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
@@ -113,7 +114,7 @@ async function handleOptimizeTable(
   }
 
   const { error } = await fetchData({
-    query: `OPTIMIZE TABLE ${table}`,
+    query: `OPTIMIZE TABLE ${quoteTableIdentifier(table)}`,
     hostId,
   })
 

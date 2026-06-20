@@ -46,7 +46,7 @@ const indexes = [
   },
 ]
 
-const partitions = [{ partition: '202605', parts: 5, is_inactive: 0 }]
+const partitions = [{ partition: '202605', parts: 5, inactive_parts: 0 }]
 
 const constraints = [
   {
@@ -106,7 +106,10 @@ function setupSchemaMocks(overrides?: {
       if (query.includes('system.data_skipping_indexes'))
         return { data: indexes, error: null }
 
-      if (query.includes('system.parts') && query.includes('active = 1'))
+      if (
+        query.includes('system.parts') &&
+        query.includes('GROUP BY partition')
+      )
         return { data: partitions, error: null }
 
       if (query.includes('partition_key') && query.includes('primary_key'))

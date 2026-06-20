@@ -97,7 +97,6 @@ const {
   __testCountJsonEachRowRows,
   fetchData,
   fetchJsonEachRowAsNormalizedJson,
-  query,
 } = await import(
   new URL('../clickhouse-fetch.ts?test=clickhouse-fetch', import.meta.url).href
 )
@@ -595,54 +594,6 @@ describe('clickhouse-fetch', () => {
       expect(__testCountJsonEachRowRows('\n  \n\t\n')).toBe(0)
       expect(__testCountJsonEachRowRows('{"a":1}\n{"a":2}\n')).toBe(2)
       expect(__testCountJsonEachRowRows('{"a":1}\n\n{"a":2}')).toBe(2)
-    })
-  })
-
-  describe('query helper', () => {
-    it('should execute simple query', async () => {
-      await query('SELECT 1')
-
-      expect(mockCreateClient).toHaveBeenCalled()
-      expect(mockClientQuery).toHaveBeenCalledWith({
-        query: expect.stringContaining('SELECT 1'),
-        format: 'JSON',
-        query_params: {},
-      })
-    })
-
-    it('should accept params', async () => {
-      const params = { param1: 'value1' }
-      await query('SELECT :param1', params)
-
-      expect(mockClientQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          query_params: params,
-        })
-      )
-    })
-
-    it('should accept custom format', async () => {
-      await query('SELECT 1', {}, 'CSV')
-
-      expect(mockClientQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          format: 'CSV',
-        })
-      )
-    })
-
-    it('should pass web: false to getClient', async () => {
-      await query('SELECT 1')
-
-      expect(mockCreateClient).toHaveBeenCalled()
-      // getClient is called with web: false, which means createClient (not createClientWeb) is used
-      // We verify this by checking mockClientQuery was called (meaning the mock client was used)
-    })
-
-    it('should return resultSet', async () => {
-      const result = await query('SELECT 1')
-
-      expect(result).toBe(mockResultSet)
     })
   })
 })

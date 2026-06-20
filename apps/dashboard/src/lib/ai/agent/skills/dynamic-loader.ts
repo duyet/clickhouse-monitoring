@@ -22,7 +22,7 @@ const runtimeSkills: Map<string, Skill> = new Map()
  * Parse name, description, and body from a SKILL.md file.
  * Matches the pattern used in scripts/build-skills-registry.ts.
  */
-function parseFrontmatter(raw: string): {
+export function parseFrontmatter(raw: string): {
   name: string
   description: string
   body: string
