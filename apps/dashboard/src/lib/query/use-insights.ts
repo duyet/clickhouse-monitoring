@@ -20,6 +20,8 @@ import {
   dismissInsight,
   filterActiveInsights,
 } from '@/lib/insights/dismissed-insights'
+import { generateParamsFromSettings } from '@/lib/insights/settings'
+import { useInsightsSettings } from '@/lib/query/use-insights-settings'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
 
@@ -42,12 +44,23 @@ export interface UseInsightsResult {
 
 export function useInsights(hostId: number): UseInsightsResult {
   const queryClient = useQueryClient()
-  const queryKey = useMemo(() => [`/api/v1/insights?host=${hostId}`], [hostId])
+  const { settings } = useInsightsSettings()
+  const { window: readWindow } = settings
+
+  // The read window is part of the cache key so changing it refetches.
+  const queryKey = useMemo(
+    () => [`/api/v1/insights?host=${hostId}`, readWindow],
+    [hostId, readWindow]
+  )
 
   const { data, error, isLoading } = useQuery<InsightsResponse>({
     queryKey,
     queryFn: async () => {
-      const res = await apiFetch(`/api/v1/insights?host=${hostId}`)
+      const params = new URLSearchParams({
+        host: String(hostId),
+        since: readWindow,
+      })
+      const res = await apiFetch(`/api/v1/insights?${params.toString()}`)
       if (!res.ok) throw new Error('Failed to fetch insights')
       return res.json()
     },
@@ -63,7 +76,8 @@ export function useInsights(hostId: number): UseInsightsResult {
 
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiFetch(`/api/v1/insights/generate?host=${hostId}`, {
+      const params = generateParamsFromSettings(hostId, settings)
+      const res = await apiFetch(`/api/v1/insights/generate?${params}`, {
         method: 'POST',
       })
       if (!res.ok) throw new Error('Failed to generate insights')
