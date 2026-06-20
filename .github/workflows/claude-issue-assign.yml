@@ -153,15 +153,23 @@ jobs:
                it passed.
             5. Commit with semantic format and the required co-author trailer:
                ```
-               <type>: <scope> - <subject> (#${{ github.event.issue.number }})
+               <type>(<scope>): <subject>
 
                Co-Authored-By: duyetbot <bot@duyet.net>
                ```
+               IMPORTANT: the subject line (everything before the first newline) MUST
+               be <= 100 characters. This repo's `commitlint.config.js` enforces
+               `header-max-length: 100`, and CI's `conventional-title` check FAILS
+               otherwise (squash-merge uses the PR title as the commit subject). Keep
+               it tight and do NOT pad it with `(#issue)` — the `Resolves #` keyword in
+               the PR body handles closing.
             6. Push the branch: `git push origin <branch-name>`.
 
             ## Phase 3 — Open the PR and link the issue
 
-            - `gh pr create --base main --title "<semantic title> (#${{ github.event.issue.number }})" --body "<body below>"`
+            - `gh pr create --base main --title "<semantic title, <= 100 chars>" --body "<body below>"`
+              The title must pass `conventional-title` CI: `<type>(<scope>): <subject>`
+              and <= 100 characters total. Do NOT append `(#issue)` to the title.
             - The PR body MUST contain a closing keyword so the issue auto-closes on
               merge: **`Resolves #${{ github.event.issue.number }}`**.
             - Per project policy, arm auto-merge after creating the PR:
