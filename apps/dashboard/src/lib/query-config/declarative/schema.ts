@@ -102,13 +102,11 @@ const columnFormatEnumSchema = z.enum(columnFormatValues)
 
 const looseColumnFormatArgsSchema = z.record(z.string(), z.unknown())
 
-const linkFormatArgsSchema = z
-  .object({
-    href: z.string().optional(),
-    className: z.string().optional(),
-    title: z.string().optional(),
-  })
-  .passthrough()
+const linkFormatArgsSchema = z.looseObject({
+  href: z.string().optional(),
+  className: z.string().optional(),
+  title: z.string().optional(),
+})
 
 const codeDialogFormatArgsSchema = z.object({
   dialog_title: z.string().optional(),
