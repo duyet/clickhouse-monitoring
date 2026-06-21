@@ -4,6 +4,7 @@ import type { QueryConfig } from '@/types/query-config'
 
 import {
   type ColumnFilterContext,
+  estimateColumnSizes,
   getColumnDefs,
   type SchemaColumnFilterContext,
 } from '../column-defs'
@@ -12,6 +13,8 @@ import { useMemo } from 'react'
 interface UseTableColumnsOptions<TData extends RowData, _TValue> {
   queryConfig: QueryConfig
   context: Record<string, string>
+  /** Full, unfiltered dataset — used to estimate stable column widths. */
+  data: TData[]
   filteredData: TData[]
   filterContext?: ColumnFilterContext
   schemaFilterContext?: SchemaColumnFilterContext
@@ -28,6 +31,7 @@ export function useTableColumns<
 >({
   queryConfig,
   context,
+  data,
   filteredData,
   filterContext,
   schemaFilterContext,
@@ -52,6 +56,14 @@ export function useTableColumns<
     [_contextKey]
   )
 
+  // Estimate column widths from the *unfiltered* dataset, memoized separately so
+  // the (relatively expensive) per-column sampling does not re-run on every
+  // search keystroke — only when the underlying data or config actually changes.
+  const columnSizeHints = useMemo(
+    () => estimateColumnSizes<TData>(queryConfig, data),
+    [queryConfig, data]
+  )
+
   // Column definitions for the table (memoized to prevent recalculation)
   const columnDefs = useMemo(
     () =>
@@ -60,7 +72,8 @@ export function useTableColumns<
         filteredData,
         contextWithPrefix,
         filterContext,
-        schemaFilterContext
+        schemaFilterContext,
+        columnSizeHints
       ) as ColumnDef<TData, TValue>[],
     [
       queryConfig,
@@ -68,6 +81,7 @@ export function useTableColumns<
       contextWithPrefix,
       filterContext,
       schemaFilterContext,
+      columnSizeHints,
     ]
   )
 

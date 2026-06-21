@@ -301,6 +301,7 @@ export function DataTable<
   const { columnDefs } = useTableColumns<TData, TValue>({
     queryConfig,
     context,
+    data,
     filteredData,
     filterContext,
     schemaFilterContext,
@@ -460,14 +461,14 @@ export function DataTable<
   // so we always pin utility column IDs to the very front and strip any
   // duplicates that may appear later in the saved order. When no saved order
   // exists, returning `[]` lets TanStack derive order from `finalColumnDefs`.
-  const finalColumnOrder = ((): ColumnOrderState => {
+  const finalColumnOrder = useMemo((): ColumnOrderState => {
     const utilityIds: string[] = []
     if (expandable) utilityIds.push(EXPAND_COLUMN_ID)
     if (enableRowSelection) utilityIds.push('select')
     if (columnOrder.length === 0) return utilityIds.length ? utilityIds : []
     const dataOnly = columnOrder.filter((id) => !utilityIds.includes(id))
     return [...utilityIds, ...dataOnly]
-  })()
+  }, [expandable, enableRowSelection, columnOrder])
 
   // Row expansion state. When `expandable.defaultExpanded` is true we expand
   // everything by default; the user can collapse individually.
@@ -484,14 +485,20 @@ export function DataTable<
   const [expanded, setExpanded] = useState<ExpandedState>(initialExpanded)
 
   // Generate unique row ID from data (use query_id if available, otherwise index)
-  const getRowId = (row: TData, index: number) => {
+  // Memoized: the body captures nothing, so a stable reference avoids feeding
+  // useReactTable a new getRowId every render (which would bust its row models).
+  const getRowId = useCallback((row: TData, index: number) => {
     const record = row as Record<string, unknown>
     // Try common ID fields first
     if (record.query_id) return String(record.query_id)
     if (record.id) return String(record.id)
     // Fallback to index
     return String(index)
-  }
+  }, [])
+
+  // Custom sorting functions capture nothing, so build them once per instance
+  // instead of allocating a fresh object on every render.
+  const customSortingFns = useMemo(() => getCustomSortingFns<TData>(), [])
 
   const table = useReactTable({
     data: filteredData,
@@ -501,7 +508,7 @@ export function DataTable<
     getSortedRowModel: getSortedRowModel(),
     // Add custom sorting functions
     // Ref: https://tanstack.com/table/v8/docs/guide/sorting#custom-sorting-functions
-    sortingFns: getCustomSortingFns<TData>(),
+    sortingFns: customSortingFns,
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     // Column resizing (configurable via queryConfig.tableBehavior)
