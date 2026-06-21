@@ -67,6 +67,15 @@ function getSqlVerb(sql: string): string {
   return match ? match[1].toUpperCase() : 'UNKNOWN'
 }
 
+/**
+ * Identifier-safe ClickHouse database name. The value is passed to the client
+ * config (not concatenated into SQL), but we still gate it to plain identifiers
+ * to reject anything unexpected.
+ */
+function isValidDatabaseName(db: string): boolean {
+  return /^[A-Za-z0-9_]+$/.test(db) && db.length <= 255
+}
+
 async function executeQuery(params: {
   sql: string
   hostId: number
@@ -74,8 +83,23 @@ async function executeQuery(params: {
   timezone: string | null
   method: string
   maxLength: number
+  database?: string | null
 }): Promise<Response> {
-  const { sql, hostId, format, timezone, method, maxLength } = params
+  const { sql, hostId, format, timezone, method, maxLength, database } = params
+
+  if (database && !isValidDatabaseName(database)) {
+    return Response.json(
+      {
+        success: false,
+        error: {
+          type: ApiErrorType.ValidationError,
+          message: `Invalid database name: ${database}`,
+          details: { database },
+        },
+      },
+      { status: 400 }
+    )
+  }
 
   if (!sql) {
     return Response.json(
@@ -152,6 +176,7 @@ async function executeQuery(params: {
     hostId,
     format: format as DataFormat,
     clickhouse_settings,
+    ...(database ? { database } : {}),
   })
 
   if (result.error) {
@@ -240,6 +265,7 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
         const sql = searchParams.get('sql') ?? ''
         const format = searchParams.get('format') ?? 'JSONEachRow'
         const timezone = searchParams.get('timezone')
+        const database = searchParams.get('database')
 
         debug('[GET /api/v1/explorer/query]', { hostId, format, timezone })
 
@@ -249,6 +275,7 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
             hostId,
             format,
             timezone,
+            database,
             method: 'GET',
             maxLength: MAX_GET_QUERY_LENGTH,
           })
@@ -303,6 +330,8 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
           typeof body.format === 'string' ? body.format : 'JSONEachRow'
         const timezone =
           typeof body.timezone === 'string' ? body.timezone : null
+        const database =
+          typeof body.database === 'string' ? body.database : null
 
         if (hostIdParam === undefined || hostIdParam === null) {
           return Response.json(
@@ -339,6 +368,7 @@ export const Route = createFileRoute('/api/v1/explorer/query')({
             hostId,
             format,
             timezone,
+            database,
             method: 'POST',
             maxLength: MAX_POST_QUERY_LENGTH,
           })

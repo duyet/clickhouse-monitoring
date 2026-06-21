@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   CheckCircle2,
   Clock,
   History,
@@ -8,6 +9,9 @@ import {
   X,
 } from 'lucide-react'
 
+import type { StatementOutcome } from './hooks/use-sql-runner'
+
+import { DatabaseCombobox } from './database-combobox'
 import { useQueryHistory } from './hooks/use-query-history'
 import { useSqlRunner } from './hooks/use-sql-runner'
 import { QueryHistoryPanel } from './query-history-panel'
@@ -30,6 +34,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatSql } from '@/lib/sql-format'
+import { cn } from '@/lib/utils'
 
 // CodeMirror lives here, ALWAYS mounted and visible at the top of the console —
 // never inside the result Tabs and never hidden via display:none. That is the
@@ -49,6 +54,10 @@ export interface SqlConsoleProps {
   variant?: 'page' | 'embedded'
   /** Called when the committed query changes, e.g. to sync the URL. */
   onQueryCommitted?: (sql: string) => void
+  /** Default database for unqualified table names (`FROM table`). */
+  database?: string
+  /** When provided, renders the current-database picker next to Format. */
+  onDatabaseChange?: (database: string | undefined) => void
 }
 
 type ResultTabValue = 'results' | 'explain' | 'query-log' | 'analysis'
@@ -58,8 +67,10 @@ export function SqlConsole({
   initialSql = '',
   variant = 'page',
   onQueryCommitted,
+  database,
+  onDatabaseChange,
 }: SqlConsoleProps) {
-  const runner = useSqlRunner(hostId, initialSql)
+  const runner = useSqlRunner(hostId, initialSql, database)
   const history = useQueryHistory()
   const [tab, setTab] = useState<ResultTabValue>('results')
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -68,30 +79,41 @@ export function SqlConsole({
     editorValue,
     setEditorValue,
     committedSql,
+    statements,
+    activeIndex,
+    setActiveIndex,
+    activeStatement,
     run,
     cancel,
-    result,
-    error,
     isRunning,
     hasRun,
   } = runner
 
   // Log each completed run to local history exactly once (on the running→idle
-  // transition for the current committed query).
+  // transition for the current committed query). Aggregate across statements.
   const wasRunning = useRef(false)
   useEffect(() => {
     if (wasRunning.current && !isRunning && committedSql) {
+      const ok = statements.length > 0 && statements.every((s) => !s.error)
+      const rows = statements.reduce(
+        (sum, s) => sum + (s.result?.rowCount ?? 0),
+        0
+      )
+      const durationMs = statements.reduce(
+        (sum, s) => sum + (s.result?.durationMs ?? 0),
+        0
+      )
       history.add({
         sql: committedSql,
         hostId,
-        database: null,
-        ok: !error,
-        rows: result?.rowCount,
-        durationMs: result?.durationMs,
+        database: database ?? null,
+        ok,
+        rows,
+        durationMs,
       })
     }
     wasRunning.current = isRunning
-  }, [isRunning, committedSql, error, result, hostId, history])
+  }, [isRunning, committedSql, statements, hostId, history, database])
 
   // Notify parent when the committed query changes (URL sync, etc.).
   useEffect(() => {
@@ -106,8 +128,6 @@ export function SqlConsole({
     const formatted = await formatSql(editorValue, {
       language: 'sql',
       keywordCase: 'upper',
-      // Preserve the editor's prior behavior (sql-formatter library defaults)
-      // rather than the dialog-oriented helper defaults.
       identifierCase: 'preserve',
       tabWidth: 2,
       linesBetweenQueries: 1,
@@ -121,7 +141,9 @@ export function SqlConsole({
     if (runIt) run(sql)
   }
 
-  const queryId = result?.queryId ?? null
+  // Secondary tabs (EXPLAIN / Query Log / Analysis) follow the active statement.
+  const activeSql = activeStatement?.sql ?? committedSql
+  const activeQueryId = activeStatement?.result?.queryId ?? null
 
   return (
     <div
@@ -131,9 +153,21 @@ export function SqlConsole({
           : 'flex min-h-0 flex-col gap-3'
       }
     >
-      {/* Toolbar */}
+      {/* Editor — always mounted & visible, ABOVE the action bar */}
+      <ClientOnly fallback={<Skeleton className="h-[160px] rounded-md" />}>
+        <Suspense fallback={<Skeleton className="h-[160px] rounded-md" />}>
+          <SqlEditor
+            value={editorValue}
+            onChange={setEditorValue}
+            onRun={() => handleRun()}
+            placeholder="SELECT * FROM system.tables LIMIT 100"
+          />
+        </Suspense>
+      </ClientOnly>
+
+      {/* Action bar — moved BELOW the input area */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
             onClick={() => handleRun()}
@@ -162,6 +196,13 @@ export function SqlConsole({
           >
             <Sparkles className="mr-1.5 size-3.5" /> Format
           </Button>
+          {onDatabaseChange && (
+            <DatabaseCombobox
+              hostId={hostId}
+              value={database}
+              onChange={onDatabaseChange}
+            />
+          )}
         </div>
 
         <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -192,26 +233,12 @@ export function SqlConsole({
         </Sheet>
       </div>
 
-      {/* Editor — always mounted & visible */}
-      <ClientOnly fallback={<Skeleton className="h-[160px] rounded-md" />}>
-        <Suspense fallback={<Skeleton className="h-[160px] rounded-md" />}>
-          <SqlEditor
-            value={editorValue}
-            onChange={setEditorValue}
-            onRun={() => handleRun()}
-            placeholder="SELECT * FROM system.tables LIMIT 100"
-          />
-        </Suspense>
-      </ClientOnly>
-
       {/* Status bar */}
       <StatusBar
         isRunning={isRunning}
         hasRun={hasRun}
-        rows={result?.rowCount}
-        durationMs={result?.durationMs}
-        queryId={queryId}
-        hasError={Boolean(error)}
+        statements={statements}
+        activeIndex={activeIndex}
       />
 
       {/* Result tabs — no CodeMirror inside, safe to hide/show */}
@@ -229,9 +256,10 @@ export function SqlConsole({
 
         <ScrollArea className="mt-3 min-h-0 flex-1">
           <TabsContent value="results" className="mt-0">
-            <ResultsTab
-              result={result}
-              error={error}
+            <ResultsArea
+              statements={statements}
+              activeIndex={activeIndex}
+              setActiveIndex={setActiveIndex}
               isRunning={isRunning}
               hasRun={hasRun}
             />
@@ -239,22 +267,22 @@ export function SqlConsole({
           <TabsContent value="explain" className="mt-0">
             <ExplainTab
               hostId={hostId}
-              sql={committedSql}
+              sql={activeSql}
               active={tab === 'explain'}
             />
           </TabsContent>
           <TabsContent value="query-log" className="mt-0">
             <QueryLogTab
               hostId={hostId}
-              queryId={queryId}
+              queryId={activeQueryId}
               active={tab === 'query-log'}
             />
           </TabsContent>
           <TabsContent value="analysis" className="mt-0">
             <AnalysisTab
               hostId={hostId}
-              sql={committedSql}
-              queryId={queryId}
+              sql={activeSql}
+              queryId={activeQueryId}
               active={tab === 'analysis'}
             />
           </TabsContent>
@@ -264,22 +292,106 @@ export function SqlConsole({
   )
 }
 
+/**
+ * Results area. A single statement renders one table (unchanged behavior). A
+ * multi-statement run renders one selectable result tab per statement, each
+ * with its own rows/error.
+ */
+function ResultsArea({
+  statements,
+  activeIndex,
+  setActiveIndex,
+  isRunning,
+  hasRun,
+}: {
+  statements: StatementOutcome[]
+  activeIndex: number
+  setActiveIndex: (i: number) => void
+  isRunning: boolean
+  hasRun: boolean
+}) {
+  // Not run yet, or first run still in flight → defer to ResultsTab's own
+  // empty/skeleton states.
+  if (!hasRun || statements.length === 0) {
+    return (
+      <ResultsTab
+        result={null}
+        error={null}
+        isRunning={isRunning}
+        hasRun={hasRun}
+      />
+    )
+  }
+
+  if (statements.length === 1) {
+    const only = statements[0]
+    return (
+      <ResultsTab
+        result={only.result}
+        error={only.error}
+        isRunning={isRunning}
+        hasRun={hasRun}
+      />
+    )
+  }
+
+  const active = statements[activeIndex] ?? statements[0]
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-1.5">
+        {statements.map((s, i) => (
+          <button
+            key={`${i}-${s.sql.slice(0, 16)}`}
+            type="button"
+            onClick={() => setActiveIndex(i)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors',
+              i === activeIndex
+                ? 'border-primary bg-primary/10 text-foreground'
+                : 'border-border text-muted-foreground hover:bg-muted'
+            )}
+          >
+            <span className="font-medium">Result {i + 1}</span>
+            {s.error ? (
+              <AlertCircle className="size-3 text-destructive" />
+            ) : (
+              <span className="opacity-70">
+                {(s.result?.rowCount ?? 0).toLocaleString()}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      <ResultsTab
+        result={active.result}
+        error={active.error}
+        isRunning={false}
+        hasRun
+      />
+    </div>
+  )
+}
+
 function StatusBar({
   isRunning,
   hasRun,
-  rows,
-  durationMs,
-  queryId,
-  hasError,
+  statements,
+  activeIndex,
 }: {
   isRunning: boolean
   hasRun: boolean
-  rows?: number
-  durationMs?: number
-  queryId: string | null
-  hasError: boolean
+  statements: StatementOutcome[]
+  activeIndex: number
 }) {
   if (!hasRun) return null
+
+  const active = statements[activeIndex] ?? statements[0] ?? null
+  const hasError = Boolean(active?.error)
+  const rows = active?.result?.rowCount
+  const durationMs = active?.result?.durationMs
+  const queryId = active?.result?.queryId ?? null
+  const multi = statements.length > 1
+
   return (
     <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
       {isRunning ? (
@@ -293,6 +405,11 @@ function StatusBar({
       ) : (
         <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 className="size-3" /> Success
+        </span>
+      )}
+      {multi && (
+        <span>
+          Statement {activeIndex + 1}/{statements.length}
         </span>
       )}
       {!isRunning && !hasError && rows !== undefined && (

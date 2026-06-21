@@ -33,6 +33,7 @@ export interface ExplorerState {
  */
 export function useExplorerState(): ExplorerState & {
   setDatabase: (database: string | null) => void
+  setDefaultDatabase: (database: string | null) => void
   setTable: (table: string | null, engine?: string | null) => void
   setDatabaseAndTable: (
     database: string,
@@ -131,6 +132,16 @@ export function useExplorerState(): ExplorerState & {
     [updateParams]
   )
 
+  // Set the default database WITHOUT clearing the selected table. Used by the
+  // SQL console's database picker, where switching the default DB for
+  // unqualified table names should not blow away the current query context.
+  const setDefaultDatabase = useCallback(
+    (database: string | null) => {
+      updateParams({ database })
+    },
+    [updateParams]
+  )
+
   const setTable = useCallback(
     (table: string | null, engine?: string | null) => {
       updateParams({ table, engine: engine ?? null })
@@ -168,6 +179,7 @@ export function useExplorerState(): ExplorerState & {
   return {
     ...state,
     setDatabase,
+    setDefaultDatabase,
     setTable,
     setDatabaseAndTable,
     setTab,
