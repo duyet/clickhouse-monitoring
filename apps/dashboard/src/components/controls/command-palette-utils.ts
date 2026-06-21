@@ -7,7 +7,9 @@
 
 const UUID_PATTERN =
   /^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i
-const UUID_PREFIX_PATTERN = /^[a-f0-9-]{8,}$/i
+// At least 8 hex/dash chars AND at least one hex digit, so a string of only
+// dashes ("--------") is never mistaken for a (partial) query id.
+const UUID_PREFIX_PATTERN = /^(?=[a-f0-9-]{8,}$)(?=.*[a-f0-9])[a-f0-9-]+$/i
 const TABLE_PATTERN = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/i
 
 export interface QuickNavMatch {

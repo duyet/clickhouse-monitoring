@@ -29,6 +29,12 @@ describe('detectQuickNav', () => {
     expect(detectQuickNav('a1b2c3d4xyz').isQueryId).toBe(false)
   })
 
+  test('a string of only dashes is not a query id', () => {
+    // Guards the "Go to query" action from a hyphen-only false positive.
+    expect(detectQuickNav('--------').isQueryId).toBe(false)
+    expect(detectQuickNav('--------').hasMatch).toBe(false)
+  })
+
   test('input is trimmed before matching', () => {
     expect(detectQuickNav('  a1b2c3d4  ').isQueryId).toBe(true)
     expect(detectQuickNav('  system.tables  ').isTableName).toBe(true)

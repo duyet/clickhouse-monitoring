@@ -94,7 +94,7 @@ export const KpiCard = function KpiCard({
   if (isLoading) {
     return (
       <div
-        className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}
+        className={cn(cardStyles.base, 'gap-2 p-2.5 sm:gap-2.5 sm:p-4')}
         role="status"
         aria-busy="true"
         aria-label={`Loading ${label}`}

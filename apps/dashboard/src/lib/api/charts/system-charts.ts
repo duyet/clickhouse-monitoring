@@ -421,6 +421,7 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
       SELECT
         normalized_query_hash,
         any(substring(query, 1, 120)) AS query_preview,
+        any(query) AS full_query,
         count() AS execution_count,
         max(memory_usage) AS peak_memory,
         formatReadableSize(max(memory_usage)) AS readable_peak_memory,

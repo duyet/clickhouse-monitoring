@@ -1,3 +1,5 @@
+'use client'
+
 import { ExternalLink, Lightbulb, MemoryStick } from 'lucide-react'
 
 import type { ChartProps } from '@/components/charts/chart-props'
@@ -20,6 +22,8 @@ import { cn } from '@/lib/utils'
 type DataRow = {
   normalized_query_hash: string
   query_preview: string
+  /** Full query text (the row list still shows the truncated preview). */
+  full_query?: string
   execution_count: number
   peak_memory: number
   readable_peak_memory: string
@@ -46,7 +50,9 @@ function QueryDetailDialog({
 
   if (!row) return null
 
-  const query = row.query_preview
+  // Prefer the full query for the dialog + Explorer/Explain links; fall back to
+  // the truncated preview only when the full text isn't available.
+  const query = row.full_query || row.query_preview
   const explorerUrl = buildExplorerQueryUrl(query, hostId)
   const explainUrl = `/explain?query=${encodeURIComponent(query)}&host=${hostId}`
 

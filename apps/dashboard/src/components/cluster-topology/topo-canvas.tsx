@@ -70,8 +70,8 @@ function contentViewBox(model: TopologyModel): string {
   // Extend for cluster hull rects and label pills (they outset past the node
   // envelopes and can have pills pushed below). Use labelY from each hull to
   // capture the actual pill position rather than a fixed offset.
-  for (const h of clusterHulls) {
-    maxY = Math.max(maxY, h.labelY + 20) // pill height ~19px
+  for (const hull of clusterHulls) {
+    maxY = Math.max(maxY, hull.labelY + 20) // pill height ~19px
   }
   minX -= HULL_EXTRA
   maxX += HULL_EXTRA
