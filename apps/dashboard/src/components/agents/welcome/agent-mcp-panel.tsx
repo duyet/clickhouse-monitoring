@@ -3,15 +3,13 @@
 /**
  * MCP Config Panel
  *
- * Shows the status of Model Context Protocol servers connected to the agent:
- *   - Built-in clickhouse-monitor server (always present)
- *   - User-added custom servers (UI-only; backend wiring is TODO)
+ * Shows the status of Model Context Protocol servers connected to the agent.
+ * The built-in clickhouse-monitor server's tool count, resource count, version,
+ * and connection status are derived live from /api/v1/mcp/info.
  *
- * Follows the assistant-ui MCP config pattern:
- *   https://www.assistant-ui.com/docs/ui/mcp-config
- *
- * Per-server enable/disable toggles and "Connect new server" are UI-only.
- * TODO: wire toggles and custom-server form to agent runtime MCP config.
+ * Custom server registration and per-server enable/disable are not yet wired to
+ * the agent runtime — the built-in server toggle is read-only (always on) and the
+ * "Connect new server" button is disabled until a server-registration API exists.
  */
 
 import { PlusIcon, WrenchIcon } from 'lucide-react'
@@ -23,26 +21,10 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
+import { useMcpServerInfo } from '@/lib/swr/use-mcp-server-info'
 
 // Re-exported for existing consumers; canonical definition lives in mcp-types.ts.
 export type { McpServer }
-
-// ---------------------------------------------------------------------------
-// Built-in server definition (always present)
-// ---------------------------------------------------------------------------
-
-const BUILTIN_SERVER: McpServer = {
-  id: 'clickhouse-monitor',
-  name: 'clickhouse-monitor',
-  endpoint: '/api/mcp',
-  toolCount: 14,
-  resourceCount: 2,
-  version: 'v1.0.0',
-  builtin: true,
-  enabled: true,
-  status: 'connected',
-}
 
 // ---------------------------------------------------------------------------
 // Status badge helper
@@ -82,11 +64,9 @@ function StatusBadge({ status }: { status: McpServer['status'] }) {
 
 function McpServerRow({
   server,
-  onToggle,
   onViewDetails,
 }: {
   server: McpServer
-  onToggle: (id: string, next: boolean) => void
   onViewDetails: (server: McpServer) => void
 }) {
   return (
@@ -129,71 +109,17 @@ function McpServerRow({
         </div>
       </button>
 
-      {/* Toggle — separate from the clickable info region */}
+      {/* Toggle — disabled for built-in servers (always on, cannot be disabled) */}
       <Switch
         checked={server.enabled}
-        onCheckedChange={(next) => onToggle(server.id, next)}
+        disabled={server.builtin}
         className="shrink-0"
-        aria-label={`Toggle ${server.name}`}
-        // TODO: wire to agent runtime MCP config to actually enable/disable the server
+        aria-label={
+          server.builtin
+            ? `${server.name} is always enabled`
+            : `Toggle ${server.name}`
+        }
       />
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// "Connect new server" form (UI-only)
-// ---------------------------------------------------------------------------
-
-function AddServerForm({ onCancel }: { onCancel: () => void }) {
-  const [name, setName] = useState('')
-  const [url, setUrl] = useState('')
-
-  const inputClass = cn(
-    'bg-background border-input h-8 w-full rounded-md border px-3 text-[12px]',
-    'placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring'
-  )
-
-  return (
-    <div className="border-border mt-2 space-y-2 rounded-md border p-2.5">
-      <p className="text-muted-foreground text-[10.5px] font-medium tracking-wide uppercase">
-        New server
-      </p>
-      <input
-        type="text"
-        placeholder="Server name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className={inputClass}
-      />
-      <input
-        type="url"
-        placeholder="Endpoint URL (https://…)"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        className={inputClass}
-      />
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          className="h-7 flex-1 text-[11.5px]"
-          disabled
-          // TODO: implement server registration via agent runtime MCP config
-          title="Backend wiring not yet implemented"
-        >
-          Connect
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 flex-1 text-[11.5px]"
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
-      </div>
     </div>
   )
 }
@@ -202,37 +128,33 @@ function AddServerForm({ onCancel }: { onCancel: () => void }) {
 // Panel root
 // ---------------------------------------------------------------------------
 
-export interface AgentMcpPanelProps {
-  /**
-   * Overall MCP status.
-   * TODO: derive from a real useMcpStatus() hook once backend wiring is done.
-   */
-  status?: 'configured' | 'unconfigured'
-  /**
-   * Additional servers beyond the built-in one.
-   * TODO: read from agent runtime MCP config.
-   */
-  extraServers?: McpServer[]
-}
-
-export function AgentMcpPanel({
-  status = 'configured',
-  extraServers = [],
-}: AgentMcpPanelProps) {
-  const [servers, setServers] = useState<McpServer[]>([
-    BUILTIN_SERVER,
-    ...extraServers,
-  ])
-  const [showAddForm, setShowAddForm] = useState(false)
+export function AgentMcpPanel() {
+  const { data, isLoading, error } = useMcpServerInfo()
   const [selectedServer, setSelectedServer] = useState<McpServer | null>(null)
 
-  const handleToggle = (id: string, next: boolean) => {
-    setServers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, enabled: next } : s))
-    )
-    // TODO: persist toggle state via agent runtime MCP config
-  }
+  // Derive real connection status from the /api/v1/mcp/info fetch state.
+  const builtinStatus: McpServer['status'] = isLoading
+    ? 'connecting'
+    : error
+      ? 'error'
+      : 'connected'
 
+  const servers: McpServer[] = [
+    {
+      id: 'clickhouse-monitor',
+      name: data?.name ?? 'clickhouse-monitor',
+      endpoint: '/api/mcp',
+      toolCount: data?.tools.length ?? 0,
+      resourceCount: data?.resources.length,
+      version: data?.version,
+      builtin: true,
+      enabled: true,
+      status: builtinStatus,
+    },
+  ]
+
+  const panelStatus =
+    builtinStatus === 'connected' ? 'configured' : 'unconfigured'
   const activeCount = servers.filter((s) => s.enabled).length
 
   return (
@@ -252,7 +174,7 @@ export function AgentMcpPanel({
           <span className="text-foreground font-medium">{activeCount}</span>/
           {servers.length} active
         </span>
-        {status === 'configured' ? (
+        {panelStatus === 'configured' ? (
           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
             <span className="size-1.5 rounded-full bg-emerald-500" />
             Configured
@@ -260,7 +182,7 @@ export function AgentMcpPanel({
         ) : (
           <span className="text-muted-foreground flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-            Unconfigured
+            {isLoading ? 'Connecting…' : 'Unconfigured'}
           </span>
         )}
       </div>
@@ -271,27 +193,23 @@ export function AgentMcpPanel({
           <McpServerRow
             key={server.id}
             server={server}
-            onToggle={handleToggle}
             onViewDetails={setSelectedServer}
           />
         ))}
       </div>
 
-      {/* Add server form / button */}
-      {showAddForm ? (
-        <AddServerForm onCancel={() => setShowAddForm(false)} />
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-1 h-8 w-full justify-center gap-1.5 text-[11.5px]"
-          onClick={() => setShowAddForm(true)}
-        >
-          <PlusIcon className="size-3" />
-          Connect new server
-        </Button>
-      )}
+      {/* Custom server registration is not yet available */}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-1 h-8 w-full justify-center gap-1.5 text-[11.5px]"
+        disabled
+        title="Custom server registration is not yet available"
+      >
+        <PlusIcon className="size-3" />
+        Connect new server
+      </Button>
     </div>
   )
 }
