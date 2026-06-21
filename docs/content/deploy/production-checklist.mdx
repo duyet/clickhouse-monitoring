@@ -16,7 +16,7 @@ Review each section before exposing chmonitor to a team or the internet.
 - [ ] Choose an auth provider: `none` is only safe on a private network with no agent or MCP access.
 - [ ] If you use `CHM_AUTH_PROVIDER=none`, restrict network access so the app is not reachable from the internet.
 - [ ] For team deployments, use Clerk or a trusted-header proxy provider.
-- [ ] Set `CHM_API_KEY_SECRET` whenever you expose `/api/mcp`. MCP clients send long-lived tokens — require an API key.
+- [ ] Set `CHM_API_KEY_SECRET` whenever you expose `/api/mcp`. MCP clients send long-lived tokens — require an API key. (The MCP endpoint returns 401 by default; set `CHM_MCP_PUBLIC=true` only on isolated private networks.)
 - [ ] Rotate `CHM_API_KEY_SECRET` and `CHM_PROXY_AUTH_SECRET` if they are ever exposed. Redeploy after rotating.
 - [ ] Never put `CLERK_SECRET_KEY`, `LLM_API_KEY`, or `CHM_API_KEY_SECRET` in a `VITE_*` or `NEXT_PUBLIC_*` variable — those are baked into browser JS.
 

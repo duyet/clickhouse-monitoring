@@ -7,6 +7,7 @@ const PUBLISHABLE_KEY = `pk_test_${btoa('clerk.chmonitor.dev$')}`
 
 const ENV = [
   'CHM_API_KEY_SECRET',
+  'CHM_MCP_PUBLIC',
   'CLERK_SECRET_KEY',
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
   'CLERK_OAUTH_ISSUER',
@@ -39,8 +40,15 @@ describe('mcp http — clerk + composed auth', () => {
   })
 
   describe('defaultAuthenticator', () => {
-    it('is open when neither API key nor Clerk is configured', async () => {
+    it('401s when neither API key nor Clerk is configured (secure by default)', async () => {
       clearEnv()
+      const res = await defaultAuthenticator(mcpReq())
+      expect(res?.status).toBe(401)
+    })
+
+    it('is open when CHM_MCP_PUBLIC=true and no auth is configured', async () => {
+      clearEnv()
+      process.env.CHM_MCP_PUBLIC = 'true'
       expect(await defaultAuthenticator(mcpReq())).toBeNull()
     })
 
