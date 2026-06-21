@@ -20,7 +20,7 @@ export default defineConfig({
     starlight({
       title: 'chmonitor',
       description:
-        'Documentation for chmonitor — a real-time ClickHouse monitoring dashboard.',
+        'chmonitor docs — install, configure & self-host the open-source ClickHouse monitoring dashboard. Guides for metrics, query performance, the AI agent and deployment.',
       logo: { src: './public/favicon.svg', alt: 'chmonitor' },
       favicon: '/favicon.svg',
       social: [
@@ -70,6 +70,30 @@ export default defineConfig({
         {
           tag: 'link',
           attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        },
+        // schema.org WebSite JSON-LD. `alternateName` maps the brand's keyword
+        // variations (ch monitor / ch monitoring / ClickHouse monitoring UI) to
+        // chmonitor, helping search engines surface the right result and brand
+        // sitelinks for those queries.
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'chmonitor',
+            alternateName: [
+              'ch monitor',
+              'ch monitoring',
+              'ClickHouse Monitoring UI',
+              'ClickHouse Monitoring Dashboard',
+              'ClickHouse UI',
+            ],
+            url: 'https://docs.chmonitor.dev',
+            description:
+              'Open-source ClickHouse monitoring UI — documentation for setup, self-hosting, and the AI agent.',
+            sameAs: ['https://github.com/duyet/clickhouse-monitoring'],
+          }),
         },
       ],
       // Curated top-level order; pages within each section are listed

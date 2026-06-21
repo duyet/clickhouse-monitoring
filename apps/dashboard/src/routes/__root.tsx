@@ -26,6 +26,30 @@ interface RootSearch {
   host: number
 }
 
+// schema.org JSON-LD. `alternateName` lists the brand's keyword variations so
+// search engines map "ch monitor" / "ch monitoring" / "ClickHouse monitoring
+// UI" to chmonitor — and the WebApplication type helps Google render a richer
+// result (and brand sitelinks).
+const STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'chmonitor',
+  alternateName: [
+    'ch monitor',
+    'ch monitoring',
+    'ClickHouse Monitoring UI',
+    'ClickHouse Monitoring Dashboard',
+    'ClickHouse UI',
+  ],
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web',
+  url: 'https://dash.chmonitor.dev/',
+  description:
+    'Open-source ClickHouse monitoring UI — real-time dashboards for cluster metrics, query performance, merges, replication and health.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  sameAs: ['https://github.com/duyet/clickhouse-monitoring'],
+} as const
+
 function validateSearch(search: Record<string, unknown>): RootSearch {
   const raw = search.host
   const parsed = Number(raw)
@@ -41,18 +65,37 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'chmonitor — ClickHouse Monitoring' },
+      { title: 'chmonitor — ClickHouse Monitoring Dashboard & UI' },
       {
         name: 'description',
         content:
-          'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
+          'chmonitor — open-source ClickHouse monitoring dashboard & UI. Track cluster metrics, slow queries, merges, replication and health in real time. Free, self-hosted.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'chmonitor, ch monitor, ch monitoring, ClickHouse monitoring, ClickHouse monitoring UI, ClickHouse monitoring dashboard, ClickHouse dashboard, ClickHouse UI, ClickHouse metrics',
       },
       { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: 'chmonitor — ClickHouse Monitoring' },
+      { property: 'og:site_name', content: 'chmonitor' },
+      { property: 'og:url', content: 'https://dash.chmonitor.dev/' },
+      {
+        property: 'og:title',
+        content: 'chmonitor — ClickHouse Monitoring Dashboard & UI',
+      },
       {
         property: 'og:description',
         content:
-          'Real-time insight into ClickHouse clusters via system tables — metrics, query performance and health.',
+          'Open-source ClickHouse monitoring dashboard & UI. Track cluster metrics, slow queries, merges, replication and health in real time. Free, self-hosted.',
+      },
+      {
+        name: 'twitter:title',
+        content: 'chmonitor — ClickHouse Monitoring Dashboard & UI',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Open-source ClickHouse monitoring dashboard & UI. Track cluster metrics, slow queries, merges, replication and health in real time. Free, self-hosted.',
       },
       { property: 'og:image', content: 'https://dash.chmonitor.dev/og/og.png' },
       { property: 'og:image:width', content: '1200' },
@@ -103,6 +146,17 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        {/*
+          Structured data (schema.org WebApplication). Rendered React-side (the
+          SPA prerender only serializes head() meta/links); Googlebot executes
+          JS and reads dynamically-injected JSON-LD. `alternateName` maps the
+          brand's keyword variations to chmonitor, supporting brand sitelinks.
+        */}
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static, build-time JSON-LD
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+        />
       </head>
       <body className="bg-background font-sans antialiased">
         <ClerkAuthProvider>
