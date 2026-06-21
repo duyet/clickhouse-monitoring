@@ -124,12 +124,14 @@ export const apiKeyAuthenticator: Authenticator = async (req) => {
 }
 
 /**
- * Default MCP authenticator — precedence: (API key | Clerk OAuth) → open.
+ * Default MCP authenticator — precedence: (API key | Clerk OAuth) → deny.
  *
- * - If NEITHER CHM_API_KEY_SECRET nor CLERK_SECRET_KEY is set, the endpoint is
- *   OPEN: a self-hosted operator who configured no auth gets anonymous access by
- *   their own choice. Close it by configuring either scheme.
- * - If EITHER is configured, a token is required and is accepted when it
+ * - If NEITHER CHM_API_KEY_SECRET nor CLERK_SECRET_KEY is set, the endpoint
+ *   returns 401 by default. Operators who intentionally want an open endpoint
+ *   (trusted private networks) must set CHM_MCP_PUBLIC=true explicitly.
+ * - When CHM_MCP_PUBLIC=true and no auth scheme is configured, a startup warning
+ *   is logged on every request so operators cannot silently overlook the exposure.
+ * - If EITHER auth scheme is configured, a token is required and accepted when it
  *   validates against ANY configured scheme. This lets API keys (CLI/headless)
  *   and Clerk OAuth (humans via MCP clients) coexist on the same endpoint.
  * - API key is checked first (local HMAC, no network); Clerk is a REST call, so
@@ -143,7 +145,18 @@ export const apiKeyAuthenticator: Authenticator = async (req) => {
 export const defaultAuthenticator: Authenticator = async (req) => {
   const apiKeyOn = apiKeyAuthEnabled()
   const clerkOn = clerkOAuthEnabled()
-  if (!apiKeyOn && !clerkOn) return null // open
+  if (!apiKeyOn && !clerkOn) {
+    // Secure by default: deny unless the operator has explicitly opted in.
+    if (process.env.CHM_MCP_PUBLIC !== 'true') return unauthorized(req)
+    // Explicit opt-in — allow, but warn loudly on every request so the
+    // exposure is visible in logs and not silently forgotten.
+    console.warn(
+      '[chm/mcp] WARNING: MCP endpoint is open to anonymous access ' +
+        '(CHM_MCP_PUBLIC=true, no auth configured). ' +
+        'Set CHM_API_KEY_SECRET or CLERK_SECRET_KEY to require authentication.'
+    )
+    return null
+  }
 
   const { bearer, apiKey } = getRequestTokens(req)
   if (!bearer && !apiKey) return unauthorized(req)
@@ -167,9 +180,9 @@ interface HandleMcpOptions {
 /**
  * Handle an MCP transport request (POST/GET/DELETE on /api/mcp).
  *
- * Note: unlike the previous per-handler copies, there is no production fail-closed
- * 503 here. "No auth configured" now means "open" (see apiKeyAuthenticator), which
- * is the behavior self-hosted users expect. Close the endpoint by configuring auth.
+ * With the default authenticator, "no auth configured" means 401 unless the
+ * operator has set CHM_MCP_PUBLIC=true. See defaultAuthenticator for the full
+ * opt-in rationale.
  */
 export async function handleMcp(
   req: Request,

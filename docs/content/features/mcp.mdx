@@ -6,8 +6,7 @@
 |---|---|
 | **Routes** | `/mcp` (UI info page) |
 | **Feature id** | `mcp` |
-| **Default access** | `public` |
-| **Requires auth** | API key or Clerk OAuth required in production (see below) |
+| **Default access** | Closed (401) — requires `CHM_API_KEY_SECRET`, `CLERK_SECRET_KEY`, or `CHM_MCP_PUBLIC=true` |
 | **System tables** | None directly — the MCP server wraps the same tools available to the rest of the dashboard |
 | **ClickHouse grants** | Inherits grants of the configured `CLICKHOUSE_USER` |
 
@@ -29,7 +28,11 @@ See [MCP Server reference](/docs/reference/mcp-server) for the full tool list an
 
 ## Permissions & access
 
-The MCP endpoint (`/api/mcp`) follows the same auth model as the rest of the API. By default (`CHM_AUTH_PROVIDER=none`, no `CHM_API_KEY_SECRET`), it is open. This is only appropriate for trusted private networks.
+The MCP endpoint (`/api/mcp`) is **closed by default**. Anonymous requests receive a `401` response unless at least one of the following is true:
+
+- `CHM_API_KEY_SECRET` is set (API key auth — recommended for production)
+- `CLERK_SECRET_KEY` is set (Clerk OAuth)
+- `CHM_MCP_PUBLIC=true` is set (explicit opt-in for trusted private networks; a warning is logged on every request)
 
 **Production setup — API key auth:**
 
@@ -73,10 +76,11 @@ enabled = true
 | Variable | Description |
 |---|---|
 | `CHM_API_KEY_SECRET` | Enables API key authentication for all `/api/v1/*` routes including `/api/mcp`. Required for production use without Clerk. |
+| `CLERK_SECRET_KEY` | Enables Clerk OAuth token verification. Used for Clerk OAuth token introspection. |
+| `CHM_MCP_PUBLIC` | Set to `true` to allow anonymous access when no auth scheme is configured. Only appropriate for trusted private networks. A warning is logged on every request when this is active. |
 | `CHM_AUTH_PROVIDER` | `none` (default), `clerk`, or `proxy`. Controls how sessions are verified. |
-| `CLERK_SECRET_KEY` | Required when `CHM_AUTH_PROVIDER=clerk`. Used for Clerk OAuth token introspection. |
 
-The MCP endpoint does not have its own separate auth layer — it reuses the global auth configuration.
+The MCP endpoint is secure by default: it returns `401` when no auth is configured, unless `CHM_MCP_PUBLIC=true` is explicitly set.
 
 ## Notes & limitations
 
