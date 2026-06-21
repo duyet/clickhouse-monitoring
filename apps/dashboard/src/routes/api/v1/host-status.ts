@@ -4,6 +4,10 @@ import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
 import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'
+import {
+  classifyError,
+  getStatusCodeForErrorType,
+} from '@/lib/api/error-handler'
 
 const QUERY_COMMENT = '/* { "client": "clickhouse-monitoring" } */\n'
 
@@ -73,15 +77,14 @@ export const Route = createFileRoute('/api/v1/host-status')({
           })
         } catch (err) {
           error('[GET /api/v1/host-status] Error:', err)
+          // An unreachable upstream is a 503/504, not a 500.
+          const { type, message } = classifyError(err)
           return Response.json(
             {
               success: false,
-              error:
-                err instanceof Error
-                  ? err.message
-                  : 'Failed to fetch host status',
+              error: message || 'Failed to fetch host status',
             },
-            { status: 500 }
+            { status: getStatusCodeForErrorType(type) }
           )
         }
       },

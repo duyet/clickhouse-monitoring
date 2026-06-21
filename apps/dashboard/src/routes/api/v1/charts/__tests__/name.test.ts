@@ -78,6 +78,14 @@ const realQueryError: FetchDataError = {
     '(total) memory limit exceeded: would use 1.35 GiB ... MEMORY_LIMIT_EXCEEDED',
 }
 
+// The production "api 500" report: an unreachable upstream surfaces as a
+// Cloudflare 525, classified upstream as ssl_error.
+const upstreamDownError: FetchDataError = {
+  type: 'ssl_error',
+  message: 'error code: 525\n (host: https://ch.example:8443)',
+  details: { httpStatusCode: 525 },
+}
+
 async function call(name: string): Promise<Response> {
   const { handler } = await import('../$name')
   return handler(
@@ -138,7 +146,28 @@ describe('GET /api/v1/charts/$name — optional table degradation', () => {
     expect(body.error.type).toBe('query_error')
   })
 
-  test('non-optional chart with table_not_found is NOT degraded → 500', async () => {
+  test('unreachable upstream (525/ssl_error) → 503, not 500', async () => {
+    mockExecuteChartQuery.mockResolvedValueOnce({
+      dataJson: null,
+      metadata: {},
+      error: upstreamDownError,
+      executedSql: 'SELECT 1',
+      clickhouseVersion: null,
+    })
+
+    const response = await call('plain-chart')
+    // 503 (retryable) is correct for a down upstream — a 500 wrongly implies an
+    // application fault and is what the production report flagged.
+    expect(response.status).toBe(503)
+    const body = (await response.json()) as {
+      success: boolean
+      error: { type: string }
+    }
+    expect(body.success).toBe(false)
+    expect(body.error.type).toBe('ssl_error')
+  })
+
+  test('non-optional chart with table_not_found is NOT degraded → 404 (not swallowed)', async () => {
     mockExecuteChartQuery.mockResolvedValueOnce({
       dataJson: null,
       metadata: {},
@@ -148,7 +177,15 @@ describe('GET /api/v1/charts/$name — optional table degradation', () => {
     })
 
     const response = await call('plain-chart')
-    expect(response.status).toBe(500)
+    // A missing table is a non-retryable 404 (preserved error type), not the
+    // 200-empty degradation path reserved for *optional* charts.
+    expect(response.status).toBe(404)
+    const body = (await response.json()) as {
+      success: boolean
+      error: { type: string }
+    }
+    expect(body.success).toBe(false)
+    expect(body.error.type).toBe('table_not_found')
   })
 
   test('healthy optional chart returns data normally → 200', async () => {
