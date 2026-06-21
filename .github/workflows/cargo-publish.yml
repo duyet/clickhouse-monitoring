@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -53,13 +53,18 @@ jobs:
         run: |
           VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
           echo "Checking ch-json v$VERSION on crates.io..."
-          
-          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://crates.io/api/v1/crates/ch-json/$VERSION || true)
-          if [ "$STATUS_CODE" = "200" ]; then
-            echo "ch-json v$VERSION is already published on crates.io. Skipping publish."
-          else
+
+          # crates.io API requires a User-Agent header (returns 403 otherwise).
+          # Publish ONLY on a definitive 404; treat 200/403/5xx as "skip" so a
+          # transient API quirk never triggers a doomed `cargo publish`.
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/duyet/clickhouse-monitoring)" \
+            "https://crates.io/api/v1/crates/ch-json/$VERSION" || true)
+          if [ "$STATUS_CODE" = "404" ]; then
             echo "ch-json v$VERSION not found on crates.io. Publishing..."
             cargo publish
+          else
+            echo "ch-json v$VERSION already published or check inconclusive (HTTP $STATUS_CODE). Skipping publish."
           fi
 
       - name: Publish ch-pivot
@@ -70,11 +75,16 @@ jobs:
         run: |
           VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
           echo "Checking ch-pivot v$VERSION on crates.io..."
-          
-          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://crates.io/api/v1/crates/ch-pivot/$VERSION || true)
-          if [ "$STATUS_CODE" = "200" ]; then
-            echo "ch-pivot v$VERSION is already published on crates.io. Skipping publish."
-          else
+
+          # crates.io API requires a User-Agent header (returns 403 otherwise).
+          # Publish ONLY on a definitive 404; treat 200/403/5xx as "skip" so a
+          # transient API quirk never triggers a doomed `cargo publish`.
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/duyet/clickhouse-monitoring)" \
+            "https://crates.io/api/v1/crates/ch-pivot/$VERSION" || true)
+          if [ "$STATUS_CODE" = "404" ]; then
             echo "ch-pivot v$VERSION not found on crates.io. Publishing..."
             cargo publish
+          else
+            echo "ch-pivot v$VERSION already published or check inconclusive (HTTP $STATUS_CODE). Skipping publish."
           fi

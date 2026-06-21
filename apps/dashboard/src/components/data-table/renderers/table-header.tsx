@@ -1,5 +1,9 @@
 import { GripVertical } from 'lucide-react'
-import { flexRender, type Header } from '@tanstack/react-table'
+import {
+  flexRender,
+  type Header,
+  type HeaderGroup,
+} from '@tanstack/react-table'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -341,7 +345,9 @@ export const TableHeaderRow = function TableHeaderRow({
  * Props for TableHeader component
  */
 export interface TableHeaderProps {
-  headerGroups: any
+  // HeaderGroup<any> matches this file's existing Header<any, unknown> convention
+  // and accepts the caller's generic HeaderGroup<TData>[] from table.getHeaderGroups().
+  headerGroups: HeaderGroup<any>[]
   /** Callback when double-clicking column resizer to auto-fit */
   onAutoFit?: (columnId: string) => void
   /** Enable column reordering with drag-and-drop */
@@ -368,7 +374,7 @@ export const TableHeader = function TableHeader({
 }: TableHeaderProps) {
   return (
     <>
-      {headerGroups.map((headerGroup: any) => (
+      {headerGroups.map((headerGroup) => (
         <TableHeaderRow
           key={headerGroup.id}
           headers={headerGroup.headers}

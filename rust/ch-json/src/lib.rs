@@ -142,8 +142,8 @@ fn is_numeric_string(value: &str) -> bool {
     }
 
     let digits_start = index;
-    
-    // Check if the first digit is '0'. In JSON numbers, a leading zero is only valid 
+
+    // Check if the first digit is '0'. In JSON numbers, a leading zero is only valid
     // if it is the only digit or followed by a decimal point/exponent.
     if bytes.get(index) == Some(&b'0') {
         index += 1;
@@ -155,7 +155,7 @@ fn is_numeric_string(value: &str) -> bool {
             index += 1;
         }
     }
-    
+
     if index == digits_start {
         return false;
     }
