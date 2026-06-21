@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { InsightsPreview } from '@/components/insights/insights-preview'
@@ -7,6 +7,93 @@ import { AppLink } from '@/components/ui/app-link'
 import { Button } from '@/components/ui/button'
 import { useHostId } from '@/lib/swr'
 import { buildUrl } from '@/lib/url/url-builder'
+
+/** Crisp four-axis sparkle mark — no gradient blob. */
+function InsightsGlyph() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <line
+        x1="8"
+        y1="1"
+        x2="8"
+        y2="4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="8"
+        y1="12"
+        x2="8"
+        y2="15"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="1"
+        y1="8"
+        x2="4"
+        y2="8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="12"
+        y1="8"
+        x2="15"
+        y2="8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="3"
+        y1="3"
+        x2="5.5"
+        y2="5.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <line
+        x1="10.5"
+        y1="10.5"
+        x2="13"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <line
+        x1="13"
+        y1="3"
+        x2="10.5"
+        y2="5.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <line
+        x1="5.5"
+        y1="10.5"
+        x2="3"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <circle cx="8" cy="8" r="1.75" fill="currentColor" />
+    </svg>
+  )
+}
 
 function InsightsSettingsPage() {
   const hostId = useHostId()
@@ -25,13 +112,15 @@ function InsightsSettingsPage() {
             Back to overview
           </AppLink>
         </Button>
+
+        {/* Header — crisp mark, no gradient blob */}
         <div className="flex items-center gap-3">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-sky-500/10">
-            <Sparkles className="size-5 text-sky-500" />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 text-foreground/70">
+            <InsightsGlyph />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              AI Insights Settings
+            <h1 className="text-xl font-semibold tracking-tight">
+              Insights settings
             </h1>
             <p className="text-muted-foreground text-sm">
               Configure how the dashboard analyzes this cluster.

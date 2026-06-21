@@ -160,7 +160,6 @@ interface FakeStateRec {
 let agentStates = new Map<string, FakeStateRec>()
 
 class FakeAgentStateSdk {
-  constructor(_cfg: unknown) {}
   async upsertState(
     key: string,
     body: { agent_id: string; data: Record<string, unknown>; tags: string[] }
