@@ -345,9 +345,7 @@ export const TableHeaderRow = function TableHeaderRow({
  * Props for TableHeader component
  */
 export interface TableHeaderProps {
-  // HeaderGroup<any> matches this file's existing Header<any, unknown> convention
-  // and accepts the caller's generic HeaderGroup<TData>[] from table.getHeaderGroups().
-  headerGroups: HeaderGroup<any>[]
+  headerGroups: HeaderGroup<unknown>[]
   /** Callback when double-clicking column resizer to auto-fit */
   onAutoFit?: (columnId: string) => void
   /** Enable column reordering with drag-and-drop */

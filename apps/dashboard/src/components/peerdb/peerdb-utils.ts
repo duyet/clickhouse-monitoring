@@ -94,19 +94,6 @@ export function durationMs(start?: string, end?: string): number | null {
   return Math.max(0, e - s)
 }
 
-/** Compact human duration: "1.2s", "3m 4s", "1h 2m". */
-export function formatDuration(ms: number | null): string {
-  if (ms === null) return '—'
-  if (ms < 1000) return `${ms}ms`
-  const totalSeconds = Math.round(ms / 1000)
-  if (totalSeconds < 60) return `${(ms / 1000).toFixed(1)}s`
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  if (minutes < 60) return `${minutes}m ${seconds}s`
-  const hours = Math.floor(minutes / 60)
-  return `${hours}h ${minutes % 60}m`
-}
-
 export function toNumber(value: unknown): number {
   const n = typeof value === 'string' ? Number(value) : (value as number)
   return Number.isFinite(n) ? n : 0

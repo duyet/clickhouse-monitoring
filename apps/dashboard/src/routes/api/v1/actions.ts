@@ -77,7 +77,7 @@ async function handleKillQuery(
   queryId: string
 ): Promise<ActionResult> {
   const { error } = await fetchData({
-    query: `KILL QUERY WHERE query_id = {queryId: String}`,
+    query: `KILL QUERY WHERE query_id = {queryId:String}`,
     query_params: { queryId },
     hostId,
   })
@@ -138,7 +138,7 @@ async function handleQuerySettings(
   queryId: string
 ): Promise<ActionResult> {
   const { data, error } = await fetchData<{ Settings: string }[]>({
-    query: `SELECT Settings FROM system.processes WHERE query_id = {queryId: String}`,
+    query: `SELECT Settings FROM system.processes WHERE query_id = {queryId:String}`,
     query_params: { queryId },
     hostId,
   })
