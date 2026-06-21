@@ -5,16 +5,17 @@
  *
  * Shows the status of Model Context Protocol servers connected to the agent:
  *   - Built-in clickhouse-monitor server (always present)
- *   - User-added custom servers (UI-only; backend wiring is TODO)
+ *   - User-added custom servers
  *
  * Follows the assistant-ui MCP config pattern:
  *   https://www.assistant-ui.com/docs/ui/mcp-config
  *
- * Per-server enable/disable toggles and "Connect new server" are UI-only.
- * TODO: wire toggles and custom-server form to agent runtime MCP config.
+ * Per-server enable/disable toggles and "Connect new server" persist to
+ * localStorage via {@link useMcpConfig}, mirroring how individual MCP tool
+ * selections are stored by `useToolConfig`.
  */
 
-import { PlusIcon, WrenchIcon } from 'lucide-react'
+import { PlusIcon, Trash2Icon, WrenchIcon } from 'lucide-react'
 
 import type { McpServer } from './mcp-types'
 
@@ -23,6 +24,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { toMcpServers, useMcpConfig } from '@/lib/hooks/use-mcp-config'
 import { cn } from '@/lib/utils'
 
 // Re-exported for existing consumers; canonical definition lives in mcp-types.ts.
@@ -84,10 +86,12 @@ function McpServerRow({
   server,
   onToggle,
   onViewDetails,
+  onRemove,
 }: {
   server: McpServer
   onToggle: (id: string, next: boolean) => void
   onViewDetails: (server: McpServer) => void
+  onRemove?: (id: string) => void
 }) {
   return (
     <div className="flex items-center gap-2 py-2 pr-3 pl-2">
@@ -129,13 +133,26 @@ function McpServerRow({
         </div>
       </button>
 
+      {/* Remove — only for user-added custom servers */}
+      {!server.builtin && onRemove && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-7 shrink-0"
+          onClick={() => onRemove(server.id)}
+          aria-label={`Remove ${server.name}`}
+        >
+          <Trash2Icon className="size-3.5" />
+        </Button>
+      )}
+
       {/* Toggle — separate from the clickable info region */}
       <Switch
         checked={server.enabled}
         onCheckedChange={(next) => onToggle(server.id, next)}
         className="shrink-0"
         aria-label={`Toggle ${server.name}`}
-        // TODO: wire to agent runtime MCP config to actually enable/disable the server
       />
     </div>
   )
@@ -145,14 +162,29 @@ function McpServerRow({
 // "Connect new server" form (UI-only)
 // ---------------------------------------------------------------------------
 
-function AddServerForm({ onCancel }: { onCancel: () => void }) {
+function AddServerForm({
+  onCancel,
+  onAdd,
+}: {
+  onCancel: () => void
+  onAdd: (server: { name: string; endpoint: string }) => void
+}) {
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
+
+  const trimmedName = name.trim()
+  const trimmedUrl = url.trim()
+  const canSubmit = trimmedName.length > 0 && trimmedUrl.length > 0
 
   const inputClass = cn(
     'bg-background border-input h-8 w-full rounded-md border px-3 text-[12px]',
     'placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring'
   )
+
+  const handleSubmit = () => {
+    if (!canSubmit) return
+    onAdd({ name: trimmedName, endpoint: trimmedUrl })
+  }
 
   return (
     <div className="border-border mt-2 space-y-2 rounded-md border p-2.5">
@@ -171,6 +203,9 @@ function AddServerForm({ onCancel }: { onCancel: () => void }) {
         placeholder="Endpoint URL (https://…)"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSubmit()
+        }}
         className={inputClass}
       />
       <div className="flex items-center gap-2">
@@ -178,9 +213,8 @@ function AddServerForm({ onCancel }: { onCancel: () => void }) {
           type="button"
           size="sm"
           className="h-7 flex-1 text-[11.5px]"
-          disabled
-          // TODO: implement server registration via agent runtime MCP config
-          title="Backend wiring not yet implemented"
+          disabled={!canSubmit}
+          onClick={handleSubmit}
         >
           Connect
         </Button>
@@ -203,34 +237,34 @@ function AddServerForm({ onCancel }: { onCancel: () => void }) {
 // ---------------------------------------------------------------------------
 
 export interface AgentMcpPanelProps {
-  /**
-   * Overall MCP status.
-   * TODO: derive from a real useMcpStatus() hook once backend wiring is done.
-   */
+  /** Overall MCP status. */
   status?: 'configured' | 'unconfigured'
-  /**
-   * Additional servers beyond the built-in one.
-   * TODO: read from agent runtime MCP config.
-   */
-  extraServers?: McpServer[]
 }
 
-export function AgentMcpPanel({
-  status = 'configured',
-  extraServers = [],
-}: AgentMcpPanelProps) {
-  const [servers, setServers] = useState<McpServer[]>([
-    BUILTIN_SERVER,
-    ...extraServers,
-  ])
+export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
+  const {
+    customServers,
+    isServerEnabled,
+    setServerEnabled,
+    addServer,
+    removeServer,
+  } = useMcpConfig()
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedServer, setSelectedServer] = useState<McpServer | null>(null)
 
+  // Built-in server first, then user-added custom servers from localStorage.
+  const servers: McpServer[] = [
+    { ...BUILTIN_SERVER, enabled: isServerEnabled(BUILTIN_SERVER.id) },
+    ...toMcpServers(customServers, isServerEnabled),
+  ]
+
   const handleToggle = (id: string, next: boolean) => {
-    setServers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, enabled: next } : s))
-    )
-    // TODO: persist toggle state via agent runtime MCP config
+    setServerEnabled(id, next)
+  }
+
+  const handleAddServer = (server: { name: string; endpoint: string }) => {
+    addServer(server)
+    setShowAddForm(false)
   }
 
   const activeCount = servers.filter((s) => s.enabled).length
@@ -273,13 +307,17 @@ export function AgentMcpPanel({
             server={server}
             onToggle={handleToggle}
             onViewDetails={setSelectedServer}
+            onRemove={removeServer}
           />
         ))}
       </div>
 
       {/* Add server form / button */}
       {showAddForm ? (
-        <AddServerForm onCancel={() => setShowAddForm(false)} />
+        <AddServerForm
+          onCancel={() => setShowAddForm(false)}
+          onAdd={handleAddServer}
+        />
       ) : (
         <Button
           type="button"
