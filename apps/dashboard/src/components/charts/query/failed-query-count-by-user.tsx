@@ -7,7 +7,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
 import { transformUserEventCounts } from '@/lib/chart-data-transforms'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 export const ChartFailedQueryCountByUser = memo(
   function ChartFailedQueryCountByUser({
@@ -37,7 +37,7 @@ export const ChartFailedQueryCountByUser = memo(
       hostId,
       interval: effectiveInterval,
       lastHours: effectiveLastHours,
-      refreshInterval: 30000,
+      refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
     })
 
     return (

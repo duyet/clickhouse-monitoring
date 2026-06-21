@@ -3,7 +3,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { STUCK_THRESHOLD_SECONDS } from '@/lib/query-config/merges/mutations'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import {
   STATUS_BADGE_CLASS,
@@ -55,7 +55,7 @@ export const ChartMutationProgress = function ChartMutationProgress({
   const swr = useChartData<DataRow>({
     chartName: 'mutation-progress',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (

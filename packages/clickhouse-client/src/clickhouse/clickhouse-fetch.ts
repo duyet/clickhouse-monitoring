@@ -545,9 +545,24 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
       clientConfig,
     })
 
+    // Select the version-appropriate SQL when a versioned queryConfig is
+    // provided, mirroring fetchData. Current callers pre-resolve the SQL and
+    // pass only a minimal queryConfig (for the optional-table check), so this
+    // is a no-op for them; it makes the helper correct for any caller that
+    // hands over a queryConfig with a versioned sql[] instead.
+    let effectiveQuery = query
+    if (queryConfig && Array.isArray(queryConfig.sql)) {
+      const clickhouseVersion = await getClickHouseVersion(currentHostId)
+      effectiveQuery = selectVersionedSql(queryConfig.sql, clickhouseVersion)
+      debug(
+        `[fetchJsonEachRowAsNormalizedJson] Version selection for ${queryConfig.name}: ` +
+          `detected=${clickhouseVersion?.raw ?? 'null'}`
+      )
+    }
+
     try {
       const resultSet = await client.query({
-        query: QUERY_COMMENT + query,
+        query: QUERY_COMMENT + effectiveQuery,
         format: 'JSONEachRow',
         query_params,
         clickhouse_settings,
@@ -561,7 +576,7 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
 
       debug(
         `--> Query (${queryId}, host: ${clientConfig.host}):`,
-        query.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
+        effectiveQuery.replace(/(\n|\s+)/g, ' ').replace(/\s+/g, ' ')
       )
       debug(`<-- Response (${queryId}):`, { rows, duration, unit: 's' })
 
@@ -573,7 +588,7 @@ export const fetchJsonEachRowAsNormalizedJson = async ({
           duration,
           rows,
           host: clientConfig.host,
-          sql: query.replace(/\s+/g, ' ').trim(),
+          sql: effectiveQuery.replace(/\s+/g, ' ').trim(),
           rawResponseLength: rawText.length,
           rawResponsePreview:
             rawText.length <= 500 ? rawText : `${rawText.substring(0, 500)}...`,

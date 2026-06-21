@@ -13,6 +13,7 @@ export type {
 export {
   buildExpandColumnDef,
   EXPAND_COLUMN_ID,
+  estimateColumnSizes,
   getColumnDefs,
   normalizeColumnName,
 } from './column-defs'

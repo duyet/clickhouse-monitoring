@@ -5,7 +5,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
 import { ChartSkeleton } from '@/components/skeletons'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 export const ChartSummaryUsedByMutations =
   function ChartSummaryUsedByMutations({
@@ -18,7 +18,7 @@ export const ChartSummaryUsedByMutations =
     }>({
       chartName: 'summary-used-by-mutations',
       hostId,
-      refreshInterval: 30000,
+      refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
     })
 
     const dataArray = Array.isArray(data) ? data : undefined

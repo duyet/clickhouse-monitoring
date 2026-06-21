@@ -595,5 +595,31 @@ describe('clickhouse-fetch', () => {
       expect(__testCountJsonEachRowRows('{"a":1}\n{"a":2}\n')).toBe(2)
       expect(__testCountJsonEachRowRows('{"a":1}\n\n{"a":2}')).toBe(2)
     })
+
+    it('executes the version-selected sql from a versioned queryConfig.sql[], not the raw query arg', async () => {
+      // Single-entry array is always selected regardless of detected version,
+      // so this asserts the helper honors queryConfig.sql[] (mirroring fetchData)
+      // rather than silently running the raw `query` argument.
+      const queryConfig: QueryConfigLike = {
+        name: 'versioned',
+        sql: [{ since: '1.0', sql: 'SELECT only_variant' }],
+      } as QueryConfigLike
+
+      const result = await fetchJsonEachRowAsNormalizedJson({
+        ...defaultParams,
+        query: 'SELECT raw_ignored',
+        queryConfig,
+      })
+
+      const executed = mockClientQuery.mock.calls.map((c) => c[0].query)
+      expect(
+        executed.some((q: string) => q.includes('SELECT only_variant'))
+      ).toBe(true)
+      expect(executed.some((q: string) => q.includes('raw_ignored'))).toBe(
+        false
+      )
+      // metadata.sql should also reflect the executed (selected) query
+      expect(result.metadata.sql).toContain('SELECT only_variant')
+    })
   })
 })

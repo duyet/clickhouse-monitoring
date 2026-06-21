@@ -5,7 +5,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { RankBars } from '@/components/charts/primitives/rank-bars'
 import { SegmentedControl } from '@/components/filters/segmented-control'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   table: string
@@ -36,7 +36,7 @@ export const ChartTopTableSize = function ChartTopTableSize({
     chartName: 'top-table-size',
     hostId,
     params: { limit },
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (

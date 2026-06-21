@@ -62,6 +62,58 @@ export type {
 export { normalizeColumnName } from './utils'
 
 /**
+ * Estimate content-aware column widths from a data sample.
+ *
+ * Returns a map of normalized column name → estimated pixel width, but only for
+ * columns that have no explicit `columnSizing.size` (those keep their configured
+ * width). Width is derived from the longer of the header label or sampled cell
+ * values (chrome budget: ~64px header chrome + cell padding + 32px buffer).
+ *
+ * Extracted from {@link getColumnDefs} so the render path can memoize it on the
+ * *unfiltered* dataset — column width should reflect the full data, not the
+ * currently filtered view, and re-sampling on every search keystroke is wasteful.
+ */
+export function estimateColumnSizes<TData extends RowData>(
+  config: GetColumnDefsOptions<TData>['config'],
+  data: TData[]
+): Record<string, number> {
+  const SAMPLE_SIZE = 30
+  const CHAR_WIDTH = 7.2 // Approximate width of a character in px
+  const CHROME_BUDGET = 96 // Header chrome + cell padding
+  const MIN_WIDTH = 80
+  const MAX_WIDTH = 480
+
+  const sizes: Record<string, number> = {}
+
+  for (const column of config.columns || []) {
+    const name = normalizeColumnName(column)
+    const explicit =
+      config.columnSizing?.[name] ?? config.columnSizing?.[column]
+    // An explicit size wins; no estimate needed.
+    if (explicit?.size !== undefined) continue
+
+    let maxChars = name.length
+    // Sample cell values for content width estimation
+    const sampleSize = Math.min(data.length, SAMPLE_SIZE)
+    if (sampleSize > 0) {
+      const step =
+        data.length > sampleSize ? Math.floor(data.length / sampleSize) : 1
+      for (let i = 0; i < data.length; i += step) {
+        const row = data[i] as Record<string, unknown>
+        const value = row[column]
+        if (value != null) {
+          maxChars = Math.max(maxChars, String(value).length)
+        }
+      }
+    }
+    const estimatedSize = Math.round(maxChars * CHAR_WIDTH + CHROME_BUDGET)
+    sizes[name] = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, estimatedSize))
+  }
+
+  return sizes
+}
+
+/**
  * Generates an array of column definitions based on the provided configuration.
  *
  * @param config - The configuration object for the query.
@@ -90,10 +142,18 @@ export function getColumnDefs<
   data: TData[],
   context: GetColumnDefsOptions<TData>['context'],
   filterContext?: ColumnFilterContext,
-  schemaFilterContext?: SchemaColumnFilterContext
+  schemaFilterContext?: SchemaColumnFilterContext,
+  estimatedSizes?: Record<string, number>
 ): ColumnDef<TData, TValue>[] {
   const configColumns = config.columns || []
   const customSortingFns = getCustomSortingFns<TData>()
+
+  // Content-aware widths are expensive to estimate (samples up to 30 rows per
+  // column). Callers in the render path precompute them once from the
+  // *unfiltered* dataset and pass them in; standalone callers fall back to
+  // computing from whatever `data` they provide (identical to the old inline
+  // behavior).
+  const columnSizes = estimatedSizes ?? estimateColumnSizes(config, data)
 
   const {
     enableColumnFilters = false,
@@ -109,38 +169,13 @@ export function getColumnDefs<
     const sortingFnName = config.sortingFns?.[name]
     let sizing = config.columnSizing?.[name] ?? config.columnSizing?.[column]
 
-    // Content-aware column sizing when no explicit size is configured.
-    // Estimates width from the longer of header label or sampled cell values.
-    // Chrome budget: ~64px (header chrome + cell padding) + 32px buffer = 96px.
+    // Apply the content-aware width estimate when no explicit size is
+    // configured (see estimateColumnSizes for the heuristic).
     if (!sizing || sizing.size === undefined) {
-      const SAMPLE_SIZE = 30
-      const CHAR_WIDTH = 7.2 // Approximate width of a character in px
-      const CHROME_BUDGET = 96 // Header chrome + cell padding
-      const MIN_WIDTH = 80
-      const MAX_WIDTH = 480
-
-      let maxChars = name.length
-      // Sample cell values for content width estimation
-      const sampleSize = Math.min(data.length, SAMPLE_SIZE)
-      if (sampleSize > 0) {
-        const step =
-          data.length > sampleSize ? Math.floor(data.length / sampleSize) : 1
-        for (let i = 0; i < data.length; i += step) {
-          const row = data[i] as Record<string, unknown>
-          const value = row[column]
-          if (value != null) {
-            const strValue = String(value)
-            maxChars = Math.max(maxChars, strValue.length)
-          }
-        }
+      const estimatedSize = columnSizes[name]
+      if (estimatedSize !== undefined) {
+        sizing = { ...(sizing || {}), size: estimatedSize }
       }
-      const estimatedSize = Math.round(maxChars * CHAR_WIDTH + CHROME_BUDGET)
-      const clampedSize = Math.max(
-        MIN_WIDTH,
-        Math.min(MAX_WIDTH, estimatedSize)
-      )
-
-      sizing = { ...(sizing || {}), size: clampedSize }
     }
 
     // Check if this column should have a filter

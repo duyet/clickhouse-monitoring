@@ -7,7 +7,7 @@ import { ChartEmpty } from '@/components/charts/chart-empty'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { pivotRows, type RawRow } from '@/lib/chart-utils'
 import { formatReadableSize } from '@/lib/format-readable'
-import { useChartData, useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData, useHostId } from '@/lib/swr'
 import { chartTickFormatters, createDateTickFormatter } from '@/lib/utils'
 
 const CHART_NAME = 'disk-usage-trend'
@@ -40,7 +40,7 @@ export function ChartDiskUsageTrend({
     hostId,
     interval,
     lastHours,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   const { pivoted, categories } = (() => {

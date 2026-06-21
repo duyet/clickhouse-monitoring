@@ -3,7 +3,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   query_preview: string
@@ -23,7 +23,7 @@ export const ChartTopMemoryQueries = function ChartTopMemoryQueries({
   const swr = useChartData<DataRow>({
     chartName: 'top-memory-queries',
     hostId,
-    refreshInterval: 60000,
+    refreshInterval: REFRESH_INTERVAL.DEFAULT_60S,
   })
 
   return (
