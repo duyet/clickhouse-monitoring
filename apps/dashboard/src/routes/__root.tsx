@@ -5,9 +5,8 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 
-import type { ReactNode } from 'react'
-
 import appCss from '../styles.css?url'
+import { type ReactNode, useEffect } from 'react'
 import { ClerkAuthProvider } from '@/components/clerk/clerk-auth-provider'
 import { isClerkClientEnabled } from '@/lib/clerk/clerk-client'
 import { AppProvider } from '@/lib/context/app-context'
@@ -131,6 +130,25 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+// Inject schema.org JSON-LD via a client effect rather than as JSX in <head>.
+// The SPA prerender does not serialize a raw <script> into the static shell, so
+// rendering one in the React tree causes a hydration mismatch (React #418).
+// Appending to document.head post-mount keeps it out of the reconciled tree —
+// Googlebot executes effects and reads the structured data.
+function StructuredData() {
+  useEffect(() => {
+    const el = document.createElement('script')
+    el.type = 'application/ld+json'
+    el.text = JSON.stringify(STRUCTURED_DATA)
+    el.setAttribute('data-chm-jsonld', '')
+    document.head.appendChild(el)
+    return () => {
+      el.remove()
+    }
+  }, [])
+  return null
+}
+
 function RootComponent() {
   return (
     <RootDocument>
@@ -146,19 +164,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        {/*
-          Structured data (schema.org WebApplication). Rendered React-side (the
-          SPA prerender only serializes head() meta/links); Googlebot executes
-          JS and reads dynamically-injected JSON-LD. `alternateName` maps the
-          brand's keyword variations to chmonitor, supporting brand sitelinks.
-        */}
-        <script
-          type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: static, build-time JSON-LD
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
-        />
       </head>
       <body className="bg-background font-sans antialiased">
+        <StructuredData />
         <ClerkAuthProvider>
           <TimezoneProvider>
             <ThemeProvider>
