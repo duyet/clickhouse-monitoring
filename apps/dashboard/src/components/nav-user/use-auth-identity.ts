@@ -4,11 +4,19 @@
  *
  * Only runs for the `trusted` and `proxy` providers — for `none` there is no
  * principal, and `clerk` has its own `useUser()`-backed menu (clerk-nav.tsx).
- * The provider is the build-time `VITE_AUTH_PROVIDER` constant, so the query is
- * tree-shaken to a no-op in deployments that don't use proxy auth.
+ *
+ * The gate reads the RUNTIME provider from `/api/v1/config`
+ * (`useFeaturePermissions().config.authProvider`), NOT the build-time
+ * `VITE_AUTH_PROVIDER` constant. The published Docker image is built once with
+ * the committed default (`clerk`), but each self-hoster selects their provider
+ * at deploy time via the runtime `CHM_AUTH_PROVIDER` worker var. Gating on the
+ * build-time constant left this feature permanently dead for every proxy/trusted
+ * self-hoster on the generic image; the runtime value is the only correct gate.
  */
 
 import { useQuery } from '@tanstack/react-query'
+
+import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 
 export interface AuthIdentity {
   name: string
@@ -30,10 +38,6 @@ interface MeResponse {
 
 const PROXY_PROVIDERS = new Set(['trusted', 'proxy'])
 
-function proxyAuthEnabled(): boolean {
-  return PROXY_PROVIDERS.has(import.meta.env.VITE_AUTH_PROVIDER ?? '')
-}
-
 async function fetchMe(): Promise<MeResponse | null> {
   const res = await fetch('/api/v1/auth/me', {
     headers: { accept: 'application/json' },
@@ -47,7 +51,11 @@ async function fetchMe(): Promise<MeResponse | null> {
  * mode, anonymous, or still loading). Callers fall back to the guest user.
  */
 export function useAuthIdentity(): AuthIdentity | null {
-  const enabled = proxyAuthEnabled()
+  // Gate on the runtime provider reported by /api/v1/config, so the published
+  // Docker image (built with VITE_AUTH_PROVIDER=clerk) still lights up the
+  // sidebar identity when deployed with CHM_AUTH_PROVIDER=trusted|proxy.
+  const { config } = useFeaturePermissions()
+  const enabled = PROXY_PROVIDERS.has(config.authProvider)
   const { data } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: fetchMe,
