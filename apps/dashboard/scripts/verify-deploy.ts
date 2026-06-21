@@ -5,7 +5,9 @@
  * Runs two scenarios against a LIVE deployment:
  *
  *  UNAUTHENTICATED (always)
- *   1. GET /api/health           -> 200 + reports git sha / auth provider / build ts
+ *   1. GET /api/health (no token) -> 200 minimal liveness; deployment metadata
+ *      MUST be hidden from anonymous callers (#1768 — git sha / auth provider /
+ *      key prefix are security posture, not public).
  *   2. GET / and /overview?host=0 -> 200, HTML references the client entry bundle
  *   3. client entry bundle        -> contains the Clerk pk_ key when authProvider=clerk
  *      (guards the NEXT_PUBLIC_* -> VITE_* regression: a broken build ships NO key)
@@ -13,7 +15,9 @@
  *
  *  AUTHENTICATED (when CHM_API_KEY_SECRET is set)
  *   5. POST /api/v1/auth/api-key (Bearer secret) -> mints a chm_ token
- *   6. GET /api/v1/menu-counts?hostId=H (Bearer token) -> 200 success:true with live
+ *   6. GET /api/health (Bearer token) -> 200 + deployment metadata (git sha /
+ *      auth provider / build ts) is returned to authenticated callers
+ *   7. GET /api/v1/menu-counts?hostId=H (Bearer token) -> 200 success:true with live
  *      ClickHouse system-table counts === the worker reaches + queries ClickHouse
  *
  * Run:
@@ -90,30 +94,71 @@ async function http(
   return { status: res.status, text, json }
 }
 
+// ── Shared deployment probe ───────────────────────────────────────────────
+
+// `/api/health` hides deployment metadata from anonymous callers (#1768), so we
+// learn the deployed auth provider (for the Clerk-bundle regression check) by
+// minting a token up front and reading the AUTHENTICATED health response.
+// Without a secret (local --skip-auth runs), clerkExpected stays false and the
+// bundle check softens to informational — CI always provides the secret, so the
+// gate stays strict there.
+let clerkExpected = false
+let deployment: Record<string, unknown> | null = null
+let mintedToken = ''
+let mintStatus = 0
+
+async function probeDeployment() {
+  if (SKIP_AUTH || !SECRET) return
+  try {
+    const mint = await http('/api/v1/auth/api-key', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SECRET}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ label: 'verify-deploy', days: 1 }),
+    })
+    mintStatus = mint.status
+    mintedToken =
+      (mint.json as { data?: { apiKey?: string } })?.data?.apiKey ?? ''
+    if (!mintedToken) return
+    const health = await http('/api/health', {
+      headers: { Authorization: `Bearer ${mintedToken}` },
+    })
+    deployment =
+      (health.json as { deployment?: Record<string, unknown> })?.deployment ??
+      null
+    clerkExpected =
+      deployment?.authProvider === 'clerk' ||
+      deployment?.clientAuthProvider === 'clerk'
+  } catch {
+    /* leave defaults; downstream checks soften */
+  }
+}
+
 // ── Unauthenticated scenario ──────────────────────────────────────────────
 
-let clerkExpected = false
-
 async function runUnauthenticated() {
-  // 1. health
+  // 1. health — anonymous callers get minimal liveness, NO deployment metadata.
   try {
     const { status, json } = await http('/api/health')
-    const d = (json as { deployment?: Record<string, unknown> })?.deployment
-    clerkExpected =
-      d?.authProvider === 'clerk' || d?.clientAuthProvider === 'clerk'
+    const body = json as { status?: string; deployment?: unknown }
+    const leaked = body?.deployment !== undefined
     record({
       scenario: 'unauthenticated',
-      name: 'GET /api/health',
-      ok: status === 200 && !!d,
+      name: 'GET /api/health (anonymous, no metadata leak)',
+      ok: status === 200 && body?.status === 'ok' && !leaked,
       detail:
-        status === 200 && d
-          ? `runtime=${d.runtime} authProvider=${d.authProvider} clientAuthProvider=${d.clientAuthProvider} sha=${String(d.gitSha).slice(0, 7)} clerkKey=${d.clerkPublishableKeyPrefix ?? 'none'}`
-          : `HTTP ${status}`,
+        status !== 200
+          ? `HTTP ${status}`
+          : leaked
+            ? 'LEAK — deployment metadata exposed to anonymous caller (#1768)'
+            : 'ok — minimal liveness; deployment metadata hidden from anonymous',
     })
   } catch (e) {
     record({
       scenario: 'unauthenticated',
-      name: 'GET /api/health',
+      name: 'GET /api/health (anonymous, no metadata leak)',
       ok: false,
       detail: String(e),
     })
@@ -212,38 +257,32 @@ async function runAuthenticated() {
     return
   }
 
-  // 5. mint a chm_ token
-  let token = ''
-  try {
-    const { status, json } = await http('/api/v1/auth/api-key', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${SECRET}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ label: 'verify-deploy', days: 1 }),
-    })
-    token = (json as { data?: { apiKey?: string } })?.data?.apiKey ?? ''
-    record({
-      scenario: 'authenticated',
-      name: 'POST /api/v1/auth/api-key (mint token)',
-      ok: status === 200 && token.startsWith('chm_'),
-      detail:
-        status === 200 && token
-          ? `minted ${token.slice(0, 10)}… (len=${token.length})`
-          : `HTTP ${status} ${(json as { error?: string })?.error ?? ''}`,
-    })
-  } catch (e) {
-    record({
-      scenario: 'authenticated',
-      name: 'mint token',
-      ok: false,
-      detail: String(e),
-    })
-  }
+  // 5. token mint (performed in probeDeployment so the authenticated health
+  //    read below can run; record the outcome here).
+  record({
+    scenario: 'authenticated',
+    name: 'POST /api/v1/auth/api-key (mint token)',
+    ok: mintStatus === 200 && mintedToken.startsWith('chm_'),
+    detail:
+      mintStatus === 200 && mintedToken
+        ? `minted ${mintedToken.slice(0, 10)}… (len=${mintedToken.length})`
+        : `HTTP ${mintStatus}`,
+  })
+  const token = mintedToken
   if (!token) return
 
-  // 6. real CH query per host via the registry endpoint
+  // 6. authenticated callers DO receive deployment metadata (the other half of
+  //    the #1768 contract: hidden from anonymous, visible once authenticated).
+  record({
+    scenario: 'authenticated',
+    name: 'GET /api/health (authenticated) returns metadata',
+    ok: !!deployment,
+    detail: deployment
+      ? `runtime=${deployment.runtime} authProvider=${deployment.authProvider} sha=${String(deployment.gitSha).slice(0, 7)} clerkKey=${deployment.clerkPublishableKeyPrefix ?? 'none'}`
+      : 'no deployment block returned to authenticated caller',
+  })
+
+  // 7. real CH query per host via the registry endpoint
   for (const h of HOSTS) {
     try {
       const { status, json } = await http(`/api/v1/menu-counts?hostId=${h}`, {
@@ -286,6 +325,7 @@ async function runAuthenticated() {
 
 async function main() {
   if (!JSON_OUTPUT) console.log(`\n🔎 Verifying ${BASE_URL}\n`)
+  await probeDeployment()
   await runUnauthenticated()
   await runAuthenticated()
 

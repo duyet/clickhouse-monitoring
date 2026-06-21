@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
-import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
+import { bridgeApiKeyEnv, isAuthenticatedRequest } from '@/lib/auth/api-guard'
 
 function getDeploymentInfo(bindings: Record<string, string | undefined>) {
   // Determine runtime: in workerd the CLOUDFLARE_WORKERS binding is set to '1'
@@ -36,10 +36,12 @@ export const Route = createFileRoute('/api/health')({
           const timestamp = new Date().toISOString()
 
           // Deployment metadata (auth posture, git info) is only returned to
-          // authenticated callers. Anonymous callers get a minimal liveness
-          // response so uptime probes still work without leaking security posture.
-          const authFailure = await enforceAuth(request)
-          if (authFailure) {
+          // genuinely authenticated callers. Anonymous callers get a minimal
+          // liveness response so uptime probes still work without leaking
+          // security posture. Uses isAuthenticatedRequest (not enforceAuth) so
+          // public read-only mode — which lets anonymous users read dashboard
+          // data — does NOT also expose deployment metadata (#1768).
+          if (!(await isAuthenticatedRequest(request))) {
             return Response.json(
               { status: 'ok', timestamp },
               {

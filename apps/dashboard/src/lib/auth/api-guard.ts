@@ -219,6 +219,49 @@ export async function enforceAuth(request: Request): Promise<Response | null> {
 }
 
 /**
+ * Whether a request is genuinely authenticated — a valid `chm_` API key OR an
+ * authenticated provider session (clerk/proxy). Use this to gate exposure of
+ * sensitive deployment/security metadata (e.g. `/api/health`), NOT data access.
+ *
+ * Deliberately stricter than {@link enforceAuth}: it does NOT honor
+ * `publicReadEnabled()`. Public read-only mode grants anonymous visitors access
+ * to dashboard *data*, but must never expose deployment posture (git SHA, auth
+ * provider, key prefixes) — that is a separate trust boundary (#1768).
+ *
+ * Returns `true` for a fully-open deployment (`none` provider, no API key),
+ * since such deployments have no security boundary to protect.
+ *
+ * `bridgeApiKeyEnv` must have been called before this so the env binding is
+ * visible to process.env-based helpers on Workers.
+ */
+export async function isAuthenticatedRequest(
+  request: Request
+): Promise<boolean> {
+  // Fully-open deployment (no provider, no API key): nothing to protect.
+  if (getAuthProvider() === 'none' && !apiKeyAuthEnabled()) return true
+
+  // 1. Programmatic clients: a valid `chm_` Bearer token.
+  const headerToken = getBearerToken(request.headers.get('authorization'))
+  if (headerToken) {
+    const result = await verifyApiKey(headerToken)
+    if (result.valid) return true
+  }
+
+  // 2. An authenticated provider session (clerk cookie, proxy identity, …).
+  const provider = getAuthProvider()
+  if (
+    provider !== 'none' &&
+    (await resolveServerAuthProvider(provider).authenticateRequest(request))
+      .authenticated
+  ) {
+    return true
+  }
+
+  // Intentionally NO publicReadEnabled() relaxation here — see doc comment.
+  return false
+}
+
+/**
  * Resolve the auth-guard response for a request, or `null` to proceed.
  *
  * Order mirrors the Next middleware:
