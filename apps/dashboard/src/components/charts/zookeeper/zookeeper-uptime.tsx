@@ -5,7 +5,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 export const ChartZookeeperUptime = function ChartZookeeperUptime({
@@ -18,7 +18,7 @@ export const ChartZookeeperUptime = function ChartZookeeperUptime({
   }>({
     chartName: 'zookeeper-uptime',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (

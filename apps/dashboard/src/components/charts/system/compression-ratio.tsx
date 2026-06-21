@@ -3,7 +3,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { RankBars } from '@/components/charts/primitives/rank-bars'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   table_path: string
@@ -21,7 +21,7 @@ export const ChartCompressionRatio = function ChartCompressionRatio({
   const swr = useChartData<DataRow>({
     chartName: 'compression-ratio',
     hostId,
-    refreshInterval: 300000,
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
 
   return (

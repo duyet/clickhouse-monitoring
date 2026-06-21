@@ -5,7 +5,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { RankBars } from '@/components/charts/primitives/rank-bars'
 import { SegmentedControl } from '@/components/filters/segmented-control'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   database: string
@@ -30,7 +30,7 @@ export const ChartDiskUsageByDatabase = function ChartDiskUsageByDatabase({
   const swr = useChartData<DataRow>({
     chartName: 'disk-usage-by-database',
     hostId,
-    refreshInterval: 60000,
+    refreshInterval: REFRESH_INTERVAL.DEFAULT_60S,
   })
 
   return (

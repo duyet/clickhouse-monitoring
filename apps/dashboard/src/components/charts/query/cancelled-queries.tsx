@@ -6,7 +6,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 // Human-readable labels for ClickHouse exception codes related to cancellation
@@ -48,7 +48,7 @@ export const ChartCancelledQueries = memo(function ChartCancelledQueries({
     hostId,
     interval: effectiveInterval,
     lastHours: effectiveLastHours,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (

@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 
 export const ChartZookeeperSummaryTable = function ChartZookeeperSummaryTable({
@@ -26,7 +26,7 @@ export const ChartZookeeperSummaryTable = function ChartZookeeperSummaryTable({
   }>({
     chartName: 'zookeeper-summary-table',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   const dataArray = Array.isArray(data) ? data : undefined

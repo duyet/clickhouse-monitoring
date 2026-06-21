@@ -6,7 +6,7 @@ import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarChart } from '@/components/charts/primitives/bar/bar'
 import { DATE_RANGE_PRESETS } from '@/components/date-range'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { chartTickFormatters, cn } from '@/lib/utils'
 
 export const ChartSlowQueryOccurrences = memo(
@@ -35,7 +35,7 @@ export const ChartSlowQueryOccurrences = memo(
       hostId,
       interval: effectiveInterval,
       lastHours: effectiveLastHours,
-      refreshInterval: 60000,
+      refreshInterval: REFRESH_INTERVAL.DEFAULT_60S,
     })
 
     return (

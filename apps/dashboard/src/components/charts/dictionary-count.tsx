@@ -3,7 +3,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { BarList } from '@/components/charts/primitives/bar-list'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   status: string
@@ -18,7 +18,7 @@ export const ChartDictionaryCount = function ChartDictionaryCount({
   const swr = useChartData<DataRow>({
     chartName: 'dictionary-count',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (
