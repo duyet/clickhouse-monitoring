@@ -8,7 +8,7 @@ import {
   Repeat,
 } from 'lucide-react'
 
-import { RankBadge, TotalTimeCell } from './cells'
+import { CpuCell, MemoryCell, RankBadge, TotalTimeCell } from './cells'
 import { ExpandedRow } from './expanded-row'
 import {
   BASE_COLUMN_COUNT,
@@ -34,6 +34,8 @@ import { cn } from '@/lib/utils'
 interface QueryRowProps {
   d: DerivedQuery
   maxDuration: number
+  maxCpu: number
+  maxMemory: number
   expanded: boolean
   onToggle: () => void
   hiddenColumns: Set<OptionalColumn>
@@ -43,6 +45,8 @@ interface QueryRowProps {
 export const QueryRow = memo(function QueryRow({
   d,
   maxDuration,
+  maxCpu,
+  maxMemory,
   expanded,
   onToggle,
   hiddenColumns,
@@ -131,31 +135,28 @@ export const QueryRow = memo(function QueryRow({
 
         {/* Runs — sm+ */}
         {showCnt && (
-          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums sm:table-cell">
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[11px] tabular-nums sm:table-cell">
             {formatCompactNumber(d.cnt)}
           </td>
         )}
 
-        {/* CPU time — lg+ */}
+        {/* CPU time — lg+ (same number + bar % as Total time) */}
         {showCpu && (
-          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums lg:table-cell">
-            {cpu.value}
-            <span className="ml-0.5 text-[10.5px] text-muted-foreground">
-              {cpu.unit}
-            </span>
+          <td className="hidden px-3 py-2.5 lg:table-cell">
+            <CpuCell d={d} max={maxCpu} align="right" />
           </td>
         )}
 
-        {/* Memory — md+ */}
+        {/* Memory — md+ (same number + bar % as Total time) */}
         {showMemory && (
-          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums md:table-cell">
-            {d.readableMemory}
+          <td className="hidden px-3 py-2.5 md:table-cell">
+            <MemoryCell d={d} max={maxMemory} align="right" />
           </td>
         )}
 
         {/* Rows read — xl+ */}
         {showReadRows && (
-          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[12px] tabular-nums text-muted-foreground xl:table-cell">
+          <td className="hidden whitespace-nowrap px-3 py-2.5 text-right text-[11px] tabular-nums text-muted-foreground xl:table-cell">
             {formatCompactNumber(d.readRows)}
           </td>
         )}
@@ -170,6 +171,7 @@ export const QueryRow = memo(function QueryRow({
               sql={d.query}
               title={`#${d.rank} · Most expensive query`}
               description="Full normalized query fingerprint"
+              defaultBeautify
               button={
                 <Button
                   variant="ghost"

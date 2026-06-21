@@ -10,6 +10,7 @@ import type { CardError } from '@/lib/card-error-utils'
 
 import { useState } from 'react'
 import { ExpensiveQueriesTable } from '@/components/expensive-queries/expensive-queries-table'
+import { LoadSummary } from '@/components/expensive-queries/load-summary'
 import { PageHeader } from '@/components/layout'
 import { CollapsedChartsRow } from '@/components/layout/query-page/collapsed-charts-row'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
@@ -117,6 +118,8 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
           </Card>
         ) : (
           <>
+            {/* Heavy-vs-light load summary, derived from the fetched rows. */}
+            {rows.length > 0 && <LoadSummary rows={rows} />}
             {expensiveQueriesConfig.relatedCharts &&
               expensiveQueriesConfig.relatedCharts.length > 0 &&
               (chartsOpen ? (
