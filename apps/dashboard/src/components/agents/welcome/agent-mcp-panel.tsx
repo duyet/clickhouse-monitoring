@@ -4,15 +4,20 @@
  * MCP Config Panel
  *
  * Shows the status of Model Context Protocol servers connected to the agent:
- *   - Built-in clickhouse-monitor server (always present)
- *   - User-added custom servers
+ *   - Built-in clickhouse-monitor server (always present). Its tool count,
+ *     resource count, version, and connection status are derived live from
+ *     /api/v1/mcp/info. The built-in server is always on and its toggle is
+ *     read-only — it cannot be disabled.
+ *   - User-added custom servers. These persist to localStorage via
+ *     {@link useMcpConfig} (mirroring how individual MCP tool selections are
+ *     stored by `useToolConfig`); they can be toggled, added, and removed.
  *
  * Follows the assistant-ui MCP config pattern:
  *   https://www.assistant-ui.com/docs/ui/mcp-config
  *
- * Per-server enable/disable toggles and "Connect new server" persist to
- * localStorage via {@link useMcpConfig}, mirroring how individual MCP tool
- * selections are stored by `useToolConfig`.
+ * Note: custom servers are not yet wired to the agent runtime, so their
+ * persisted enable/disable state is a stored user preference rather than a
+ * live runtime binding.
  */
 
 import { PlusIcon, Trash2Icon, WrenchIcon } from 'lucide-react'
@@ -25,26 +30,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { toMcpServers, useMcpConfig } from '@/lib/hooks/use-mcp-config'
+import { useMcpServerInfo } from '@/lib/swr/use-mcp-server-info'
 import { cn } from '@/lib/utils'
 
 // Re-exported for existing consumers; canonical definition lives in mcp-types.ts.
 export type { McpServer }
-
-// ---------------------------------------------------------------------------
-// Built-in server definition (always present)
-// ---------------------------------------------------------------------------
-
-const BUILTIN_SERVER: McpServer = {
-  id: 'clickhouse-monitor',
-  name: 'clickhouse-monitor',
-  endpoint: '/api/mcp',
-  toolCount: 14,
-  resourceCount: 2,
-  version: 'v1.0.0',
-  builtin: true,
-  enabled: true,
-  status: 'connected',
-}
 
 // ---------------------------------------------------------------------------
 // Status badge helper
@@ -149,19 +139,24 @@ function McpServerRow({
         </Button>
       )}
 
-      {/* Toggle — separate from the clickable info region */}
+      {/* Toggle — disabled for built-in servers (always on, cannot be disabled) */}
       <Switch
         checked={server.enabled}
+        disabled={server.builtin}
         onCheckedChange={(next) => onToggle(server.id, next)}
         className="shrink-0"
-        aria-label={`Toggle ${server.name}`}
+        aria-label={
+          server.builtin
+            ? `${server.name} is always enabled`
+            : `Toggle ${server.name}`
+        }
       />
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// "Connect new server" form (UI-only)
+// "Connect new server" form
 // ---------------------------------------------------------------------------
 
 /** A custom server the user is about to register. */
@@ -245,12 +240,8 @@ function AddServerForm({ onCancel, onAdd }: AddServerFormProps) {
 // Panel root
 // ---------------------------------------------------------------------------
 
-export interface AgentMcpPanelProps {
-  /** Overall MCP status. */
-  status?: 'configured' | 'unconfigured'
-}
-
-export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
+export function AgentMcpPanel() {
+  const { data, isLoading, error } = useMcpServerInfo()
   const {
     customServers,
     isServerEnabled,
@@ -261,9 +252,28 @@ export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedServer, setSelectedServer] = useState<McpServer | null>(null)
 
-  // Built-in server first, then user-added custom servers from localStorage.
+  // Derive real connection status for the built-in server from the
+  // /api/v1/mcp/info fetch state.
+  const builtinStatus: McpServer['status'] = isLoading
+    ? 'connecting'
+    : error
+      ? 'error'
+      : 'connected'
+
+  // Built-in server (live data, always on) first, then user-added custom
+  // servers restored from localStorage.
   const servers: McpServer[] = [
-    { ...BUILTIN_SERVER, enabled: isServerEnabled(BUILTIN_SERVER.id) },
+    {
+      id: 'clickhouse-monitor',
+      name: data?.name ?? 'clickhouse-monitor',
+      endpoint: '/api/mcp',
+      toolCount: data?.tools.length ?? 0,
+      resourceCount: data?.resources.length,
+      version: data?.version,
+      builtin: true,
+      enabled: true,
+      status: builtinStatus,
+    },
     ...toMcpServers(customServers, isServerEnabled),
   ]
 
@@ -271,11 +281,13 @@ export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
     setServerEnabled(id, next)
   }
 
-  const handleAddServer = (server: { name: string; endpoint: string }) => {
+  const handleAddServer = (server: AddServerInput) => {
     addServer(server)
     setShowAddForm(false)
   }
 
+  const panelStatus =
+    builtinStatus === 'connected' ? 'configured' : 'unconfigured'
   const activeCount = servers.filter((s) => s.enabled).length
 
   return (
@@ -295,7 +307,7 @@ export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
           <span className="text-foreground font-medium">{activeCount}</span>/
           {servers.length} active
         </span>
-        {status === 'configured' ? (
+        {panelStatus === 'configured' ? (
           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
             <span className="size-1.5 rounded-full bg-emerald-500" />
             Configured
@@ -303,7 +315,7 @@ export function AgentMcpPanel({ status = 'configured' }: AgentMcpPanelProps) {
         ) : (
           <span className="text-muted-foreground flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-            Unconfigured
+            {isLoading ? 'Connecting…' : 'Unconfigured'}
           </span>
         )}
       </div>

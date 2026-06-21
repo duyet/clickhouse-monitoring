@@ -58,14 +58,30 @@ curl -X POST https://your-deployment.example.com/api/mcp \
 
 ## Security
 
-- **Read-only**: All MCP tools execute read-only operations
-- **No authentication**: Inherits deployment-level access controls
+- **Read-only**: All MCP tools execute read-only operations (`readonly: 1`)
+- **Secure by default**: The `/api/mcp` endpoint returns 401 when no auth scheme is configured. Anonymous access requires an explicit operator opt-in via `CHM_MCP_PUBLIC=true`.
 - **Query limits**: Same `CLICKHOUSE_MAX_EXECUTION_TIME` timeout as dashboard
 - **No credential exposure**: Uses dashboard's configured ClickHouse credentials
 
+### Auth modes (precedence order)
+
+| Condition | Behaviour |
+|-----------|-----------|
+| `CHM_API_KEY_SECRET` or `CLERK_SECRET_KEY` set | Token required; 401 without a valid token |
+| Neither secret set + `CHM_MCP_PUBLIC=true` | Open access; **warning logged on every request** |
+| Neither secret set + no `CHM_MCP_PUBLIC` | **Deny (401)** — secure-by-default |
+
+### Enabling open mode (trusted private networks only)
+
+```bash
+CHM_MCP_PUBLIC=true
+```
+
+A loud `console.warn` is emitted on each request when running in open mode so the
+exposure is visible in logs and cannot be silently forgotten.
+
 ## Key Files
 
-- `app/api/mcp/route.ts` — MCP endpoint
-- `lib/mcp/` — MCP server implementation
-- `lib/api/shared/validators/sql.ts` — SQL validation
-- Tests: `lib/mcp/__tests__/` using bun:test
+- `packages/mcp-server/src/http.ts` — auth gate (`defaultAuthenticator`)
+- `packages/mcp-server/src/auth/` — api-key + Clerk OAuth verifiers
+- Tests: `packages/mcp-server/src/__tests__/http.test.ts`

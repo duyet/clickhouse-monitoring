@@ -3,6 +3,7 @@ import {
   apiKeyAuthenticator,
   buildServerInfo,
   corsPreflight,
+  defaultAuthenticator,
   handleMcp,
   handleMcpInfo,
   normalizePath,
@@ -18,12 +19,18 @@ function req(headers: Record<string, string> = {}): Request {
 
 describe('mcp http', () => {
   const originalSecret = process.env.CHM_API_KEY_SECRET
+  const originalPublic = process.env.CHM_MCP_PUBLIC
 
   afterEach(() => {
     if (originalSecret !== undefined) {
       process.env.CHM_API_KEY_SECRET = originalSecret
     } else {
       delete process.env.CHM_API_KEY_SECRET
+    }
+    if (originalPublic !== undefined) {
+      process.env.CHM_MCP_PUBLIC = originalPublic
+    } else {
+      delete process.env.CHM_MCP_PUBLIC
     }
   })
 
@@ -46,6 +53,37 @@ describe('mcp http', () => {
       expect(normalizePath('/api/mcp/')).toBe('/api/mcp')
       expect(normalizePath('/api/mcp')).toBe('/api/mcp')
       expect(normalizePath('/')).toBe('/')
+    })
+  })
+
+  describe('defaultAuthenticator', () => {
+    it('401s when no auth is configured and CHM_MCP_PUBLIC is not set', async () => {
+      delete process.env.CHM_API_KEY_SECRET
+      delete process.env.CHM_MCP_PUBLIC
+      const res = await defaultAuthenticator(req())
+      expect(res?.status).toBe(401)
+    })
+
+    it('allows anonymous when CHM_MCP_PUBLIC=true and no auth is configured', async () => {
+      delete process.env.CHM_API_KEY_SECRET
+      process.env.CHM_MCP_PUBLIC = 'true'
+      expect(await defaultAuthenticator(req())).toBeNull()
+    })
+
+    it('401s when api-key is configured but no token is provided', async () => {
+      process.env.CHM_API_KEY_SECRET = TEST_SECRET
+      delete process.env.CHM_MCP_PUBLIC
+      const res = await defaultAuthenticator(req())
+      expect(res?.status).toBe(401)
+    })
+
+    it('allows a valid api-key even when CHM_MCP_PUBLIC is unset', async () => {
+      process.env.CHM_API_KEY_SECRET = TEST_SECRET
+      delete process.env.CHM_MCP_PUBLIC
+      const key = await issueApiKey('test')
+      expect(
+        await defaultAuthenticator(req({ authorization: `Bearer ${key}` }))
+      ).toBeNull()
     })
   })
 
@@ -122,8 +160,18 @@ describe('mcp http', () => {
       expect(info.resources.map((r) => r.name)).toContain('system-tables')
     })
 
-    it('returns info JSON with CORS when auth is open', async () => {
+    it('401s info when no auth is configured and CHM_MCP_PUBLIC is not set', async () => {
       delete process.env.CHM_API_KEY_SECRET
+      delete process.env.CHM_MCP_PUBLIC
+      const res = await handleMcpInfo(
+        new Request('https://example.com/api/v1/mcp/info')
+      )
+      expect(res.status).toBe(401)
+    })
+
+    it('returns info JSON with CORS when CHM_MCP_PUBLIC=true', async () => {
+      delete process.env.CHM_API_KEY_SECRET
+      process.env.CHM_MCP_PUBLIC = 'true'
       const res = await handleMcpInfo(
         new Request('https://example.com/api/v1/mcp/info')
       )
@@ -135,6 +183,7 @@ describe('mcp http', () => {
 
     it('401s info when auth is required and no token is given', async () => {
       process.env.CHM_API_KEY_SECRET = TEST_SECRET
+      delete process.env.CHM_MCP_PUBLIC
       const res = await handleMcpInfo(
         new Request('https://example.com/api/v1/mcp/info')
       )
