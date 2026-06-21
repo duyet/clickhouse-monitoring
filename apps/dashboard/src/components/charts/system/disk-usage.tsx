@@ -104,7 +104,7 @@ function DiskUsageContent({ disks }: { disks: DiskRow[] }) {
   const totalPct = percentUsed(usedSum, totalSum)
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       {/* Aggregate summary */}
       <div className="flex items-baseline justify-between gap-2 pb-2 font-mono text-[11px] tabular-nums text-muted-foreground">
         <span className="text-[13px] font-semibold tabular-nums text-foreground/90">
@@ -119,8 +119,8 @@ function DiskUsageContent({ disks }: { disks: DiskRow[] }) {
         </span>
       </div>
 
-      {/* Per-disk rows; scrolls within the fixed tab cell when there are many */}
-      <div className="-mr-1 flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
+      {/* Per-disk rows — card is row-span-2 so all disks show without scrolling */}
+      <div className="flex flex-col">
         {disks.map((disk) => (
           <DiskRowItem key={disk.name} disk={disk} />
         ))}
