@@ -169,6 +169,10 @@ curl -X POST https://your-host/api/v1/agent \
 
 The dashboard exposes an MCP (Model Context Protocol) endpoint at `/api/mcp`. The same implementation runs in the standalone Cloudflare MCP Worker (`apps/mcp`). All tools are read-only by design — write and DDL statements are rejected.
 
+### Agent settings sidebar
+
+The **MCP Servers** section of the agent settings sidebar shows the built-in `clickhouse-monitor` server with its live connection status, tool count, resource count, and version — fetched from `GET /api/v1/mcp/info`. Click a server row to see the full tool and resource list. The built-in server is always enabled and cannot be toggled off. Custom server registration ("Connect new server") is not yet available.
+
 ### MCP tools
 
 | Tool | Purpose |
