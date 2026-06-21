@@ -1,42 +1,44 @@
-name: Claude Issue Resolver
+name: Claude Issues
 
-# Auto-resolve issues that are ASSIGNED to the bot (duyetbot).
-#
-# GitHub fires the `issues.assigned` activity even when the assignee is set at
-# creation time, so this single trigger covers both:
-#   - an issue created with duyetbot already assigned, and
-#   - an existing issue later assigned to duyetbot.
-#
-# Claude reads the code + in-repo knowledge graph + docs + any CodeRabbit plan
-# FIRST, then either comments (analysis / questions) or opens a PR that closes
-# the issue via a `Resolves #<n>` keyword.
-#
-# Auth notes:
-#   - CLAUDE_CODE_OAUTH_TOKEN  -> the model (already used by claude.yml).
-#   - GITHUB_TOKEN             -> git checkout + all bot gh/PR/comment operations.
-#
-# NOTE: this uses the built-in GITHUB_TOKEN. A bot PAT (DUYETBOT_GITHUB_TOKEN)
-# would be preferable so the bot's PRs run downstream CI (PRs opened with the
-# default GITHUB_TOKEN do NOT trigger other workflows) and so comments/PRs show
-# the `duyetbot` identity. The PAT currently stored in this repo is invalid
-# (the resolver's checkout failed 401 -> "could not read Username"), so to swap
-# it back in: refresh DUYETBOT_GITHUB_TOKEN, then replace the three
-# `secrets.GITHUB_TOKEN` references below with
-# `secrets.DUYETBOT_GITHUB_TOKEN`.
+# Triage: auto-label all newly opened issues.
+# Solve: when duyetbot is assigned, autonomously resolve the issue (comment or PR).
 
 on:
   issues:
-    types: [assigned]
-
-# One resolver run per issue at a time (guards against rapid re-assignment).
-concurrency:
-  group: claude-issue-${{ github.event.issue.number }}
-  cancel-in-progress: false
+    types: [opened, assigned]
 
 jobs:
+  triage-issue:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code for Issue Triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          # NOTE: /label-issue requires .claude/commands/label-issue.md and
+          # scripts/edit-issue-labels.sh in the repo.
+          prompt: "/label-issue REPO: ${{ github.repository }} ISSUE_NUMBER: ${{ github.event.issue.number }}"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Required so issues opened by users without repo write access are still triaged.
+          allowed_non_write_users: "*"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   resolve-issue:
-    # Only run when the NEWLY assigned user is the bot.
     if: github.event.action == 'assigned' && github.event.assignee.login == 'duyetbot'
+    # One resolver run per issue at a time; guards against rapid re-assignment.
+    concurrency:
+      group: claude-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -44,7 +46,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results
+      actions: read
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -164,12 +166,11 @@ jobs:
 
                Co-Authored-By: duyetbot <bot@duyet.net>
                ```
-               IMPORTANT: the subject line (everything before the first newline) MUST
-               be <= 100 characters. This repo's `commitlint.config.js` enforces
-               `header-max-length: 100`, and CI's `conventional-title` check FAILS
-               otherwise (squash-merge uses the PR title as the commit subject). Keep
-               it tight and do NOT pad it with `(#issue)` — the `Resolves #` keyword in
-               the PR body handles closing.
+               IMPORTANT: the subject line MUST be <= 100 characters.
+               `commitlint.config.js` enforces `header-max-length: 100`, and CI's
+               `conventional-title` check FAILS otherwise. Keep it tight and do NOT
+               pad it with `(#issue)` — the `Resolves #` keyword in the PR body
+               handles closing.
             6. Push the branch: `git push origin <branch-name>`.
 
             ## Phase 3 — Open the PR and link the issue
