@@ -253,6 +253,12 @@ export interface CalendarDay {
   value: number
   /** Pre-formatted value for tooltips/labels. */
   readable: string
+  /**
+   * Day falls after "today" — rendered dimmed/disabled so the current month
+   * shows in full, but excluded from every stat. Only set when the model is
+   * built with `includeFuture`.
+   */
+  isFuture?: boolean
 }
 
 /** A week column: 7 slots indexed by day-of-week (0 = Sunday). `null` marks a
@@ -284,19 +290,26 @@ export function buildCalendarModel(
   rows: HeatmapDayRow[],
   today: Date,
   metric: MetricConfig,
-  weeksBack = 53
+  weeksBack = 53,
+  includeFuture = false
 ): CalendarModel {
   const byDate = new Map<string, HeatmapDayRow>()
   for (const r of rows) byDate.set(r.date, r)
 
   // Anchor at noon to avoid DST edge cases when stepping days.
-  const end = new Date(
+  const todayNoon = new Date(
     today.getFullYear(),
     today.getMonth(),
     today.getDate(),
     12
   )
-  const start = new Date(end)
+  // When `includeFuture`, render through the end of the current month so it
+  // shows in full (future days are dimmed + excluded from stats). Otherwise the
+  // grid stops at today, matching GitHub's partial trailing week.
+  const end = includeFuture
+    ? new Date(today.getFullYear(), today.getMonth() + 1, 0, 12)
+    : todayNoon
+  const start = new Date(todayNoon)
   start.setDate(start.getDate() - (weeksBack * 7 - 1))
   // Snap to the Sunday on/before the start so columns are whole weeks.
   start.setDate(start.getDate() - start.getDay())
@@ -326,6 +339,7 @@ export function buildCalendarModel(
       }
 
       const iso = isoDate(cursor)
+      const isFuture = cursor > todayNoon
       const rec = byDate.get(iso)
       const value = rec ? metric.getValue(rec) : 0
       const day: CalendarDay = {
@@ -333,17 +347,22 @@ export function buildCalendarModel(
         date: new Date(cursor),
         value,
         readable: metric.format(value),
+        isFuture: isFuture || undefined,
       }
       week[dow] = day
 
-      if (!firstDay) firstDay = day.date
-      lastDay = day.date
+      // Future days render (dimmed) for a full current month but never count
+      // toward totals, peak, or the date-range caption.
+      if (!isFuture) {
+        if (!firstDay) firstDay = day.date
+        lastDay = day.date
 
-      totalDays += 1
-      total += value
-      if (value > 0) activeDays += 1
-      if (value > max) max = value
-      if (!peak || value > peak.value) peak = day
+        totalDays += 1
+        total += value
+        if (value > 0) activeDays += 1
+        if (value > max) max = value
+        if (!peak || value > peak.value) peak = day
+      }
 
       // Label the column at the first day that opens a new month.
       const month = cursor.getMonth()
@@ -437,6 +456,50 @@ export function buildMonthBlocks(model: CalendarModel): MonthBlock[] {
   }
 
   return blocks
+}
+
+/** Pixel sizing of the heatmap grid, used to fit month blocks to a width. */
+export interface MonthBlockSizing {
+  /** Width of one week column incl. its gap (cell + inter-cell gap). */
+  colPx?: number
+  /** Horizontal gap between adjacent month blocks. */
+  blockGapPx?: number
+  /** Width of the leading weekday-label gutter. */
+  gutterPx?: number
+}
+
+/**
+ * Pick the trailing (most recent) month blocks that fit within `availableWidth`,
+ * dropping the oldest first so the current month is always kept on screen. The
+ * newest month is always included even if it alone exceeds the width. Returns
+ * all blocks unchanged when the width is unknown (≤ 0), so the caller can fall
+ * back to horizontal scrolling before it has measured its container.
+ */
+export function pickVisibleMonthBlocks(
+  blocks: MonthBlock[],
+  availableWidth: number,
+  sizing: MonthBlockSizing = {}
+): MonthBlock[] {
+  if (blocks.length === 0) return blocks
+  if (!Number.isFinite(availableWidth) || availableWidth <= 0) return blocks
+
+  const colPx = sizing.colPx ?? 13
+  const blockGapPx = sizing.blockGapPx ?? 12
+  const gutterPx = sizing.gutterPx ?? 24
+  const widthOf = (b: MonthBlock) => b.weeks.length * colPx
+
+  let used = gutterPx
+  const visibleReversed: MonthBlock[] = []
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const needsGap = visibleReversed.length > 0
+    const w = widthOf(blocks[i]) + (needsGap ? blockGapPx : 0)
+    // Always keep the newest month; stop once an older one would overflow.
+    if (needsGap && used + w > availableWidth) break
+    used += w
+    visibleReversed.push(blocks[i])
+  }
+
+  return visibleReversed.reverse()
 }
 
 /** A single KPI/stat card shown above the calendar. */

@@ -9,6 +9,7 @@ import {
   getIntensityClass,
   isoDate,
   METRIC_CONFIGS,
+  pickVisibleMonthBlocks,
 } from './query-count-calendar'
 import { describe, expect, it } from 'bun:test'
 
@@ -117,6 +118,32 @@ describe('buildCalendarModel', () => {
     expect(lastWeek?.[3]?.iso).toBe('2026-06-17')
   })
 
+  describe('includeFuture', () => {
+    it('renders the rest of the current month as dimmed future days', () => {
+      const model = buildCalendarModel([], today, QUERIES, 4, true)
+      const days = model.weeks
+        .flat()
+        .filter((d): d is NonNullable<typeof d> => d !== null)
+      // The grid now extends to the last day of the current month (Jun 30).
+      expect(days.at(-1)?.iso).toBe('2026-06-30')
+      // Today is not future; tomorrow is.
+      expect(days.find((d) => d.iso === '2026-06-17')?.isFuture).toBeUndefined()
+      expect(days.find((d) => d.iso === '2026-06-18')?.isFuture).toBe(true)
+      expect(days.find((d) => d.iso === '2026-06-30')?.isFuture).toBe(true)
+    })
+
+    it('excludes future days from totals and the date-range caption', () => {
+      const rows: HeatmapDayRow[] = [row('2026-06-17', { query_count: 50 })]
+      const withFuture = buildCalendarModel(rows, today, QUERIES, 4, true)
+      const withoutFuture = buildCalendarModel(rows, today, QUERIES, 4, false)
+      // Future zero-days must not inflate totalDays / change stats.
+      expect(withFuture.totalDays).toBe(withoutFuture.totalDays)
+      expect(withFuture.total).toBe(50)
+      expect(withFuture.activeDays).toBe(1)
+      expect(withFuture.rangeLabel).toBe(withoutFuture.rangeLabel)
+    })
+  })
+
   it('joins the selected metric onto the matching day and aggregates stats', () => {
     const rows: HeatmapDayRow[] = [
       row('2026-06-15', { query_count: 100 }),
@@ -223,6 +250,37 @@ describe('buildMonthBlocks', () => {
     const jun = buildMonthBlocks(model).find((b) => b.key === '2026-5')!
     const cell = jun.weeks.flat().find((d) => d?.iso === '2026-06-15')
     expect(cell?.value).toBe(100)
+  })
+})
+
+describe('pickVisibleMonthBlocks', () => {
+  const today = new Date(2026, 5, 17)
+  const blocks = buildMonthBlocks(buildCalendarModel([], today, QUERIES, 53))
+
+  it('returns all blocks when width is unknown (≤ 0)', () => {
+    expect(pickVisibleMonthBlocks(blocks, 0)).toHaveLength(blocks.length)
+    expect(pickVisibleMonthBlocks(blocks, Number.NaN)).toHaveLength(
+      blocks.length
+    )
+  })
+
+  it('drops the oldest months first, always keeping the most recent', () => {
+    const narrow = pickVisibleMonthBlocks(blocks, 300)
+    expect(narrow.length).toBeLessThan(blocks.length)
+    // The kept blocks are a trailing slice (newest months retained).
+    expect(narrow.at(-1)?.key).toBe(blocks.at(-1)?.key ?? '')
+  })
+
+  it('always keeps at least the newest month even if it overflows', () => {
+    const tiny = pickVisibleMonthBlocks(blocks, 1)
+    expect(tiny).toHaveLength(1)
+    expect(tiny[0]?.key).toBe(blocks.at(-1)?.key ?? '')
+  })
+
+  it('shows more months as width grows', () => {
+    const narrow = pickVisibleMonthBlocks(blocks, 300)
+    const wide = pickVisibleMonthBlocks(blocks, 1200)
+    expect(wide.length).toBeGreaterThan(narrow.length)
   })
 })
 
