@@ -1,4 +1,10 @@
-import { ChevronsUpDown, ExternalLink, Info, Settings } from 'lucide-react'
+import {
+  ChevronsUpDown,
+  ExternalLink,
+  Info,
+  Settings,
+  ShieldCheck,
+} from 'lucide-react'
 
 import { ClerkNavWrapper as ClerkNavWrapperImpl } from './nav-user/clerk-nav'
 import { useState } from 'react'
@@ -34,6 +40,14 @@ import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 // `require` is undefined and previously crashed every page that mounts the shell.
 const ClerkNavWrapper = isClerkEnabled() ? ClerkNavWrapperImpl : null
 
+// Human-readable provenance for a reverse-proxy-forwarded identity, keyed by the
+// runtime auth provider. Only `trusted`/`proxy` forward a profile; `none`/`clerk`
+// have no entry (no badge is shown for them).
+const AUTH_SOURCE_LABELS: Record<string, string | undefined> = {
+  trusted: 'via trusted proxy',
+  proxy: 'via auth proxy',
+}
+
 export function NavUser({
   user,
 }: {
@@ -50,6 +64,12 @@ export function NavUser({
   const proxyIdentity = useAuthIdentity()
   const displayUser = proxyIdentity ?? user
   const { config } = useFeaturePermissions()
+  // Surface WHERE this identity came from: under reverse-proxy auth the profile
+  // is forwarded by the proxy (oauth2-proxy / Traefik forward-auth), not a
+  // first-party login. Only shown when a forwarded identity is actually present.
+  const authSourceLabel = proxyIdentity
+    ? AUTH_SOURCE_LABELS[config.authProvider]
+    : undefined
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
   const openSettings = () => {
     if (canUseSettings) setSettingsOpen(true)
@@ -114,6 +134,15 @@ export function NavUser({
                       <span className="truncate text-xs">
                         {displayUser.email}
                       </span>
+                      {authSourceLabel && (
+                        <span
+                          className="mt-0.5 flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground"
+                          data-testid="nav-user-auth-source"
+                        >
+                          <ShieldCheck className="size-3 shrink-0" />
+                          <span className="truncate">{authSourceLabel}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                 </DropdownMenuLabel>
