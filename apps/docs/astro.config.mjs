@@ -36,9 +36,40 @@ export default defineConfig({
         PageTitle: './src/components/PageTitle.astro',
       },
       head: [
+        // Open Graph / Twitter card image. Starlight emits canonical, og:title,
+        // og:description and twitter:card by default, but not the image tags —
+        // add the dimensions and an explicit twitter:image so the card renders
+        // a large preview instead of relying on the og:image fallback.
         {
           tag: 'meta',
           attrs: { property: 'og:image', content: 'https://docs.chmonitor.dev/og/og.png' },
+        },
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image:width', content: '1200' },
+        },
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image:height', content: '630' },
+        },
+        {
+          tag: 'meta',
+          attrs: { name: 'twitter:image', content: 'https://docs.chmonitor.dev/og/og.png' },
+        },
+        // Complete the icon set. Starlight's `favicon` option only emits the
+        // single SVG link; reference the PNG fallbacks (older browsers) and the
+        // apple-touch-icon (iOS home screen) that already ship in public/.
+        {
+          tag: 'link',
+          attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
+        },
+        {
+          tag: 'link',
+          attrs: { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' },
+        },
+        {
+          tag: 'link',
+          attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         },
       ],
       // Curated top-level order; pages within each section are listed
