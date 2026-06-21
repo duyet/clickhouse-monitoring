@@ -19,7 +19,7 @@ import {
 } from '@chm/clickhouse-client'
 import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { debug, error as logError } from '@chm/logger'
-import { validateSqlQuery } from '@chm/sql-builder'
+import { stripTrailingFormat, validateSqlQuery } from '@chm/sql-builder'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const ROUTE_CONTEXT = { route: '/api/v1/explain' }
@@ -178,9 +178,26 @@ async function runExplain(
     )
   }
 
+  // EXPLAIN cannot wrap a query that still carries a trailing `FORMAT <name>`
+  // clause or a trailing `;` (ClickHouse rejects it). Strip them so queries
+  // copied straight from the SQL console — e.g. `... FORMAT JSONEachRow` — can
+  // be explained as-is.
+  const normalizedQuery = stripTrailingFormat(query)
+
+  if (normalizedQuery.trim() === '') {
+    return Response.json(
+      {
+        success: false,
+        error: 'Missing required parameter: query',
+        ...ROUTE_CONTEXT,
+      },
+      { status: 400 }
+    )
+  }
+
   // SECURITY: Validate SQL query to prevent injection attacks
   try {
-    validateSqlQuery(query)
+    validateSqlQuery(normalizedQuery)
   } catch (validationError) {
     logError('[/api/v1/explain] Security: SQL validation failed', {
       queryPreview: query.substring(0, 100),
@@ -247,11 +264,11 @@ async function runExplain(
   // Build EXPLAIN query
   let explainQuery: string
   if (settingsClause) {
-    explainQuery = `EXPLAIN PLAN ${settingsClause.trim()} ${query}`
+    explainQuery = `EXPLAIN PLAN ${settingsClause.trim()} ${normalizedQuery}`
   } else if (modeParam) {
-    explainQuery = `EXPLAIN ${modeParam} ${query}`
+    explainQuery = `EXPLAIN ${modeParam} ${normalizedQuery}`
   } else {
-    explainQuery = `EXPLAIN ${query}`
+    explainQuery = `EXPLAIN ${normalizedQuery}`
   }
 
   // AST and SYNTAX modes return raw text, not valid JSONEachRow

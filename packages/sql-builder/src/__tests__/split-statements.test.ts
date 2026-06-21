@@ -1,4 +1,4 @@
-import { splitSqlStatements } from '../split-statements'
+import { splitSqlStatements, stripTrailingFormat } from '../split-statements'
 import { describe, expect, it } from 'bun:test'
 
 describe('splitSqlStatements', () => {
@@ -119,5 +119,49 @@ describe('splitSqlStatements', () => {
       GROUP BY database`,
       'SELECT count() FROM system.tables',
     ])
+  })
+})
+
+describe('stripTrailingFormat', () => {
+  it('removes a trailing FORMAT clause', () => {
+    expect(stripTrailingFormat('SELECT 1 FORMAT JSONEachRow')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 FORMAT TabSeparated')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 FORMAT Pretty')).toBe('SELECT 1')
+  })
+
+  it('is case-insensitive for the FORMAT keyword', () => {
+    expect(stripTrailingFormat('SELECT 1 format JSONEachRow')).toBe('SELECT 1')
+  })
+
+  it('strips trailing semicolons', () => {
+    expect(stripTrailingFormat('SELECT 1;')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 ;  ')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1;;;')).toBe('SELECT 1')
+  })
+
+  it('strips a FORMAT clause followed by a semicolon', () => {
+    expect(stripTrailingFormat('SELECT 1 FORMAT JSONEachRow;')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 FORMAT JSONEachRow ; ')).toBe(
+      'SELECT 1'
+    )
+  })
+
+  it('leaves non-trailing FORMAT-like tokens intact', () => {
+    expect(stripTrailingFormat('SELECT formatDateTime(now())')).toBe(
+      'SELECT formatDateTime(now())'
+    )
+    expect(stripTrailingFormat('SELECT toString(x) AS format FROM t')).toBe(
+      'SELECT toString(x) AS format FROM t'
+    )
+  })
+
+  it('handles a realistic copied console query', () => {
+    expect(
+      stripTrailingFormat(
+        "SELECT database, name FROM system.tables WHERE database NOT IN ('system') ORDER BY total_bytes DESC LIMIT 500 FORMAT JSONEachRow"
+      )
+    ).toBe(
+      "SELECT database, name FROM system.tables WHERE database NOT IN ('system') ORDER BY total_bytes DESC LIMIT 500"
+    )
   })
 })
