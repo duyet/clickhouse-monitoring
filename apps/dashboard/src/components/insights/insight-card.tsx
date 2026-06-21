@@ -1,12 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import {
-  AlertTriangle,
-  ArrowRight,
-  Lightbulb,
-  Sparkles,
-  TriangleAlert,
-  X,
-} from 'lucide-react'
+import { AlertTriangle, ArrowRight, Info, TriangleAlert, X } from 'lucide-react'
 
 import type {
   InsightCard as InsightCardData,
@@ -22,7 +15,7 @@ import { cn } from '@/lib/utils'
 
 interface SeverityStyle {
   icon: LucideIcon
-  /** Left accent + icon color. */
+  /** Thin left border color (pseudo-element). */
   accent: string
   iconColor: string
   badge: string
@@ -32,27 +25,27 @@ interface SeverityStyle {
 const SEVERITY: Record<InsightSeverity, SeverityStyle> = {
   critical: {
     icon: AlertTriangle,
-    accent: 'before:bg-rose-500',
+    accent: 'before:bg-rose-500/70',
     iconColor: 'text-rose-600 dark:text-rose-400',
     badge:
-      'border-transparent bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+      'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-400',
     badgeLabel: 'Critical',
   },
   warning: {
     icon: TriangleAlert,
-    accent: 'before:bg-amber-500',
+    accent: 'before:bg-amber-400/70',
     iconColor: 'text-amber-600 dark:text-amber-400',
     badge:
-      'border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+      'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-400',
     badgeLabel: 'Warning',
   },
   info: {
-    icon: Lightbulb,
-    accent: 'before:bg-sky-500',
-    iconColor: 'text-sky-600 dark:text-sky-400',
+    icon: Info,
+    accent: 'before:bg-border',
+    iconColor: 'text-muted-foreground',
     badge:
-      'border-transparent bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
-    badgeLabel: 'Tip',
+      'border-border bg-muted/50 text-muted-foreground dark:bg-muted/30 dark:text-muted-foreground',
+    badgeLabel: 'Info',
   },
 }
 
@@ -82,17 +75,20 @@ export function InsightCard({
   return (
     <Card
       className={cn(
-        // left accent bar via a pseudo-element so we don't touch the base card
-        'relative h-full gap-0 overflow-hidden p-4 pl-5 transition-shadow hover:shadow-md',
-        'before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[""]',
+        // thin left border via pseudo-element — never touches components/ui/card
+        'relative h-full gap-0 overflow-hidden p-4 pl-[13px] transition-colors',
+        'before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:content-[""]',
         style.accent,
         className
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon className={cn('size-4 shrink-0', style.iconColor)} />
-          <Badge className={cn('text-[10px] font-medium', style.badge)}>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Icon className={cn('size-3.5 shrink-0', style.iconColor)} />
+          <Badge
+            variant="outline"
+            className={cn('text-[10px] font-medium', style.badge)}
+          >
             {style.badgeLabel}
           </Badge>
         </div>
@@ -100,15 +96,15 @@ export function InsightCard({
           type="button"
           variant="ghost"
           size="icon"
-          className="-mr-1.5 -mt-1.5 size-7 shrink-0 text-muted-foreground opacity-60 hover:opacity-100"
+          className="-mr-1.5 -mt-1.5 size-7 shrink-0 text-muted-foreground/50 hover:text-muted-foreground"
           aria-label={`Dismiss insight: ${insight.title}`}
           onClick={() => onDismiss(insight)}
         >
-          <X className="size-4" />
+          <X className="size-3.5" />
         </Button>
       </div>
 
-      <h3 className="mt-2 text-sm font-semibold leading-snug text-foreground">
+      <h3 className="mt-2 text-sm font-medium leading-snug text-foreground">
         {insight.title}
       </h3>
       <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
@@ -121,14 +117,11 @@ export function InsightCard({
             asChild
             variant="ghost"
             size="sm"
-            className="h-7 gap-1 px-2 text-xs font-medium text-foreground/80 hover:text-foreground"
+            className="h-6 gap-1 px-0 text-xs font-normal text-muted-foreground hover:text-foreground"
           >
             <Link href={actionHref}>
-              {action.prompt && !action.href ? (
-                <Sparkles className="size-3.5" />
-              ) : null}
               {action.label}
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-3" />
             </Link>
           </Button>
         </div>
