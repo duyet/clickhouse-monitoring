@@ -113,3 +113,37 @@ export function splitSqlStatements(sql: string): string[] {
 
   return statements.map((s) => s.trim()).filter((s) => !isEffectivelyEmpty(s))
 }
+
+/**
+ * Strip a trailing ClickHouse `FORMAT <name>` clause and any trailing
+ * semicolons from a single SQL statement.
+ *
+ * `EXPLAIN` cannot wrap a query that carries its own output `FORMAT` clause —
+ * ClickHouse reports a format/syntax error — and a trailing `;` likewise breaks
+ * the `EXPLAIN <query>` wrapping. This normalizes a statement so it can be
+ * safely embedded after `EXPLAIN ...` (e.g. when a query was copied straight
+ * from the SQL console with `FORMAT JSONEachRow` still attached).
+ *
+ * Only a *trailing* FORMAT clause is removed (the one legal position for it in
+ * ClickHouse). Occurrences elsewhere — the `formatDateTime` function, a column
+ * aliased `format`, or a string literal containing "FORMAT" — are left intact.
+ *
+ * - `SELECT 1 FORMAT JSONEachRow`  → `SELECT 1`
+ * - `SELECT 1 FORMAT JSONEachRow;` → `SELECT 1`
+ * - `SELECT 1;`                    → `SELECT 1`
+ * - `SELECT formatDateTime(now())` → `SELECT formatDateTime(now())`
+ *
+ * @param sql - A single SQL statement
+ * @returns The statement without a trailing FORMAT clause or semicolons
+ */
+export function stripTrailingFormat(sql: string): string {
+  // Drop trailing semicolon(s) first so a `... FORMAT JSONEachRow;` tail works.
+  let out = sql
+    .trim()
+    .replace(/;+\s*$/, '')
+    .trimEnd()
+  // Remove a trailing `FORMAT <Identifier>` clause.
+  out = out.replace(/\s+FORMAT\s+[A-Za-z0-9_]+\s*$/i, '')
+  // Strip again in case removing the FORMAT clause exposed another `;`.
+  return out.replace(/;+\s*$/, '').trim()
+}

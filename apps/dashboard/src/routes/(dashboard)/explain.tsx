@@ -7,7 +7,8 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { Suspense, useState } from 'react'
+import { splitSqlStatements } from '@chm/sql-builder'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { ExplainResult } from '@/components/explain/explain-result'
 import { ErrorAlert } from '@/components/feedback'
 import { TableSkeleton } from '@/components/skeletons'
@@ -16,11 +17,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
+
+// CodeMirror is heavy and pulls in browser-only APIs — lazy-load it so it never
+// blocks the route's initial render and stays out of the server bundle.
+const SqlEditor = lazy(() =>
+  import('@/components/explorer/sql-editor').then((m) => ({
+    default: m.SqlEditor,
+  }))
+)
 
 const EXPLAIN_MODES = [
   { value: '', label: 'Plan' },
@@ -228,6 +237,87 @@ function modeFromParam(param: string | null): string {
   return VALID_MODE_VALUES.has(upper) ? upper : ''
 }
 
+/**
+ * Run EXPLAIN for a single SQL statement and render its result. Used both for
+ * the single-query case and for each tab when several `;`-separated queries are
+ * submitted. The fetch only fires while this component is mounted, so tabbed
+ * results are explained lazily (Radix unmounts inactive tab content).
+ */
+function SingleExplain({
+  hostId,
+  query,
+  mode,
+  planSettings,
+  treeRenderable,
+}: {
+  hostId: number
+  query: string
+  mode: string
+  planSettings: Record<string, number>
+  treeRenderable: boolean
+}) {
+  const apiUrl = (() => {
+    const params = new URLSearchParams()
+    params.set('hostId', String(hostId))
+    params.set('query', query)
+    if (mode) params.set('mode', mode)
+
+    if (!mode) {
+      const settingsStr = serializeSettings(planSettings)
+      if (settingsStr) params.set('planSettings', settingsStr)
+    }
+
+    return `/api/v1/explain?${params.toString()}`
+  })()
+
+  const { data, error, isLoading } = useQuery<ApiResponse>({
+    queryKey: [apiUrl],
+    queryFn: () => fetcher(apiUrl),
+    enabled: Boolean(query),
+  })
+
+  if (isLoading) return <TableSkeleton rows={3} />
+
+  if (error) {
+    return (
+      <ErrorAlert
+        title="Failed to explain query"
+        message={error instanceof Error ? error.message : String(error)}
+      />
+    )
+  }
+
+  if (data?.data && data.data.length > 0) {
+    return (
+      <ExplainResult
+        title={mode ? `EXPLAIN ${mode}` : 'Execution Plan'}
+        lines={data.data.map((row) => row.explain)}
+        treeRenderable={treeRenderable}
+      />
+    )
+  }
+
+  if (data?.data?.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <EmptyState
+            variant="no-data"
+            title="No plan to display"
+            description="The query was explained successfully but returned no plan output. Try a different EXPLAIN mode or adjust the query."
+          />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return null
+}
+
+function EditorFallback() {
+  return <Skeleton className="h-[120px] w-full rounded-md" />
+}
+
 function ExplainContent() {
   const hostId = useHostId()
   const router = useRouter()
@@ -236,12 +326,13 @@ function ExplainContent() {
   const queryFromUrl = searchParams.get('query') || ''
 
   const [queryInput, setQueryInput] = useState(queryFromUrl)
-  const [queryToExplain, setQueryToExplain] = useState(queryFromUrl)
+  const [committedQuery, setCommittedQuery] = useState(queryFromUrl)
   const [mode, setModeState] = useState(() =>
     modeFromParam(searchParams.get('mode'))
   )
   const [planSettings, setPlanSettings] =
     useState<Record<string, number>>(buildDefaultSettings)
+  const [activeQuery, setActiveQuery] = useState('0')
 
   const setMode = (newMode: string) => {
     setModeState(newMode)
@@ -261,27 +352,14 @@ function ExplainContent() {
     }))
   }
 
-  const apiUrl = (() => {
-    if (!queryToExplain) return null
-
-    const params = new URLSearchParams()
-    params.set('hostId', String(hostId))
-    params.set('query', queryToExplain)
-    if (mode) params.set('mode', mode)
-
-    if (!mode) {
-      const settingsStr = serializeSettings(planSettings)
-      if (settingsStr) params.set('planSettings', settingsStr)
-    }
-
-    return `/api/v1/explain?${params.toString()}`
-  })()
-
-  const { data, error, isLoading } = useQuery<ApiResponse>({
-    queryKey: [apiUrl],
-    queryFn: () => fetcher(apiUrl!),
-    enabled: Boolean(apiUrl),
-  })
+  // Split the committed input on top-level `;` so several queries can be
+  // explained at once, each in its own tab. The server also strips a trailing
+  // FORMAT clause / semicolon, so `... FORMAT JSONEachRow` pasted from the SQL
+  // console explains cleanly.
+  const statements = useMemo(
+    () => splitSqlStatements(committedQuery),
+    [committedQuery]
+  )
 
   // EXPLAIN PLAN (mode '') and PIPELINE return indent-nested text that renders
   // as a tree. AST/SYNTAX/ESTIMATE are flat or non-hierarchical, and the JSON
@@ -290,13 +368,8 @@ function ExplainContent() {
     (mode === '' || mode === 'PIPELINE') && planSettings.json !== 1
 
   const handleExplain = () => {
-    setQueryToExplain(queryInput)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      handleExplain()
-    }
+    setCommittedQuery(queryInput)
+    setActiveQuery('0')
   }
 
   return (
@@ -335,17 +408,19 @@ function ExplainContent() {
           )}
 
           <div className="space-y-2">
-            <Textarea
-              placeholder="Enter SQL query to explain..."
-              value={queryInput}
-              onChange={(e) => setQueryInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={5}
-              className="font-mono text-sm"
-            />
-            <div className="flex items-center justify-between">
+            <Suspense fallback={<EditorFallback />}>
+              <SqlEditor
+                value={queryInput}
+                onChange={setQueryInput}
+                onRun={handleExplain}
+                placeholder="Enter SQL query to explain..."
+              />
+            </Suspense>
+            <div className="flex items-center justify-between gap-2">
               <p className="text-muted-foreground text-xs">
-                Press Cmd/Ctrl + Enter to explain
+                Press Cmd/Ctrl + Enter to explain. Separate multiple queries
+                with{' '}
+                <code className="bg-muted rounded px-1 text-[11px]">;</code>
               </p>
               <Button onClick={handleExplain} disabled={!queryInput.trim()}>
                 Explain
@@ -355,34 +430,36 @@ function ExplainContent() {
         </CardContent>
       </Card>
 
-      {isLoading && <TableSkeleton rows={3} />}
-
-      {error && (
-        <ErrorAlert
-          title="Failed to explain query"
-          message={error instanceof Error ? error.message : String(error)}
-        />
-      )}
-
-      {data?.data && data.data.length > 0 && (
-        <ExplainResult
-          title={mode ? `EXPLAIN ${mode}` : 'Execution Plan'}
-          lines={data.data.map((row) => row.explain)}
+      {statements.length > 1 ? (
+        <Tabs value={activeQuery} onValueChange={setActiveQuery}>
+          <TabsList>
+            {statements.map((_, i) => (
+              <TabsTrigger key={i} value={String(i)}>
+                Query {i + 1}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {statements.map((stmt, i) => (
+            <TabsContent key={i} value={String(i)} className="mt-4">
+              <SingleExplain
+                hostId={hostId}
+                query={stmt}
+                mode={mode}
+                planSettings={planSettings}
+                treeRenderable={treeRenderable}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
+      ) : statements.length === 1 ? (
+        <SingleExplain
+          hostId={hostId}
+          query={statements[0]}
+          mode={mode}
+          planSettings={planSettings}
           treeRenderable={treeRenderable}
         />
-      )}
-
-      {queryToExplain && !isLoading && !error && data?.data?.length === 0 && (
-        <Card>
-          <CardContent className="py-8">
-            <EmptyState
-              variant="no-data"
-              title="No plan to display"
-              description="The query was explained successfully but returned no plan output. Try a different EXPLAIN mode or adjust the query."
-            />
-          </CardContent>
-        </Card>
-      )}
+      ) : null}
     </div>
   )
 }
