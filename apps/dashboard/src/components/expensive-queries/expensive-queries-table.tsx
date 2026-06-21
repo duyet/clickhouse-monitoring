@@ -266,8 +266,6 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
               key={d.key}
               d={d}
               maxDuration={maxDuration}
-              maxCpu={maxCpu}
-              maxMemory={maxMemory}
               expanded={expanded.has(d.key)}
               onToggle={() => toggleRow(d.key)}
             />

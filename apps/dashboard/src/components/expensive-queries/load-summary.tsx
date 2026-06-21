@@ -177,7 +177,7 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
         <Card className="rounded-xl">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
-              <Flame className="size-4.5" />
+              <Flame className="size-5" />
             </div>
             <div className="min-w-0">
               <div className="text-lg font-semibold tabular-nums leading-tight">
@@ -198,7 +198,7 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
         <Card className="rounded-xl">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-400">
-              <Layers className="size-4.5" />
+              <Layers className="size-5" />
             </div>
             <div className="min-w-0">
               <div className="text-lg font-semibold tabular-nums leading-tight">

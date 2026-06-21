@@ -20,8 +20,6 @@ import { cn } from '@/lib/utils'
 interface QueryCardProps {
   d: DerivedQuery
   maxDuration: number
-  maxCpu: number
-  maxMemory: number
   expanded: boolean
   onToggle: () => void
 }
