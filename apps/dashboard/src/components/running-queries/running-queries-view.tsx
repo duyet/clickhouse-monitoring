@@ -1,4 +1,4 @@
-import { ChevronDown, RefreshCw } from 'lucide-react'
+import { LayoutDashboardIcon, MinimizeIcon, RefreshCw } from 'lucide-react'
 
 import type { CompletedQueryRow } from '@/components/running-queries/completed-queries-table'
 import type { RunningQueryRow } from '@/components/running-queries/running-queries-table'
@@ -6,6 +6,7 @@ import type { CardError } from '@/lib/card-error-utils'
 
 import { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/layout'
+import { CollapsedChartsRow } from '@/components/layout/query-page/collapsed-charts-row'
 import { HeaderButton } from '@/components/query-tables/header-button'
 import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
 import { CompletedQueriesTable } from '@/components/running-queries/completed-queries-table'
@@ -228,13 +229,12 @@ export const RunningQueriesView = function RunningQueriesView() {
           actions={
             <div className="flex flex-wrap items-center gap-1.5">
               <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
-                <ChevronDown
-                  className={cn(
-                    'size-3.5 transition-transform',
-                    !chartsOpen && '-rotate-90'
-                  )}
-                />
-                {chartsOpen ? 'Hide charts' : 'Show charts'}
+                {chartsOpen ? (
+                  <MinimizeIcon className="size-3.5" />
+                ) : (
+                  <LayoutDashboardIcon className="size-3.5" />
+                )}
+                {chartsOpen ? 'Collapse charts' : 'Expand charts'}
               </HeaderButton>
               <HeaderButton onClick={() => refresh()} disabled={isValidating}>
                 <RefreshCw
@@ -284,7 +284,19 @@ export const RunningQueriesView = function RunningQueriesView() {
           </Card>
         ) : (
           <>
-            {chartsOpen && <RunningQueriesCharts rows={rows} />}
+            {chartsOpen ? (
+              <RunningQueriesCharts rows={rows} />
+            ) : (
+              <CollapsedChartsRow
+                labels={[
+                  'Running over time',
+                  'Query memory',
+                  'Queries by user',
+                  'Summary',
+                ]}
+                onExpand={() => setChartsOpen(true)}
+              />
+            )}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">

@@ -1,10 +1,17 @@
-import { ChevronDown, Download, Filter, RefreshCw } from 'lucide-react'
+import {
+  Download,
+  Filter,
+  LayoutDashboardIcon,
+  MinimizeIcon,
+  RefreshCw,
+} from 'lucide-react'
 
 import type { CardError } from '@/lib/card-error-utils'
 import type { PartLogRow } from './lib'
 
 import { useState } from 'react'
 import { PageHeader } from '@/components/layout'
+import { CollapsedChartsRow } from '@/components/layout/query-page/collapsed-charts-row'
 import { PartLogCharts } from '@/components/part-log/part-log-charts'
 import { PartLogTable } from '@/components/part-log/part-log-table'
 import { Skeleton } from '@/components/skeletons'
@@ -114,13 +121,12 @@ export function PartLogView() {
         actions={
           <div className="flex flex-wrap items-center gap-1.5">
             <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
-              <ChevronDown
-                className={cn(
-                  'size-3.5 transition-transform',
-                  !chartsOpen && '-rotate-90'
-                )}
-              />
-              {chartsOpen ? 'Hide charts' : 'Show charts'}
+              {chartsOpen ? (
+                <MinimizeIcon className="size-3.5" />
+              ) : (
+                <LayoutDashboardIcon className="size-3.5" />
+              )}
+              {chartsOpen ? 'Collapse charts' : 'Expand charts'}
             </HeaderButton>
             <HeaderButton onClick={() => refresh()} disabled={isValidating}>
               <RefreshCw
@@ -178,18 +184,14 @@ export function PartLogView() {
         </Card>
       ) : (
         <>
-          <div
-            className={cn(
-              'grid transition-all duration-300 ease-in-out',
-              chartsOpen
-                ? 'grid-rows-[1fr] opacity-100'
-                : 'grid-rows-[0fr] opacity-0'
-            )}
-          >
-            <div className="overflow-hidden">
-              {chartsOpen && <PartLogCharts rows={rows} />}
-            </div>
-          </div>
+          {chartsOpen ? (
+            <PartLogCharts rows={rows} />
+          ) : (
+            <CollapsedChartsRow
+              labels={['Total events', 'New parts', 'Merges', 'Part lifecycle']}
+              onExpand={() => setChartsOpen(true)}
+            />
+          )}
           <PartLogTable rows={rows} hostId={hostId} />
         </>
       )}

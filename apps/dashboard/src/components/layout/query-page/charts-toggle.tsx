@@ -5,7 +5,7 @@
  * Displays appropriate icon and label based on collapsed state.
  */
 
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+import { LayoutDashboardIcon, MinimizeIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -22,17 +22,17 @@ export function ChartsToggle({ isCollapsed, onToggle }: ChartsToggleProps) {
         size="sm"
         onClick={onToggle}
         className="h-7 gap-1 px-2 text-xs"
-        aria-label={isCollapsed ? 'Show charts' : 'Hide charts'}
+        aria-label={isCollapsed ? 'Expand charts' : 'Collapse charts'}
       >
         {isCollapsed ? (
           <>
-            <span>Show Charts</span>
-            <ChevronDownIcon className="size-3.5" />
+            <span>Expand Charts</span>
+            <LayoutDashboardIcon className="size-3.5" />
           </>
         ) : (
           <>
-            <span>Hide Charts</span>
-            <ChevronUpIcon className="size-3.5" />
+            <span>Collapse Charts</span>
+            <MinimizeIcon className="size-3.5" />
           </>
         )}
       </Button>
