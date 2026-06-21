@@ -1,7 +1,8 @@
+import { CheckCircle2 } from 'lucide-react'
+
 import type { ChartProps } from '@/components/charts/chart-props'
 import type { ChartDataPoint } from '@/types/chart-data'
 
-import { CardMultiMetrics } from '@/components/cards/card-multi-metrics'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { ChartError } from '@/components/charts/chart-error'
@@ -15,19 +16,29 @@ interface MutationMetrics extends ChartDataPoint {
   failed: number
 }
 
-const METRIC_CONFIGS = [
-  { key: 'active' as const, label: 'active', activeColor: '' },
-  {
-    key: 'stuck' as const,
-    label: 'stuck',
-    activeColor: 'text-red-600 dark:text-red-400',
-  },
-  {
-    key: 'failed' as const,
-    label: 'failed',
-    activeColor: 'text-amber-600 dark:text-amber-400',
-  },
-] satisfies { key: keyof MutationMetrics; label: string; activeColor: string }[]
+interface StatItemProps {
+  value: number
+  label: string
+  activeClassName: string
+}
+
+function StatItem({ value, label, activeClassName }: StatItemProps) {
+  return (
+    <div className="flex flex-col items-center gap-1 min-w-0">
+      <span
+        className={cn(
+          'text-3xl font-bold tabular-nums leading-none',
+          value > 0 ? activeClassName : 'text-foreground'
+        )}
+      >
+        {value}
+      </span>
+      <span className="text-xs text-muted-foreground tracking-wide uppercase">
+        {label}
+      </span>
+    </div>
+  )
+}
 
 export const ChartSummaryStuckMutations = function ChartSummaryStuckMutations({
   title,
@@ -52,6 +63,8 @@ export const ChartSummaryStuckMutations = function ChartSummaryStuckMutations({
   }
 
   const metrics = dataArray[0]
+  const allClear =
+    metrics.active === 0 && metrics.stuck === 0 && metrics.failed === 0
 
   return (
     <ChartCard
@@ -60,29 +73,39 @@ export const ChartSummaryStuckMutations = function ChartSummaryStuckMutations({
       data={dataArray}
       staleError={staleError}
       onRetry={mutate}
+      className={className}
     >
-      <div className="flex flex-col content-stretch items-center p-0">
-        <CardMultiMetrics
-          primary={
-            <span className="flex flex-row items-center gap-4 self-center text-center">
-              {METRIC_CONFIGS.map(({ key, label, activeColor }) => (
-                <span key={key}>
-                  <span
-                    className={cn(
-                      'text-2xl font-bold',
-                      metrics[key] > 0 && activeColor
-                    )}
-                  >
-                    {metrics[key]}
-                  </span>{' '}
-                  <span className="text-muted-foreground text-sm">{label}</span>
-                </span>
-              ))}
-            </span>
-          }
-          className="p-2"
-        />
-      </div>
+      {allClear ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-3 text-center">
+          <CheckCircle2
+            className="size-6 text-emerald-500/70"
+            strokeWidth={1.5}
+          />
+          <span className="text-sm text-muted-foreground">
+            All clear — no stuck mutations
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center justify-around gap-2 py-3">
+          <StatItem
+            value={metrics.active}
+            label="active"
+            activeClassName="text-foreground"
+          />
+          <div className="h-8 w-px bg-border/50 shrink-0" aria-hidden />
+          <StatItem
+            value={metrics.stuck}
+            label="stuck"
+            activeClassName="text-amber-500 dark:text-amber-400"
+          />
+          <div className="h-8 w-px bg-border/50 shrink-0" aria-hidden />
+          <StatItem
+            value={metrics.failed}
+            label="failed"
+            activeClassName="text-destructive"
+          />
+        </div>
+      )}
     </ChartCard>
   )
 }
