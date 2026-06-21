@@ -20,7 +20,10 @@ export const queryMetricLogConfig: QueryConfig = {
       WITH per_query AS (
         SELECT
           query_id,
-          max(event_time) AS event_time,
+          -- NOT "AS event_time": the new ClickHouse analyzer resolves the WHERE
+          -- column to this aggregate alias (it shadows the raw column) and rejects
+          -- "aggregate function in WHERE". Use a distinct name, re-alias below.
+          max(event_time) AS last_event_time,
           max(memory_usage) AS memory_usage,
           max(peak_memory_usage) AS peak_memory_usage,
           max(ProfileEvent_SelectedRows) AS selected_rows,
@@ -32,7 +35,7 @@ export const queryMetricLogConfig: QueryConfig = {
       )
       SELECT
         query_id,
-        event_time,
+        last_event_time AS event_time,
         formatReadableSize(memory_usage) AS readable_memory,
         round(memory_usage * 100.0 / nullIf(max(memory_usage) OVER (), 0), 2) AS pct_readable_memory,
         formatReadableSize(peak_memory_usage) AS readable_peak_memory,
