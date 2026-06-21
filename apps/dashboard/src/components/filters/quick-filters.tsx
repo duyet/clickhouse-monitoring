@@ -26,7 +26,6 @@ interface QuickFiltersProps {
  * Renders quick filter controls based on their display type.
  * - segmented: Row of pill buttons for selecting from options
  * - select: Dropdown for selecting from options
- * - radio: Radio buttons (future)
  */
 export function QuickFilters({
   configs,
@@ -111,10 +110,6 @@ export function QuickFilters({
               </div>
             )
           }
-
-          case 'radio':
-            // TODO: Implement radio button control
-            return null
 
           default:
             return null

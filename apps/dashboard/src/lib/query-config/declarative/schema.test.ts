@@ -99,6 +99,48 @@ describe('full-featured valid config', () => {
     expect(result.ok).toBe(true)
   })
 
+  test('accepts typed link and code-dialog column format args', () => {
+    const result = validateDeclarativeConfig({
+      name: 'query-detail',
+      sql: 'SELECT query_id, query FROM system.query_log',
+      columns: ['query_id', 'query'],
+      columnFormats: {
+        query_id: [
+          'link',
+          {
+            href: '/query?query_id=[query_id]',
+            title: 'Open query',
+            'data-testid': 'query-link',
+          },
+        ],
+        query: [
+          'code-dialog',
+          {
+            dialog_title: 'Query',
+            max_truncate: 200,
+            hide_query_comment: true,
+            show_query_plan: false,
+          },
+        ],
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
+  test('accepts array args for action and inline-action column formats', () => {
+    const result = validateDeclarativeConfig({
+      name: 'query-detail',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['action', [{ type: 'kill-query' }]],
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
   test('accepts tableCheck as string array', () => {
     const result = validateDeclarativeConfig({
       name: 'backup-log',
@@ -400,6 +442,67 @@ describe('invalid configs', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.errors.length).toBeGreaterThan(0)
+  })
+
+  test('rejects malformed link and code-dialog column format args', () => {
+    const linkResult = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['link', { href: 42 }],
+      },
+    })
+
+    expect(linkResult.ok).toBe(false)
+
+    const codeDialogResult = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query FROM system.query_log',
+      columns: ['query'],
+      columnFormats: {
+        query: ['code-dialog', { max_truncate: '200' }],
+      },
+    })
+
+    expect(codeDialogResult.ok).toBe(false)
+  })
+
+  test('rejects array args for typed object column formats', () => {
+    const linkResult = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['link', ['not-an-object']],
+      },
+    })
+
+    expect(linkResult.ok).toBe(false)
+
+    const codeDialogResult = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query FROM system.query_log',
+      columns: ['query'],
+      columnFormats: {
+        query: ['code-dialog', ['not-an-object']],
+      },
+    })
+
+    expect(codeDialogResult.ok).toBe(false)
+  })
+
+  test('rejects array args for non-array column formats', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['badge', ['some', 'array']],
+      },
+    })
+
+    expect(result.ok).toBe(false)
   })
 
   test('rejects non-object input', () => {

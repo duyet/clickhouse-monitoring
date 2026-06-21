@@ -18,7 +18,7 @@ import {
   WrenchIcon,
 } from 'lucide-react'
 
-import { formatAbsolute, formatDuration, formatRelative } from './format'
+import { formatAbsolute, formatRelative } from './format'
 import { useMessage, useMessageTiming } from '@assistant-ui/react'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -34,6 +34,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { extractMessageUsage } from '@/lib/ai/agent/message-metadata'
+import { formatDuration } from '@/lib/utils'
 
 /**
  * Detailed stats dialog content: full token breakdown, timing, model info,

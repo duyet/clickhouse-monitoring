@@ -98,17 +98,76 @@ const columnFormatEnumSchema = z.enum(columnFormatValues)
 // For formats whose options are complex or component-coupled (RunningQuerySummary,
 // HoverCard), we accept a permissive record so contributors can still pass args;
 // the loader validates further at runtime.
-// TODO: tighten Action[], CodeDialogOptions, LinkFormatOptions shapes once
-//       those types are fully stable and independently importable.
 // ---------------------------------------------------------------------------
 
-const columnFormatArgsSchema = z.record(z.string(), z.unknown())
+const looseColumnFormatArgsSchema = z.record(z.string(), z.unknown())
+
+const linkFormatArgsSchema = z.looseObject({
+  href: z.string().optional(),
+  className: z.string().optional(),
+  title: z.string().optional(),
+})
+
+const codeDialogFormatArgsSchema = z.object({
+  dialog_title: z.string().optional(),
+  dialog_description: z.string().optional(),
+  trigger_classname: z.string().optional(),
+  max_truncate: z.number().optional(),
+  hide_query_comment: z.boolean().optional(),
+  json: z.boolean().optional(),
+  dialog_classname: z.string().optional(),
+  show_explorer_link: z.boolean().optional(),
+  force_dialog: z.boolean().optional(),
+  show_query_plan: z.boolean().optional(),
+})
+
+const columnFormatArgsByFormat = {
+  link: linkFormatArgsSchema,
+  'code-dialog': codeDialogFormatArgsSchema,
+} satisfies Partial<
+  Record<(typeof columnFormatValues)[number], z.ZodType<unknown>>
+>
+
+const columnFormatTupleWithArgsSchema = z
+  .tuple([columnFormatEnumSchema, looseColumnFormatArgsSchema])
+  .superRefine(([format, args], ctx) => {
+    const schema =
+      columnFormatArgsByFormat[format as keyof typeof columnFormatArgsByFormat]
+    if (!schema) return
+
+    const result = schema.safeParse(args)
+    if (result.success) return
+
+    for (const issue of result.error.issues) {
+      ctx.addIssue({
+        ...issue,
+        path: [1, ...issue.path],
+      })
+    }
+  })
+
+// Only the action formats take array args (Action[]); every other format with
+// args expects an object. Reject array args for anything else so a malformed
+// config fails at load-time Zod validation rather than rendering nothing.
+const arrayArgColumnFormats = new Set<string>(['action', 'inline-action'])
+
+const columnFormatTupleWithArrayArgsSchema = z
+  .tuple([columnFormatEnumSchema, z.array(z.unknown())])
+  .superRefine(([format], ctx) => {
+    if (arrayArgColumnFormats.has(format)) return
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [1],
+      message: `${format} column format args must be an object`,
+    })
+  })
 
 // A column format is either a bare enum string, or a [enum, args] tuple.
 const columnFormatSpecSchema = z.union([
   columnFormatEnumSchema,
-  z.tuple([columnFormatEnumSchema, columnFormatArgsSchema]),
-  z.tuple([columnFormatEnumSchema, z.array(z.unknown())]),
+  columnFormatTupleWithArgsSchema,
+  columnFormatTupleWithArrayArgsSchema,
 ])
 
 // ---------------------------------------------------------------------------

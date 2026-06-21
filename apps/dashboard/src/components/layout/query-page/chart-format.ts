@@ -1,4 +1,5 @@
 import { formatReadableSize } from '@/lib/format-readable'
+import { formatDuration } from '@/lib/utils'
 
 export type ChartValueUnit = 'count' | 'bytes' | 'ms' | 'seconds' | 'percent'
 
@@ -8,19 +9,6 @@ export function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`
   if (Number.isInteger(n)) return n.toLocaleString()
   return n.toFixed(2)
-}
-
-/** Render a millisecond value with a sensible ms / s / m unit. */
-function formatDuration(ms: number): string {
-  const sign = ms < 0 ? '-' : ''
-  const abs = Math.abs(ms)
-  if (abs < 1000) {
-    return `${sign}${abs < 10 ? abs.toFixed(2) : Math.round(abs).toLocaleString()} ms`
-  }
-  const s = abs / 1000
-  if (s < 60) return `${sign}${s.toFixed(2)} s`
-  const m = Math.floor(s / 60)
-  return `${sign}${m}m ${Math.round(s % 60)}s`
 }
 
 export function formatChartValue(value: number, unit?: ChartValueUnit): string {
