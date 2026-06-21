@@ -40,19 +40,24 @@ interface ShowSQLButtonProps extends Omit<DialogContentProps, 'content'> {
   fullScreen?: boolean
   /** Query execution metadata */
   metadata?: Partial<ApiResponseMetadata>
+  /** Default beautify state when the user has no stored preference */
+  defaultBeautify?: boolean
 }
 
 const STORAGE_KEY = 'sql-beautify'
 
-/** Get initial beautify state from localStorage */
-function getInitialBeautifyState(): boolean {
-  if (typeof window === 'undefined') return false
+/**
+ * Get initial beautify state. A stored user preference always wins; otherwise
+ * fall back to `fallback` (defaults to off).
+ */
+function getInitialBeautifyState(fallback = false): boolean {
+  if (typeof window === 'undefined') return fallback
   try {
     const value = localStorage.getItem(STORAGE_KEY)
-    // Default to false if not set
+    if (value === null) return fallback
     return value === 'true'
   } catch {
-    return false
+    return fallback
   }
 }
 
@@ -116,12 +121,16 @@ export function RequestInfoContent({
   sql,
   metadata,
   fullScreen = true,
+  defaultBeautify = false,
 }: {
   sql?: string
   metadata?: Partial<ApiResponseMetadata>
   fullScreen?: boolean
+  defaultBeautify?: boolean
 }) {
-  const [isBeautified, setIsBeautified] = useState(getInitialBeautifyState)
+  const [isBeautified, setIsBeautified] = useState(() =>
+    getInitialBeautifyState(defaultBeautify)
+  )
   const [copied, setCopied] = useState(false)
 
   const handleBeautifyToggle = (checked: boolean) => {
@@ -415,6 +424,7 @@ export const DialogSQL = function DialogSQL({
   sql,
   fullScreen = true,
   metadata,
+  defaultBeautify = false,
   ...props
 }: ShowSQLButtonProps) {
   if (!sql) {
@@ -444,6 +454,7 @@ export const DialogSQL = function DialogSQL({
           sql={sql}
           metadata={metadata}
           fullScreen={fullScreen}
+          defaultBeautify={defaultBeautify}
         />
       }
       contentClassName={cn(

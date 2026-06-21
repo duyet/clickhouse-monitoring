@@ -63,8 +63,8 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
   const [hiddenColumns, setHiddenColumns] = useState<Set<OptionalColumn>>(
     () => new Set()
   )
-  const [sortKey, setSortKey] = useState<SortKey>('rank')
-  const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [sortKey, setSortKey] = useState<SortKey>('duration')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [view, setView] = useLayoutView()
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
@@ -72,11 +72,6 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
   // assigned here so the "#1 / #2 …" badges reflect that native order and
   // survive any client-side re-sorting / filtering below.
   const derived = useMemo(() => rows.map(derive), [rows])
-
-  const maxDuration = useMemo(
-    () => derived.reduce((m, d) => Math.max(m, d.queriesDuration), 0),
-    [derived]
-  )
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -95,6 +90,21 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
       return sortDir === 'desc' ? -cmp : cmp
     })
   }, [derived, search, severity, minRuns, minDurationSecs, sortKey, sortDir])
+
+  // Bar percentages are relative to the currently visible rows, so the cost
+  // bars rescale to whatever the active filters (incl. the time-duration
+  // filter) leave on screen.
+  const { maxDuration, maxCpu, maxMemory } = useMemo(() => {
+    let md = 0
+    let mc = 0
+    let mm = 0
+    for (const d of visible) {
+      if (d.queriesDuration > md) md = d.queriesDuration
+      if (d.userTime > mc) mc = d.userTime
+      if (d.memory > mm) mm = d.memory
+    }
+    return { maxDuration: md, maxCpu: mc, maxMemory: mm }
+  }, [visible])
 
   const moreFiltersActive = minRuns > 0 || minDurationSecs > 0
   const totalColumns =
@@ -352,6 +362,8 @@ export const ExpensiveQueriesTable = memo(function ExpensiveQueriesTable({
                   key={d.key}
                   d={d}
                   maxDuration={maxDuration}
+                  maxCpu={maxCpu}
+                  maxMemory={maxMemory}
                   expanded={expanded.has(d.key)}
                   onToggle={() => toggleRow(d.key)}
                   hiddenColumns={hiddenColumns}

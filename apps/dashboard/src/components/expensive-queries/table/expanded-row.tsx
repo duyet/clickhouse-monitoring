@@ -112,6 +112,7 @@ export function ExpandedRow({ d }: { d: DerivedQuery }) {
           sql={d.query}
           title={`#${d.rank} · Most expensive query`}
           description="Full normalized query fingerprint"
+          defaultBeautify
           button={
             <Button variant="outline" size="sm" className="h-7 gap-1.5">
               <Code2 className="size-3.5" />
