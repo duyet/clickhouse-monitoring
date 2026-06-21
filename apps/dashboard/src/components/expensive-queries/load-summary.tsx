@@ -2,8 +2,8 @@ import { Flame, Gauge, Layers } from 'lucide-react'
 
 import type { ExpensiveQueryRow } from './expensive-queries-table'
 
-import { useMemo } from 'react'
 import { derive, type Severity } from './table/types'
+import { useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Tooltip,
@@ -111,8 +111,8 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
               Cluster query-time distribution
             </div>
             <span className="text-[11px] tabular-nums text-muted-foreground">
-              {formatReadableSecondDuration(Math.round(stats.totalTime))} total ·{' '}
-              {formatCompactNumber(stats.totalRuns)} runs
+              {formatReadableSecondDuration(Math.round(stats.totalTime))} total
+              · {formatCompactNumber(stats.totalRuns)} runs
             </span>
           </div>
 
@@ -125,7 +125,10 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
                 <Tooltip key={sev}>
                   <TooltipTrigger asChild>
                     <div
-                      className={cn('h-full transition-all', SEVERITY_META[sev].bar)}
+                      className={cn(
+                        'h-full transition-all',
+                        SEVERITY_META[sev].bar
+                      )}
                       style={{ width: `${share}%` }}
                     />
                   </TooltipTrigger>
@@ -146,10 +149,7 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
             {order.map((sev) => (
               <div key={sev} className="flex items-center gap-1.5">
                 <span
-                  className={cn(
-                    'size-2 rounded-full',
-                    SEVERITY_META[sev].dot
-                  )}
+                  className={cn('size-2 rounded-full', SEVERITY_META[sev].dot)}
                 />
                 <span className="text-[11px] text-muted-foreground">
                   {SEVERITY_META[sev].label}
@@ -188,8 +188,7 @@ export function LoadSummary({ rows }: LoadSummaryProps) {
                 <span className="font-medium text-foreground">
                   {stats.heavyCount}
                 </span>{' '}
-                heavy{' '}
-                {stats.heavyCount === 1 ? 'query' : 'queries'}
+                heavy {stats.heavyCount === 1 ? 'query' : 'queries'}
               </p>
             </div>
           </CardContent>
