@@ -146,10 +146,15 @@ const columnFormatTupleWithArgsSchema = z
     }
   })
 
+// Only the action formats take array args (Action[]); every other format with
+// args expects an object. Reject array args for anything else so a malformed
+// config fails at load-time Zod validation rather than rendering nothing.
+const arrayArgColumnFormats = new Set<string>(['action', 'inline-action'])
+
 const columnFormatTupleWithArrayArgsSchema = z
   .tuple([columnFormatEnumSchema, z.array(z.unknown())])
   .superRefine(([format], ctx) => {
-    if (format !== 'link' && format !== 'code-dialog') return
+    if (arrayArgColumnFormats.has(format)) return
 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

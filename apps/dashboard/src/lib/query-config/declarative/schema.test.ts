@@ -128,6 +128,19 @@ describe('full-featured valid config', () => {
     expect(result.ok).toBe(true)
   })
 
+  test('accepts array args for action and inline-action column formats', () => {
+    const result = validateDeclarativeConfig({
+      name: 'query-detail',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['action', [{ type: 'kill-query' }]],
+      },
+    })
+
+    expect(result.ok).toBe(true)
+  })
+
   test('accepts tableCheck as string array', () => {
     const result = validateDeclarativeConfig({
       name: 'backup-log',
@@ -462,6 +475,19 @@ describe('invalid configs', () => {
       columns: ['query_id'],
       columnFormats: {
         query_id: ['link', ['not-an-object']],
+      },
+    })
+
+    expect(result.ok).toBe(false)
+  })
+
+  test('rejects array args for non-array column formats', () => {
+    const result = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query_id FROM system.query_log',
+      columns: ['query_id'],
+      columnFormats: {
+        query_id: ['badge', ['some', 'array']],
       },
     })
 
