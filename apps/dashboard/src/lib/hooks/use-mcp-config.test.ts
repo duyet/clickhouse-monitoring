@@ -1,6 +1,7 @@
 import type { McpConfigStorage } from './use-mcp-config'
 
 import {
+  createCustomServer,
   toMcpServers,
   withAddedServer,
   withRemovedServer,
@@ -32,6 +33,17 @@ describe('withServerEnabled', () => {
     const input = base()
     withServerEnabled(input, 'srv', false)
     expect(input.disabled).toEqual([])
+  })
+})
+
+describe('createCustomServer', () => {
+  test('generates a unique id and preserves name/endpoint', () => {
+    const a = createCustomServer({ name: 'x', endpoint: 'https://x' })
+    const b = createCustomServer({ name: 'x', endpoint: 'https://x' })
+    expect(a.id).toBeTruthy()
+    expect(a.name).toBe('x')
+    expect(a.endpoint).toBe('https://x')
+    expect(a.id).not.toBe(b.id)
   })
 })
 

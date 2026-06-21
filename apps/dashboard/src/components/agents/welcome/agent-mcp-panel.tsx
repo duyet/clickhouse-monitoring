@@ -82,17 +82,19 @@ function StatusBadge({ status }: { status: McpServer['status'] }) {
 // Single server row
 // ---------------------------------------------------------------------------
 
+interface McpServerRowProps {
+  server: McpServer
+  onToggle: (id: string, next: boolean) => void
+  onViewDetails: (server: McpServer) => void
+  onRemove?: (id: string) => void
+}
+
 function McpServerRow({
   server,
   onToggle,
   onViewDetails,
   onRemove,
-}: {
-  server: McpServer
-  onToggle: (id: string, next: boolean) => void
-  onViewDetails: (server: McpServer) => void
-  onRemove?: (id: string) => void
-}) {
+}: McpServerRowProps) {
   return (
     <div className="flex items-center gap-2 py-2 pr-3 pl-2">
       {/* Icon */}
@@ -162,13 +164,18 @@ function McpServerRow({
 // "Connect new server" form (UI-only)
 // ---------------------------------------------------------------------------
 
-function AddServerForm({
-  onCancel,
-  onAdd,
-}: {
+/** A custom server the user is about to register. */
+interface AddServerInput {
+  name: string
+  endpoint: string
+}
+
+interface AddServerFormProps {
   onCancel: () => void
-  onAdd: (server: { name: string; endpoint: string }) => void
-}) {
+  onAdd: (server: AddServerInput) => void
+}
+
+function AddServerForm({ onCancel, onAdd }: AddServerFormProps) {
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
 
@@ -187,7 +194,13 @@ function AddServerForm({
   }
 
   return (
-    <div className="border-border mt-2 space-y-2 rounded-md border p-2.5">
+    <form
+      className="border-border mt-2 space-y-2 rounded-md border p-2.5"
+      onSubmit={(e) => {
+        e.preventDefault()
+        handleSubmit()
+      }}
+    >
       <p className="text-muted-foreground text-[10.5px] font-medium tracking-wide uppercase">
         New server
       </p>
@@ -203,18 +216,14 @@ function AddServerForm({
         placeholder="Endpoint URL (https://…)"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleSubmit()
-        }}
         className={inputClass}
       />
       <div className="flex items-center gap-2">
         <Button
-          type="button"
+          type="submit"
           size="sm"
           className="h-7 flex-1 text-[11.5px]"
           disabled={!canSubmit}
-          onClick={handleSubmit}
         >
           Connect
         </Button>
@@ -228,7 +237,7 @@ function AddServerForm({
           Cancel
         </Button>
       </div>
-    </div>
+    </form>
   )
 }
 

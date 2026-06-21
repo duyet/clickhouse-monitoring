@@ -21,13 +21,13 @@ import { useEffect, useState } from 'react'
 const MCP_CONFIG_STORAGE_KEY = 'clickhouse-monitor-mcp-config'
 
 /** Custom server fields the user supplies when registering a new server. */
-export type CustomMcpServer = {
+export interface CustomMcpServer {
   id: string
   name: string
   endpoint: string
 }
 
-export type McpConfigStorage = {
+export interface McpConfigStorage {
   /** Server ids the user has explicitly disabled. Absent means enabled. */
   disabled: string[]
   /** User-added custom servers, beyond the built-in one. */
@@ -56,12 +56,11 @@ export function withServerEnabled(
   }
 }
 
-/** Append a custom server, returning the new config and the created server. */
-export function withAddedServer(
-  config: McpConfigStorage,
+/** Create a custom server with a freshly generated unique id. */
+export function createCustomServer(
   server: Omit<CustomMcpServer, 'id'>
-): { config: McpConfigStorage; created: CustomMcpServer } {
-  const created: CustomMcpServer = {
+): CustomMcpServer {
+  return {
     id:
       typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
@@ -69,6 +68,14 @@ export function withAddedServer(
     name: server.name,
     endpoint: server.endpoint,
   }
+}
+
+/** Append a custom server, returning the new config and the created server. */
+export function withAddedServer(
+  config: McpConfigStorage,
+  server: Omit<CustomMcpServer, 'id'>
+): { config: McpConfigStorage; created: CustomMcpServer } {
+  const created = createCustomServer(server)
   return {
     config: { ...config, customServers: [...config.customServers, created] },
     created,
@@ -86,6 +93,7 @@ export function withRemovedServer(
   }
 }
 
+/** Read the persisted config from localStorage; SSR-safe and fault-tolerant. */
 function readStorage(): McpConfigStorage {
   if (typeof window === 'undefined') return EMPTY
   try {
@@ -103,6 +111,7 @@ function readStorage(): McpConfigStorage {
   }
 }
 
+/** Persist the config to localStorage; SSR-safe and fault-tolerant. */
 function writeStorage(config: McpConfigStorage): void {
   if (typeof window === 'undefined') return
   try {
@@ -148,8 +157,13 @@ export function useMcpConfig(): UseMcpConfigResult {
   }
 
   const addServer = (server: Omit<CustomMcpServer, 'id'>): CustomMcpServer => {
-    const { config: next, created } = withAddedServer(config, server)
-    setConfig(next)
+    // Generate the id up front so we can return it, then apply a functional
+    // update so concurrent adds don't clobber each other via stale state.
+    const created = createCustomServer(server)
+    setConfig((prev) => ({
+      ...prev,
+      customServers: [...prev.customServers, created],
+    }))
     return created
   }
 
