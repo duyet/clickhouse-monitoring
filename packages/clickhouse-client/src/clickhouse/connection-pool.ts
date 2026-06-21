@@ -46,7 +46,10 @@ function startPeriodicCleanup(): void {
  * Generate a pool key from client configuration and web flag
  */
 export function getPoolKey(config: ClickHouseConfig, web: boolean): PoolKey {
-  return `${config.host}:${config.user}:${web}`
+  const base = `${config.host}:${config.user}:${web}`
+  // Scope a distinct pooled client per default database. Keys without a
+  // database are byte-identical to before, so existing pooling is unchanged.
+  return config.database ? `${base}:db=${config.database}` : base
 }
 
 /**

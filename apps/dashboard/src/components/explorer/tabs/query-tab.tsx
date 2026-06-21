@@ -14,7 +14,8 @@ import { useHostId } from '@/lib/swr/use-host'
  */
 export function QueryTab() {
   const hostId = useHostId()
-  const { database, table, customQuery, setCustomQuery } = useExplorerState()
+  const { database, table, customQuery, setCustomQuery, setDefaultDatabase } =
+    useExplorerState()
 
   const initialSql = useMemo(() => {
     if (customQuery) return customQuery
@@ -33,12 +34,15 @@ export function QueryTab() {
 
   return (
     <SqlConsole
-      // Reset editor/runner when the table context changes.
-      key={`${hostId}:${database ?? ''}.${table ?? ''}`}
+      // Reset editor/runner when the table context changes — but NOT when only
+      // the default database changes (the picker should preserve the query).
+      key={`${hostId}:${table ?? ''}`}
       hostId={hostId}
       initialSql={initialSql}
       variant="embedded"
       onQueryCommitted={onQueryCommitted}
+      database={database ?? undefined}
+      onDatabaseChange={(db) => setDefaultDatabase(db ?? null)}
     />
   )
 }

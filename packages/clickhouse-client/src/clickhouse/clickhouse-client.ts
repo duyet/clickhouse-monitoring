@@ -57,6 +57,9 @@ export const getClient = async ({
       url: config.host,
       username: config.user ?? 'default',
       password: config.password ?? '',
+      // Default database for unqualified table names, when the config carries
+      // one. Pooling is already scoped per-database via getPoolKey.
+      ...(config.database ? { database: config.database } : {}),
       clickhouse_settings: {
         max_execution_time:
           validateClickHouseEnv().CLICKHOUSE_MAX_EXECUTION_TIME,

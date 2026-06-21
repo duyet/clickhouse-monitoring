@@ -71,6 +71,7 @@ export const fetchData = async <
   clickhouse_settings,
   hostId,
   queryConfig,
+  database,
 }: QueryParams & {
   hostId: number | string
   clickhouse_settings?: QueryParams['clickhouse_settings'] & {
@@ -78,6 +79,11 @@ export const fetchData = async <
     session_timezone?: string
   }
   queryConfig?: QueryConfigLike
+  /**
+   * Optional default database for unqualified table names. Scopes a pooled
+   * client per database; omit for the server's own default.
+   */
+  database?: string
 }): Promise<FetchDataResult<T>> => {
   const start = new Date()
 
@@ -149,6 +155,14 @@ export const fetchData = async <
     }
   }
 
+  // When a default database is requested, scope the pooled client to it so
+  // unqualified table names resolve against `database`. No-op otherwise, so
+  // existing callers keep their exact pooling behavior.
+  const effectiveConfig =
+    database && database.length > 0
+      ? { ...clientConfig, database }
+      : clientConfig
+
   try {
     // Perform table validation if queryConfig is provided and query is optional
     if (queryConfig?.optional) {
@@ -192,7 +206,7 @@ export const fetchData = async <
     // works on both Node/Docker and Cloudflare Workers. The node client is
     // stubbed out of this app's bundle, so no web flag is needed here.
     const client = await getClient({
-      clientConfig,
+      clientConfig: effectiveConfig,
     })
 
     try {
@@ -314,7 +328,7 @@ export const fetchData = async <
 
       return { data, metadata }
     } finally {
-      releaseClient({ clientConfig })
+      releaseClient({ clientConfig: effectiveConfig })
     }
   } catch (originalError) {
     const errorMessage =

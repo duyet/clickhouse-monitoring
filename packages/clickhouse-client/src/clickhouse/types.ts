@@ -11,6 +11,13 @@ export type ClickHouseConfig = {
   user: string
   password: string
   customName?: string
+  /**
+   * Optional default database for unqualified table names (e.g. `FROM events`
+   * resolves to `<database>.events`). When set, the connection pool keys a
+   * separate client per database. Omitted for normal queries — the server's
+   * own default database applies.
+   */
+  database?: string
 }
 
 /** @deprecated Reserved for future use */
