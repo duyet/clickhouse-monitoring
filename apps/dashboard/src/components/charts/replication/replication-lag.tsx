@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
 import {
   STATUS_BADGE_CLASS,
@@ -52,7 +52,7 @@ export const ChartReplicationLag = function ChartReplicationLag({
     useChartData<ReplicationLagData>({
       chartName: 'replication-lag',
       hostId,
-      refreshInterval: 30000,
+      refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
     })
 
   const dataArray = Array.isArray(data) ? data : undefined

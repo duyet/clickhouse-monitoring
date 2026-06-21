@@ -6,7 +6,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { pivotRows, type RawRow } from '@/lib/chart-utils'
-import { useChartData, useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData, useHostId } from '@/lib/swr'
 import { createDateTickFormatter } from '@/lib/utils'
 
 const CHART_NAME = 'keeper-requests'
@@ -27,7 +27,7 @@ export function ChartKeeperRequests({
     hostId,
     interval,
     lastHours,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   const { pivoted, categories } = (() => {

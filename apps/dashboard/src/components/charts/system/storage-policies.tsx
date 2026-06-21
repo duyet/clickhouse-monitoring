@@ -2,7 +2,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
-import { useChartData, useHostId } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData, useHostId } from '@/lib/swr'
 
 type DataRow = {
   policy_name: string
@@ -64,7 +64,7 @@ export const ChartStoragePolicies = function ChartStoragePolicies({
   const swr = useChartData<DataRow>({
     chartName: CHART_NAME,
     hostId,
-    refreshInterval: 300000,
+    refreshInterval: REFRESH_INTERVAL.VERY_SLOW_5M,
   })
 
   return (

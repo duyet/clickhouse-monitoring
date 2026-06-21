@@ -3,7 +3,7 @@ import type { ChartProps } from '@/components/charts/chart-props'
 import { ChartCard } from '@/components/cards/chart-card'
 import { ChartContainer } from '@/components/charts/chart-container'
 import { RankBars } from '@/components/charts/primitives/rank-bars'
-import { useChartData } from '@/lib/swr'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 
 type DataRow = {
   table_path: string
@@ -21,7 +21,7 @@ export const ChartPartsPerTable = function ChartPartsPerTable({
   const swr = useChartData<DataRow>({
     chartName: 'parts-per-table',
     hostId,
-    refreshInterval: 30000,
+    refreshInterval: REFRESH_INTERVAL.MEDIUM_30S,
   })
 
   return (
