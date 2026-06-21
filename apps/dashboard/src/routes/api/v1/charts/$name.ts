@@ -15,10 +15,15 @@ import {
   hasChart,
 } from '@/lib/api/chart-registry'
 import {
+  classifyError,
+  getStatusCodeForErrorType,
+} from '@/lib/api/error-handler'
+import {
   executeChartQuery,
   executeMultiChartQuery,
   isValidInterval,
 } from '@/lib/api/query-executor'
+import { statusForFetchDataError } from '@/lib/api/shared/fetch-data-error'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 /**
@@ -151,7 +156,7 @@ export async function handler(
       for (const r of results) {
         combinedEntries.push(`${JSON.stringify(r.key)}:${r.dataJson ?? 'null'}`)
         if (r.error && !firstError) {
-          firstError = { type: 'query_error', message: r.error.message }
+          firstError = { type: r.error.type, message: r.error.message }
         }
       }
 
@@ -229,16 +234,19 @@ export async function handler(
     }
 
     if (result.error) {
+      // Preserve the client's classification (e.g. an unreachable upstream is
+      // ssl_error/network_error → 503) instead of flattening every failure to a
+      // 500. See statusForFetchDataError for the rationale.
       return Response.json(
         {
           success: false,
           error: {
-            type: 'query_error',
+            type: result.error.type,
             message: result.error.message,
             details: result.error.details,
           },
         },
-        { status: 500 }
+        { status: statusForFetchDataError(result.error.type) }
       )
     }
 
@@ -280,15 +288,15 @@ export async function handler(
     })
   } catch (err) {
     error(`[GET /api/v1/charts/${name}] Unhandled exception:`, err)
+    // Classify so an upstream connectivity exception surfaces as 503/504
+    // rather than a misleading 500.
+    const { type, message } = classifyError(err)
     return Response.json(
       {
         success: false,
-        error: {
-          type: 'query_error',
-          message: err instanceof Error ? err.message : 'Unknown error',
-        },
+        error: { type, message },
       },
-      { status: 500 }
+      { status: getStatusCodeForErrorType(type) }
     )
   }
 }

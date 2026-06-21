@@ -11,7 +11,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
+import {
+  classifyError,
+  getStatusCodeForErrorType,
+} from '@/lib/api/error-handler'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { statusForFetchDataError } from '@/lib/api/shared/fetch-data-error'
 
 const ROUTE_CONTEXT = { route: '/api/v1/overview' }
 
@@ -120,12 +125,16 @@ export const Route = createFileRoute('/api/v1/overview')({
 
           if (result.error || !result.data) {
             error('[GET /api/v1/overview] Query error:', result.error)
+            // A down upstream (ssl_error/network_error) is a 503, not a 500.
+            const status = result.error
+              ? statusForFetchDataError(result.error.type)
+              : 500
             return Response.json(
               {
                 success: false,
                 error: result.error?.message || 'No data returned',
               },
-              { status: 500 }
+              { status }
             )
           }
 
@@ -182,13 +191,13 @@ export const Route = createFileRoute('/api/v1/overview')({
           })
         } catch (err) {
           error('[GET /api/v1/overview] Error:', err, ROUTE_CONTEXT)
+          const { type, message } = classifyError(err)
           return Response.json(
             {
               success: false,
-              error:
-                err instanceof Error ? err.message : 'Internal server error',
+              error: message,
             },
-            { status: 500 }
+            { status: getStatusCodeForErrorType(type) }
           )
         }
       },
