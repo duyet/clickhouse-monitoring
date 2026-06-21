@@ -115,6 +115,107 @@ export function splitSqlStatements(sql: string): string[] {
 }
 
 /**
+ * Known ClickHouse output formats accepted by a trailing `FORMAT <name>` clause.
+ *
+ * A trailing `FORMAT <name>` is only stripped when `<name>` is one of these, so
+ * an identifier or alias that happens to follow a column named `format` — e.g.
+ * `ORDER BY format DESC` or `SELECT format AS f` — is never mistaken for a
+ * FORMAT clause and truncated. Names are matched case-sensitively because
+ * ClickHouse format names are themselves case-sensitive.
+ *
+ * @see https://clickhouse.com/docs/interfaces/formats
+ */
+const CLICKHOUSE_FORMATS = new Set<string>([
+  'TabSeparated',
+  'TabSeparatedRaw',
+  'TabSeparatedWithNames',
+  'TabSeparatedWithNamesAndTypes',
+  'TabSeparatedRawWithNames',
+  'TabSeparatedRawWithNamesAndTypes',
+  'TSV',
+  'TSVRaw',
+  'TSVWithNames',
+  'TSVWithNamesAndTypes',
+  'TSVRawWithNames',
+  'TSVRawWithNamesAndTypes',
+  'Template',
+  'TemplateIgnoreSpaces',
+  'CSV',
+  'CSVWithNames',
+  'CSVWithNamesAndTypes',
+  'CustomSeparated',
+  'CustomSeparatedWithNames',
+  'CustomSeparatedWithNamesAndTypes',
+  'SQLInsert',
+  'Values',
+  'Vertical',
+  'JSON',
+  'JSONAsString',
+  'JSONAsObject',
+  'JSONStrings',
+  'JSONColumns',
+  'JSONColumnsWithMetadata',
+  'JSONCompact',
+  'JSONCompactStrings',
+  'JSONCompactColumns',
+  'JSONEachRow',
+  'PrettyJSONEachRow',
+  'JSONEachRowWithProgress',
+  'JSONStringsEachRow',
+  'JSONStringsEachRowWithProgress',
+  'JSONCompactEachRow',
+  'JSONCompactEachRowWithNames',
+  'JSONCompactEachRowWithNamesAndTypes',
+  'JSONCompactStringsEachRow',
+  'JSONCompactStringsEachRowWithNames',
+  'JSONCompactStringsEachRowWithNamesAndTypes',
+  'JSONObjectEachRow',
+  'BSONEachRow',
+  'TSKV',
+  'Pretty',
+  'PrettyNoEscapes',
+  'PrettyMonoBlock',
+  'PrettyNoEscapesMonoBlock',
+  'PrettyCompact',
+  'PrettyCompactNoEscapes',
+  'PrettyCompactMonoBlock',
+  'PrettyCompactNoEscapesMonoBlock',
+  'PrettySpace',
+  'PrettySpaceNoEscapes',
+  'PrettySpaceMonoBlock',
+  'PrettySpaceNoEscapesMonoBlock',
+  'Prometheus',
+  'Protobuf',
+  'ProtobufSingle',
+  'ProtobufList',
+  'Avro',
+  'AvroConfluent',
+  'Parquet',
+  'ParquetMetadata',
+  'Arrow',
+  'ArrowStream',
+  'ORC',
+  'One',
+  'Npy',
+  'RowBinary',
+  'RowBinaryWithNames',
+  'RowBinaryWithNamesAndTypes',
+  'RowBinaryWithDefaults',
+  'Native',
+  'Null',
+  'XML',
+  'CapnProto',
+  'LineAsString',
+  'Regexp',
+  'RawBLOB',
+  'MsgPack',
+  'MySQLDump',
+  'DWARF',
+  'Markdown',
+  'Form',
+])
+
+/**
  * Strip a trailing ClickHouse `FORMAT <name>` clause and any trailing
  * semicolons from a single SQL statement.
  *
@@ -124,14 +225,16 @@ export function splitSqlStatements(sql: string): string[] {
  * safely embedded after `EXPLAIN ...` (e.g. when a query was copied straight
  * from the SQL console with `FORMAT JSONEachRow` still attached).
  *
- * Only a *trailing* FORMAT clause is removed (the one legal position for it in
- * ClickHouse). Occurrences elsewhere — the `formatDateTime` function, a column
- * aliased `format`, or a string literal containing "FORMAT" — are left intact.
+ * Only a *trailing* clause whose name is a recognized ClickHouse format is
+ * removed. This avoids truncating valid SQL where `format` is used as an
+ * identifier — `formatDateTime(...)`, `AS format`, `ORDER BY format DESC`,
+ * `SELECT format AS f` — since `DESC` / `f` / `FROM` are not format names.
  *
- * - `SELECT 1 FORMAT JSONEachRow`  → `SELECT 1`
- * - `SELECT 1 FORMAT JSONEachRow;` → `SELECT 1`
- * - `SELECT 1;`                    → `SELECT 1`
- * - `SELECT formatDateTime(now())` → `SELECT formatDateTime(now())`
+ * - `SELECT 1 FORMAT JSONEachRow`        → `SELECT 1`
+ * - `SELECT 1 FORMAT JSONEachRow;`       → `SELECT 1`
+ * - `SELECT 1;`                          → `SELECT 1`
+ * - `SELECT formatDateTime(now())`       → `SELECT formatDateTime(now())`
+ * - `SELECT * FROM t ORDER BY format DESC` → unchanged
  *
  * @param sql - A single SQL statement
  * @returns The statement without a trailing FORMAT clause or semicolons
@@ -142,8 +245,12 @@ export function stripTrailingFormat(sql: string): string {
     .trim()
     .replace(/;+\s*$/, '')
     .trimEnd()
-  // Remove a trailing `FORMAT <Identifier>` clause.
-  out = out.replace(/\s+FORMAT\s+[A-Za-z0-9_]+\s*$/i, '')
+  // Remove a trailing `FORMAT <name>` clause, but only when <name> is an actual
+  // ClickHouse format — never an identifier/alias that follows a `format` column.
+  const match = out.match(/\s+FORMAT\s+([A-Za-z0-9_]+)\s*$/i)
+  if (match && match.index !== undefined && CLICKHOUSE_FORMATS.has(match[1])) {
+    out = out.slice(0, match.index).trimEnd()
+  }
   // Strip again in case removing the FORMAT clause exposed another `;`.
   return out.replace(/;+\s*$/, '').trim()
 }
