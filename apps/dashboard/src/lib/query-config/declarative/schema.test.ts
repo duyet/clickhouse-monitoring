@@ -469,7 +469,7 @@ describe('invalid configs', () => {
   })
 
   test('rejects array args for typed object column formats', () => {
-    const result = validateDeclarativeConfig({
+    const linkResult = validateDeclarativeConfig({
       name: 'my-query',
       sql: 'SELECT query_id FROM system.query_log',
       columns: ['query_id'],
@@ -478,7 +478,18 @@ describe('invalid configs', () => {
       },
     })
 
-    expect(result.ok).toBe(false)
+    expect(linkResult.ok).toBe(false)
+
+    const codeDialogResult = validateDeclarativeConfig({
+      name: 'my-query',
+      sql: 'SELECT query FROM system.query_log',
+      columns: ['query'],
+      columnFormats: {
+        query: ['code-dialog', ['not-an-object']],
+      },
+    })
+
+    expect(codeDialogResult.ok).toBe(false)
   })
 
   test('rejects array args for non-array column formats', () => {
