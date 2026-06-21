@@ -88,7 +88,7 @@ function ModePill({
       onClick={() => onSelect(metric.key)}
       aria-pressed={active}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
           ? 'border-foreground bg-foreground text-background'
@@ -239,15 +239,24 @@ function CalendarBody({
         <span className="text-muted-foreground font-mono text-xs">
           {rangeLabel}
         </span>
-        <div className="flex flex-wrap gap-1.5">
-          {METRIC_ORDER.map((key) => (
-            <ModePill
-              key={key}
-              metric={METRIC_CONFIGS[key]}
-              active={key === mode}
-              onSelect={setMode}
-            />
-          ))}
+        {/* Metric switcher: a single inline row that scrolls horizontally when
+            it can't fit (esp. mobile) instead of wrapping. A right-edge fade
+            signals there's more to scroll to. */}
+        <div className="relative min-w-0 max-w-full">
+          <div className="scrollbar-hide flex gap-1.5 overflow-x-auto pr-5 sm:pr-0">
+            {METRIC_ORDER.map((key) => (
+              <ModePill
+                key={key}
+                metric={METRIC_CONFIGS[key]}
+                active={key === mode}
+                onSelect={setMode}
+              />
+            ))}
+          </div>
+          <div
+            className="from-card pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l to-transparent sm:hidden"
+            aria-hidden
+          />
         </div>
       </div>
 

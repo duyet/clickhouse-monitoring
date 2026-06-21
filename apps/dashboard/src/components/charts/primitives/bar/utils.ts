@@ -44,6 +44,32 @@ export function sortCategoriesByTotal<T extends Record<string, unknown>>(
   return totals.map((t) => t.category)
 }
 
+/** Number of predefined `--chart-N` theme variables available as a fallback. */
+const THEME_CHART_COLORS = 8
+
+/**
+ * Resolve a stable, distinct color for the category at `index`.
+ *
+ * Within the available palette (an explicit `colors` list, or the 8 themed
+ * `--chart-N` vars) we use the palette directly. Beyond it — charts with many
+ * stacked series like "New Parts Created" — we generate a color by golden-angle
+ * hue rotation so every extra series still gets a distinct, readable color
+ * instead of falling back to `var(undefined)` (which renders as black).
+ */
+export function colorForCategoryIndex(
+  index: number,
+  colors?: string[]
+): string {
+  if (colors && colors.length > 0) {
+    if (index < colors.length) return `var(${colors[index]})`
+  } else if (index < THEME_CHART_COLORS) {
+    return `var(--chart-${index + 1})`
+  }
+  // Golden-angle (137.508°) hue rotation keeps successive colors far apart.
+  const hue = Math.round((index * 137.508) % 360)
+  return `hsl(${hue} 70% 55%)`
+}
+
 /**
  * Generates chart configuration for bar categories
  * Maps each category to a color from the provided palette.
@@ -61,7 +87,7 @@ export function generateChartConfig(
       const sanitizedKey = sanitizeCssVarName(category)
       acc[sanitizedKey] = {
         label: category, // Original name for display in tooltips/legends
-        color: colors ? `var(${colors[index]})` : `var(--chart-${index + 1})`,
+        color: colorForCategoryIndex(index, colors),
       }
 
       return acc
