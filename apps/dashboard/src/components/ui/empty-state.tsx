@@ -184,9 +184,11 @@ export const EmptyState = memo(function EmptyState({
         className
       )}
     >
-      {/* Decorative background circles */}
+      {/* Decorative background circles. Note: no `animate-pulse` here — a
+          settled empty state must not look like it is still loading (a pulsing
+          glow reads as a skeleton to users and to a11y/loading heuristics). */}
       <div className="relative mb-4">
-        <div className="absolute inset-0 scale-150 rounded-full bg-muted/20 animate-pulse" />
+        <div className="absolute inset-0 scale-150 rounded-full bg-muted/20" />
         <div className="absolute inset-0 scale-125 rounded-full bg-muted/40" />
         <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 backdrop-blur-sm">
           {icon || config.icon}
