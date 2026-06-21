@@ -14,7 +14,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { InsightCard } from '@/lib/insights/types'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  clearCachedInsights,
+  loadCachedInsights,
+  saveCachedInsights,
+} from '@/lib/insights/cached-insights'
 import {
   dismissAllInsights,
   dismissInsight,
@@ -74,13 +79,22 @@ export function useInsights(hostId: number): UseInsightsResult {
     [queryClient, queryKey]
   )
 
-  // Insights returned by the most recent manual generate(). The persisted read
-  // (findings store) is best-effort and silently no-ops on read-only clusters,
-  // so we render what `generate` just produced directly — otherwise a successful
-  // generation would show nothing when persistence is unavailable.
+  // Insights from the most recent generate() call, or seeded from localStorage
+  // on mount as a fallback when the server-side findings store is empty (e.g.
+  // read-only ClickHouse monitoring connection). Initialized lazily on first
+  // render so localStorage is only read client-side (not during SSR).
   const [sessionInsights, setSessionInsights] = useState<
     readonly InsightCard[]
   >([])
+
+  // Seed from localStorage once on mount — this gives the panel something to
+  // show immediately on load when the server store is empty or unavailable.
+  useEffect(() => {
+    const cached = loadCachedInsights(hostId)
+    if (cached.length > 0) {
+      setSessionInsights(cached)
+    }
+  }, [hostId])
 
   const generateMutation = useMutation({
     mutationFn: async (): Promise<InsightsResponse> => {
@@ -92,13 +106,18 @@ export function useInsights(hostId: number): UseInsightsResult {
       return res.json()
     },
     onSuccess: (result) => {
-      setSessionInsights(result?.insights ?? [])
+      const fresh = result?.insights ?? []
+      setSessionInsights(fresh)
+      // Persist to localStorage as a cross-reload fallback regardless of
+      // whether the server-side store accepted the write.
+      saveCachedInsights(hostId, fresh)
       invalidate()
     },
   })
 
-  // Merge persisted (read) + freshly generated (session); de-dupe by stable key
-  // with the just-generated copy winning. Then drop user-dismissed cards.
+  // Merge persisted (read) + freshly generated / localStorage-cached (session);
+  // de-dupe by stable key with the just-generated copy winning. Then drop
+  // user-dismissed cards.
   const merged = useMemo(() => {
     const byKey = new Map<string, InsightCard>()
     for (const i of data?.insights ?? []) byKey.set(i.key, i)
@@ -127,8 +146,11 @@ export function useInsights(hostId: number): UseInsightsResult {
   const dismissAll = useCallback(() => {
     dismissAllInsights(insights)
     setSessionInsights([])
+    // Also clear the localStorage fallback so dismissed insights don't
+    // re-appear on the next page load before the server is queried.
+    clearCachedInsights(hostId)
     invalidate()
-  }, [insights, invalidate])
+  }, [insights, hostId, invalidate])
 
   return {
     insights,

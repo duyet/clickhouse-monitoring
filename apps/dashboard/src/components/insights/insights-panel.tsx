@@ -197,7 +197,7 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
               </Button>
             </div>
           ) : null}
-          <InsightsStorageFooter />
+          <InsightsStorageFooter hostId={hostId} />
         </>
       )}
     </section>
@@ -205,12 +205,11 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
 }
 
 /**
- * Read-only footer naming where insights are persisted. The backend is fixed at
- * deploy time via INSIGHTS_STORE_BACKEND, so nothing here is editable — it just
- * makes the active store visible, mirroring the agent's conversation-history
- * panel.
+ * Footer showing where insights are persisted and a direct link to the settings
+ * page. The backend is fixed at deploy time, so the storage label is read-only;
+ * the "Configure" link gives users a path to tune generation preferences.
  */
-function InsightsStorageFooter() {
+function InsightsStorageFooter({ hostId }: { hostId: number }) {
   const { backend, isLoading } = useInsightsBackend()
   if (isLoading) return null
 
@@ -218,8 +217,15 @@ function InsightsStorageFooter() {
     <p className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
       <Database className="size-3 shrink-0" />
       <span>
-        Stored in {INSIGHTS_BACKEND_LABELS[backend]} · configured at deploy time
+        Stored in {INSIGHTS_BACKEND_LABELS[backend]} · refreshed automatically
       </span>
+      <span aria-hidden="true">·</span>
+      <AppLink
+        href={buildUrl('/insights-settings', { host: hostId })}
+        className="underline-offset-2 hover:text-foreground hover:underline"
+      >
+        Configure
+      </AppLink>
     </p>
   )
 }
