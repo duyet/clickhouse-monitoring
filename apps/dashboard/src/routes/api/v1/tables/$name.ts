@@ -104,6 +104,34 @@ export const Route = createFileRoute('/api/v1/tables/$name')({
             })
 
           if (result.error) {
+            // An OPTIONAL config whose underlying table is simply absent is an
+            // expected state (e.g. system.backup_log before any backup runs),
+            // not a server error. Returning 500 here surfaces as a browser
+            // console error + failed-request on every page that probes the
+            // table (sidebar counts, related charts). Degrade to an empty 200
+            // and flag it `unavailable` so the UI can show a "table not
+            // available" notice instead of an error boundary.
+            const missingTables = (
+              result.error.details as { missingTables?: string[] } | undefined
+            )?.missingTables
+            if (config.optional && missingTables && missingTables.length > 0) {
+              return Response.json({
+                success: true,
+                data: [],
+                metadata: {
+                  queryId: '',
+                  duration: 0,
+                  rows: 0,
+                  host: String(hostId),
+                  sql: executedSql?.trim() ?? '',
+                  clickhouseVersion,
+                  timezone,
+                  unavailable: true,
+                  unavailableReason: result.error.message,
+                  missingTables,
+                },
+              })
+            }
             return Response.json(
               {
                 success: false,

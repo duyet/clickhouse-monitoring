@@ -78,31 +78,19 @@ export const BarList = function BarList({
                 backgroundColor: bgColor,
               }}
             />
-            {/* Dark text layer (visible on white background) */}
+            {/* Single foreground-text layer. The fill is a semi-transparent
+                tint over the card, so theme `text-foreground` stays readable on
+                both the filled and empty regions AND keeps a WCAG-AA contrast
+                ratio against the card background (which is what axe computes —
+                the fill is a sibling, not the text's background). */}
             <div className="absolute inset-0 flex items-center justify-between">
-              <span className="truncate px-2.5 text-sm font-medium text-foreground">
+              <span
+                className="truncate px-2.5 text-sm font-medium text-foreground"
+                data-testid="bar-list-label-contrast"
+              >
                 {item.name}
               </span>
               <span className="shrink-0 px-2.5 font-mono text-sm font-medium tabular-nums text-foreground">
-                {valueFormatter(item.value)}
-              </span>
-            </div>
-            {/* White text layer (visible on colored bar) */}
-            <div
-              className="absolute inset-0 flex items-center justify-between overflow-hidden"
-              style={{ clipPath: `inset(0 ${100 - percentage}% 0 0)` }}
-            >
-              <span
-                className="truncate px-2.5 text-sm font-medium text-white"
-                data-testid="bar-list-label-contrast"
-                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
-              >
-                {item.name}
-              </span>
-              <span
-                className="shrink-0 px-2.5 font-mono text-sm font-medium tabular-nums text-white"
-                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
-              >
                 {valueFormatter(item.value)}
               </span>
             </div>

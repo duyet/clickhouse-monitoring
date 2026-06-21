@@ -42,10 +42,19 @@ const SETTLE = Number(args.settle || 3500)
 const HOME = process.env.HOME
 const SKILL_DIR = join(dirname(fileURLToPath(import.meta.url)), '..')
 // repo root: walk up from skill dir until we find apps/dashboard-tsr
+// app dir moved from apps/dashboard-tsr -> apps/dashboard after the TSR cutover;
+// support both so the skill works on old and new checkouts.
+const APP_DIRS = ['apps/dashboard', 'apps/dashboard-tsr']
+function appRoutesRel(repo) {
+  for (const a of APP_DIRS) {
+    if (existsSync(join(repo, a, 'src/routes'))) return join(a, 'src/routes')
+  }
+  return null
+}
 function findRepoRoot(start) {
   let d = start
   for (let i = 0; i < 8; i++) {
-    if (existsSync(join(d, 'apps/dashboard-tsr/src/routes'))) return d
+    if (appRoutesRel(d)) return d
     d = dirname(d)
   }
   return null
@@ -71,7 +80,7 @@ const log = (...a) => console.log(`[audit ${new Date().toISOString().slice(11, 1
 function discoverRoutes() {
   if (args.only) return String(args.only).split(',').map((s) => s.trim()).filter(Boolean)
   if (!REPO) { log('WARN: repo root not found, falling back to /overview'); return ['/overview'] }
-  const root = join(REPO, 'apps/dashboard-tsr/src/routes')
+  const root = join(REPO, appRoutesRel(REPO) || 'apps/dashboard/src/routes')
   const out = new Set()
   const walk = (dir, urlPrefix) => {
     for (const name of readdirSync(dir)) {
@@ -79,6 +88,8 @@ function discoverRoutes() {
       const isDir = statSync(full).isDirectory()
       // skip non-route files/dirs: -components, _lib, __root, route.tsx (layouts)
       if (name.startsWith('-') || name.startsWith('_')) continue
+      // api/ holds server route handlers, not visitable pages
+      if (isDir && name === 'api') continue
       if (isDir) {
         // pathless group "(group)" contributes nothing to the URL
         const seg = name.startsWith('(') && name.endsWith(')') ? '' : `/${name}`
@@ -229,7 +240,13 @@ async function auditRoute(ctx, route) {
     if (findings.length) {
       const traceName = (route.replace(/[/?=&]/g, '_') || '_root') + '.zip'
       await ctx.tracing.stop({ path: join(TRACES, traceName) }).catch(() => {})
-      writeReproSnippet(route, url, findings)
+      // A repro-write failure (ENOENT etc.) must never abort the whole sweep and
+      // lose report.json — log and continue.
+      try {
+        writeReproSnippet(route, url, findings)
+      } catch (e) {
+        log(`WARN: repro write failed for ${route}: ${e.message?.slice(0, 80)}`)
+      }
     } else {
       await ctx.tracing.stop().catch(() => {})
     }

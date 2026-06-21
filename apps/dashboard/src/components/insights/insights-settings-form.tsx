@@ -239,7 +239,7 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
               }
               disabled={off}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-label="Model">
                 <SelectValue placeholder="Default" />
               </SelectTrigger>
               <SelectContent>
@@ -280,7 +280,7 @@ export function InsightsSettingsForm({ className }: { className?: string }) {
               value={settings.window}
               onValueChange={(value) => update({ window: value })}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-label="Lookback window">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -443,6 +443,25 @@ export default defineConfig({
       'react-dom',
       'lucide-react',
       '@radix-ui/react-icons',
+      // React Query's context is per-module-instance. PersistQueryClientProvider
+      // (from react-query-persist-client) must resolve the SAME @tanstack/react-query
+      // as the app's useQuery hooks, or the provider sets context on one instance
+      // while hooks read another → "No QueryClient set". Dedupe to a single copy.
+      '@tanstack/react-query',
+      '@tanstack/query-core',
+      '@tanstack/react-query-persist-client',
+      '@tanstack/query-persist-client-core',
+      // CodeMirror relies on `instanceof @codemirror/state` checks across its
+      // packages (view/lang-sql/etc. each import state). Two copies → "Unrecognized
+      // extension value... multiple instances of @codemirror/state are loaded",
+      // which crashes the SQL console. Force a single shared instance of each.
+      '@codemirror/state',
+      '@codemirror/view',
+      '@codemirror/language',
+      '@codemirror/commands',
+      '@codemirror/autocomplete',
+      '@codemirror/search',
+      '@codemirror/lang-sql',
     ],
     alias: {
       '@': r('./src'),
@@ -535,6 +554,21 @@ export default defineConfig({
       'lucide-react',
       'recharts',
       'lru-cache',
+      // Pre-bundle the whole react-query family together so they share ONE
+      // instance in dev. Without persist-client here, Vite leaves it
+      // unoptimized and it imports a second react-query → "No QueryClient set".
+      '@tanstack/react-query',
+      '@tanstack/react-query-persist-client',
+      '@tanstack/query-sync-storage-persister',
+      // Same single-instance requirement as the dedupe block above — pre-bundle
+      // the CodeMirror family together so `instanceof` checks hold in the SQL console.
+      '@codemirror/state',
+      '@codemirror/view',
+      '@codemirror/language',
+      '@codemirror/commands',
+      '@codemirror/autocomplete',
+      '@codemirror/search',
+      '@codemirror/lang-sql',
     ],
   },
 })

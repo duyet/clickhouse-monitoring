@@ -6,7 +6,7 @@
  */
 
 import { error } from '@chm/logger'
-import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 
 /**
  * Feature flag definitions.
@@ -19,8 +19,11 @@ export const featureFlags = {
    * Enable persistent database storage for AI agent conversations.
    *
    * When enabled, conversations are stored in D1 (Cloudflare Workers) or PostgreSQL
-   * instead of localStorage. Requires the clerk auth provider
-   * (VITE_AUTH_PROVIDER=clerk) for user isolation.
+   * instead of localStorage. Requires Clerk to be fully enabled — provider
+   * `clerk` AND a real publishable key — because the server store isolates
+   * conversations per signed-in user. Without a key there is no user identity,
+   * so we fall back to the localStorage adapter instead of calling the server
+   * endpoint (which would 501 on guest/self-hosted deployments).
    *
    * @default false (unset)
    * @env VITE_FEATURE_CONVERSATION_DB (was NEXT_PUBLIC_FEATURE_CONVERSATION_DB)
@@ -31,9 +34,9 @@ export const featureFlags = {
     }
 
     try {
-      return isClerkAuthProvider()
+      return isClerkEnabled()
     } catch (err) {
-      error('[featureFlags.conversationDb] Auth provider check failed', err)
+      error('[featureFlags.conversationDb] Clerk enablement check failed', err)
       return false
     }
   },
@@ -52,9 +55,12 @@ export const featureFlags = {
     }
 
     try {
-      return isClerkAuthProvider()
+      return isClerkEnabled()
     } catch (err) {
-      error('[featureFlags.userConnectionsDb] Auth provider check failed', err)
+      error(
+        '[featureFlags.userConnectionsDb] Clerk enablement check failed',
+        err
+      )
       return false
     }
   },
