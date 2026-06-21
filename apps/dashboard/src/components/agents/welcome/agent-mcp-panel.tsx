@@ -3,16 +3,24 @@
 /**
  * MCP Config Panel
  *
- * Shows the status of Model Context Protocol servers connected to the agent.
- * The built-in clickhouse-monitor server's tool count, resource count, version,
- * and connection status are derived live from /api/v1/mcp/info.
+ * Shows the status of Model Context Protocol servers connected to the agent:
+ *   - Built-in clickhouse-monitor server (always present). Its tool count,
+ *     resource count, version, and connection status are derived live from
+ *     /api/v1/mcp/info. The built-in server is always on and its toggle is
+ *     read-only — it cannot be disabled.
+ *   - User-added custom servers. These persist to localStorage via
+ *     {@link useMcpConfig} (mirroring how individual MCP tool selections are
+ *     stored by `useToolConfig`); they can be toggled, added, and removed.
  *
- * Custom server registration and per-server enable/disable are not yet wired to
- * the agent runtime — the built-in server toggle is read-only (always on) and the
- * "Connect new server" button is disabled until a server-registration API exists.
+ * Follows the assistant-ui MCP config pattern:
+ *   https://www.assistant-ui.com/docs/ui/mcp-config
+ *
+ * Note: custom servers are not yet wired to the agent runtime, so their
+ * persisted enable/disable state is a stored user preference rather than a
+ * live runtime binding.
  */
 
-import { PlusIcon, WrenchIcon } from 'lucide-react'
+import { PlusIcon, Trash2Icon, WrenchIcon } from 'lucide-react'
 
 import type { McpServer } from './mcp-types'
 
@@ -21,7 +29,9 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { toMcpServers, useMcpConfig } from '@/lib/hooks/use-mcp-config'
 import { useMcpServerInfo } from '@/lib/swr/use-mcp-server-info'
+import { cn } from '@/lib/utils'
 
 // Re-exported for existing consumers; canonical definition lives in mcp-types.ts.
 export type { McpServer }
@@ -62,13 +72,19 @@ function StatusBadge({ status }: { status: McpServer['status'] }) {
 // Single server row
 // ---------------------------------------------------------------------------
 
+interface McpServerRowProps {
+  server: McpServer
+  onToggle: (id: string, next: boolean) => void
+  onViewDetails: (server: McpServer) => void
+  onRemove?: (id: string) => void
+}
+
 function McpServerRow({
   server,
+  onToggle,
   onViewDetails,
-}: {
-  server: McpServer
-  onViewDetails: (server: McpServer) => void
-}) {
+  onRemove,
+}: McpServerRowProps) {
   return (
     <div className="flex items-center gap-2 py-2 pr-3 pl-2">
       {/* Icon */}
@@ -109,10 +125,25 @@ function McpServerRow({
         </div>
       </button>
 
+      {/* Remove — only for user-added custom servers */}
+      {!server.builtin && onRemove && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-7 shrink-0"
+          onClick={() => onRemove(server.id)}
+          aria-label={`Remove ${server.name}`}
+        >
+          <Trash2Icon className="size-3.5" />
+        </Button>
+      )}
+
       {/* Toggle — disabled for built-in servers (always on, cannot be disabled) */}
       <Switch
         checked={server.enabled}
         disabled={server.builtin}
+        onCheckedChange={(next) => onToggle(server.id, next)}
         className="shrink-0"
         aria-label={
           server.builtin
@@ -125,20 +156,112 @@ function McpServerRow({
 }
 
 // ---------------------------------------------------------------------------
+// "Connect new server" form
+// ---------------------------------------------------------------------------
+
+/** A custom server the user is about to register. */
+interface AddServerInput {
+  name: string
+  endpoint: string
+}
+
+interface AddServerFormProps {
+  onCancel: () => void
+  onAdd: (server: AddServerInput) => void
+}
+
+function AddServerForm({ onCancel, onAdd }: AddServerFormProps) {
+  const [name, setName] = useState('')
+  const [url, setUrl] = useState('')
+
+  const trimmedName = name.trim()
+  const trimmedUrl = url.trim()
+  const canSubmit = trimmedName.length > 0 && trimmedUrl.length > 0
+
+  const inputClass = cn(
+    'bg-background border-input h-8 w-full rounded-md border px-3 text-[12px]',
+    'placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring'
+  )
+
+  const handleSubmit = () => {
+    if (!canSubmit) return
+    onAdd({ name: trimmedName, endpoint: trimmedUrl })
+  }
+
+  return (
+    <form
+      className="border-border mt-2 space-y-2 rounded-md border p-2.5"
+      onSubmit={(e) => {
+        e.preventDefault()
+        handleSubmit()
+      }}
+    >
+      <p className="text-muted-foreground text-[10.5px] font-medium tracking-wide uppercase">
+        New server
+      </p>
+      <input
+        type="text"
+        placeholder="Server name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className={inputClass}
+      />
+      <input
+        type="url"
+        placeholder="Endpoint URL (https://…)"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        className={inputClass}
+      />
+      <div className="flex items-center gap-2">
+        <Button
+          type="submit"
+          size="sm"
+          className="h-7 flex-1 text-[11.5px]"
+          disabled={!canSubmit}
+        >
+          Connect
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 flex-1 text-[11.5px]"
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Panel root
 // ---------------------------------------------------------------------------
 
 export function AgentMcpPanel() {
   const { data, isLoading, error } = useMcpServerInfo()
+  const {
+    customServers,
+    isServerEnabled,
+    setServerEnabled,
+    addServer,
+    removeServer,
+  } = useMcpConfig()
+  const [showAddForm, setShowAddForm] = useState(false)
   const [selectedServer, setSelectedServer] = useState<McpServer | null>(null)
 
-  // Derive real connection status from the /api/v1/mcp/info fetch state.
+  // Derive real connection status for the built-in server from the
+  // /api/v1/mcp/info fetch state.
   const builtinStatus: McpServer['status'] = isLoading
     ? 'connecting'
     : error
       ? 'error'
       : 'connected'
 
+  // Built-in server (live data, always on) first, then user-added custom
+  // servers restored from localStorage.
   const servers: McpServer[] = [
     {
       id: 'clickhouse-monitor',
@@ -151,7 +274,17 @@ export function AgentMcpPanel() {
       enabled: true,
       status: builtinStatus,
     },
+    ...toMcpServers(customServers, isServerEnabled),
   ]
+
+  const handleToggle = (id: string, next: boolean) => {
+    setServerEnabled(id, next)
+  }
+
+  const handleAddServer = (server: AddServerInput) => {
+    addServer(server)
+    setShowAddForm(false)
+  }
 
   const panelStatus =
     builtinStatus === 'connected' ? 'configured' : 'unconfigured'
@@ -193,23 +326,31 @@ export function AgentMcpPanel() {
           <McpServerRow
             key={server.id}
             server={server}
+            onToggle={handleToggle}
             onViewDetails={setSelectedServer}
+            onRemove={removeServer}
           />
         ))}
       </div>
 
-      {/* Custom server registration is not yet available */}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="mt-1 h-8 w-full justify-center gap-1.5 text-[11.5px]"
-        disabled
-        title="Custom server registration is not yet available"
-      >
-        <PlusIcon className="size-3" />
-        Connect new server
-      </Button>
+      {/* Add server form / button */}
+      {showAddForm ? (
+        <AddServerForm
+          onCancel={() => setShowAddForm(false)}
+          onAdd={handleAddServer}
+        />
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-1 h-8 w-full justify-center gap-1.5 text-[11.5px]"
+          onClick={() => setShowAddForm(true)}
+        >
+          <PlusIcon className="size-3" />
+          Connect new server
+        </Button>
+      )}
     </div>
   )
 }
