@@ -104,9 +104,9 @@ describe('formatCount', () => {
 })
 
 describe('formatDuration', () => {
-  test('invalid / negative collapse to dash', () => {
-    expect(formatDuration(-5)).toBe('-')
+  test('invalid values collapse to dash', () => {
     expect(formatDuration(Number.NaN)).toBe('-')
+    expect(formatDuration(Number.POSITIVE_INFINITY)).toBe('-')
   })
 
   test('chooses ms / s / m / h by magnitude', () => {
@@ -114,6 +114,13 @@ describe('formatDuration', () => {
     expect(formatDuration(1500)).toBe('1.5s')
     expect(formatDuration(90_000)).toBe('1.5m')
     expect(formatDuration(5_400_000)).toBe('1.5h')
+  })
+
+  test('preserves negative sign while formatting by absolute magnitude', () => {
+    expect(formatDuration(-5)).toBe('-5ms')
+    expect(formatDuration(-1500)).toBe('-1.5s')
+    expect(formatDuration(-90_000)).toBe('-1.5m')
+    expect(formatDuration(-5_400_000)).toBe('-1.5h')
   })
 })
 

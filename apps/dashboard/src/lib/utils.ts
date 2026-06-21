@@ -51,11 +51,12 @@ export function formatCount(count: number): string {
 
 export function formatDuration(ms: number): string {
   if (!Number.isFinite(ms) || Number.isNaN(ms)) return '-'
-  if (ms < 0) return '-'
-  if (ms < 1000) return `${Number(ms.toFixed(2))}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
-  return `${(ms / 3600000).toFixed(1)}h`
+  const sign = ms < 0 ? '-' : ''
+  const abs = Math.abs(ms)
+  if (abs < 1000) return `${sign}${Number(abs.toFixed(2))}ms`
+  if (abs < 60000) return `${sign}${(abs / 1000).toFixed(1)}s`
+  if (abs < 3600000) return `${sign}${(abs / 60000).toFixed(1)}m`
+  return `${sign}${(abs / 3600000).toFixed(1)}h`
 }
 
 export const chartTickFormatters = {

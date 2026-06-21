@@ -41,11 +41,9 @@ export const HoverCardFormat = function HoverCardFormat({
   return (
     <HoverCard openDelay={0}>
       <HoverCardTrigger aria-label="Show details">
-        {normalizedValue as any}
+        {normalizedValue}
       </HoverCardTrigger>
-      <HoverCardContent role="tooltip">
-        {processedContent as any}
-      </HoverCardContent>
+      <HoverCardContent role="tooltip">{processedContent}</HoverCardContent>
     </HoverCard>
   )
 }

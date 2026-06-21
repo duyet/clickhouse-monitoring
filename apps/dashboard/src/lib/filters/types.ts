@@ -101,7 +101,7 @@ export interface FilterPreset {
 }
 
 /** Quick filter display type. */
-export type QuickFilterDisplay = 'segmented' | 'select' | 'radio'
+export type QuickFilterDisplay = 'segmented' | 'select'
 
 /**
  * Quick filter: always-visible inline control for high-value filters.
@@ -115,7 +115,7 @@ export interface QuickFilterConfig {
   /** Override label (defaults to field.label). */
   label?: string
   /**
-   * For segmented/radio: options to show.
+   * For segmented: options to show.
    * Defaults to field.options (for select-type fields) or needs explicit options.
    */
   options?: { label: string; value: string }[]

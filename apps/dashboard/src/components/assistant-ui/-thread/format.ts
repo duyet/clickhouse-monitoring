@@ -1,12 +1,3 @@
-/** Format a stream duration in milliseconds as a compact human string. */
-export function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
-  const mins = Math.floor(ms / 60_000)
-  const secs = Math.round((ms % 60_000) / 1000)
-  return `${mins}m ${secs}s`
-}
-
 /** Format a Date as absolute readable string. */
 export function formatAbsolute(date: Date): string {
   return date.toLocaleString(undefined, {

@@ -344,10 +344,8 @@ export const TableHeaderRow = function TableHeaderRow({
 /**
  * Props for TableHeader component
  */
-export interface TableHeaderProps {
-  // HeaderGroup<any> matches this file's existing Header<any, unknown> convention
-  // and accepts the caller's generic HeaderGroup<TData>[] from table.getHeaderGroups().
-  headerGroups: HeaderGroup<any>[]
+export interface TableHeaderProps<TData = unknown> {
+  headerGroups: HeaderGroup<TData>[]
   /** Callback when double-clicking column resizer to auto-fit */
   onAutoFit?: (columnId: string) => void
   /** Enable column reordering with drag-and-drop */
@@ -366,12 +364,12 @@ export interface TableHeaderProps {
  * Renders all header groups (typically one) with TableHeaderRow components.
  * Performance: Memoized to prevent unnecessary re-renders
  */
-export const TableHeader = function TableHeader({
+export const TableHeader = function TableHeader<TData = unknown>({
   headerGroups,
   onAutoFit,
   enableColumnReordering = false,
   compact = false,
-}: TableHeaderProps) {
+}: TableHeaderProps<TData>) {
   return (
     <>
       {headerGroups.map((headerGroup) => (

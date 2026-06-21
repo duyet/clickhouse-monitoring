@@ -1,11 +1,6 @@
 import type { QRepPartition } from '@/lib/peerdb/types'
 
-import {
-  durationMs,
-  formatDateTime,
-  formatDuration,
-  toNumber,
-} from './peerdb-utils'
+import { durationMs, formatDateTime, toNumber } from './peerdb-utils'
 import {
   Table,
   TableBody,
@@ -15,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatReadableQuantity } from '@/lib/format-readable'
+import { formatDuration } from '@/lib/utils'
 
 interface PartitionTableProps {
   partitions: QRepPartition[]
@@ -50,6 +46,7 @@ export function PartitionTable({ partitions }: PartitionTableProps) {
         <TableBody>
           {partitions.map((p, index) => {
             const end = p.endTime ?? p.pullEndTime
+            const duration = durationMs(p.startTime, end)
             const rowsIn = toNumber(p.rowsInPartition ?? p.numRows)
             const rowsSynced = toNumber(p.rowsSynced)
             return (
@@ -58,7 +55,7 @@ export function PartitionTable({ partitions }: PartitionTableProps) {
                   {p.partitionId ?? '—'}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {formatDuration(durationMs(p.startTime, end))}
+                  {duration === null ? '—' : formatDuration(duration)}
                 </TableCell>
                 <TableCell className="text-xs">
                   {formatDateTime(p.startTime)}
