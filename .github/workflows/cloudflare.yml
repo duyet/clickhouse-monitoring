@@ -122,6 +122,14 @@ jobs:
           fi
 
       - name: Set secrets
+        # Dependabot PRs run with GitHub's isolated dependabot secret store, so
+        # the deployment secrets resolve empty and `set-secrets.ts --strict`
+        # exits 1 — structurally failing the required `dashboard` check on every
+        # dependency PR (#1809). Skip the secret/deploy/verify steps for
+        # dependabot; build + type-check above still verify the dependency bump.
+        # Production deploys (push to main) are unaffected — actor is never
+        # dependabot there.
+        if: github.actor != 'dependabot[bot]'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -154,7 +162,7 @@ jobs:
           fi
 
       - name: Deploy preview
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -168,6 +176,8 @@ jobs:
         run: bunx wrangler deploy --minify
 
       - name: Verify deployment
+        # Skip for dependabot PRs — no preview was deployed (see Set secrets).
+        if: github.actor != 'dependabot[bot]'
         env:
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
         run: |
