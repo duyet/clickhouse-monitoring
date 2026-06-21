@@ -155,6 +155,38 @@ describe('stripTrailingFormat', () => {
     )
   })
 
+  it('does not strip a trailing `format` identifier followed by a keyword/alias', () => {
+    // `format` is a column here, not a FORMAT clause: DESC / f / ASC are not
+    // ClickHouse format names, so the tail must be preserved.
+    expect(stripTrailingFormat('SELECT * FROM t ORDER BY format DESC')).toBe(
+      'SELECT * FROM t ORDER BY format DESC'
+    )
+    expect(stripTrailingFormat('SELECT * FROM t ORDER BY format ASC')).toBe(
+      'SELECT * FROM t ORDER BY format ASC'
+    )
+    expect(stripTrailingFormat('SELECT format AS f')).toBe('SELECT format AS f')
+    expect(stripTrailingFormat('SELECT format f FROM t')).toBe(
+      'SELECT format f FROM t'
+    )
+  })
+
+  it('strips a variety of recognized ClickHouse formats', () => {
+    expect(stripTrailingFormat('SELECT 1 FORMAT CSV')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 FORMAT Vertical')).toBe('SELECT 1')
+    expect(stripTrailingFormat('SELECT 1 FORMAT PrettyCompact')).toBe(
+      'SELECT 1'
+    )
+    expect(stripTrailingFormat('SELECT 1 FORMAT RowBinary')).toBe('SELECT 1')
+  })
+
+  it('does not strip an unrecognized FORMAT name', () => {
+    // Guard against truncating valid SQL whose trailing token only looks like a
+    // FORMAT clause; only known formats are removed.
+    expect(stripTrailingFormat('SELECT 1 FORMAT NotARealFormat')).toBe(
+      'SELECT 1 FORMAT NotARealFormat'
+    )
+  })
+
   it('handles a realistic copied console query', () => {
     expect(
       stripTrailingFormat(
