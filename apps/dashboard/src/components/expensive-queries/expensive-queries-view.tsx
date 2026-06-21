@@ -1,4 +1,9 @@
-import { ChevronDown, Flame, RefreshCw } from 'lucide-react'
+import {
+  Flame,
+  LayoutDashboardIcon,
+  MinimizeIcon,
+  RefreshCw,
+} from 'lucide-react'
 
 import type { ExpensiveQueryRow } from '@/components/expensive-queries/expensive-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
@@ -6,6 +11,7 @@ import type { CardError } from '@/lib/card-error-utils'
 import { useState } from 'react'
 import { ExpensiveQueriesTable } from '@/components/expensive-queries/expensive-queries-table'
 import { PageHeader } from '@/components/layout'
+import { CollapsedChartsRow } from '@/components/layout/query-page/collapsed-charts-row'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
 import { HeaderButton } from '@/components/query-tables/header-button'
 import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
@@ -64,13 +70,12 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
               {expensiveQueriesConfig.relatedCharts &&
                 expensiveQueriesConfig.relatedCharts.length > 0 && (
                   <HeaderButton onClick={() => setChartsOpen((v) => !v)}>
-                    <ChevronDown
-                      className={cn(
-                        'size-3.5 transition-transform',
-                        !chartsOpen && '-rotate-90'
-                      )}
-                    />
-                    {chartsOpen ? 'Hide charts' : 'Show charts'}
+                    {chartsOpen ? (
+                      <MinimizeIcon className="size-3.5" />
+                    ) : (
+                      <LayoutDashboardIcon className="size-3.5" />
+                    )}
+                    {chartsOpen ? 'Collapse charts' : 'Expand charts'}
                   </HeaderButton>
                 )}
               <HeaderButton onClick={() => refresh()} disabled={isValidating}>
@@ -112,24 +117,29 @@ export const ExpensiveQueriesView = function ExpensiveQueriesView() {
           </Card>
         ) : (
           <>
-            {expensiveQueriesConfig.relatedCharts && (
-              <div
-                className={cn(
-                  'grid transition-all duration-300 ease-in-out',
-                  chartsOpen
-                    ? 'grid-rows-[1fr] opacity-100'
-                    : 'grid-rows-[0fr] opacity-0'
-                )}
-              >
-                <div className="overflow-hidden">
-                  {chartsOpen && (
-                    <RelatedCharts
-                      relatedCharts={expensiveQueriesConfig.relatedCharts}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
+            {expensiveQueriesConfig.relatedCharts &&
+              expensiveQueriesConfig.relatedCharts.length > 0 &&
+              (chartsOpen ? (
+                <RelatedCharts
+                  relatedCharts={expensiveQueriesConfig.relatedCharts}
+                />
+              ) : (
+                <CollapsedChartsRow
+                  labels={expensiveQueriesConfig.relatedCharts
+                    .filter(
+                      (c): c is Exclude<typeof c, 'break' | null | undefined> =>
+                        Boolean(c) && c !== 'break'
+                    )
+                    .map((c) => {
+                      const name = Array.isArray(c) ? c[0] : (c as string)
+                      const props = Array.isArray(c)
+                        ? (c[1] as { title?: string } | undefined)
+                        : undefined
+                      return props?.title ?? name.replace(/-/g, ' ')
+                    })}
+                  onExpand={() => setChartsOpen(true)}
+                />
+              ))}
             {rows.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="p-6">

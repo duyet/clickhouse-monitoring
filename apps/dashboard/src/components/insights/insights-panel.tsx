@@ -1,4 +1,4 @@
-import { Database, RefreshCw, Settings2, Sparkles, X } from 'lucide-react'
+import { Activity, Database, RefreshCw, Settings2, X } from 'lucide-react'
 
 import { useState } from 'react'
 import { InsightCard } from '@/components/insights/insight-card'
@@ -53,9 +53,9 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
         aria-label="AI insights"
       >
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="size-4 text-sky-500" />
+          <Activity className="size-4 shrink-0" />
           <span>
-            No AI insights right now. Generate a fresh analysis of this cluster.
+            No insights right now. Generate a fresh analysis of this cluster.
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -96,21 +96,27 @@ export function InsightsPanel({ hostId, className }: InsightsPanelProps) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-sky-500" />
-          <h2 className="text-sm font-semibold text-foreground">AI Insights</h2>
+          <Activity className="size-4 shrink-0 text-muted-foreground" />
+          <h2 className="text-sm font-medium text-foreground">Insights</h2>
           {counts.critical > 0 ? (
-            <Badge className="border-transparent bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+            <Badge
+              variant="outline"
+              className="border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-400"
+            >
               {counts.critical} critical
             </Badge>
           ) : null}
           {counts.warning > 0 ? (
-            <Badge className="border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+            <Badge
+              variant="outline"
+              className="border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-400"
+            >
               {counts.warning} warning
             </Badge>
           ) : null}
           {counts.info > 0 ? (
-            <Badge variant="secondary">
-              {counts.info} tip{counts.info > 1 ? 's' : ''}
+            <Badge variant="outline" className="text-muted-foreground">
+              {counts.info} info
             </Badge>
           ) : null}
         </div>
