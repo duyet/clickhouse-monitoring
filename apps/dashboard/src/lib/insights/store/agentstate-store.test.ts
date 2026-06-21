@@ -29,8 +29,6 @@ const upsertCalls: Array<{
 let failKeySubstring: string | null = null
 
 class FakeAgentState {
-  constructor(_cfg: unknown) {}
-
   async upsertState(
     key: string,
     body: { agent_id: string; data: Record<string, unknown>; tags: string[] }
