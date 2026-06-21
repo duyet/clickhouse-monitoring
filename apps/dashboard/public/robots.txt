@@ -1,0 +1,9 @@
+# chmonitor dashboard — https://dash.chmonitor.dev
+# This is the application UI (a SPA behind optional auth), not marketing
+# content. Allow crawling of the shell but keep crawlers out of the API and
+# health endpoints, which have no SEO value and only waste crawl budget.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /healthz
+Disallow: /heathz
