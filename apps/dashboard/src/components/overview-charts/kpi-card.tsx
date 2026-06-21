@@ -68,7 +68,7 @@ function isCountable(value: string | number): boolean {
 }
 
 const VALUE_CLASS =
-  'text-[26px] sm:text-[28px] font-bold leading-none tabular-nums tracking-tight text-foreground/90 dark:text-foreground/85'
+  'text-xl sm:text-[28px] font-bold leading-none tabular-nums tracking-tight text-foreground/90 dark:text-foreground/85'
 
 /**
  * KpiCard — one overview KPI with a consistent layout across the strip:
@@ -94,7 +94,7 @@ export const KpiCard = function KpiCard({
   if (isLoading) {
     return (
       <div
-        className={cn(cardStyles.base, 'gap-2.5 p-3 sm:p-4')}
+        className={cn(cardStyles.base, 'gap-2 p-2.5 sm:gap-2.5 sm:p-4')}
         role="status"
         aria-busy="true"
         aria-label={`Loading ${label}`}
@@ -113,7 +113,7 @@ export const KpiCard = function KpiCard({
     <div
       className={cn(
         cardStyles.base,
-        'gap-2.5 p-3 sm:p-4',
+        'gap-2 p-2.5 sm:gap-2.5 sm:p-4',
         href && cardStyles.hover
       )}
     >

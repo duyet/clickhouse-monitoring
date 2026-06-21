@@ -27,9 +27,16 @@ import {
   isoDate,
   METRIC_CONFIGS,
   METRIC_ORDER,
+  pickVisibleMonthBlocks,
 } from './query-count-calendar'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createCustomChart } from '@/components/charts/factory'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 // Day-of-week rows that get a left-gutter label (GitHub shows Mon/Wed/Fri).
@@ -88,7 +95,7 @@ function ModePill({
       onClick={() => onSelect(metric.key)}
       aria-pressed={active}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
           ? 'border-foreground bg-foreground text-background'
@@ -147,14 +154,26 @@ function CalendarBody({
 }) {
   const [mode, setMode] = useState<MetricKey>('queries')
   const [hover, setHover] = useState<HoverState | null>(null)
+  const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Full per-day record (all metrics) keyed by ISO date, for the day dialog.
+  const rowByIso = useMemo(() => {
+    const m = new Map<string, HeatmapDayRow>()
+    for (const r of data) m.set(r.date, r)
+    return m
+  }, [data])
+
   const metric = METRIC_CONFIGS[mode]
+  // Available width of the calendar viewport, measured via ResizeObserver, used
+  // to decide how many month blocks fit (oldest dropped first).
+  const [gridWidth, setGridWidth] = useState(0)
 
   // `today` is read once per render from the local clock; memoize so the
   // ~371-cell build is off every hover re-render and only reruns on mode change.
+  // `includeFuture` renders the rest of the current month as dimmed cells.
   const model = useMemo(
-    () => buildCalendarModel(data, new Date(), metric),
+    () => buildCalendarModel(data, new Date(), metric, 53, true),
     [data, metric]
   )
   const statCards = useMemo(
@@ -162,6 +181,11 @@ function CalendarBody({
     [metric, model]
   )
   const monthBlocks = useMemo(() => buildMonthBlocks(model), [model])
+  // Trim to the most recent months that fit; always keeps the current month.
+  const visibleBlocks = useMemo(
+    () => pickVisibleMonthBlocks(monthBlocks, gridWidth),
+    [monthBlocks, gridWidth]
+  )
   const todayIso = isoDate(new Date())
 
   // Auto-focus the latest date: scroll the calendar to its right edge on mount
@@ -176,6 +200,20 @@ function CalendarBody({
     })
     return () => cancelAnimationFrame(id)
   }, [data])
+
+  // Track the viewport width so the grid shows as many recent months as fit
+  // and drops the oldest on resize (keeping the current month visible).
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setGridWidth(el.clientWidth)
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w && w > 0) setGridWidth(w)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   if (data.length === 0) {
     return (
@@ -193,9 +231,18 @@ function CalendarBody({
     if (!day) {
       return <div key={dow} className={CELL} aria-hidden />
     }
+    // Future days of the current month: shown dimmed, not interactive.
+    if (day.isFuture) {
+      return (
+        <div
+          key={day.iso}
+          className={cn(CELL, 'rounded-[2px] opacity-30', metric.tiers[0])}
+          aria-hidden
+        />
+      )
+    }
     const intensity = getIntensityClass(day.value, max, metric.tiers)
     const isToday = day.iso === todayIso
-    const href = buildDrilldownHref(hostId, day, mode)
     const onEnter = (e: React.SyntheticEvent<HTMLElement>) => {
       const rect = e.currentTarget.getBoundingClientRect()
       const host = e.currentTarget.closest(
@@ -209,14 +256,18 @@ function CalendarBody({
       })
     }
     return (
-      <Link
+      <button
         key={day.iso}
-        to={href}
+        type="button"
         aria-label={`${day.readable} on ${formatCalendarDate(day.date)}`}
         onMouseEnter={onEnter}
         onFocus={onEnter}
         onMouseLeave={() => setHover(null)}
         onBlur={() => setHover(null)}
+        onClick={() => {
+          setHover(null)
+          setSelectedDay(day)
+        }}
         className={cn(
           CELL,
           'rounded-[2px] transition-transform duration-100',
@@ -239,15 +290,24 @@ function CalendarBody({
         <span className="text-muted-foreground font-mono text-xs">
           {rangeLabel}
         </span>
-        <div className="flex flex-wrap gap-1.5">
-          {METRIC_ORDER.map((key) => (
-            <ModePill
-              key={key}
-              metric={METRIC_CONFIGS[key]}
-              active={key === mode}
-              onSelect={setMode}
-            />
-          ))}
+        {/* Metric switcher: a single inline row that scrolls horizontally when
+            it can't fit (esp. mobile) instead of wrapping. A right-edge fade
+            signals there's more to scroll to. */}
+        <div className="relative min-w-0 max-w-full">
+          <div className="scrollbar-hide flex gap-1.5 overflow-x-auto pr-5 sm:pr-0">
+            {METRIC_ORDER.map((key) => (
+              <ModePill
+                key={key}
+                metric={METRIC_CONFIGS[key]}
+                active={key === mode}
+                onSelect={setMode}
+              />
+            ))}
+          </div>
+          <div
+            className="from-card pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l to-transparent sm:hidden"
+            aria-hidden
+          />
         </div>
       </div>
 
@@ -286,8 +346,8 @@ function CalendarBody({
             ))}
           </div>
 
-          {/* One block per month */}
-          {monthBlocks.map((block: MonthBlock) => (
+          {/* One block per month (trimmed to what fits; oldest dropped) */}
+          {visibleBlocks.map((block: MonthBlock) => (
             <div key={block.key} className="flex flex-col">
               <div className="text-muted-foreground mb-1 h-[10px] text-[10px] leading-none">
                 {block.label}
@@ -310,7 +370,7 @@ function CalendarBody({
       {/* Footer: helper text + Less→More legend */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground text-xs">
-          Click any day to view its queries · hover for daily totals
+          Click any day for details · hover for daily totals
         </p>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground text-[11px]">Less</span>
@@ -361,6 +421,64 @@ function CalendarBody({
           </div>
         ) : null}
       </div>
+
+      {/* Day detail dialog — opens on click with every metric for that day,
+          plus a link to drill into the day's queries. */}
+      <Dialog
+        open={selectedDay !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedDay(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          {selectedDay ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {formatCalendarDate(selectedDay.date)}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {METRIC_ORDER.map((key) => {
+                    const cfg = METRIC_CONFIGS[key]
+                    const row = rowByIso.get(selectedDay.iso)
+                    const value = row ? cfg.getValue(row) : 0
+                    return (
+                      <div
+                        key={key}
+                        className="border-border/60 bg-card/40 rounded-lg border px-3 py-2"
+                      >
+                        <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
+                          {cfg.label}
+                        </span>
+                        <div
+                          className={cn(
+                            'mt-0.5 text-base font-semibold tabular-nums',
+                            cfg.accentText
+                          )}
+                        >
+                          {cfg.format(value)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <Link
+                  to={buildDrilldownHref(hostId, selectedDay, mode)}
+                  onClick={() => setSelectedDay(null)}
+                  className="border-border bg-card hover:bg-accent inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+                >
+                  {mode === 'failed'
+                    ? 'View failed queries'
+                    : 'View queries for this day'}
+                  <ArrowUpRightIcon className="size-3.5" />
+                </Link>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

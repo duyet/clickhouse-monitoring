@@ -463,7 +463,8 @@ export const OVERVIEW_TAB_CHARTS: OverviewChartConfig[] = [
     id: 'disk-usage-breakdown-overview',
     component: ChartDiskUsage,
     title: 'Disk Usage',
-    className: 'w-full h-full',
+    // row-span-2 lets all disks render without an inner scrollbar
+    className: 'w-full h-full row-span-2',
     type: 'custom',
     href: '/disks',
   },
