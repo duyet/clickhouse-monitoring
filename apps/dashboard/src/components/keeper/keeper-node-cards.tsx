@@ -1,5 +1,6 @@
 import { Database, Layers, ServerCrash, Wifi, WifiOff } from 'lucide-react'
 
+import { memo, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -202,7 +203,7 @@ function MetricRow({
 // Single node card
 // ---------------------------------------------------------------------------
 
-function NodeCard({ row }: { row: KeeperInfoRow }) {
+const NodeCard = memo(function NodeCard({ row }: { row: KeeperInfoRow }) {
   const connected = isTruthy(row.is_connected)
   const role = deriveRole(row)
   const isStandalone = role === 'standalone'
@@ -341,7 +342,7 @@ function NodeCard({ row }: { row: KeeperInfoRow }) {
       </CardContent>
     </Card>
   )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Loading skeleton
@@ -378,6 +379,19 @@ export function KeeperNodeCards() {
     hostId
   )
 
+  // Group rows by cluster name. Memoized so the Map is only rebuilt when
+  // `data` changes — not on every parent re-render (e.g. polling ticks that
+  // return the same reference, tooltip hovers, or sibling state updates).
+  const { clusters, multiCluster } = useMemo(() => {
+    const map = new Map<string, KeeperInfoRow[]>()
+    for (const row of data ?? []) {
+      const name = row.zookeeper_cluster_name ?? ''
+      if (!map.has(name)) map.set(name, [])
+      map.get(name)!.push(row)
+    }
+    return { clusters: map, multiCluster: map.size > 1 }
+  }, [data])
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -413,16 +427,6 @@ export function KeeperNodeCards() {
       </div>
     )
   }
-
-  // Group by cluster name — mostly a single cluster, but support multiple
-  const clusters = new Map<string, KeeperInfoRow[]>()
-  for (const row of data) {
-    const name = row.zookeeper_cluster_name ?? ''
-    if (!clusters.has(name)) clusters.set(name, [])
-    clusters.get(name)!.push(row)
-  }
-
-  const multiCluster = clusters.size > 1
 
   return (
     <TooltipProvider delayDuration={300}>
