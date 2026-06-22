@@ -76,10 +76,10 @@ export function SavedDashboardsToolbar({
   }
 
   return (
-    <div className="flex flex-row items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Select value={activeName} onValueChange={handleLoad}>
         <SelectTrigger
-          className="w-48"
+          className="w-full sm:w-48"
           aria-label={
             activeName
               ? `Saved dashboard: ${activeName}`
