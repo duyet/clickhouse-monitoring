@@ -196,7 +196,7 @@ describe('fetchChartForHost — env source', () => {
     const body = { data: [{ x: 1 }], metadata: { total: 1 } }
     mockApiFetch.mockResolvedValueOnce(makeOkResponse(body))
 
-    const result = await fetchChartForHost<{ x: number }>({
+    const result = await fetchChartForHost<{ x: number }[]>({
       chartName: 'my-chart',
       hostId: undefined,
       hosts: [],
@@ -340,7 +340,7 @@ describe('fetchChartForHost — database source', () => {
     }
     mockApiFetch.mockResolvedValueOnce(makeOkResponse(responseBody))
 
-    const result = await fetchChartForHost<{ y: number }>({
+    const result = await fetchChartForHost<{ y: number }[]>({
       chartName: 'disk-usage',
       hostId: 2,
       hosts,
@@ -420,7 +420,7 @@ describe('fetchChartForHost — browser source', () => {
     const responseBody = { success: true, data: [{ z: 7 }] }
     mockApiFetch.mockResolvedValueOnce(makeOkResponse(responseBody))
 
-    const result = await fetchChartForHost<{ z: number }>({
+    const result = await fetchChartForHost<{ z: number }[]>({
       chartName: 'query-count',
       hostId: -1,
       hosts,
