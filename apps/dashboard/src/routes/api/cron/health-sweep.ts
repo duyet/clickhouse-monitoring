@@ -27,6 +27,7 @@ import { env } from 'cloudflare:workers'
 import { error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { runHealthSweep } from '@/lib/health/server-sweep'
+import { secretsMatch } from '@/lib/auth/providers/constant-time'
 
 function isAuthorized(request: Request): boolean {
   const bindings = env as Record<string, string | undefined>
@@ -34,10 +35,11 @@ function isAuthorized(request: Request): boolean {
   if (!secret) return true
 
   const authHeader = request.headers.get('authorization')
-  if (authHeader === `Bearer ${secret}`) return true
+  if (authHeader && secretsMatch(authHeader, `Bearer ${secret}`)) return true
 
   const url = new URL(request.url)
-  if (url.searchParams.get('secret') === secret) return true
+  const querySecret = url.searchParams.get('secret')
+  if (querySecret && secretsMatch(querySecret, secret)) return true
 
   return false
 }
