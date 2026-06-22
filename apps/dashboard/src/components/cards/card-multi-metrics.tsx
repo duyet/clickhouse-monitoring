@@ -79,14 +79,14 @@ export const CardMultiMetrics = function CardMultiMetrics({
 
           return (
             <div key={key} className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground truncate flex-1 min-w-0">
+              <span className="text-muted-foreground truncate flex-1 min-w-0 tabular-nums">
                 {item.currentReadable}
               </span>
               <DottedLineProgress
                 percent={clampedPercent}
                 className="shrink-0"
               />
-              <span className="font-medium truncate flex-1 min-w-0 text-right">
+              <span className="font-medium truncate flex-1 min-w-0 text-right tabular-nums">
                 {item.targetReadable}
               </span>
             </div>

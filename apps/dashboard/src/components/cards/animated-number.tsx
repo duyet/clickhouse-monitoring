@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { cn } from '@/lib/utils'
+
 interface AnimatedNumberProps {
   value: string | number
   className?: string
@@ -88,7 +90,7 @@ export function AnimatedNumber({ value, className }: AnimatedNumberProps) {
   }, [targetNum])
 
   return (
-    <span className={className}>
+    <span className={cn('tabular-nums', className)}>
       {displayNum.toLocaleString()}
       {suffix}
     </span>

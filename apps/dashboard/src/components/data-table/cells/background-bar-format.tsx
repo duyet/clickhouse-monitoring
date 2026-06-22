@@ -67,7 +67,7 @@ export const BackgroundBarFormat = function BackgroundBarFormat({
         }}
         aria-hidden="true"
       />
-      <span className="relative inline-block min-w-0 truncate px-1.5">
+      <span className="relative inline-block min-w-0 truncate px-1.5 tabular-nums">
         {options?.numberFormat
           ? formatReadableQuantity(value as number, 'long')
           : value}

@@ -106,7 +106,7 @@ function MetricCard({
         <Icon className="size-3.5" />
         {label}
       </div>
-      <div className="mt-1 font-mono text-lg">{value}</div>
+      <div className="mt-1 font-mono text-lg tabular-nums">{value}</div>
       {sub && <div className="text-muted-foreground mt-0.5 text-xs">{sub}</div>}
     </div>
   )
