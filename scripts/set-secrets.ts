@@ -206,6 +206,22 @@ const MISSING_WORKER_PATTERNS = [
   /\[code:?\s*10007\]/i,
 ]
 
+// Transient Cloudflare API conflicts — retried with backoff rather than failed.
+// 10215 (`secret-modification-with-worker-versions`) fires when concurrent CI
+// runs modify the same worker's secrets at once (e.g. many PRs building in
+// parallel); it is not a real error, it just needs a moment and a retry.
+const TRANSIENT_CONFLICT_PATTERNS = [
+  /\[code:?\s*10215\]/i,
+  /secret-modification-with-worker-versions/i,
+  /please try again/i,
+]
+
+const SECRET_RETRY_DELAYS_MS = [2000, 5000, 10000]
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function setSecretsBulk(
   label: string,
   configPath: string,
@@ -247,13 +263,31 @@ async function setSecretsBulk(
     // (apps/dashboard|apps/mcp both pin 4.65.0) — works whether invoked via
     // `bun run` (local) or directly (`bun scripts/set-secrets.ts` in CI), where
     // node_modules/.bin is not on PATH for a bare `wrangler`.
-    const proc = Bun.spawn(['bunx', 'wrangler', ...args], {
-      stdout: 'inherit',
-      stderr: 'pipe',
-    })
-    const stderrText = await new Response(proc.stderr).text()
-    process.stderr.write(stderrText)
-    const ok = (await proc.exited) === 0
+    // Retry on transient Cloudflare conflicts (10215) so concurrent CI runs
+    // don't fail a required check on a race that clears in seconds.
+    const maxAttempts = SECRET_RETRY_DELAYS_MS.length + 1
+    let stderrText = ''
+    let ok = false
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const proc = Bun.spawn(['bunx', 'wrangler', ...args], {
+        stdout: 'inherit',
+        stderr: 'pipe',
+      })
+      stderrText = await new Response(proc.stderr).text()
+      ok = (await proc.exited) === 0
+      const transient =
+        !ok && TRANSIENT_CONFLICT_PATTERNS.some((re) => re.test(stderrText))
+      if (ok || !transient || attempt === maxAttempts - 1) {
+        process.stderr.write(stderrText)
+        break
+      }
+      const delay = SECRET_RETRY_DELAYS_MS[attempt]
+      console.warn(
+        `\n⏳ ${label}: transient Cloudflare conflict (10215); retrying in ${delay / 1000}s ` +
+          `(attempt ${attempt + 2}/${maxAttempts})`
+      )
+      await sleep(delay)
+    }
     return {
       ok,
       missingWorker:
