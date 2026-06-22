@@ -1,11 +1,7 @@
 # Path-based PR auto-labeling (actions/labeler v5). Labels must already exist in
 # the repo; see the label set created alongside this file.
 
-'app: dashboard-tsr':
-  - changed-files:
-      - any-glob-to-any-file: 'apps/dashboard-tsr/**'
-
-'app: dashboard (legacy)':
+'app: dashboard':
   - changed-files:
       - any-glob-to-any-file: 'apps/dashboard/**'
 
