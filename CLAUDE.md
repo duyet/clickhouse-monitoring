@@ -614,9 +614,8 @@ export const backupsConfig: QueryConfig = {
 
 - `CLICKHOUSE_NAME` - Custom names for hosts
 - `CLICKHOUSE_MAX_EXECUTION_TIME` - Query timeout (default: 60s)
-- `NEXT_PUBLIC_VERCEL_ANALYTICS_ENABLED` - Enable Vercel analytics
-- `NEXT_PUBLIC_MEASUREMENT_ID` - Google Analytics ID
-- `NEXT_PUBLIC_SELINE_ENABLED` - Enable Seline analytics
+- `VITE_TELEMETRY_ENABLED` - Enable opt-in product telemetry (off by default)
+- `VITE_DEPLOY_TARGET` - Deployment target dimension for telemetry (`docker|helm|cf|dev|unknown`)
 
 ## Common Tasks
 

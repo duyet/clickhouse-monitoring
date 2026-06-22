@@ -96,12 +96,12 @@ Optional API-key protection for `/api/v1/*` routes:
 CHM_API_KEY_SECRET=your-signing-secret
 ```
 
-Optional Clerk UI/session support:
+Optional Clerk UI/session support (set at build time; `NEXT_PUBLIC_*` is the v0.2 fallback):
 
 ```bash
 CHM_AUTH_PROVIDER=clerk
-NEXT_PUBLIC_AUTH_PROVIDER=clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_your_key
+VITE_AUTH_PROVIDER=clerk
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_your_key
 CLERK_SECRET_KEY=sk_live_your_key
 ```
 
