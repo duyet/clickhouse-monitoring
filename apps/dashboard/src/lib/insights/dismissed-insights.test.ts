@@ -1,3 +1,5 @@
+import type { DismissibleInsight } from './dismissed-insights'
+
 import {
   clearDismissedInsights,
   dismissAllInsights,
@@ -6,7 +8,6 @@ import {
   getDismissedInsights,
   isInsightDismissed,
 } from './dismissed-insights'
-import type { DismissibleInsight } from './dismissed-insights'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------

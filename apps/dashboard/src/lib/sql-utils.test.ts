@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'bun:test'
 import {
   escapeIdentifier,
   escapeQualifiedIdentifier,
   validateIdentifier,
   validateLimit,
 } from './sql-utils'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // validateIdentifier

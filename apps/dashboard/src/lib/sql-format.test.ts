@@ -1,6 +1,5 @@
-import { describe, expect, test } from 'bun:test'
-
 import { formatSql } from './sql-format'
+import { describe, expect, test } from 'bun:test'
 
 describe('formatSql', () => {
   // --- basic formatting ---

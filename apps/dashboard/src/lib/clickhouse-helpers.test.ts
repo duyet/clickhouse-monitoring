@@ -184,7 +184,9 @@ describe('fetchDataWithHost', () => {
 
     expect((capturedArgs as Record<string, unknown>).hostId).toBe(2)
     expect((capturedArgs as Record<string, unknown>).query).toBe('SELECT 1')
-    expect((result as unknown as Record<string, unknown>).data).toEqual([{ row: 1 }])
+    expect((result as unknown as Record<string, unknown>).data).toEqual([
+      { row: 1 },
+    ])
     expect(logErrorCalls).toHaveLength(0)
   })
 
@@ -281,20 +283,16 @@ describe('fetchDataWithHost', () => {
     const result = await fetchDataWithHost({ query: 'SELECT 1' })
 
     expect((result as unknown as Record<string, unknown>).data).toBeNull()
-    const err = (result as unknown as Record<string, unknown>).error as unknown as Record<
-      string,
-      unknown
-    >
+    const err = (result as unknown as Record<string, unknown>)
+      .error as unknown as Record<string, unknown>
     expect(err.type).toBe('query_error')
     expect(err.message).toBe('connection refused')
     const details = err.details as Record<string, unknown>
     expect(details.originalError).toBeInstanceOf(Error)
     expect((details.originalError as Error).message).toBe('connection refused')
 
-    const meta = (result as unknown as Record<string, unknown>).metadata as Record<
-      string,
-      unknown
-    >
+    const meta = (result as unknown as Record<string, unknown>)
+      .metadata as Record<string, unknown>
     expect(meta.queryId).toBe('')
     expect(meta.duration).toBe(0)
     expect(meta.rows).toBe(0)
@@ -312,10 +310,8 @@ describe('fetchDataWithHost', () => {
 
     const result = await fetchDataWithHost({ query: 'SELECT 1' })
 
-    const err = (result as unknown as Record<string, unknown>).error as unknown as Record<
-      string,
-      unknown
-    >
+    const err = (result as unknown as Record<string, unknown>)
+      .error as unknown as Record<string, unknown>
     expect(err.message).toBe('An unknown error occurred')
     const details = err.details as Record<string, unknown>
     expect(details.originalError).toBeInstanceOf(Error)

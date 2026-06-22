@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { OverviewChartConfig } from './-charts-config'
 
 import { OVERVIEW_TABS } from './-charts-config'
-import { lazy, memo, Suspense, useState, useMemo } from 'react'
+import { lazy, memo, Suspense, useMemo, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { InsightsPanel } from '@/components/insights/insights-panel'
 import { cardStyles } from '@/components/overview-charts/card-styles'

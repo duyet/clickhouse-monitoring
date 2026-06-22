@@ -15,8 +15,9 @@
  *  3. Edge-case logic (falsy env var → default) is tested by deriving the
  *     same `|| 'system'` logic inline.
  */
-import { mock, describe, expect, test } from 'bun:test'
+
 import * as appTables from './app-tables'
+import { describe, expect, mock, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Static (bare) table identifiers — never affected by env vars

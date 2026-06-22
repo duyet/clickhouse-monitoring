@@ -1,5 +1,5 @@
+import { OG_DOMAIN, OG_PAGES, type OgPage, ogImageUrl, pageOgHead } from './og'
 import { describe, expect, test } from 'bun:test'
-import { OG_DOMAIN, OG_PAGES, ogImageUrl, pageOgHead, type OgPage } from './og'
 
 // ── OG_DOMAIN ────────────────────────────────────────────────────────────────
 

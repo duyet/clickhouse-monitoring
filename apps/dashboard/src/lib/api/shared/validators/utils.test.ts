@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'bun:test'
 import {
   isNonEmptyString,
   isPositiveNumber,
@@ -6,6 +5,7 @@ import {
   sanitizeQueryParams,
   truncateString,
 } from './utils'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // sanitizeQueryParams

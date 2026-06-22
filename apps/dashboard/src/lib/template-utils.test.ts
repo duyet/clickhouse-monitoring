@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'bun:test'
-import React from 'react'
 import {
-  replaceTemplateVariables,
   replaceTemplateInReactNode,
+  replaceTemplateVariables,
 } from './template-utils'
+import { describe, expect, it } from 'bun:test'
+import React from 'react'
 
 describe('replaceTemplateVariables', () => {
   it('replaces a single placeholder', () => {

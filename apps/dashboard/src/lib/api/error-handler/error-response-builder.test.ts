@@ -28,14 +28,14 @@ mock.module('@chm/logger', () => ({
   debug: () => {},
 }))
 
-import { describe, expect, it } from 'bun:test'
-import { ApiErrorType } from '@/lib/api/types'
 import {
   createErrorResponse,
   createNotFoundError,
   createValidationError,
   getStatusCodeForErrorType,
 } from './error-response-builder'
+import { describe, expect, it } from 'bun:test'
+import { ApiErrorType } from '@/lib/api/types'
 
 // ---------------------------------------------------------------------------
 // getStatusCodeForErrorType

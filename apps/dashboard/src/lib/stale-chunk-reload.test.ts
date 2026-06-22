@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach, afterEach } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 // We import the module fresh per test by re-requiring it.
 // Because the module caches `registered` at module level, we need to

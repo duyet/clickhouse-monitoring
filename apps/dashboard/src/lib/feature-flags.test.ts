@@ -24,11 +24,12 @@
  *   - describe 'shape': structural invariants on the featureFlags object.
  */
 
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type {
   FeatureFlagName,
   featureFlags as FeatureFlagsType,
 } from './feature-flags'
+
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // ── Mock @/lib/clerk/clerk-client ────────────────────────────────────────────
 // Registered before any import of the module under test so the mock is in place

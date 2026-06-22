@@ -5,7 +5,6 @@
  * Pure logic — no ClickHouse, no LLM calls.
  */
 
-import { describe, expect, it } from 'bun:test'
 import {
   DEFAULT_PROMPT_STYLE,
   INSIGHT_PROMPT_STYLES,
@@ -13,6 +12,7 @@ import {
   promptSystemFor,
   resolvePromptStyle,
 } from './prompts'
+import { describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // DEFAULT_PROMPT_STYLE

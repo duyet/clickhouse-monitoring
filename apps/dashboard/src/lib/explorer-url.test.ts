@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test'
 import { buildExplorerQueryUrl } from './explorer-url'
+import { describe, expect, it } from 'bun:test'
 
 describe('buildExplorerQueryUrl', () => {
   it('returns a URL starting with /explorer', () => {

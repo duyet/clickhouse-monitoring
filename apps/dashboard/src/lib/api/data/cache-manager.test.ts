@@ -1,4 +1,11 @@
 import {
+  clearHostCache,
+  getCachedDashboardQueries,
+  getCacheStats,
+  getCacheTTL,
+  updateDashboardQueryCache,
+} from './cache-manager'
+import {
   afterEach,
   beforeEach,
   describe,
@@ -6,13 +13,6 @@ import {
   setSystemTime,
   test,
 } from 'bun:test'
-import {
-  clearHostCache,
-  getCachedDashboardQueries,
-  getCacheStats,
-  getCacheTTL,
-  updateDashboardQueryCache,
-} from './cache-manager'
 
 /**
  * The module uses a module-level `cache` Map and `cacheTimestamp` (starts at 0).

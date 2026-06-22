@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'bun:test'
 import {
-  QUERY_LOG,
-  QUERY_CACHE,
-  PART_LOG,
   BACKUP_LOG,
+  PART_LOG,
+  QUERY_CACHE,
+  QUERY_LOG,
   ZOOKEEPER,
 } from './table-notes'
+import { describe, expect, it } from 'bun:test'
 
 describe('table-notes constants', () => {
   describe('QUERY_LOG', () => {

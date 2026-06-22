@@ -19,6 +19,8 @@
  *     content, to avoid hard-coupling to table-guidance internals).
  */
 
+import type { CardError, CardErrorVariant } from '@/lib/card-error-utils'
+
 import { describe, expect, it } from 'bun:test'
 import { ApiErrorType } from '@/lib/api/types'
 import {
@@ -36,7 +38,6 @@ import {
   shouldShowRetryButton,
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
-import type { CardError, CardErrorVariant } from '@/lib/card-error-utils'
 
 // ---------------------------------------------------------------------------
 // Helpers

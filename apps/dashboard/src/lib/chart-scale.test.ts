@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'bun:test'
 import {
   analyzeDataForLogScale,
   getYAxisDomain,
   resolveYAxisScale,
 } from './chart-scale'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // analyzeDataForLogScale

@@ -7,8 +7,8 @@
 
 import {
   LONG_RUNNING_THRESHOLD_SECONDS,
-  STUCK_THRESHOLD_SECONDS,
   mutationsConfig,
+  STUCK_THRESHOLD_SECONDS,
 } from './mutations'
 import { describe, expect, test } from 'bun:test'
 import { ColumnFormat } from '@/types/column-format'

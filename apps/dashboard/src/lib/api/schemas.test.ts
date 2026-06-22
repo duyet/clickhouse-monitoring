@@ -5,7 +5,6 @@
  * invalid inputs are rejected, transforms apply, and edge cases hold.
  */
 
-import { describe, expect, test } from 'bun:test'
 import {
   ActionSchema,
   BaseRequestSchema,
@@ -18,6 +17,7 @@ import {
   QuerySettingsActionSchema,
   TableRequestSchema,
 } from './schemas'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // HostIdSchema

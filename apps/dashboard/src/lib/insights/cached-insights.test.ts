@@ -5,13 +5,14 @@
  * Uses a simple in-memory localStorage mock injected via globalThis.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import type { InsightCard } from './types'
+
 import {
   clearCachedInsights,
   loadCachedInsights,
   saveCachedInsights,
 } from './cached-insights'
-import type { InsightCard } from './types'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Minimal in-memory localStorage mock

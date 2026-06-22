@@ -1,5 +1,3 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-
 import {
   getPeerDBConfig,
   isPeerDBEnabled,
@@ -7,6 +5,7 @@ import {
   peerdbFetch,
   readNonNegativeIntEnv,
 } from './peerdb-config'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Helpers

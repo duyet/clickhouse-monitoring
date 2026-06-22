@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-
 import { getServerAlertConfig } from './server-alert-config'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 const ENV_KEYS = [
   'HEALTH_ALERT_ENABLED',

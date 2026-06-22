@@ -1,12 +1,13 @@
-import { describe, it, expect } from 'bun:test'
 import type { FetchDataError } from '@chm/clickhouse-client'
+
 import {
   formatErrorMessage,
   formatErrorTitle,
-  shouldDisplayError,
   getErrorDocumentation,
   getErrorVariant,
+  shouldDisplayError,
 } from './error-utils'
+import { describe, expect, it } from 'bun:test'
 
 // Helper to build a minimal FetchDataError
 function mkError(

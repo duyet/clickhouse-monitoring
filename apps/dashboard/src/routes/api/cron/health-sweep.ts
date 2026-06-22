@@ -26,8 +26,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { env } from 'cloudflare:workers'
 import { error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
-import { runHealthSweep } from '@/lib/health/server-sweep'
 import { secretsMatch } from '@/lib/auth/providers/constant-time'
+import { runHealthSweep } from '@/lib/health/server-sweep'
 
 function isAuthorized(request: Request): boolean {
   const bindings = env as Record<string, string | undefined>

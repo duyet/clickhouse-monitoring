@@ -1,11 +1,11 @@
-import { describe, it, expect, afterEach } from 'bun:test'
 import {
+  getEnvironment,
   isDevelopment,
   isProduction,
   isTest,
   shouldShowDetailedErrors,
-  getEnvironment,
 } from './env-utils'
+import { afterEach, describe, expect, it } from 'bun:test'
 
 const originalNodeEnv = process.env.NODE_ENV
 

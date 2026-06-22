@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import {
-  saveDashboard,
-  loadDashboard,
-  listDashboards,
   deleteDashboard,
+  listDashboards,
+  loadDashboard,
+  saveDashboard,
 } from './dashboard-storage'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 const STORAGE_KEY = 'clickhouse-monitor-dashboards'
 
@@ -13,9 +13,7 @@ function makeLocalStorageMock() {
   const store: Record<string, string> = {}
   return {
     getItem(key: string): string | null {
-      return Object.prototype.hasOwnProperty.call(store, key)
-        ? store[key]
-        : null
+      return Object.hasOwn(store, key) ? store[key] : null
     },
     setItem(key: string, value: string): void {
       store[key] = value
@@ -38,11 +36,11 @@ function makeLocalStorageMock() {
 describe('dashboard-storage — SSR guard', () => {
   it('returns empty list when window is undefined', () => {
     // Bun runs in Node; window is undefined by default
-    // @ts-ignore
+    // @ts-expect-error
     const savedWindow = globalThis.window
-    // @ts-ignore
+    // @ts-expect-error
     delete globalThis.window
-    // @ts-ignore
+    // @ts-expect-error
     delete globalThis.localStorage
 
     try {
@@ -52,7 +50,7 @@ describe('dashboard-storage — SSR guard', () => {
       expect(() => saveDashboard('x', ['a'])).not.toThrow()
       expect(() => deleteDashboard('x')).not.toThrow()
     } finally {
-      // @ts-ignore
+      // @ts-expect-error
       globalThis.window = savedWindow
     }
   })
@@ -63,16 +61,16 @@ describe('dashboard-storage — with localStorage mock', () => {
 
   beforeEach(() => {
     lsMock = makeLocalStorageMock()
-    // @ts-ignore
+    // @ts-expect-error
     globalThis.window = globalThis
-    // @ts-ignore
+    // @ts-expect-error
     globalThis.localStorage = lsMock
   })
 
   afterEach(() => {
-    // @ts-ignore
+    // @ts-expect-error
     delete globalThis.window
-    // @ts-ignore
+    // @ts-expect-error
     delete globalThis.localStorage
   })
 

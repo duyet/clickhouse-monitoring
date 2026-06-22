@@ -1,13 +1,12 @@
-import { describe, expect, test } from 'bun:test'
-
 import type { QueryConfig } from '@/types/query-config'
 
 import {
-  TABLE_RESULT_OVERFLOW_MODE,
-  TABLE_RESULT_ROW_LIMIT,
   capTableResultRows,
   getTableClickHouseSettings,
+  TABLE_RESULT_OVERFLOW_MODE,
+  TABLE_RESULT_ROW_LIMIT,
 } from './table-query-settings'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Constants

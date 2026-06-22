@@ -6,10 +6,6 @@
  * columnFormats, and versioned-sql structure.
  */
 
-import { describe, expect, test } from 'bun:test'
-
-import { ColumnFormat } from '@/types/column-format'
-
 import {
   anomalyQueries,
   anomalySummaryConfig,
@@ -20,6 +16,8 @@ import {
   queryCountBaselineConfig,
   replicationLagBaselineConfig,
 } from './anomaly-queries'
+import { describe, expect, test } from 'bun:test'
+import { ColumnFormat } from '@/types/column-format'
 
 // ---------------------------------------------------------------------------
 // Helpers

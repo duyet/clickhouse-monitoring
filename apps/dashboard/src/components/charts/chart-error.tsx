@@ -1,6 +1,6 @@
 import { Info, RefreshCw } from 'lucide-react'
-import { Suspense, lazy, useState } from 'react'
 
+import { lazy, Suspense, useState } from 'react'
 import { chartCard } from '@/components/charts/chart-card-styles'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'

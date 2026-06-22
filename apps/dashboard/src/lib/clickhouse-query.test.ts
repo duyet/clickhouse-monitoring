@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'bun:test'
-
 import {
   applyInterval,
   buildTimeFilter,
@@ -8,6 +6,7 @@ import {
   nowOrToday,
   withQueryParams,
 } from './clickhouse-query'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // applyInterval
@@ -263,7 +262,7 @@ describe('withQueryParams', () => {
     const parts = result.split(';\n')
     const queryPart = parts[parts.length - 1]
     // dedent strips leading common whitespace
-    expect(queryPart).not.toMatch(/^      /)
+    expect(queryPart).not.toMatch(/^ {6}/)
   })
 
   test('null param is serialised without quotes', () => {

@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'bun:test'
 import {
-  TABLE_GUIDANCE,
-  getTableGuidance,
   getGuidanceForMissingTables,
+  getTableGuidance,
+  TABLE_GUIDANCE,
   type TableGuidance,
 } from './table-guidance'
+import { describe, expect, it } from 'bun:test'
 
 describe('TABLE_GUIDANCE', () => {
   it('is a non-empty record', () => {
@@ -36,9 +36,7 @@ describe('TABLE_GUIDANCE', () => {
       'system.part_log',
     ]
     for (const table of expected) {
-      expect(Object.prototype.hasOwnProperty.call(TABLE_GUIDANCE, table)).toBe(
-        true
-      )
+      expect(Object.hasOwn(TABLE_GUIDANCE, table)).toBe(true)
     }
   })
 

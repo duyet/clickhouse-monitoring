@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'bun:test'
-
 import {
   explorerAllDependenciesConfig,
   explorerDatabaseDependenciesConfig,
@@ -8,6 +6,7 @@ import {
   explorerDictionarySourceConfig,
   explorerTableDependenciesConfig,
 } from './dependencies'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // explorerDatabaseDependenciesConfig

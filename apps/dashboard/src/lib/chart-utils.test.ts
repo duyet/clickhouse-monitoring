@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'bun:test'
-import { pivotRows } from './chart-utils'
 import type { RawRow } from './chart-utils'
+
+import { pivotRows } from './chart-utils'
+import { describe, expect, it } from 'bun:test'
 
 describe('pivotRows', () => {
   it('returns empty pivoted and categories for empty input', () => {
@@ -47,7 +48,7 @@ describe('pivotRows', () => {
     const { pivoted, categories } = pivotRows(rows)
     // metric is added to the set, but value is not placed on entry
     expect(categories).toEqual(['cpu'])
-    expect(Object.prototype.hasOwnProperty.call(pivoted[0], 'cpu')).toBe(false)
+    expect(Object.hasOwn(pivoted[0], 'cpu')).toBe(false)
     expect(pivoted[0].event_time).toBe('2024-01-01 00:00:00')
   })
 

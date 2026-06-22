@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'bun:test'
-import { getErrorMarkdown } from './error-markdown'
 import type { CardError } from './card-error-utils'
+
+import { getErrorMarkdown } from './error-markdown'
+import { describe, expect, it } from 'bun:test'
 
 // Helper: build a plain Error as CardError
 function makeError(message: string): CardError {

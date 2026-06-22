@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test'
 import { getResponsiveUptimeLabels } from './uptime-format'
+import { describe, expect, test } from 'bun:test'
 
 describe('getResponsiveUptimeLabels', () => {
   // Empty / blank input

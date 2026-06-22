@@ -11,8 +11,8 @@
  * must never appear in the sanitized string returned to the client.
  */
 
-import { describe, expect, test } from 'bun:test'
 import { SANITIZED_MESSAGES, sanitizeClickHouseError } from '../sanitize-error'
+import { describe, expect, test } from 'bun:test'
 
 describe('sanitizeClickHouseError — bucket classification', () => {
   test('maps "Table does not exist" to NOT_FOUND', () => {

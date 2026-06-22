@@ -4,7 +4,6 @@
  * Mocks localStorage via globalThis to cover SSR guard, add/remove/check
  * dismissed, malformed JSON fallback, and all exported functions.
  */
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import {
   clearDismissedNotifications,
@@ -16,6 +15,7 @@ import {
   isNotificationDismissed,
   type Notification,
 } from './dismissed-notifications'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Minimal localStorage stub
