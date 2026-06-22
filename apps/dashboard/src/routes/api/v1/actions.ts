@@ -13,6 +13,7 @@ import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
 import { ErrorLogger, log } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { sanitizeClickHouseError } from '@/lib/api/error-handler/sanitize-error'
 import { quoteTableIdentifier } from '@/lib/api/shared/sql-identifier'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
@@ -90,7 +91,7 @@ async function handleKillQuery(
     })
     return {
       success: false,
-      message: `Failed to kill query ${queryId}: ${error.message}`,
+      message: `Failed to kill query ${queryId}: ${sanitizeClickHouseError(error.message)}`,
     }
   }
 
@@ -126,7 +127,7 @@ async function handleOptimizeTable(
     })
     return {
       success: false,
-      message: `Failed to optimize table ${table}: ${error.message}`,
+      message: `Failed to optimize table ${table}: ${sanitizeClickHouseError(error.message)}`,
     }
   }
 
@@ -151,7 +152,7 @@ async function handleQuerySettings(
     })
     return {
       success: false,
-      message: `Failed to get query settings ${queryId}: ${error.message}`,
+      message: `Failed to get query settings ${queryId}: ${sanitizeClickHouseError(error.message)}`,
     }
   }
 
