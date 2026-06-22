@@ -184,7 +184,7 @@ describe('fetchDataWithHost', () => {
 
     expect((capturedArgs as Record<string, unknown>).hostId).toBe(2)
     expect((capturedArgs as Record<string, unknown>).query).toBe('SELECT 1')
-    expect((result as Record<string, unknown>).data).toEqual([{ row: 1 }])
+    expect((result as unknown as Record<string, unknown>).data).toEqual([{ row: 1 }])
     expect(logErrorCalls).toHaveLength(0)
   })
 
@@ -209,7 +209,7 @@ describe('fetchDataWithHost', () => {
     let capturedHostId: unknown
 
     fetchDataImpl = async (args) => {
-      capturedHostId = (args as Record<string, unknown>).hostId
+      capturedHostId = (args as unknown as Record<string, unknown>).hostId
       return {
         data: [],
         metadata: { queryId: '', duration: 0, rows: 0, host: '' },
@@ -226,7 +226,7 @@ describe('fetchDataWithHost', () => {
     let capturedHostId: unknown
 
     fetchDataImpl = async (args) => {
-      capturedHostId = (args as Record<string, unknown>).hostId
+      capturedHostId = (args as unknown as Record<string, unknown>).hostId
       return {
         data: [],
         metadata: { queryId: '', duration: 0, rows: 0, host: '' },
@@ -243,7 +243,7 @@ describe('fetchDataWithHost', () => {
     let capturedFormat: unknown
 
     fetchDataImpl = async (args) => {
-      capturedFormat = (args as Record<string, unknown>).format
+      capturedFormat = (args as unknown as Record<string, unknown>).format
       return {
         data: [],
         metadata: { queryId: '', duration: 0, rows: 0, host: '' },
@@ -260,7 +260,7 @@ describe('fetchDataWithHost', () => {
     let capturedFormat: unknown
 
     fetchDataImpl = async (args) => {
-      capturedFormat = (args as Record<string, unknown>).format
+      capturedFormat = (args as unknown as Record<string, unknown>).format
       return {
         data: [],
         metadata: { queryId: '', duration: 0, rows: 0, host: '' },
@@ -280,8 +280,8 @@ describe('fetchDataWithHost', () => {
 
     const result = await fetchDataWithHost({ query: 'SELECT 1' })
 
-    expect((result as Record<string, unknown>).data).toBeNull()
-    const err = (result as Record<string, unknown>).error as Record<
+    expect((result as unknown as Record<string, unknown>).data).toBeNull()
+    const err = (result as unknown as Record<string, unknown>).error as unknown as Record<
       string,
       unknown
     >
@@ -291,7 +291,7 @@ describe('fetchDataWithHost', () => {
     expect(details.originalError).toBeInstanceOf(Error)
     expect((details.originalError as Error).message).toBe('connection refused')
 
-    const meta = (result as Record<string, unknown>).metadata as Record<
+    const meta = (result as unknown as Record<string, unknown>).metadata as Record<
       string,
       unknown
     >
@@ -312,7 +312,7 @@ describe('fetchDataWithHost', () => {
 
     const result = await fetchDataWithHost({ query: 'SELECT 1' })
 
-    const err = (result as Record<string, unknown>).error as Record<
+    const err = (result as unknown as Record<string, unknown>).error as unknown as Record<
       string,
       unknown
     >
