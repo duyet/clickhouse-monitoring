@@ -21,3 +21,34 @@ Plans 001–017 and 019–023 were completed, merged to `main`, and their plan f
 - **`[ARCH-02]` (Independent dashboard-tsr configuration)**: Rejected. This was a documented, intentional decision during the migration to isolate the Vite 8 toolchain lockfile (see `tsr-migration-roadmap.md`). Now moot — the app is `apps/dashboard`.
 - **`[SEC-02]` (Hardcoded Secrets in `.env.local`)**: Rejected. Storing development keys in local-only, gitignored `.env.local` files is standard development configuration practice; no production secrets are tracked in Git.
 - **`[MIGRATE-02]` (Root Dockerfile builds legacy Next.js app)**: Rejected. Switched to building the primary `apps/dashboard` (TanStack Start) app in merge commit `03a3c4461`.
+
+---
+
+# Run 2 — improve audit 2026-06-22 (planned against `ab64addc0`)
+
+Standard-depth audit weighted toward `apps/dashboard/src`. Verification gates (bun monorepo): `cd apps/dashboard && bun run build` (Vite + `tsc --noEmit`), `bun run type-check:test` (test-only tsc — catches what `bun test` misses), `bun test <path>`, `bun run lint` (Biome).
+
+## Execution order & status
+
+| Plan | Title | Priority | Effort | Depends on | Status |
+|------|-------|----------|--------|------------|--------|
+| [024](024-cron-secret-constant-time.md) | Constant-time CRON_SECRET comparison in health-sweep | P1 | S | — | TODO |
+| [025](025-clickhouse-error-sanitizer.md) | Centralized ClickHouse error sanitizer for API responses | P1 | M | — | TODO |
+| [026](026-overview-render-memoization.md) | Memoize Overview render (OverviewChart + tab filters) | P2 | S | — | TODO |
+| [027](027-conversation-export.md) | Conversation export (JSONL, all storage backends) | P3 | M | — | TODO |
+
+No hard dependencies among 024–027. Do 024 (cheapest) then 025 (highest-value security). 026 is an isolated perf win. 027 is an additive feature.
+
+## Run-2 direction findings (maintainer decides)
+
+- **Conversation export** (planned as 027): 5 storage backends read/write but no export path — data is trapped per-backend. Grounded in `lib/conversation-store/*`.
+- **Registry resilience spike** (not planned): `lib/api/__tests__/registry-completeness.test.ts` records three past silent registry collapses (#1441/#1443/#1444). A boot-time floor-count assertion would catch partial regressions. Needs a spike on init order first.
+- **`ACTIONS_FEATURE_PERMISSION` stub** (not planned): gate imported in `routes/api/v1/agent.ts` with no `/api/v1/actions` rollout. Clarify or remove — maintainer call.
+
+## Run-2 findings considered and rejected
+
+- **PERF: memoize `running-queries-charts.tsx` / `keeper-node-cards.tsx`** — already done (PRs merged 2026-06-22). Audit subagent re-flagged stale code.
+- **CORRECTNESS: `useDebouncedCallback` effect-deps bug** (`lib/hooks/use-debounce.ts:95`) — real bug but the hook has **zero call sites**. Delete as dead code or fix-on-first-use; not worth a fix plan.
+- **TECHDEBT: consolidate 3 CSV impls** — intentionally divergent escaping; consolidating risks output regressions (same class of trap as the `formatDuration` consolidation). Needs golden-file tests first; low value.
+- **TECHDEBT: 4 duplicated localStorage stores** — real duplication but each has different validation (enum/number/array-cap); a factory needs per-store validators. Deferred until a 5th store appears.
+- **CORRECTNESS: `memory-cache.ts` cleanup-timer leak** — `setInterval().unref()`; couldn't confirm consumers skip `dispose()`. LOW confidence; investigate before planning.
