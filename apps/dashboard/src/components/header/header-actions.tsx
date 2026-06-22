@@ -74,7 +74,12 @@ export const HeaderActions = function HeaderActions({
           suppressHydrationWarning
         />
       ) : (
-        <Button variant="ghost" size="icon" className="inline-flex">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="inline-flex"
+          aria-label="Toggle theme"
+        >
           <Sun className="size-4" />
         </Button>
       )}

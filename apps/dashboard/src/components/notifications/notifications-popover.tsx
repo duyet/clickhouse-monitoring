@@ -131,6 +131,7 @@ export const NotificationsPopover = function NotificationsPopover() {
             size="icon"
             className="size-7"
             onClick={() => setIsOpen(false)}
+            aria-label="Close notifications"
           >
             <X className="size-3.5" />
           </Button>

@@ -390,6 +390,7 @@ export function RequestInfoContent({
                       size="icon"
                       className="size-8 rounded-lg"
                       onClick={() => handleCopy(displaySQL)}
+                      aria-label={copied ? 'Copied!' : 'Copy SQL'}
                     >
                       {copied ? (
                         <Check className="size-4 text-green-500" />
