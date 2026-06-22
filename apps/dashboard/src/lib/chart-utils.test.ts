@@ -128,7 +128,6 @@ describe('pivotRows', () => {
 
   it('blocks __proto__ metric key to prevent prototype pollution', () => {
     const rows: RawRow[] = [
-      // @ts-expect-error intentional prototype pollution test
       { event_time: 't1', metric: '__proto__', avg_value: 1 },
       { event_time: 't1', metric: 'cpu', avg_value: 42 },
     ]
