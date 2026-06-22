@@ -32,9 +32,9 @@ Standard-depth audit weighted toward `apps/dashboard/src`. Verification gates (b
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| [024](024-cron-secret-constant-time.md) | Constant-time CRON_SECRET comparison in health-sweep | P1 | S | — | TODO |
-| [025](025-clickhouse-error-sanitizer.md) | Centralized ClickHouse error sanitizer for API responses | P1 | M | — | TODO |
-| [026](026-overview-render-memoization.md) | Memoize Overview render (OverviewChart + tab filters) | P2 | S | — | TODO |
+| 024 | Constant-time CRON_SECRET comparison in health-sweep | P1 | S | — | DONE (#1893) |
+| 025 | Centralized ClickHouse error sanitizer for API responses | P1 | M | — | DONE (#1894) |
+| 026 | Memoize Overview render (OverviewChart + tab filters) | P2 | S | — | DONE (#1895) |
 | [027](027-conversation-export.md) | Conversation export (JSONL, all storage backends) | P3 | M | — | TODO |
 
 No hard dependencies among 024–027. Do 024 (cheapest) then 025 (highest-value security). 026 is an isolated perf win. 027 is an additive feature.

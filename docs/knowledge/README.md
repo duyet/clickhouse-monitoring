@@ -24,7 +24,8 @@ Agents discover knowledge in this order:
 
 | Category | Document | Type | Summary |
 |----------|----------|------|---------|
-| **Architecture** | [static-site-architecture.md](static-site-architecture.md) | decision | Fully static site, no SSR, client-side SWR, query-param routing |
+| **Architecture** | [static-site-architecture.md](static-site-architecture.md) | decision | TanStack Start + Cloudflare Worker; static shell prerendered, TanStack Query client-side, `?host=0` routing |
+| **Architecture** | [tsr-migration.md](tsr-migration.md) | decision | Next.js → TanStack Start migration rationale, tradeoffs, cutover (COMPLETE 2026-06-14) |
 | **Architecture** | [rust-wasm-performance.md](rust-wasm-performance.md) | decision | Rust/WASM benchmark: keep object transforms in TS, WASM for byte paths |
 | **Architecture** | [memory-optimization.md](memory-optimization.md) | reference | Memory optimization: pooling, memoization, cache limits, monitoring |
 | **Operations** | [deployment.md](deployment.md) | reference | Docker and Cloudflare Workers dual deployment guide |

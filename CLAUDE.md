@@ -84,7 +84,7 @@ Developer-facing docs live in `docs/knowledge/` as a linked knowledge graph. Eac
 
 | Category | Document | Summary |
 |----------|----------|---------|
-| Architecture | [static-site-architecture.md](docs/knowledge/static-site-architecture.md) | Fully static site, no SSR, SWR, query-param routing |
+| Architecture | [static-site-architecture.md](docs/knowledge/static-site-architecture.md) | TanStack Start + CF Worker; static shell, TanStack Query, `?host=0` routing |
 | Architecture | [rust-wasm-performance.md](docs/knowledge/rust-wasm-performance.md) | WASM benchmarks: keep object transforms in TS |
 | Architecture | [memory-optimization.md](docs/knowledge/memory-optimization.md) | Pooling, memoization, cache limits, monitoring |
 | Operations | [deployment.md](docs/knowledge/deployment.md) | Docker + Cloudflare Workers dual deployment |

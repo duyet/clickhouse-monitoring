@@ -18,9 +18,9 @@ lives at `apps/dashboard` (was `apps/dashboard-tsr` during the migration). Epic:
 
 ## Why / trade-offs
 
-The app is a **fully static SPA** (see [[static-site-architecture]]) — it deliberately
-avoids SSR/server-components, which is exactly what TanStack Start exists to provide. So
-the product value of the migration is ~zero; the justification is **engineering metrics**
+The pre-migration app was a **fully static Next.js SPA** — it deliberately
+avoided SSR/server-components, which is exactly what TanStack Start exists to provide. So
+the product value of the migration was ~zero; the justification is **engineering metrics**
 (build time/memory, bundle size, dependency count) and removing the OpenNext layer. The
 CF target is simpler: `@cloudflare/vite-plugin` → workerd directly, **no OpenNext, no
 KV/R2/D1 incremental-cache layer**.

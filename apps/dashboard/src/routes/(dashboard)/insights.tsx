@@ -2,12 +2,15 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { ChartsSection } from './-insights/charts-section'
 import { StatsGrid } from './-insights/stats-grid'
+import { ClientOnly } from '@/components/client-only'
 import {
   DATE_RANGE_PRESETS,
   DateRangeSelector,
   RANGE_OPTIONS,
   useDateRange,
 } from '@/components/date-range'
+import { InsightsPanel } from '@/components/insights/insights-panel'
+import { Separator } from '@/components/ui/separator'
 import { useHostId } from '@/lib/swr'
 
 function InsightsPage() {
@@ -40,6 +43,13 @@ function InsightsPage() {
           alwaysVisible
         />
       </div>
+
+      <ClientOnly fallback={null}>
+        <InsightsPanel hostId={hostId} />
+      </ClientOnly>
+
+      <Separator className="my-1" />
+
       <StatsGrid hostId={hostId} lastHours={lastHours} />
       <ChartsSection hostId={hostId} />
     </div>
