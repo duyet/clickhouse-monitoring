@@ -87,11 +87,10 @@ describe('loadAlertSettings — browser environment', () => {
 
   beforeEach(() => {
     ls = makeLocalStorage()
-    // @ts-expect-error — shimming window for tests
     globalThis.window = {
       localStorage: ls,
-      dispatchEvent: () => {},
-    }
+      dispatchEvent: () => true,
+    } as unknown as Window & typeof globalThis
     Object.defineProperty(globalThis, 'localStorage', {
       value: ls,
       configurable: true,
@@ -180,16 +179,18 @@ describe('saveAlertSettings', () => {
   beforeEach(() => {
     ls = makeLocalStorage()
     dispatchedEvents = []
-    // @ts-expect-error — shimming window for tests
     globalThis.window = {
       localStorage: ls,
-      dispatchEvent: (event: Event) => dispatchedEvents.push(event),
+      dispatchEvent: (event: Event) => {
+        dispatchedEvents.push(event)
+        return true
+      },
       CustomEvent: class CustomEvent extends Event {
         constructor(type: string, _init?: EventInit) {
           super(type)
         }
       },
-    }
+    } as unknown as Window & typeof globalThis
     Object.defineProperty(globalThis, 'localStorage', {
       value: ls,
       configurable: true,
