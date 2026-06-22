@@ -1,0 +1,146 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+
+import { getServerAlertConfig } from './server-alert-config'
+
+const ENV_KEYS = [
+  'HEALTH_ALERT_ENABLED',
+  'HEALTH_ALERT_WEBHOOK_URL',
+  'HEALTH_ALERT_MIN_SEVERITY',
+] as const
+
+describe('getServerAlertConfig', () => {
+  let saved: Record<string, string | undefined> = {}
+
+  beforeEach(() => {
+    // Save current values so we can restore them after each test
+    for (const key of ENV_KEYS) {
+      saved[key] = process.env[key]
+      delete process.env[key]
+    }
+  })
+
+  afterEach(() => {
+    // Restore original env state
+    for (const key of ENV_KEYS) {
+      if (saved[key] === undefined) {
+        delete process.env[key]
+      } else {
+        process.env[key] = saved[key]
+      }
+    }
+    saved = {}
+  })
+
+  it('returns defaults when no env vars are set', () => {
+    const config = getServerAlertConfig()
+
+    expect(config.webhookEnabled).toBe(false)
+    expect(config.webhookUrl).toBe('')
+    // Invalid/missing env defaults to 'warning' in getServerAlertConfig
+    expect(config.minSeverity).toBe('warning')
+    // Server-side always overrides browserNotificationsEnabled to false
+    expect(config.browserNotificationsEnabled).toBe(false)
+  })
+
+  it('sets webhookEnabled=true when HEALTH_ALERT_ENABLED is "true"', () => {
+    process.env.HEALTH_ALERT_ENABLED = 'true'
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookEnabled).toBe(true)
+  })
+
+  it('keeps webhookEnabled=false when HEALTH_ALERT_ENABLED is "false"', () => {
+    process.env.HEALTH_ALERT_ENABLED = 'false'
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookEnabled).toBe(false)
+  })
+
+  it('keeps webhookEnabled=false when HEALTH_ALERT_ENABLED is an arbitrary string', () => {
+    process.env.HEALTH_ALERT_ENABLED = '1'
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookEnabled).toBe(false)
+  })
+
+  it('trims leading and trailing whitespace from webhook URL', () => {
+    process.env.HEALTH_ALERT_WEBHOOK_URL = '  https://hooks.slack.com/test  '
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookUrl).toBe('https://hooks.slack.com/test')
+  })
+
+  it('sets webhookUrl to empty string when env var is an empty string', () => {
+    process.env.HEALTH_ALERT_WEBHOOK_URL = ''
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookUrl).toBe('')
+  })
+
+  it('sets webhookUrl to empty string when env var is only whitespace', () => {
+    process.env.HEALTH_ALERT_WEBHOOK_URL = '   '
+
+    const config = getServerAlertConfig()
+
+    expect(config.webhookUrl).toBe('')
+  })
+
+  it('parses minSeverity "critical" correctly', () => {
+    process.env.HEALTH_ALERT_MIN_SEVERITY = 'critical'
+
+    const config = getServerAlertConfig()
+
+    expect(config.minSeverity).toBe('critical')
+  })
+
+  it('parses minSeverity "warning" correctly', () => {
+    process.env.HEALTH_ALERT_MIN_SEVERITY = 'warning'
+
+    const config = getServerAlertConfig()
+
+    expect(config.minSeverity).toBe('warning')
+  })
+
+  it('falls back to "warning" for an invalid minSeverity value', () => {
+    process.env.HEALTH_ALERT_MIN_SEVERITY = 'info'
+
+    const config = getServerAlertConfig()
+
+    expect(config.minSeverity).toBe('warning')
+  })
+
+  it('falls back to "warning" for an empty minSeverity env var', () => {
+    process.env.HEALTH_ALERT_MIN_SEVERITY = ''
+
+    const config = getServerAlertConfig()
+
+    expect(config.minSeverity).toBe('warning')
+  })
+
+  it('always returns browserNotificationsEnabled=false regardless of any default', () => {
+    // No env vars set — server-side must override regardless of DEFAULT_ALERT_SETTINGS
+    const config = getServerAlertConfig()
+
+    expect(config.browserNotificationsEnabled).toBe(false)
+  })
+
+  it('returns a complete AlertSettings shape with all required fields', () => {
+    process.env.HEALTH_ALERT_ENABLED = 'true'
+    process.env.HEALTH_ALERT_WEBHOOK_URL = 'https://example.com/hook'
+    process.env.HEALTH_ALERT_MIN_SEVERITY = 'critical'
+
+    const config = getServerAlertConfig()
+
+    expect(config).toEqual({
+      webhookEnabled: true,
+      webhookUrl: 'https://example.com/hook',
+      minSeverity: 'critical',
+      browserNotificationsEnabled: false,
+    })
+  })
+})
