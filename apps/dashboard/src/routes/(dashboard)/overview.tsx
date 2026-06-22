@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { OverviewChartConfig } from './-charts-config'
 
 import { OVERVIEW_TABS } from './-charts-config'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, memo, Suspense, useState, useMemo } from 'react'
 import { ClientOnly } from '@/components/client-only'
 import { InsightsPanel } from '@/components/insights/insights-panel'
 import { cardStyles } from '@/components/overview-charts/card-styles'
@@ -58,7 +58,7 @@ const OVERVIEW_CHART_CARD_CONTENT_CLASS_NAME =
 // / min-h-0 height cap that would clip the calendar).
 const BANNER_CHART_CARD_CONTENT_CLASS_NAME = 'flex flex-col px-4 pb-4 pt-0'
 
-function OverviewChart({
+const OverviewChart = memo(function OverviewChart({
   chartConfig,
   hostId,
   banner,
@@ -89,7 +89,7 @@ function OverviewChart({
       {...(chartConfig.props ?? {})}
     />
   )
-}
+})
 
 const LazyTabContent = function LazyTabContent({
   charts,
@@ -107,8 +107,14 @@ const LazyTabContent = function LazyTabContent({
   //
   // `fullWidth` charts render as their own auto-height banner rows ABOVE the
   // fixed-height grid so a tall hero card (the Activity Heatmap) isn't clipped.
-  const banners = charts.filter((chart) => chart.fullWidth)
-  const gridCharts = charts.filter((chart) => !chart.fullWidth)
+  const banners = useMemo(
+    () => charts.filter((chart) => chart.fullWidth),
+    [charts]
+  )
+  const gridCharts = useMemo(
+    () => charts.filter((chart) => !chart.fullWidth),
+    [charts]
+  )
 
   return (
     <div className="flex flex-col gap-3">
