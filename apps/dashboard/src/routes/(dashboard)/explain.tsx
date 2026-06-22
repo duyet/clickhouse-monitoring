@@ -391,13 +391,15 @@ function ExplainContent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Tabs value={mode} onValueChange={setMode}>
-            <TabsList>
-              {EXPLAIN_MODES.map((m) => (
-                <TabsTrigger key={m.value} value={m.value}>
-                  {m.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList>
+                {EXPLAIN_MODES.map((m) => (
+                  <TabsTrigger key={m.value} value={m.value}>
+                    {m.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
           </Tabs>
 
           {!mode && (
@@ -432,13 +434,15 @@ function ExplainContent() {
 
       {statements.length > 1 ? (
         <Tabs value={activeQuery} onValueChange={setActiveQuery}>
-          <TabsList>
-            {statements.map((_, i) => (
-              <TabsTrigger key={i} value={String(i)}>
-                Query {i + 1}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList>
+              {statements.map((_, i) => (
+                <TabsTrigger key={i} value={String(i)}>
+                  Query {i + 1}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
           {statements.map((stmt, i) => (
             <TabsContent key={i} value={String(i)} className="mt-4">
               <SingleExplain
