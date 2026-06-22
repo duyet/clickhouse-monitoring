@@ -12,7 +12,10 @@ export interface AlertSettings {
 export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   webhookUrl: '',
   webhookEnabled: false,
-  browserNotificationsEnabled: false,
+  // Enabled by default so a fresh install surfaces critical alerts in-app
+  // without any configuration. The browser Notification API is only invoked
+  // when permission is already 'granted' (see fireBrowserNotification).
+  browserNotificationsEnabled: true,
   minSeverity: 'critical',
 }
 
