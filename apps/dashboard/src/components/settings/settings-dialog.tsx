@@ -38,7 +38,7 @@ export function SettingsDialog({
       {!isControlled && (
         <DialogTrigger asChild>
           {children || (
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="Open settings">
               <Settings className="size-4" />
             </Button>
           )}

@@ -23,6 +23,7 @@ export function ExplorerLayout() {
             variant="ghost"
             size="icon"
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open explorer sidebar"
           >
             <MenuIcon className="size-4" />
           </Button>
