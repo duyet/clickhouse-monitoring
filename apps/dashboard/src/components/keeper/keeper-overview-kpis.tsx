@@ -156,9 +156,14 @@ export const KeeperOverviewKpis = memo(function KeeperOverviewKpis({
           label="Data Size"
           value={hasSummary ? s!.readable_data_size || DASH : DASH}
           sub={
-            hasSummary
-              ? `${Number(s!.znode_count).toLocaleString()} znodes`
-              : undefined
+            hasSummary ? (
+              <>
+                <span className="tabular-nums">
+                  {Number(s!.znode_count).toLocaleString()}
+                </span>{' '}
+                znodes
+              </>
+            ) : undefined
           }
           isLoading={summary.isLoading}
         />
