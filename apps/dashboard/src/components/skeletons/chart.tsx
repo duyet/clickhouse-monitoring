@@ -225,7 +225,7 @@ export const ChartSkeleton = function ChartSkeleton({
       className={cn(
         chartCard.base,
         chartCard.variants.normal,
-        'min-h-[160px]',
+        'min-h-[200px]',
         className
       )}
       role="status"
