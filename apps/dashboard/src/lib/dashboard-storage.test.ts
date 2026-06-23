@@ -36,7 +36,6 @@ function makeLocalStorageMock() {
 describe('dashboard-storage — SSR guard', () => {
   it('returns empty list when window is undefined', () => {
     // Bun runs in Node; window is undefined by default
-    // @ts-expect-error
     const savedWindow = globalThis.window
     // @ts-expect-error
     delete globalThis.window
@@ -50,7 +49,6 @@ describe('dashboard-storage — SSR guard', () => {
       expect(() => saveDashboard('x', ['a'])).not.toThrow()
       expect(() => deleteDashboard('x')).not.toThrow()
     } finally {
-      // @ts-expect-error
       globalThis.window = savedWindow
     }
   })
@@ -63,7 +61,6 @@ describe('dashboard-storage — with localStorage mock', () => {
     lsMock = makeLocalStorageMock()
     // @ts-expect-error
     globalThis.window = globalThis
-    // @ts-expect-error
     globalThis.localStorage = lsMock
   })
 
