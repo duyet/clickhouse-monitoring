@@ -2,8 +2,8 @@ apiVersion: v2
 name: chmonitor
 description: A Helm chart for the chmonitor dashboard
 type: application
-version: 0.2.10
-appVersion: 0.2.10
+version: 0.2.11
+appVersion: 0.2.11
 home: https://github.com/duyet/clickhouse-monitoring
 sources:
   - https://github.com/duyet/clickhouse-monitoring

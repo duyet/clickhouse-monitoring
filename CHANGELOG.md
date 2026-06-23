@@ -5,6 +5,91 @@ entries are generated automatically by [release-please](.github/workflows/releas
 from conventional commits; the `Unreleased` section below is a human-curated
 preview of the next release.
 
+## [0.2.11](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.10...v0.2.11) (2026-06-23)
+
+
+### ✨ Features
+
+* **agent:** persist MCP server config to localStorage ([#1833](https://github.com/duyet/clickhouse-monitoring/issues/1833)) ([723f7b3](https://github.com/duyet/clickhouse-monitoring/commit/723f7b33b65420ecb607ebb843bff4efab6dad67))
+* **ai-insights:** redesign panel + persist & auto-load insights + settings link ([#1819](https://github.com/duyet/clickhouse-monitoring/issues/1819)) ([bc9d633](https://github.com/duyet/clickhouse-monitoring/commit/bc9d633bb7163890d8b2a88fde35ef0d508b4f30))
+* **alerts:** browser notifications on by default (out-of-box, opt-out) ([#1858](https://github.com/duyet/clickhouse-monitoring/issues/1858)) ([6a21a28](https://github.com/duyet/clickhouse-monitoring/commit/6a21a2846d7ead4e15c5aba5f9120816408ff81c))
+* **auth:** add 'trusted' reverse-proxy auth mode with forwarded identity ([#1755](https://github.com/duyet/clickhouse-monitoring/issues/1755)) ([094391a](https://github.com/duyet/clickhouse-monitoring/commit/094391a60df8c99dd0fc371c85932c32e85de587))
+* **auth:** show "via trusted proxy" source label in sidebar user menu ([#1824](https://github.com/duyet/clickhouse-monitoring/issues/1824)) ([3193f89](https://github.com/duyet/clickhouse-monitoring/commit/3193f895998e1d2bce4393d213c2bc3bfda9803b))
+* **expensive-queries:** total-time sort, metric bars, and cluster-load summary ([#1827](https://github.com/duyet/clickhouse-monitoring/issues/1827)) ([f7d3830](https://github.com/duyet/clickhouse-monitoring/commit/f7d3830bcc28f1e0f1b8e9922a8f3654249b1515))
+* **explain:** syntax highlighting, FORMAT/semicolon tolerance, multi-query tabs ([#1826](https://github.com/duyet/clickhouse-monitoring/issues/1826)) ([41e8e8b](https://github.com/duyet/clickhouse-monitoring/commit/41e8e8bc984bd5ee3d7979c717ff9af9c90d28e3))
+* **insights-settings:** redesign page — searchable model picker w/ provider icons + docs links ([#1820](https://github.com/duyet/clickhouse-monitoring/issues/1820)) ([8be8555](https://github.com/duyet/clickhouse-monitoring/commit/8be8555133ca8ea9b6c393b19b615e760ce3255f))
+* **insights:** add AI insights panel to /insights page, merge plans into docs ([2ba9fe4](https://github.com/duyet/clickhouse-monitoring/commit/2ba9fe49180c9fe917009363a044378f2d3514ea))
+* **insights:** AI Insights settings page + panel link, wired into generation ([#1782](https://github.com/duyet/clickhouse-monitoring/issues/1782)) ([6bfd0aa](https://github.com/duyet/clickhouse-monitoring/commit/6bfd0aa34d6eb37af5d9ecbd595890be17a9a152))
+* **insights:** configurable AI insight generation (model, prompt style, enrichment) ([#1767](https://github.com/duyet/clickhouse-monitoring/issues/1767)) ([8ef2977](https://github.com/duyet/clickhouse-monitoring/commit/8ef2977a186dd4a5b1cd24c270acb2e6ed4cf3c8))
+* **insights:** global AI Insights header popover on every page ([#1783](https://github.com/duyet/clickhouse-monitoring/issues/1783)) ([c04f2fa](https://github.com/duyet/clickhouse-monitoring/commit/c04f2fa1653d3e4add070e4c1259dc0798f9d6da))
+* **insights:** pluggable AI Insights storage backends ([#1797](https://github.com/duyet/clickhouse-monitoring/issues/1797)) ([7cdd146](https://github.com/duyet/clickhouse-monitoring/commit/7cdd146a6d175aad8d74c185c5b2858896b1a08b))
+* **insights:** preview generation with current settings on the settings page ([#1786](https://github.com/duyet/clickhouse-monitoring/issues/1786)) ([039a5d2](https://github.com/duyet/clickhouse-monitoring/commit/039a5d2c6dae1312dd290fb6d77e9dcf7075c9ec))
+* **insights:** redesign settings — templates, icon grid, side-by-side live example ([#1790](https://github.com/duyet/clickhouse-monitoring/issues/1790)) ([5f2e3dc](https://github.com/duyet/clickhouse-monitoring/commit/5f2e3dc5e2cd78480b94faaba54d81077e4e55c7))
+* **insights:** surface enrichment availability + default model in settings ([#1787](https://github.com/duyet/clickhouse-monitoring/issues/1787)) ([463c825](https://github.com/duyet/clickhouse-monitoring/commit/463c8255e3da190487f75a84ba8b448eb29f7029))
+* **seo:** complete docs icon set + add robots.txt to docs & dashboard ([#1837](https://github.com/duyet/clickhouse-monitoring/issues/1837)) ([0062a09](https://github.com/duyet/clickhouse-monitoring/commit/0062a09d7c49ab5dad549c4f13f4a708154d0e5a))
+* **seo:** keyword-rich descriptions + schema.org structured data ([#1838](https://github.com/duyet/clickhouse-monitoring/issues/1838)) ([e4f832f](https://github.com/duyet/clickhouse-monitoring/commit/e4f832f00c442a9791384788f5a467afeff21ba2))
+* **sql-console:** multi-query results, database picker, tree sidebar, buttons below editor ([#1822](https://github.com/duyet/clickhouse-monitoring/issues/1822)) ([e5de0a8](https://github.com/duyet/clickhouse-monitoring/commit/e5de0a878e17af878870fd9567f36de17ac5a603))
+* **ui:** overview design pass — palette, cards, chart colors, heatmap ([#1836](https://github.com/duyet/clickhouse-monitoring/issues/1836)) ([b148009](https://github.com/duyet/clickhouse-monitoring/commit/b14800987ecee5663df5886a9c12c0f8c56e1a34))
+
+
+### 🐛 Bug Fixes
+
+* **a11y:** add aria-labels to icon-only buttons ([#1874](https://github.com/duyet/clickhouse-monitoring/issues/1874)) ([cf930ab](https://github.com/duyet/clickhouse-monitoring/commit/cf930abafca2a2456a1821108eb17ebb0b97e1f7))
+* **agent-api:** gate unconditional debug logs behind AGENT_DEBUG_LOGS ([#1791](https://github.com/duyet/clickhouse-monitoring/issues/1791)) ([e15cd7a](https://github.com/duyet/clickhouse-monitoring/commit/e15cd7a5653e6d4dda55c5182fc2067a76a2b655))
+* **agent:** explain_query use EXPLAIN PLAN indexes=1 for indexes mode ([#1781](https://github.com/duyet/clickhouse-monitoring/issues/1781)) ([25795e5](https://github.com/duyet/clickhouse-monitoring/commit/25795e5b6c76f79b705e1d03d55d66ff0588d90d))
+* **agent:** explore_table_schema query valid system.parts columns ([#1780](https://github.com/duyet/clickhouse-monitoring/issues/1780)) ([e8d6f6c](https://github.com/duyet/clickhouse-monitoring/commit/e8d6f6cb1e4b897427ba42ccb18dfa53668ddadb))
+* **agents:** wire MCP panel status to real /api/v1/mcp/info data ([#1831](https://github.com/duyet/clickhouse-monitoring/issues/1831)) ([03ca2d8](https://github.com/duyet/clickhouse-monitoring/commit/03ca2d858515256e3549bbe1fc48678d2c90f2ff))
+* **api:** gate /api/health metadata on genuine auth, not public-read ([#1834](https://github.com/duyet/clickhouse-monitoring/issues/1834)) ([a61dfc6](https://github.com/duyet/clickhouse-monitoring/commit/a61dfc67120d11e320d613d71c52ec4e040cbee9))
+* **api:** harden actions/explain/explorer input & output handling ([#1785](https://github.com/duyet/clickhouse-monitoring/issues/1785)) ([4f1b4ea](https://github.com/duyet/clickhouse-monitoring/commit/4f1b4ea6ef8f90b7058816c48e2c388acf32ac85))
+* **api:** hide deployment metadata from anonymous /api/health callers ([#1829](https://github.com/duyet/clickhouse-monitoring/issues/1829)) ([f0905ee](https://github.com/duyet/clickhouse-monitoring/commit/f0905eef41fb9ae50169de35b31749d860c03cbc))
+* **api:** reject negative and fractional hostId at route boundary ([#1760](https://github.com/duyet/clickhouse-monitoring/issues/1760)) ([214389c](https://github.com/duyet/clickhouse-monitoring/commit/214389c094a0b664013c61241f5f9c3489070e09))
+* **api:** return 503/504 for unreachable ClickHouse upstream, not 500 ([#1840](https://github.com/duyet/clickhouse-monitoring/issues/1840)) ([2064493](https://github.com/duyet/clickhouse-monitoring/commit/2064493edb200585f9ab2d5f11aca6df7ba90cd1))
+* **api:** return 503/504 for unreachable ClickHouse upstream, not 500 ([#1841](https://github.com/duyet/clickhouse-monitoring/issues/1841)) ([1412df1](https://github.com/duyet/clickhouse-monitoring/commit/1412df1092a9eea440ace7023d2caf8034cafb14))
+* **auth:** gate sidebar identity on runtime auth provider, not build-time ([#1812](https://github.com/duyet/clickhouse-monitoring/issues/1812)) ([ee77b94](https://github.com/duyet/clickhouse-monitoring/commit/ee77b94750ca968ffaa819d070f2f41599261a3c))
+* **ci:** label apps/dashboard as 'app: dashboard', not legacy ([#1886](https://github.com/duyet/clickhouse-monitoring/issues/1886)) ([3949b3a](https://github.com/duyet/clickhouse-monitoring/commit/3949b3ae14bace0346e1a37f2447800d5c167633))
+* **ci:** retry transient Cloudflare 10215 conflict when setting worker secrets ([#1896](https://github.com/duyet/clickhouse-monitoring/issues/1896)) ([d7d2872](https://github.com/duyet/clickhouse-monitoring/commit/d7d287219101d6536a25f647a20a52db79b046a0))
+* **ci:** skip dashboard deploy steps for dependabot PRs ([#1835](https://github.com/duyet/clickhouse-monitoring/issues/1835)) ([bcc1fc8](https://github.com/duyet/clickhouse-monitoring/commit/bcc1fc8cee194040821225dcb834c98ab2f90177)), closes [#1809](https://github.com/duyet/clickhouse-monitoring/issues/1809)
+* **clickhouse-client:** default to web client on all runtimes (Docker fix) ([#1752](https://github.com/duyet/clickhouse-monitoring/issues/1752)) ([a1970ed](https://github.com/duyet/clickhouse-monitoring/commit/a1970ed0557aac7ff1fe6b63e9553e583bcf5536))
+* **clickhouse-client:** honor versioned queryConfig.sql[] in fetchJsonEachRowAsNormalizedJson ([#1806](https://github.com/duyet/clickhouse-monitoring/issues/1806)) ([b1fb977](https://github.com/duyet/clickhouse-monitoring/commit/b1fb9770950d903661905f5c3dc78d2c3aa8a340))
+* **dashboard-storage:** remove dead [@ts-expect-error](https://github.com/ts-expect-error) directives ([7f420ae](https://github.com/duyet/clickhouse-monitoring/commit/7f420ae265807d3cabbb012edd06c9d831adfdb3))
+* **dashboard:** repair dev-mode crashes + UI/UX audit a11y/error fixes ([#1814](https://github.com/duyet/clickhouse-monitoring/issues/1814)) ([fc2e66d](https://github.com/duyet/clickhouse-monitoring/commit/fc2e66d2115e808e1e8513b6b993a4a2b67faebf))
+* **insights:** render generated insights immediately, independent of persistence ([#1792](https://github.com/duyet/clickhouse-monitoring/issues/1792)) ([6855eb8](https://github.com/duyet/clickhouse-monitoring/commit/6855eb890ad2ff56d81ab61974253d07105a917a))
+* **lint:** apply biome auto-fixes to test files ([9efa76f](https://github.com/duyet/clickhouse-monitoring/commit/9efa76f99c2c566be6415fe9d622685eaa9dc021))
+* **mcp:** secure-by-default — deny anonymous access unless CHM_MCP_PUBLIC=true ([#1830](https://github.com/duyet/clickhouse-monitoring/issues/1830)) ([5109f56](https://github.com/duyet/clickhouse-monitoring/commit/5109f5681fd70b7523e7c53e90ba7b119533f72a))
+* **mutations:** redesign sparse summary cards with denser hierarchy + empty state ([#1817](https://github.com/duyet/clickhouse-monitoring/issues/1817)) ([1e612f1](https://github.com/duyet/clickhouse-monitoring/commit/1e612f17a823b37552c17da463341c02d0beac51))
+* **query-config:** query-metric-log 500 on modern ClickHouse (aggregate alias in WHERE) ([#1815](https://github.com/duyet/clickhouse-monitoring/issues/1815)) ([32d2d34](https://github.com/duyet/clickhouse-monitoring/commit/32d2d34c7953473df7c999853177850b79fbed6a))
+* **query-config:** query-metric-log 500 on modern ClickHouse (aggregate alias in WHERE) ([#1816](https://github.com/duyet/clickhouse-monitoring/issues/1816)) ([72544d0](https://github.com/duyet/clickhouse-monitoring/commit/72544d0de712ae3af2c3e57ec14b9c9a668d7acc))
+* **security:** constant-time CRON_SECRET comparison in health-sweep ([#1893](https://github.com/duyet/clickhouse-monitoring/issues/1893)) ([72f93b2](https://github.com/duyet/clickhouse-monitoring/commit/72f93b23379b24b4e4a422e4f3a30908765d74ea))
+* **security:** redact ClickHouse error details from action API responses ([#1894](https://github.com/duyet/clickhouse-monitoring/issues/1894)) ([6f20ae9](https://github.com/duyet/clickhouse-monitoring/commit/6f20ae933d916adb01472ee189050fb155271cba))
+* **seo:** inject JSON-LD via effect to avoid hydration mismatch ([#1839](https://github.com/duyet/clickhouse-monitoring/issues/1839)) ([f0da6bc](https://github.com/duyet/clickhouse-monitoring/commit/f0da6bc9b4e94fcd4baa3fe6631311e3292eba7c))
+* **sql-builder:** add splitSqlStatements source for orphaned test on main ([#1821](https://github.com/duyet/clickhouse-monitoring/issues/1821)) ([c4355ba](https://github.com/duyet/clickhouse-monitoring/commit/c4355bad43c408d5a0929bc80c8596b7b7461b52))
+* **sql-builder:** only strip trailing FORMAT for known ClickHouse formats ([#1828](https://github.com/duyet/clickhouse-monitoring/issues/1828)) ([a5fded5](https://github.com/duyet/clickhouse-monitoring/commit/a5fded54dac1e1cd70fff42c68d41a39f1d25bb2))
+* **sql-validator:** stop rejecting legitimate read-only queries ([#1758](https://github.com/duyet/clickhouse-monitoring/issues/1758)) ([ee4894b](https://github.com/duyet/clickhouse-monitoring/commit/ee4894be88fa684053ab44326fb79f3871965289))
+* **ui:** align chart skeleton min-height to loaded chart to cut CLS ([#1865](https://github.com/duyet/clickhouse-monitoring/issues/1865)) ([8adc563](https://github.com/duyet/clickhouse-monitoring/commit/8adc5636c0fcd59d2f14b21aa435247a3bad44c2))
+* **ui:** prevent mobile horizontal overflow on toolbar + explain tabs ([#1864](https://github.com/duyet/clickhouse-monitoring/issues/1864)) ([9eb5216](https://github.com/duyet/clickhouse-monitoring/commit/9eb5216eb042ba9d63ac9c430e5e245ee62e992f))
+* **ui:** tabular-nums on live/columnar numeric displays ([#1875](https://github.com/duyet/clickhouse-monitoring/issues/1875)) ([9713041](https://github.com/duyet/clickhouse-monitoring/commit/9713041cc6b6f0141c618fa0ede32538bc739ac1))
+
+
+### ⚡ Performance
+
+* **charts:** lazy-load chart-error diagnostics dialog (react-markdown) ([#1877](https://github.com/duyet/clickhouse-monitoring/issues/1877)) ([1a5fb4a](https://github.com/duyet/clickhouse-monitoring/commit/1a5fb4ae817fb9e6f46c5b5c99dc1d66d72b8872))
+* **charts:** use REFRESH_INTERVAL presets for refresh intervals ([#1772](https://github.com/duyet/clickhouse-monitoring/issues/1772)) ([#1811](https://github.com/duyet/clickhouse-monitoring/issues/1811)) ([4192e50](https://github.com/duyet/clickhouse-monitoring/commit/4192e50286f4c49eac98b2871ab63007acdaf9e0))
+* **data-table:** memoize render-path allocations ([#1771](https://github.com/duyet/clickhouse-monitoring/issues/1771)) ([#1810](https://github.com/duyet/clickhouse-monitoring/issues/1810)) ([72c6273](https://github.com/duyet/clickhouse-monitoring/commit/72c6273873c123cb205c1bc55105f07599e808e5))
+* **keeper:** memoize cluster grouping + React.memo NodeCard ([#1876](https://github.com/duyet/clickhouse-monitoring/issues/1876)) ([332252d](https://github.com/duyet/clickhouse-monitoring/commit/332252d4b913007390f8d0a6d3ff2cd876350282))
+* **overview:** memoize OverviewChart and tab chart filters ([#1895](https://github.com/duyet/clickhouse-monitoring/issues/1895)) ([5be08c4](https://github.com/duyet/clickhouse-monitoring/commit/5be08c4b002a0eb7107acd94f3dd4d2c9871921b))
+* **running-queries:** memoize chart transforms with useMemo ([#1857](https://github.com/duyet/clickhouse-monitoring/issues/1857)) ([1595ed1](https://github.com/duyet/clickhouse-monitoring/commit/1595ed1d279a9371842709c3bcb39e78a7499769))
+
+
+### ♻️ Refactoring
+
+* **charts:** collapse charts to compact row instead of hiding ([#1818](https://github.com/duyet/clickhouse-monitoring/issues/1818)) ([3547aa1](https://github.com/duyet/clickhouse-monitoring/commit/3547aa184ab3beeacd29ca9c494ec4fbbc106309))
+* **charts:** use REFRESH_INTERVAL constant in data-freshness ([#1799](https://github.com/duyet/clickhouse-monitoring/issues/1799)) ([#1801](https://github.com/duyet/clickhouse-monitoring/issues/1801)) ([359c450](https://github.com/duyet/clickhouse-monitoring/commit/359c450b57324c1d616a8157b71bb634ce051b03))
+* **clickhouse-client:** remove dead query() helper (Workers trap) ([#1789](https://github.com/duyet/clickhouse-monitoring/issues/1789)) ([bb02046](https://github.com/duyet/clickhouse-monitoring/commit/bb0204604f0135e474cbe17b5c09df66a03854aa))
+* dedup formatDuration + tighten data-table types (review-ready, supersedes [#1823](https://github.com/duyet/clickhouse-monitoring/issues/1823)) ([#1825](https://github.com/duyet/clickhouse-monitoring/issues/1825)) ([5f14b25](https://github.com/duyet/clickhouse-monitoring/commit/5f14b254e1283779ec57885b359b4c261eabedf5))
+* **docs:** replace custom theme with native Astro Starlight ([#1757](https://github.com/duyet/clickhouse-monitoring/issues/1757)) ([32b2841](https://github.com/duyet/clickhouse-monitoring/commit/32b28418f48d4fd871f3ff34a1ad0e59bed30ebe))
+* **insights:** redesign insight card with tinted icon box ([978e011](https://github.com/duyet/clickhouse-monitoring/commit/978e0114a7b722b3f5c2aae78ab108bbc544b866))
+* remove deprecated variants property from QueryConfig type schema ([#1765](https://github.com/duyet/clickhouse-monitoring/issues/1765)) ([14a5ff4](https://github.com/duyet/clickhouse-monitoring/commit/14a5ff4d8d015b06fbe3debdf409b614b66e6634))
+
 ## [0.2.10](https://github.com/duyet/clickhouse-monitoring/compare/v0.2.9...v0.2.10) (2026-06-18)
 
 
