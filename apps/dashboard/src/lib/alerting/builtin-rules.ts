@@ -176,6 +176,22 @@ FROM system.view_refreshes`,
     optional: true,
     tableCheck: 'system.view_refreshes',
   },
+
+  {
+    id: 'fatal-log-entries',
+    type: 'custom',
+    title: 'Fatal Log Entries',
+    description: 'Fatal errors in the server text log in the last hour.',
+    sql: `SELECT count() AS fatal_count
+FROM system.text_log
+WHERE level = 'Fatal'
+  AND event_time >= now() - INTERVAL 1 HOUR`,
+    valueKey: 'fatal_count',
+    defaults: { warning: 1, critical: 5 },
+    formatLabel: (v) => `${v ?? 0} fatal log entries`,
+    optional: true,
+    tableCheck: 'system.text_log',
+  },
 ]
 
 /**
