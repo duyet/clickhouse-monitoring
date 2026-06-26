@@ -10,6 +10,7 @@ import type { ProviderOptions } from '@ai-sdk/provider-utils'
 
 import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions'
 import { DEFAULT_MODEL, resolveAgentChatModel } from './provider-chat-model'
+import { wrapToolsWithLogging } from './tool-logging'
 import { createAllTools } from './tools'
 import { stepCountIs, ToolLoopAgent } from 'ai'
 
@@ -38,6 +39,8 @@ export function createClickHouseAgent(options: {
   /** Origin of the calling request — passed as OpenRouter HTTP-Referer. */
   referer?: string
   includeControlTools?: boolean
+  /** Session / conversation ID for structured log correlation. */
+  sessionId?: string
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -48,10 +51,13 @@ export function createClickHouseAgent(options: {
     providerOptions,
     referer,
     includeControlTools = false,
+    sessionId = crypto.randomUUID(),
   } = options
 
   const allTools = createAllTools(hostId, includeControlTools)
-  const tools = filterTools(allTools, disabledTools)
+  const filteredTools = filterTools(allTools, disabledTools)
+  // Wrap each tool's execute to emit structured logs (toolName, durationMs, etc.)
+  const tools = wrapToolsWithLogging(filteredTools, sessionId)
   const hasTools = Object.keys(tools).length > 0
   const { model: modelInstance } = resolveAgentChatModel({
     model,
