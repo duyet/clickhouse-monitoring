@@ -1,3 +1,8 @@
+---
+description: Steps to harden and validate a chmonitor deployment before exposing it to a team or the internet.
+icon: ClipboardCheck
+---
+
 # Production Checklist
 
 Review each section before exposing chmonitor to a team or the internet.
@@ -12,6 +17,10 @@ Review each section before exposing chmonitor to a team or the internet.
 - [ ] Prefer HTTPS for ClickHouse Cloud and any public endpoint. Keep private endpoints behind your own network.
 
 ## Authentication — do not leave fully public
+
+<Callout type="error" title="Open access is not safe on the internet">
+`CHM_AUTH_PROVIDER=none` is only safe on a private network with no agent or MCP access. If chmonitor is reachable from the internet, use Clerk or a trusted-header proxy provider.
+</Callout>
 
 - [ ] Choose an auth provider: `none` is only safe on a private network with no agent or MCP access.
 - [ ] If you use `CHM_AUTH_PROVIDER=none`, restrict network access so the app is not reachable from the internet.

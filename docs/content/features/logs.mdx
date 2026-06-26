@@ -1,3 +1,8 @@
+---
+description: Browse structured server text logs, live thread stack traces, and historical crash reports without SSH access.
+icon: ScrollText
+---
+
 # Logs
 
 > Browse server text logs, crash reports, and live thread stack traces.
@@ -33,7 +38,9 @@ The Logs section surfaces server-level diagnostic information that would otherwi
 
 All Logs pages share the `logs` feature id.
 
-This section exposes detailed server internals. Consider gating it in production:
+<Callout type="warn" title="Exposes server internals">
+This section exposes detailed server internals. Consider gating it in production.
+</Callout>
 
 ```bash
 CHM_FEATURE_LOGS_ACCESS=authenticated
@@ -67,7 +74,7 @@ No feature-specific configuration. All three tables must be enabled in the Click
 
 ## Related
 
-- [Health](/docs/features/health)
-- [Feature permissions](/docs/advanced/feature-permissions)
+- [Health](/features/health)
+- [Feature permissions](/advanced/feature-permissions)
 - [ClickHouse system.text_log docs](https://clickhouse.com/docs/en/operations/system-tables/text_log)
 - [ClickHouse system.crash_log docs](https://clickhouse.com/docs/en/operations/system-tables/crash_log)

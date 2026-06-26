@@ -1,3 +1,8 @@
+---
+description: Expose your chmonitor instance as a Model Context Protocol server so AI assistants like Claude and Cursor can query ClickHouse directly.
+icon: Plug
+---
+
 # MCP Server
 
 > Expose your chmonitor instance as a Model Context Protocol server so AI assistants can query your ClickHouse cluster directly.
@@ -18,7 +23,17 @@ The MCP server is stateless and uses Streamable HTTP transport. Each request is 
 
 Tools available via MCP include schema exploration, query execution, metrics, health checks, and more. The `/mcp` page in the dashboard UI shows the connection URL and instructions for configuring an MCP client.
 
-See [MCP Server reference](/docs/reference/mcp-server) for the full tool list and protocol details.
+<Mermaid chart={`sequenceDiagram
+  participant Client as MCP Client (Claude / Cursor)
+  participant MCP as /api/mcp
+  participant CH as ClickHouse
+  Client->>MCP: tool call (Bearer token)
+  MCP->>MCP: verify auth
+  MCP->>CH: query system tables
+  CH-->>MCP: results
+  MCP-->>Client: tool response`} />
+
+See [MCP Server reference](/reference/mcp-server) for the full tool list and protocol details.
 
 ## Pages
 
@@ -28,15 +43,15 @@ See [MCP Server reference](/docs/reference/mcp-server) for the full tool list an
 
 ## Permissions & access
 
-:::caution[Secure by default]
+<Callout type="warn" title="Secure by default">
 The MCP endpoint (`/api/mcp`) returns **401 Unauthorized** by default. It only opens when you explicitly configure at least one of:
 
-- **`CHM_API_KEY_SECRET`** — API key auth (recommended). See [API keys](/docs/authentication/api-keys).
-- **`CLERK_SECRET_KEY`** — Clerk OAuth token introspection. See [Clerk authentication](/docs/authentication/clerk).
+- **`CHM_API_KEY_SECRET`** — API key auth (recommended). See [API keys](/authentication/api-keys).
+- **`CLERK_SECRET_KEY`** — Clerk OAuth token introspection. See [Clerk authentication](/authentication/clerk).
 - **`CHM_MCP_PUBLIC=true`** — explicit opt-in for trusted private networks. A warning is logged on every request.
 
 Without one of these, every request — including from Claude Desktop, Cursor, and other MCP clients — is rejected with `401`.
-:::
+</Callout>
 
 The MCP endpoint (`/api/mcp`) is **closed by default**. Anonymous requests receive a `401` response unless at least one of the following is true:
 
@@ -101,7 +116,7 @@ The MCP endpoint is secure by default: it returns `401` when no auth is configur
 
 ## Related
 
-- [MCP Server reference](/docs/reference/mcp-server)
-- [API keys](/docs/authentication/api-keys)
-- [Authentication](/docs/authentication)
-- [Feature permissions](/docs/advanced/feature-permissions)
+- [MCP Server reference](/reference/mcp-server)
+- [API keys](/authentication/api-keys)
+- [Authentication](/authentication)
+- [Feature permissions](/advanced/feature-permissions)

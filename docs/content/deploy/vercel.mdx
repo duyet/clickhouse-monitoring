@@ -1,8 +1,13 @@
+---
+description: Deploy chmonitor to Vercel — legacy guide for the Next.js v0.2 build; v0.3+ targets Cloudflare Workers or Docker.
+icon: Triangle
+---
+
 # Vercel
 
-:::caution[Legacy guide — Next.js v0.2 only]
-This guide targets the **legacy Next.js build (v0.2 and earlier)**. The current app (`apps/dashboard`, TanStack Start, v0.3+) is designed for Cloudflare Workers. If you are running v0.3 or later, use [Cloudflare Workers](/docs/deploy/cloudflare) or [Docker](/docs/deploy/docker) instead.
-:::
+<Callout type="warn" title="Legacy guide — Next.js v0.2 only">
+This guide targets the **legacy Next.js build (v0.2 and earlier)**. The current app (`apps/dashboard`, TanStack Start, v0.3+) is designed for Cloudflare Workers. If you are running v0.3 or later, use [Cloudflare Workers](/deploy/cloudflare) or [Docker](/deploy/docker) instead.
+</Callout>
 
 ## Quick start
 
@@ -10,9 +15,25 @@ This guide targets the **legacy Next.js build (v0.2 and earlier)**. The current 
 
 Or deploy manually:
 
-1. Import the repo at [vercel.com/new](https://vercel.com/new).
-2. Set environment variables in the Vercel dashboard (Project → Settings → Environment Variables).
-3. Deploy.
+<Steps>
+<Step>
+### Import the repo
+
+Go to [vercel.com/new](https://vercel.com/new) and import the repository.
+</Step>
+
+<Step>
+### Set environment variables
+
+In the Vercel dashboard, go to **Project → Settings → Environment Variables** and add the variables below.
+</Step>
+
+<Step>
+### Deploy
+
+Click **Deploy** or push to `main` to trigger an automatic deploy.
+</Step>
+</Steps>
 
 ## Build settings
 
@@ -126,7 +147,7 @@ CHM_PROXY_AUTH_HEADER=X-Forwarded-User
 CHM_PROXY_AUTH_SECRET=a-long-random-secret
 ```
 
-Put chmonitor behind a Vercel Edge Middleware or an upstream proxy that sets the header. See [Authentication](/docs/authentication).
+Put chmonitor behind a Vercel Edge Middleware or an upstream proxy that sets the header. See [Authentication](/authentication).
 
 ### AI agent
 
@@ -193,10 +214,12 @@ NEXT_PUBLIC_POSTHOG_KEY=phc_...
 1. Push to `main` (or merge a PR). Vercel auto-deploys.
 2. For environment variable changes, update them in the dashboard and trigger a redeploy (Deployments → Redeploy).
 
-For breaking changes between major versions, see [Migrating to v0.3](/docs/migrating/v0-3).
+For breaking changes between major versions, see [Migrating to v0.3](/migrating/v0-3).
 
 ## Limitations
 
+<Callout type="info" title="Vercel limitations">
 - **No D1 / Durable Objects:** Cloudflare-only. Use postgres or clickhouse for conversation store.
 - **Function timeout:** Vercel Hobby plan limits function duration to 10 s. Use Pro or set `CLICKHOUSE_MAX_EXECUTION_TIME` below that limit.
 - **Cold starts:** Vercel serverless functions have cold starts. Set `CLICKHOUSE_POOL_SIZE` appropriately.
+</Callout>

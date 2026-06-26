@@ -1,3 +1,8 @@
+---
+description: Aggregate query history from system.query_log to surface the most-queried tables, columns, and query patterns over time.
+icon: Lightbulb
+---
+
 # Insights
 
 > Aggregated analytics over query history — most-used tables, columns, and query patterns.
@@ -57,12 +62,15 @@ No feature-specific configuration. Query history depth depends on your ClickHous
 
 ## Notes & limitations
 
-- All data comes from `system.query_log`. If query logging is disabled on the ClickHouse server, this page shows no data.
+<Callout type="info" title="Requires query logging">
+All data comes from `system.query_log`. If query logging is disabled on the ClickHouse server, this page shows no data.
+</Callout>
+
 - Queries that failed before logging (e.g., parse errors) may not appear.
 - Very high-throughput clusters can have large `query_log` tables; queries on this page include `LIMIT` clauses to keep response times reasonable.
 
 ## Related
 
-- [Queries](/docs/features/queries)
-- [Feature permissions](/docs/advanced/feature-permissions)
+- [Queries](/features/queries)
+- [Feature permissions](/advanced/feature-permissions)
 - [ClickHouse system.query_log docs](https://clickhouse.com/docs/en/operations/system-tables/query_log)

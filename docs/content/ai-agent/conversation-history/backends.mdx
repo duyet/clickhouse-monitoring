@@ -1,6 +1,13 @@
+---
+description: Per-backend setup for conversation history — AgentState, Cloudflare D1, Postgres, Memory, and Browser defaults.
+icon: Database
+---
+
 # Conversation store backends
 
-All server-side backends require `VITE_FEATURE_CONVERSATION_DB=true` set at **build time** (before `bun run build`; this is a `VITE_*` build-time variable). Set `CONVERSATION_STORE_BACKEND` at runtime to force a specific backend, or leave it unset to auto-select.
+<Callout type="info" title="Build-time flag required">
+All server-side backends require `VITE_FEATURE_CONVERSATION_DB=true` set **before** `bun run build`. This is a `VITE_*` variable — it is baked into the bundle at build time and cannot be changed without a rebuild. `CONVERSATION_STORE_BACKEND` is a runtime variable and can be set or changed without rebuilding.
+</Callout>
 
 ## Platform recommendation
 

@@ -1,12 +1,17 @@
+---
+description: Put chmonitor behind Traefik as a reverse proxy on Kubernetes or Docker, with optional ForwardAuth for SSO via oauth2-proxy.
+icon: Network
+---
+
 # Traefik
 
 Run chmonitor behind [Traefik](https://traefik.io/) as your reverse proxy / ingress controller. Works the same on Kubernetes (IngressRoute CRD or the standard Ingress) and with plain Docker (container labels).
 
-Traefik handles TLS, routing, and — combined with [oauth2-proxy](/docs/authentication/trusted-proxy) — authentication, so chmonitor itself can stay on the `none` provider and trust the forwarded identity.
+Traefik handles TLS, routing, and — combined with [oauth2-proxy](/authentication/trusted-proxy) — authentication, so chmonitor itself can stay on the `none` provider and trust the forwarded identity.
 
 ## Kubernetes (IngressRoute)
 
-If you installed chmonitor with the [Helm chart](/docs/deploy/k8s), expose the Service with a Traefik `IngressRoute`:
+If you installed chmonitor with the [Helm chart](/deploy/k8s), expose the Service with a Traefik `IngressRoute`:
 
 ```yaml
 apiVersion: traefik.io/v1alpha1
@@ -66,7 +71,7 @@ services:
 
 ## Authentication via ForwardAuth
 
-Put chmonitor behind oauth2-proxy (with Dex, Google, GitHub, …) using a Traefik `ForwardAuth` middleware, and have chmonitor read the forwarded identity with the [`trusted` auth provider](/docs/authentication/trusted-proxy).
+Put chmonitor behind oauth2-proxy (with Dex, Google, GitHub, …) using a Traefik `ForwardAuth` middleware, and have chmonitor read the forwarded identity with the [`trusted` auth provider](/authentication/trusted-proxy).
 
 ```yaml
 apiVersion: traefik.io/v1alpha1
@@ -101,7 +106,7 @@ CHM_TRUSTED_GROUPS_HEADER=X-Auth-Request-Groups
 CHM_TRUSTED_ALLOWED_GROUPS=sre,platform-admins
 ```
 
-See [Trusted proxy](/docs/authentication/trusted-proxy) for the full header reference, the shared-secret vs `CHM_TRUSTED_ALLOW_INSECURE` tradeoff, and the Dex/oauth2-proxy flags.
+See [Trusted proxy](/authentication/trusted-proxy) for the full header reference, the shared-secret vs `CHM_TRUSTED_ALLOW_INSECURE` tradeoff, and the Dex/oauth2-proxy flags.
 
 ## Health checks
 
@@ -117,12 +122,14 @@ services:
       intervalSeconds: 15
 ```
 
+<Callout type="warn" title="Don't guard health endpoints with ForwardAuth">
 Make sure your ForwardAuth middleware does **not** guard `/healthz` and `/api/healthz`, or probes will be redirected to the login flow. Route those paths without the auth middleware (a separate, higher-priority router rule), or rely on the chart's Kubernetes probes which hit the pod directly and bypass Traefik.
+</Callout>
 
 ## Related
 
-- [Kubernetes deployment](/docs/deploy/k8s)
-- [Docker deployment](/docs/deploy/docker)
-- [Trusted proxy authentication](/docs/authentication/trusted-proxy)
-- [Authentication overview](/docs/authentication)
-- [Production checklist](/docs/deploy/production-checklist)
+- [Kubernetes deployment](/deploy/k8s)
+- [Docker deployment](/deploy/docker)
+- [Trusted proxy authentication](/authentication/trusted-proxy)
+- [Authentication overview](/authentication)
+- [Production checklist](/deploy/production-checklist)

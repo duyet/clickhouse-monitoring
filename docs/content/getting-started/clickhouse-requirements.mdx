@@ -1,3 +1,8 @@
+---
+description: Create a minimal read-only ClickHouse user for chmonitor, with optional action grants and a recommended monitoring profile.
+icon: ListChecks
+---
+
 # ClickHouse User & Grants
 
 chmonitor needs a ClickHouse user with at minimum `SELECT` on `system.*`. Do not use an admin account for a shared dashboard.
@@ -31,7 +36,9 @@ GRANT KILL QUERY ON *.* TO monitoring;
 GRANT OPTIMIZE ON *.* TO monitoring;
 ```
 
-> **Important:** `AGENT_ENABLE_CONTROL_TOOLS` must also be set to `true` for the AI agent to use kill/optimize. Keep it `false` (the default) on public or shared deployments.
+<Callout type="warn" title="Control tools are off by default">
+`AGENT_ENABLE_CONTROL_TOOLS` must also be set to `true` for the AI agent to use kill/optimize. Keep it `false` (the default) on public or shared deployments.
+</Callout>
 
 ## Optional: self-tracking events table
 

@@ -1,3 +1,8 @@
+---
+description: Upgrade chmonitor from v0.2 (Next.js) to v0.3 (TanStack Start) — platform steps and the VITE_* variable rename.
+icon: ArrowRightLeft
+---
+
 # Migrate to v0.3
 
 v0.3 introduces a migration update. The dashboard is rebuilt on TanStack Start. Features, routes, and ClickHouse setup are unchanged. Browser-exposed environment variables are now standardized on the `VITE_*` prefix, with `NEXT_PUBLIC_*` kept as a compatibility fallback.
@@ -20,169 +25,222 @@ Variables exposed to the browser now use the `VITE_` prefix. Server-side and sec
 
 > The old `NEXT_PUBLIC_*` names still work as a fallback. The rename is recommended but not required — nothing breaks if you skip it.
 
+<Callout type="warn" title="Browser variables are build-time only">
 Browser variables must be set **at build time** (in your CI build step or build config), not only as runtime environment variables.
+</Callout>
 
 ---
 
 ## Upgrade steps by platform
 
-### Docker
+<Tabs items={['Docker', 'Kubernetes', 'Cloudflare Workers', 'Vercel', 'Self-hosted']}>
+<Tab value="Docker">
 
-1. Pull the new image tag:
+<Steps>
+<Step>
+### Pull the new image
 
-   ```bash
-   docker pull ghcr.io/duyet/chmonitor:v0.3.0
-   ```
+```bash
+docker pull ghcr.io/duyet/chmonitor:v0.3.0
+```
+</Step>
+<Step>
+### Stop and remove the old container
 
-2. Stop and remove the old container:
+```bash
+docker stop chmonitor && docker rm chmonitor
+```
+</Step>
+<Step>
+### Rename browser env vars (optional but recommended)
 
-   ```bash
-   docker stop chmonitor && docker rm chmonitor
-   ```
+```bash
+# Before
+-e NEXT_PUBLIC_AUTH_PROVIDER=clerk \
+-e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... \
 
-3. Rename browser env vars in your run command (optional but recommended):
+# After
+-e VITE_AUTH_PROVIDER=clerk \
+-e VITE_CLERK_PUBLISHABLE_KEY=pk_live_... \
+```
+</Step>
+<Step>
+### Start with the v0.3 image
 
-   ```bash
-   # Before
-   -e NEXT_PUBLIC_AUTH_PROVIDER=clerk \
-   -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... \
+```bash
+docker run -d \
+  -e CLICKHOUSE_HOST='http://clickhouse:8123' \
+  -e CLICKHOUSE_USER='default' \
+  -e CLICKHOUSE_PASSWORD='' \
+  -e VITE_AUTH_PROVIDER=clerk \
+  -e VITE_CLERK_PUBLISHABLE_KEY=pk_live_... \
+  -e CLERK_SECRET_KEY=sk_live_... \
+  -p 3000:3000 \
+  --name chmonitor \
+  ghcr.io/duyet/chmonitor:v0.3.0
+```
+</Step>
+<Step>
+### Verify
 
-   # After
-   -e VITE_AUTH_PROVIDER=clerk \
-   -e VITE_CLERK_PUBLISHABLE_KEY=pk_live_... \
-   ```
+Open the dashboard and verify Overview loads with live data.
+</Step>
+</Steps>
 
-4. Start a new container with the v0.3 image:
+</Tab>
+<Tab value="Kubernetes">
 
-   ```bash
-   docker run -d \
-     -e CLICKHOUSE_HOST='http://clickhouse:8123' \
-     -e CLICKHOUSE_USER='default' \
-     -e CLICKHOUSE_PASSWORD='' \
-     -e VITE_AUTH_PROVIDER=clerk \
-     -e VITE_CLERK_PUBLISHABLE_KEY=pk_live_... \
-     -e CLERK_SECRET_KEY=sk_live_... \
-     -p 3000:3000 \
-     --name chmonitor \
-     ghcr.io/duyet/chmonitor:v0.3.0
-   ```
+<Steps>
+<Step>
+### Update the image tag in your `values.yaml`
 
-5. Open the dashboard and verify Overview loads with live data.
+```yaml
+image:
+  tag: v0.3.0
+```
+</Step>
+<Step>
+### Rename browser env vars (optional)
 
----
+```yaml
+env:
+  # Before
+  - name: NEXT_PUBLIC_AUTH_PROVIDER
+    value: clerk
+  # After
+  - name: VITE_AUTH_PROVIDER
+    value: clerk
+```
 
-### Kubernetes / Helm
+If you store `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in a Secret, rename the key there too.
+</Step>
+<Step>
+### Apply and roll out
 
-1. Update the image tag in your `values.yaml`:
+```bash
+helm upgrade chmonitor duyet/clickhouse-monitoring -f values.yaml
+kubectl rollout status deployment/chmonitor
+```
+</Step>
+<Step>
+### Verify
 
-   ```yaml
-   image:
-     tag: v0.3.0
-   ```
+Verify Overview loads with live data.
+</Step>
+</Steps>
 
-2. Rename browser env vars (optional):
-
-   ```yaml
-   env:
-     # Before
-     - name: NEXT_PUBLIC_AUTH_PROVIDER
-       value: clerk
-     # After
-     - name: VITE_AUTH_PROVIDER
-       value: clerk
-   ```
-
-   If you store `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in a Secret, rename the key there too.
-
-3. Apply and roll out:
-
-   ```bash
-   helm upgrade chmonitor duyet/clickhouse-monitoring -f values.yaml
-   kubectl rollout status deployment/chmonitor
-   ```
-
-4. Verify Overview loads with live data.
-
----
-
-### Cloudflare Workers
+</Tab>
+<Tab value="Cloudflare Workers">
 
 Browser variables must be present **at build time**. Set them in your CI environment (GitHub Actions secrets or Cloudflare dashboard) before running the build.
 
-1. Update the build to reference the new image or branch.
+<Steps>
+<Step>
+### Update the build to reference the new image or branch
+</Step>
+<Step>
+### Rename browser vars in CI or Cloudflare Pages build config
 
-2. In your CI or Cloudflare Pages build config, rename the browser vars:
+```bash
+# GitHub Actions — add to your workflow env or secrets
+VITE_AUTH_PROVIDER=clerk
+VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+```
+</Step>
+<Step>
+### Deploy
 
-   ```bash
-   # GitHub Actions — add to your workflow env or secrets
-   VITE_AUTH_PROVIDER=clerk
-   VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
-   ```
+```bash
+bun run cf:deploy
+```
+</Step>
+<Step>
+### Add any new v0.3 secrets (if using new features)
 
-3. Deploy:
+```bash
+wrangler secret put CHM_API_KEY_SECRET
+wrangler secret put HEALTH_ALERT_WEBHOOK_URL
+```
+</Step>
+<Step>
+### Verify
 
-   ```bash
-   bun run cf:deploy
-   ```
+Verify the deployed URL loads correctly.
+</Step>
+</Steps>
 
-4. If you use new v0.3 features (conversation persistence, health alerting), add any new secrets:
+</Tab>
+<Tab value="Vercel">
 
-   ```bash
-   wrangler secret put CHM_API_KEY_SECRET
-   wrangler secret put HEALTH_ALERT_WEBHOOK_URL
-   ```
+<Steps>
+<Step>
+### Update environment variables
 
-5. Verify the deployed URL loads correctly.
+In Vercel project → **Settings** → **Environment Variables**:
+- Add `VITE_AUTH_PROVIDER` (replaces `NEXT_PUBLIC_AUTH_PROVIDER`)
+- Add `VITE_CLERK_PUBLISHABLE_KEY` (replaces `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`)
+- Keep old `NEXT_PUBLIC_*` names if you want backward compatibility (both work)
+</Step>
+<Step>
+### Trigger a redeploy
 
----
+Deployments → Redeploy, or push a new commit.
+</Step>
+<Step>
+### Verify
 
-### Vercel
+Verify Overview loads.
+</Step>
+</Steps>
 
-1. In Vercel project → **Settings** → **Environment Variables**:
-   - Add `VITE_AUTH_PROVIDER` (replaces `NEXT_PUBLIC_AUTH_PROVIDER`)
-   - Add `VITE_CLERK_PUBLISHABLE_KEY` (replaces `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`)
-   - Keep old `NEXT_PUBLIC_*` names if you want backward compatibility (both work)
+</Tab>
+<Tab value="Self-hosted">
 
-2. Trigger a redeploy (Deployments → Redeploy, or push a new commit).
+<Steps>
+<Step>
+### Pull the latest source
 
-3. Verify Overview loads.
+```bash
+git pull origin main
+git checkout v0.3.0
+```
+</Step>
+<Step>
+### Install dependencies
 
----
+```bash
+bun install
+```
+</Step>
+<Step>
+### Update your `.env` file
 
-### Self-hosted (Node / bare metal)
+```bash
+# .env
+VITE_AUTH_PROVIDER=clerk
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+# Server vars unchanged:
+CLERK_SECRET_KEY=sk_live_...
+CLICKHOUSE_HOST=http://localhost:8123
+```
+</Step>
+<Step>
+### Rebuild and restart
 
-1. Pull the latest source:
+```bash
+bun run build
+bun run start
+```
+</Step>
+<Step>
+### Verify
 
-   ```bash
-   git pull origin main
-   git checkout v0.3.0
-   ```
+Verify Overview loads with live data.
+</Step>
+</Steps>
 
-2. Install dependencies:
-
-   ```bash
-   bun install
-   ```
-
-3. Update your `.env` file — rename browser vars:
-
-   ```bash
-   # .env
-   VITE_AUTH_PROVIDER=clerk
-   VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
-   # Server vars unchanged:
-   CLERK_SECRET_KEY=sk_live_...
-   CLICKHOUSE_HOST=http://localhost:8123
-   ```
-
-4. Rebuild and restart:
-
-   ```bash
-   bun run build
-   bun run start
-   ```
-
-5. Verify Overview loads with live data.
+</Tab>
+</Tabs>
 
 ---
 
@@ -252,7 +310,7 @@ v0.3 adds optional new configuration. None is required for the upgrade — set t
 | `HEALTH_ALERT_ENABLED` + `HEALTH_ALERT_WEBHOOK_URL` | Health alerting cron sweep |
 | `VITE_FEATURE_CONVERSATION_DB` (build-time) + `CONVERSATION_STORE_BACKEND` (runtime) | Server-side conversation history |
 
-See [Environment Variables](/docs/reference/environment-variables) for the full list.
+See [Environment Variables](/reference/environment-variables) for the full list.
 
 ---
 

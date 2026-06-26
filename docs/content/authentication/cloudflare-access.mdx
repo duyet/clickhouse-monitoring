@@ -1,6 +1,21 @@
+---
+description: Authenticate chmonitor with Cloudflare Access — Zero Trust JWT verification, no shared secret needed.
+icon: Cloud
+---
+
 # Reverse proxy: Cloudflare Access
 
 Put chmonitor behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) and let Access handle authentication. Access authenticates the user and forwards a signed JWT; chmonitor verifies it cryptographically. No shared secret needed — the signature is the proof.
+
+<Mermaid chart={`sequenceDiagram
+  participant B as Browser
+  participant CF as Cloudflare Access
+  participant A as chmonitor Worker
+  B->>CF: request (unauthenticated)
+  CF->>CF: authenticate user (login page)
+  CF->>A: forward + Cf-Access-Jwt-Assertion header
+  A->>A: verify JWT against JWKS (aud, issuer, exp, RS256)
+  A-->>B: 200 data`} />
 
 ## How it works
 
@@ -27,27 +42,48 @@ wrangler secret put CHM_CF_ACCESS_AUD
 
 ## Setup steps
 
-1. In the Cloudflare Zero Trust dashboard, create an **Access application** that protects your chmonitor Worker route.
-2. Under the application settings, copy the **AUD tag** (also called Application Audience).
-3. Copy your **team domain** — it looks like `https://your-team.cloudflareaccess.com`.
-4. Set the env vars on the server:
-   ```bash
-   CHM_AUTH_PROVIDER=proxy
-   CHM_CF_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
-   CHM_CF_ACCESS_AUD=<aud-tag>
-   ```
-5. Redeploy. Users reaching the Worker URL will be sent through the Access login flow.
+<Steps>
+<Step>
+### Create an Access application
+
+In the Cloudflare Zero Trust dashboard, create an **Access application** that protects your chmonitor Worker route.
+</Step>
+<Step>
+### Copy the AUD tag
+
+Under the application settings, copy the **AUD tag** (also called Application Audience).
+</Step>
+<Step>
+### Copy your team domain
+
+Copy your **team domain** — it looks like `https://your-team.cloudflareaccess.com`.
+</Step>
+<Step>
+### Set env vars
+
+```bash
+CHM_AUTH_PROVIDER=proxy
+CHM_CF_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
+CHM_CF_ACCESS_AUD=<aud-tag>
+```
+</Step>
+<Step>
+### Redeploy
+
+Users reaching the Worker URL will be sent through the Access login flow.
+</Step>
+</Steps>
 
 ## Notes
 
 - The `VITE_AUTH_PROVIDER` client var does not need to be set for proxy auth; the browser UI does not show a sign-in button (Access handles the login page externally).
-- Combine with `CHM_API_KEY_SECRET` to allow MCP/script access alongside Access-authenticated browser sessions. See [API keys](/docs/authentication/api-keys).
+- Combine with `CHM_API_KEY_SECRET` to allow MCP/script access alongside Access-authenticated browser sessions. See [API keys](/authentication/api-keys).
 - If both Cloudflare Access (`CHM_CF_ACCESS_*`) and trusted-header (`CHM_PROXY_AUTH_SECRET`) are configured, Access is checked first.
 
 ## Related
 
-- [Authentication overview](/docs/authentication)
-- [Trusted header](/docs/authentication/trusted-header)
-- [API keys](/docs/authentication/api-keys)
-- [Environment Variables — Authentication](/docs/reference/environment-variables#authentication)
-- [Feature Permissions](/docs/advanced/feature-permissions)
+- [Authentication overview](/authentication)
+- [Trusted header](/authentication/trusted-header)
+- [API keys](/authentication/api-keys)
+- [Environment Variables — Authentication](/reference/environment-variables#authentication)
+- [Feature Permissions](/advanced/feature-permissions)

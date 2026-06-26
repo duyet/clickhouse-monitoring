@@ -1,3 +1,8 @@
+---
+description: The chmonitor MCP server at /api/mcp — endpoint, available tools, resources, authentication, and security model.
+icon: Plug
+---
+
 # MCP Server
 
 chmonitor exposes a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server at `/api/mcp`. It lets external AI tools — Claude, Cursor, and any MCP-compatible client — query your ClickHouse clusters through the same read-only access the dashboard uses.
@@ -5,6 +10,13 @@ chmonitor exposes a [Model Context Protocol (MCP)](https://modelcontextprotocol.
 ---
 
 ## Endpoint
+
+<Mermaid chart={`flowchart LR
+  C["AI Client\n(Claude / Cursor)"] -->|"POST /api/mcp"| M["/api/mcp"]
+  M --> A["Auth check\n(API key / Clerk)"]
+  A -->|"read-only SQL"| CH["ClickHouse"]
+  CH -->|"results"| M
+  M -->|"JSON-RPC response"| C`} />
 
 | Property | Value |
 |---|---|
@@ -61,19 +73,19 @@ Production deployments should protect the MCP endpoint. Two methods are supporte
 
 Set `CHM_API_KEY_SECRET` and issue `chm_` tokens at `POST /api/v1/auth/api-key`. Send as `Authorization: Bearer chm_...`. Tokens are HMAC-SHA-256 and time-limited.
 
-See [API Keys](/docs/authentication/api-keys) for setup.
+See [API Keys](/authentication/api-keys) for setup.
 
 **Clerk OAuth (for browser-based MCP clients):**
 
 When `CHM_AUTH_PROVIDER=clerk` is set, `/api/mcp` also accepts Clerk OAuth bearer tokens. The client completes a standard OAuth browser flow; chmonitor acts as the resource server and verifies tokens via Clerk REST introspection using `CLERK_SECRET_KEY`.
 
-See [Authentication](/docs/authentication) for provider setup.
+See [Authentication](/authentication) for provider setup.
 
 ---
 
 ## Available tools
 
-The MCP server exposes the same read-only capabilities as the dashboard agent. For a full list of tools, see [AI Agent — Capabilities](/docs/ai-agent/capabilities).
+The MCP server exposes the same read-only capabilities as the dashboard agent. For a full list of tools, see [AI Agent — Capabilities](/ai-agent/capabilities).
 
 Quick summary of core tools:
 
@@ -118,7 +130,9 @@ Pre-built prompts for common workflows: `health-check`, `slow-query-analysis`, `
 - **Open when nothing is configured.** If neither `CHM_API_KEY_SECRET` nor Clerk is configured, the endpoint serves anonymous requests — regardless of `NODE_ENV`. This is the self-hosted default; close it by configuring either scheme. Keep an unconfigured endpoint on a trusted network.
 - **Shared credentials.** Queries use the dashboard's configured ClickHouse user. Visibility is bounded by that user's grants.
 
-> Do not expose the MCP endpoint publicly without setting `CHM_API_KEY_SECRET`. Anyone with access can read all data the ClickHouse user can see.
+<Callout type="warn" title="Secure the MCP endpoint in production">
+Do not expose the MCP endpoint publicly without setting `CHM_API_KEY_SECRET`. Anyone with access can read all data the ClickHouse user can see.
+</Callout>
 
-See [Environment Variables](/docs/reference/environment-variables) for `CHM_API_KEY_SECRET` and auth variables.
-See [Features — MCP](/docs/features/mcp) for more on the MCP feature and how to gate it.
+See [Environment Variables](/reference/environment-variables) for `CHM_API_KEY_SECRET` and auth variables.
+See [Features — MCP](/features/mcp) for more on the MCP feature and how to gate it.

@@ -1,3 +1,8 @@
+---
+description: All environment variables for configuring the AI Agent — LLM provider, model picker, access control, and conversation persistence.
+icon: SlidersHorizontal
+---
+
 # Configure the AI Agent
 
 ## Core LLM settings
@@ -86,11 +91,15 @@ curl -H "Authorization: Bearer $AGENT_API_TOKEN" \
 | `VITE_FEATURE_CONVERSATION_DB` | Build-time | `false` | Enable server-side conversation storage. Must be set before `bun run build`. Requires Clerk. |
 | `CONVERSATION_STORE_BACKEND` | Runtime | (auto) | Backend: `agentstate`, `d1`, `postgres`, or `memory`. Auto-selects when unset. |
 
-See [Conversation History](/docs/ai-agent/conversation-history) and [Store Backends](/docs/ai-agent/conversation-history/backends) for per-backend env vars and setup.
+See [Conversation History](/ai-agent/conversation-history) and [Store Backends](/ai-agent/conversation-history/backends) for per-backend env vars and setup.
 
 ## Where to set these
 
-- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values. See [Deploy to Cloudflare](/docs/deploy/cloudflare).
-- **Docker** — `environment:` block in `docker-compose.yml` or `--env-file .env`. See [Deploy with Docker](/docs/deploy/docker).
-- **Kubernetes** — `Secret` for keys, `ConfigMap` for non-secret values. See [Deploy to Kubernetes](/docs/deploy/k8s).
+- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values. See [Deploy to Cloudflare](/deploy/cloudflare).
+- **Docker** — `environment:` block in `docker-compose.yml` or `--env-file .env`. See [Deploy with Docker](/deploy/docker).
+- **Kubernetes** — `Secret` for keys, `ConfigMap` for non-secret values. See [Deploy to Kubernetes](/deploy/k8s).
 - **Vercel / self-hosted** — environment variables in the project dashboard or `.env.local`.
+
+<Callout type="warn" title="Keep LLM keys server-side">
+Never put LLM API keys in `VITE_*` variables. Anything prefixed `VITE_` is baked into browser JavaScript at build time and is visible to anyone who opens DevTools. Use plain (non-VITE) variables for all keys — they stay on the server.
+</Callout>

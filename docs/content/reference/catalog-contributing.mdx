@@ -1,6 +1,7 @@
 ---
 title: Contributing a config / check
 description: How to add a declarative monitoring check to the chmonitor catalog.
+icon: GitPullRequest
 ---
 
 # Contributing a config / check
@@ -132,41 +133,61 @@ The field names above (`name`, `sql[].since`, `sql[].sql`, `columns`,
 
 ## Step-by-step: adding a check
 
-1. **Pick the right domain directory.** Existing domains under
-   `apps/dashboard/src/lib/query-config/declarative/catalog/`:
-   `anomaly`, `explorer`, `keeper`, `logs`, `merges`, `more`, `queries`,
-   `security`, `system`, `tables`. Add a new file to the closest domain, or
-   create a new subdirectory if the check doesn't fit any existing one.
+<Steps>
+<Step>
+### Pick the right domain directory
 
-2. **Write the config.** Export a `const` typed as `DeclarativeQueryConfig`.
-   Use `sql: [{ since: 'X.Y', sql: '...' }]` when querying a system column
-   that was added in a specific ClickHouse version (check
-   `docs/clickhouse-schemas/tables/` for column availability). Use a plain
-   `sql: '...'` string when the query works across all supported versions.
+Existing domains under `apps/dashboard/src/lib/query-config/declarative/catalog/`:
+`anomaly`, `explorer`, `keeper`, `logs`, `merges`, `more`, `queries`,
+`security`, `system`, `tables`. Add a new file to the closest domain, or
+create a new subdirectory if the check doesn't fit any existing one.
+</Step>
+<Step>
+### Write the config
 
-3. **Register it in the catalog index.** Import your export in
-   `apps/dashboard/src/lib/query-config/declarative/catalog/index.ts` and add
-   it to the `ALL_DECLARATIVE` array. The index enforces unique names at module
-   load time and throws if a duplicate is detected.
+Export a `const` typed as `DeclarativeQueryConfig`.
+Use `sql: [{ since: 'X.Y', sql: '...' }]` when querying a system column
+that was added in a specific ClickHouse version (check
+`docs/clickhouse-schemas/tables/` for column availability). Use a plain
+`sql: '...'` string when the query works across all supported versions.
+</Step>
+<Step>
+### Register it in the catalog index
 
-4. **Validate locally.**
-   ```bash
-   # Validate schema + run declarative catalog tests
-   bun run test:query-config
+Import your export in
+`apps/dashboard/src/lib/query-config/declarative/catalog/index.ts` and add
+it to the `ALL_DECLARATIVE` array. The index enforces unique names at module
+load time and throws if a duplicate is detected.
+</Step>
+<Step>
+### Validate locally
 
-   # Biome lint (must pass before PR)
-   bun run check
-   ```
-   The `test:query-config` suite runs the schema validator against every catalog
-   entry and compares serializable fields against the legacy TS configs for
-   migrated checks.
+```bash
+# Validate schema + run declarative catalog tests
+bun run test:query-config
 
-5. **Note the opt-in flag.** Your check is live in the catalog but the
-   dashboard only reads from it when `CHM_CONFIG_SOURCE=declarative` is set in
-   the environment. The default is `ts`. Document this in your PR if relevant.
+# Biome lint (must pass before PR)
+bun run check
+```
 
-6. **Open a PR** against `main`. The CI `unit-tests` job runs the full bun test
-   suite including the declarative catalog tests.
+The `test:query-config` suite runs the schema validator against every catalog
+entry and compares serializable fields against the legacy TS configs for
+migrated checks.
+</Step>
+<Step>
+### Note the opt-in flag
+
+Your check is live in the catalog but the dashboard only reads from it when
+`CHM_CONFIG_SOURCE=declarative` is set in the environment. The default is `ts`.
+Document this in your PR if relevant.
+</Step>
+<Step>
+### Open a PR
+
+Open a PR against `main`. The CI `unit-tests` job runs the full bun test
+suite including the declarative catalog tests.
+</Step>
+</Steps>
 
 ---
 

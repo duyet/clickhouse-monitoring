@@ -1,3 +1,8 @@
+---
+description: Set CLICKHOUSE_NAME to give each monitored host a human-readable label in the dashboard host selector dropdown.
+icon: Tag
+---
+
 # Custom Name
 
 Set `CLICKHOUSE_NAME` to give each ClickHouse host a human-readable label. The label appears in the host selector dropdown in the dashboard header.
@@ -13,7 +18,9 @@ CLICKHOUSE_NAME=Production,Staging,Dev
 
 The number of comma-separated values must match `CLICKHOUSE_HOST`. Position N in `CLICKHOUSE_NAME` labels host index N.
 
+<Callout type="info">
 If `CLICKHOUSE_NAME` is not set, hosts are labeled by index: **Host 0**, **Host 1**, etc.
+</Callout>
 
 ---
 
@@ -41,4 +48,4 @@ env:
     value: "Production,Staging"
 ```
 
-See [Multiple Hosts](/docs/advanced/multiple-hosts) for full multi-host setup.
+See [Multiple Hosts](/advanced/multiple-hosts) for full multi-host setup.

@@ -1,3 +1,8 @@
+---
+description: Deploy chmonitor to Cloudflare Workers for globally distributed, serverless hosting with D1 and Cron Trigger support.
+icon: Cloud
+---
+
 # Cloudflare Workers
 
 Deploy chmonitor to Cloudflare Workers. Best for globally cached, serverless hosting with no servers to manage.
@@ -12,36 +17,54 @@ This deploys the `apps/dashboard` worker (TanStack Start). You will be prompted 
 
 ## Prerequisites
 
+<Callout type="info" title="What you need">
 - Cloudflare account
 - Bun installed locally or in CI
 - `CLOUDFLARE_API_TOKEN` with Workers deploy permissions (or run `wrangler login` for OAuth)
+</Callout>
 
 ## Quick start
+
+<Steps>
+<Step>
+### Clone and install
 
 ```bash
 git clone https://github.com/duyet/clickhouse-monitoring.git
 cd clickhouse-monitoring/apps/dashboard
 bun install
-
-# Set credentials and build
-export CLICKHOUSE_HOST=https://clickhouse.example.com:8443
-
-# Build the Cloudflare Workers bundle and deploy
-bun run cf:deploy   # vite build → wrangler deploy
 ```
+</Step>
 
-For secrets (ClickHouse password, LLM keys, etc.), use `wrangler secret put`:
+<Step>
+### Set ClickHouse secrets
 
 ```bash
 wrangler secret put CLICKHOUSE_HOST
 wrangler secret put CLICKHOUSE_PASSWORD
 ```
+</Step>
+
+<Step>
+### Build and deploy
+
+```bash
+bun run cf:deploy   # vite build → wrangler deploy
+```
+</Step>
+
+<Step>
+### Open your Worker URL
 
 Open your Workers URL or set a custom domain in the Cloudflare dashboard.
+</Step>
+</Steps>
 
 ## How configuration works on Cloudflare
 
-There are two kinds of variables:
+<Callout type="warn" title="Build-time vs runtime vars">
+There are two kinds of variables — mixing them up is the most common source of bugs.
+</Callout>
 
 | Kind | Where to set | Who reads it | Example |
 |---|---|---|---|
@@ -93,7 +116,9 @@ wrangler secret put CRON_SECRET
 wrangler secret put CHM_API_KEY_SECRET
 ```
 
+<Callout type="info" title="Redeploy after secret changes">
 After `wrangler secret put`, redeploy so the Worker picks up the change: `bun run cf:deploy`.
+</Callout>
 
 ## Configure
 
@@ -348,13 +373,35 @@ The TanStack Start build via `@cloudflare/vite-plugin` does not require KV, R2, 
 
 ## Upgrading
 
-1. Pull the latest code: `git pull`.
-2. Update dependencies: `bun install`.
-3. Rebuild and deploy: `bun run cf:deploy`.
+<Steps>
+<Step>
+### Pull the latest code
+
+```bash
+git pull
+```
+</Step>
+
+<Step>
+### Update dependencies
+
+```bash
+bun install
+```
+</Step>
+
+<Step>
+### Rebuild and deploy
+
+```bash
+bun run cf:deploy
+```
+</Step>
+</Steps>
 
 Worker secrets persist across deploys; you only need to re-run `wrangler secret put` when a value changes.
 
-For breaking changes between major versions, see [Migrating to v0.3](/docs/migrating/v0-3).
+For breaking changes between major versions, see [Migrating to v0.3](/migrating/v0-3).
 
 ## Troubleshooting
 

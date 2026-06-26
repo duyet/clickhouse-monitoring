@@ -1,3 +1,8 @@
+---
+description: Configure alert thresholds, browser connections, AI agent options, and UI theme from the in-app Settings page, or via server-side environment variables.
+icon: Cog
+---
+
 # Settings
 
 The in-app Settings page (feature id: `settings`, route `/settings`) lets operators configure alert thresholds, manage browser connections, tune agent session options, and change the UI theme — without redeploying.
@@ -26,7 +31,7 @@ The agent settings sidebar includes a **read-only** "Conversation History" secti
 | **D1** | Cloudflare D1 (SQLite) database |
 | **Postgres** | A PostgreSQL-compatible database |
 
-To change the active backend, set the relevant server-side env vars and redeploy. See [Conversation history backends](/docs/ai-agent#conversation-history-backends) in the AI Agent docs for the full env-var reference and setup steps.
+To change the active backend, set the relevant server-side env vars and redeploy. See [Conversation history backends](/ai-agent) in the AI Agent docs for the full env-var reference and setup steps.
 
 ## Gating or disabling Settings
 
@@ -120,7 +125,7 @@ VITE_MEASUREMENT_ID=G-XXXXXXXXXX
 
 ## Related
 
-- [Feature Permissions](/docs/advanced/feature-permissions) — full reference for `CHM_FEATURE_*` env
-- [Authentication](/docs/authentication) — setting up Clerk, Cloudflare Access, or proxy auth
-- [AI Agent](/docs/ai-agent) — agent configuration and conversation store options
-- [Install & Configure](/docs/deploy) — platform-specific deployment with all env vars
+- [Feature Permissions](/advanced/feature-permissions) — full reference for `CHM_FEATURE_*` env
+- [Authentication](/authentication) — setting up Clerk, Cloudflare Access, or proxy auth
+- [AI Agent](/ai-agent) — agent configuration and conversation store options
+- [Install & Configure](/deploy) — platform-specific deployment with all env vars

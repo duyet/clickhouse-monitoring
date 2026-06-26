@@ -1,3 +1,8 @@
+---
+description: Track active merges, historical merge performance, mutations, part moves, and the part-event timeline for all MergeTree tables.
+icon: GitMerge
+---
+
 # Operations
 
 > Track active merges, historical merge performance, mutations, part moves, and the part-event timeline for all MergeTree tables.
@@ -63,15 +68,21 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 
 ## Notes & limitations
 
-- **`system.part_log`** — requires `<part_log>` to be enabled in the ClickHouse server config. It is disabled by default on some distributions. If absent, `/merge-performance` and `/part-log` show a table-not-found notice.
+<Callout type="warn" title="KILL MUTATION privilege required">
+  The kill-mutation button on `/mutations` issues `KILL MUTATION`. The ClickHouse user must have `ALTER TABLE` privilege (or specifically `KILL MUTATION`). Without it the action returns an error.
+</Callout>
+
+<Callout type="info" title="part_log must be enabled">
+  `system.part_log` requires `<part_log>` to be enabled in the ClickHouse server config. It is disabled by default on some distributions. If absent, `/merge-performance` and `/part-log` show a table-not-found notice.
+</Callout>
+
 - **`system.moves`** — only populated when a TTL or storage policy move is actively in progress. The table is empty between moves; this is normal.
-- **Kill mutation** — the kill-mutation button on `/mutations` issues `KILL MUTATION`. The ClickHouse user must have `ALTER TABLE` privilege (or specifically `KILL MUTATION`). Without it the action returns an error.
 - **Merge progress** — `system.merges` shows only active merges. Completed merges appear in `system.part_log` with event type `MergedPart`.
 - The `/merges` route is also the entry point for the Operations section in the nav (feature id `operations`).
 
 ## Related
 
-- [Tables](/docs/features/tables)
-- [Queries](/docs/features/queries)
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
+- [Tables](/features/tables)
+- [Queries](/features/queries)
+- [Authentication](/authentication)
+- [Settings reference](/settings)

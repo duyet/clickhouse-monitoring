@@ -1,3 +1,8 @@
+---
+description: Browse every database, table, column, index, projection, and dependency in your ClickHouse instance without writing SQL.
+icon: FolderTree
+---
+
 # Data Explorer
 
 > Browse every database, table, column, index, projection, and dependency in your ClickHouse instance without writing SQL.
@@ -24,6 +29,10 @@ The Data Explorer provides a tree-browser for the entire schema of a ClickHouse 
 - **Table metadata** — engine, total rows, compressed size.
 
 All queries are read-only. No writes are issued.
+
+<Callout type="info" title="Read-only">
+  The explorer cannot create, alter, or drop objects. It only reads from system tables.
+</Callout>
 
 ## Pages
 
@@ -64,11 +73,11 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 - **`system.data_skipping_indices`** — available since ClickHouse 20.6. The skip-index panel is hidden on older versions.
 - **`system.projection_parts`** — projections were introduced in ClickHouse 21.6. The projections panel is hidden on older versions.
 - **Dependencies** — dependency tracking uses the `dependencies_database` and `dependencies_table` arrays in `system.tables`. These arrays are populated for materialized views and dictionaries. Direct table references in ad-hoc queries are not tracked.
-- The explorer is read-only. You cannot create, alter, or drop objects from this page.
+- The explorer is read-only.
 - On clusters with many databases (hundreds), the initial database list query against `system.databases` may be slow. Increase `CLICKHOUSE_MAX_EXECUTION_TIME` if needed.
 
 ## Related
 
-- [Tables](/docs/features/tables)
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
+- [Tables](/features/tables)
+- [Authentication](/authentication)
+- [Settings reference](/settings)

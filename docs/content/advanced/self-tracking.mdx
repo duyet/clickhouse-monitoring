@@ -1,6 +1,18 @@
+---
+description: chmonitor writes its own usage events to a ClickHouse table — configure the target table, required grants, and how to suppress writes.
+icon: LineChart
+---
+
 # Self-Tracking
 
 chmonitor writes events to a ClickHouse table as users interact with the dashboard. This self-tracking data lets you audit dashboard usage, debug unexpected behavior, and see which pages and queries are most active.
+
+<Mermaid chart={`flowchart LR
+  U[User action] --> D[Dashboard]
+  D -->|INSERT| E[monitoring_events table]
+  D -->|INSERT| F[monitoring_findings table]
+  E --> Q[Query / Audit]
+  F --> A[AI agent findings]`} />
 
 ---
 
@@ -67,11 +79,13 @@ GRANT INSERT ON system.monitoring_events TO monitoring_user;
 GRANT CREATE TABLE, INSERT ON my_db.* TO monitoring_user;
 ```
 
+<Callout type="info">
 If the user lacks `INSERT` permission, event writes fail silently and the dashboard continues to work normally.
+</Callout>
 
 ---
 
 ## Related
 
-- [Environment Variables — Query Execution](/docs/reference/environment-variables#query-execution) — `EVENTS_TABLE_NAME` and `CLICKHOUSE_DATABASE`.
-- [Queries History](/docs/advanced/queries-history) — how the dashboard reads `system.query_log` for history pages.
+- [Environment Variables — Query Execution](/reference/environment-variables#query-execution) — `EVENTS_TABLE_NAME` and `CLICKHOUSE_DATABASE`.
+- [Queries History](/advanced/queries-history) — how the dashboard reads `system.query_log` for history pages.

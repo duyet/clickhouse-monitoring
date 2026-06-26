@@ -1,5 +1,8 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+
+import browserCollections from 'collections/browser'
+import { useFumadocsLoader } from 'fumadocs-core/source/client'
 import { DocsLayout } from 'fumadocs-ui/layouts/docs'
 import {
   DocsBody,
@@ -9,13 +12,12 @@ import {
   MarkdownCopyButton,
   ViewOptionsPopover,
 } from 'fumadocs-ui/layouts/docs/page'
-import { useFumadocsLoader } from 'fumadocs-core/source/client'
 import { Suspense } from 'react'
 import { useMDXComponents } from '@/components/mdx'
+import { SidebarFooter } from '@/components/sidebar-footer'
 import { baseOptions } from '@/lib/layout.shared'
-import { getPageImage, slugsToMarkdownPath, source } from '@/lib/source'
 import { gitConfig } from '@/lib/shared'
-import browserCollections from 'collections/browser'
+import { getPageImage, slugsToMarkdownPath, source } from '@/lib/source'
 
 export const Route = createFileRoute('/$')({
   component: Page,
@@ -70,7 +72,11 @@ function Page() {
     Route.useLoaderData()
   )
   return (
-    <DocsLayout {...baseOptions()} tree={pageTree}>
+    <DocsLayout
+      {...baseOptions()}
+      tree={pageTree}
+      sidebar={{ footer: <SidebarFooter /> }}
+    >
       <Suspense>
         {clientLoader.useContent(path, { markdownUrl, path })}
       </Suspense>

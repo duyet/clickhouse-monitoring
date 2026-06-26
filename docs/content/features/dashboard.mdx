@@ -1,3 +1,8 @@
+---
+description: Build and save custom monitoring dashboards by combining any built-in charts into a single layout, stored in the browser.
+icon: LayoutDashboard
+---
+
 # Dashboard
 
 > Build and save custom monitoring dashboards by combining any of the built-in charts into a single view.
@@ -8,7 +13,7 @@
 | **Feature id** | `dashboard` |
 | **Default access** | `public` |
 | **Requires auth** | No (set `CHM_FEATURE_DASHBOARD_ACCESS=authenticated` to gate) |
-| **System tables** | Depends on the charts added; each chart queries its own system tables (see [Overview](/docs/features/overview), [Queries](/docs/features/queries), etc.) |
+| **System tables** | Depends on the charts added; each chart queries its own system tables (see [Overview](/features/overview), [Queries](/features/queries), etc.) |
 | **ClickHouse grants** | `SELECT` on whichever system tables the chosen charts read |
 
 ## What it does
@@ -67,8 +72,8 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 
 ## Related
 
-- [Overview](/docs/features/overview)
-- [Queries](/docs/features/queries)
-- [Operations](/docs/features/operations)
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
+- [Overview](/features/overview)
+- [Queries](/features/queries)
+- [Operations](/features/operations)
+- [Authentication](/authentication)
+- [Settings reference](/settings)

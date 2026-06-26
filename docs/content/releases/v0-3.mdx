@@ -1,3 +1,8 @@
+---
+description: What's new in chmonitor v0.3 — TanStack Start framework, pluggable auth, MCP server, AI agent improvements, and new monitoring views.
+icon: Tag
+---
+
 # v0.3 — What's New
 
 v0.3 rebuilds the dashboard on TanStack Start, ships a pluggable authentication system, and delivers monitoring and UI improvements accumulated during the v0.2 cycle.
@@ -18,7 +23,7 @@ The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with 
 - Background polling paused on hidden tabs ([#1523](https://github.com/duyet/clickhouse-monitoring/issues/1523)).
 - Collapsed chart rows unmounted to stop background polling ([#1580](https://github.com/duyet/clickhouse-monitoring/issues/1580)).
 
-See [Migrate to v0.3](/docs/migrating/v0-3) for upgrade steps.
+See [Migrate to v0.3](/migrating/v0-3) for upgrade steps.
 
 ---
 
@@ -39,7 +44,7 @@ Additional auth features:
 - `auth=none` opens everything; backend still enforces per-endpoint ([#1533](https://github.com/duyet/clickhouse-monitoring/issues/1533)).
 - Auth on `/api/v1/clean`, `/api/v1/init`, `/api/v1/pageview` endpoints ([#1602](https://github.com/duyet/clickhouse-monitoring/issues/1602)).
 
-See [Authentication](/docs/authentication) for setup details.
+See [Authentication](/authentication) for setup details.
 
 ---
 
@@ -124,4 +129,4 @@ Added from ClickHouse system tables:
 
 ## Breaking changes
 
-See [Migrate to v0.3](/docs/migrating/v0-3) for upgrade steps. The only required action for most self-hosters is a redeploy. The `NEXT_PUBLIC_*` → `VITE_*` rename is optional — old names still work.
+See [Migrate to v0.3](/migrating/v0-3) for upgrade steps. The only required action for most self-hosters is a redeploy. The `NEXT_PUBLIC_*` → `VITE_*` rename is optional — old names still work.

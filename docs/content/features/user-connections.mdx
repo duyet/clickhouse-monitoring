@@ -1,3 +1,8 @@
+---
+description: Save personal ClickHouse connections to the server so they sync across devices when signed in with Clerk — encrypted at rest with AES-256-GCM.
+icon: Users
+---
+
 # User Connections (Server Storage)
 
 > Save personal ClickHouse hosts to the server so they sync across devices when signed in with Clerk.
@@ -17,26 +22,59 @@ Browser-only storage remains available when server storage is disabled or the us
 
 ## Enable server storage
 
-1. Set auth to Clerk (`CHM_AUTH_PROVIDER=clerk`, `VITE_AUTH_PROVIDER=clerk`).
-2. Configure a database backend:
-   - **Cloudflare Workers**: `CONVERSATIONS_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
-   - **Node / K8s**: `DATABASE_URL` or `POSTGRES_URL`.
-3. Set feature flags:
-   ```bash
-   VITE_FEATURE_USER_CONNECTIONS_DB=true
-   CHM_FEATURE_USER_CONNECTIONS_DB=true
-   ```
-4. Set the encryption secret (32-byte key, base64-encoded):
-   ```bash
-   wrangler secret put CHM_CONNECTIONS_ENCRYPTION_KEY
-   ```
-5. Redeploy the dashboard.
+<Steps>
+<Step>
+### Configure Clerk auth
+
+Set auth to Clerk:
+
+```bash
+CHM_AUTH_PROVIDER=clerk
+VITE_AUTH_PROVIDER=clerk
+```
+</Step>
+<Step>
+### Configure a database backend
+
+<Tabs items={['Cloudflare Workers (D1)', 'Node / Kubernetes (Postgres)']}>
+<Tab value="Cloudflare Workers (D1)">
+Use the `CONVERSATIONS_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
+</Tab>
+<Tab value="Node / Kubernetes (Postgres)">
+Set `DATABASE_URL` or `POSTGRES_URL`.
+</Tab>
+</Tabs>
+</Step>
+<Step>
+### Set feature flags
+
+```bash
+VITE_FEATURE_USER_CONNECTIONS_DB=true
+CHM_FEATURE_USER_CONNECTIONS_DB=true
+```
+</Step>
+<Step>
+### Set the encryption key
+
+32-byte key, base64-encoded:
+
+```bash
+wrangler secret put CHM_CONNECTIONS_ENCRYPTION_KEY
+```
+</Step>
+<Step>
+### Redeploy the dashboard
 
 The Add Host dialog shows an enabled **Save to server** toggle when all requirements are met. Otherwise it displays a note with a link to this page.
+</Step>
+</Steps>
 
 ## Security notes
 
-- **Per-user isolation:** Each connection row is keyed by the signed-in Clerk `userId`. List, read, update, delete, and chart/table proxy routes all resolve auth first and query with `WHERE user_id = ?`. Guessing another user's `connectionId` returns 404 — never their credentials.
+<Callout type="info" title="Per-user isolation">
+Each connection row is keyed by the signed-in Clerk `userId`. List, read, update, delete, and chart/table proxy routes all resolve auth first and query with `WHERE user_id = ?`. Guessing another user's `connectionId` returns 404 — never their credentials.
+</Callout>
+
 - **Not org-shared:** Connections belong to the individual Clerk account, not the whole organization. Two teammates each see only their own server-stored hosts.
 - Passwords are encrypted with AES-256-GCM before writing to D1/Postgres.
 - API routes return connection metadata only; passwords are never echoed after create.
@@ -46,6 +84,6 @@ The Add Host dialog shows an enabled **Save to server** toggle when all requirem
 
 ## Related
 
-- [Browser Connections](/docs/features/browser-connections)
-- [Authentication](/docs/authentication)
-- [Environment variables](/docs/reference/environment-variables)
+- [Browser Connections](/features/browser-connections)
+- [Authentication](/authentication)
+- [Environment variables](/reference/environment-variables)

@@ -1,3 +1,8 @@
+---
+description: Cluster health at a glance — active queries, memory, disk, and CPU pulled from live ClickHouse system tables.
+icon: Gauge
+---
+
 # Overview
 
 > The landing page for each ClickHouse host: instant health status, active queries, memory, disk, and CPU at a glance.
@@ -20,7 +25,27 @@ Overview is the first page you land on. It pulls live numbers from several syste
 - How much memory and disk are in use?
 - What is CPU load?
 
-The page is organized into tabs: **Connections**, **Queries**, **Merges**, **Replication**, and **System**. Each tab shows a small set of charts that auto-refresh. There are no write operations on this page.
+The page auto-refreshes on a short interval. There are no write operations.
+
+### Tabs
+
+<Tabs items={['Connections', 'Queries', 'Merges', 'Replication', 'System']}>
+  <Tab value="Connections">
+    Active TCP and HTTP connections, connection pool usage, and rejected connections over time.
+  </Tab>
+  <Tab value="Queries">
+    Running query count, queries-per-second rate, and current memory consumed by queries.
+  </Tab>
+  <Tab value="Merges">
+    Active merge count, parts waiting to merge, and merge throughput (rows/s, bytes/s).
+  </Tab>
+  <Tab value="Replication">
+    Replication queue depth and absolute delay across all replicated tables on this host. Only meaningful when replicated tables exist.
+  </Tab>
+  <Tab value="System">
+    CPU load (from `system.asynchronous_metrics`), memory usage, uptime, and OS-level stats.
+  </Tab>
+</Tabs>
 
 ## Pages
 
@@ -70,6 +95,6 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60   # query timeout in seconds
 
 ## Related
 
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
-- [Health alerting](/docs/features/health)
+- [Authentication](/authentication)
+- [Settings reference](/settings)
+- [Health alerting](/features/health)

@@ -1,3 +1,8 @@
+---
+description: Monitor multiple ClickHouse clusters from a single deployment using comma-separated connection variables and the host selector.
+icon: Server
+---
+
 # Multiple Hosts
 
 chmonitor can monitor multiple ClickHouse clusters from a single deployment. The host selector in the dashboard header lets you switch between them. The URL reflects the active host as `?host=N`.
@@ -18,6 +23,17 @@ Set `CLICKHOUSE_HOST` to a comma-separated list of host URLs. Position N across 
 `CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_NAME` is optional — if omitted, hosts are labeled by their index (Host 0, Host 1, …). For credentials, you can provide a single shared value (applied to all hosts) or one value per host position.
 
 The URL parameter `?host=0` targets the first host, `?host=1` the second, and so on. The dashboard defaults to `?host=0` on first load.
+
+<Mermaid chart={`flowchart LR
+  subgraph Browser
+    U[User] -->|"?host=0"| D[Dashboard]
+    U -->|"?host=1"| D
+  end
+  subgraph Server
+    D --> R[Router]
+    R -->|hostId=0| CH1[ClickHouse ch-1]
+    R -->|hostId=1| CH2[ClickHouse ch-2]
+  end`} />
 
 ---
 
@@ -51,8 +67,8 @@ CLICKHOUSE_PASSWORD=prod_pass,staging_pass
 
 Replace `vX.Y.Z` with the release tag you want to run.
 
-**Same credentials:**
-
+<Tabs items={['Same credentials', 'Different credentials']}>
+<Tab value="Same credentials">
 ```bash
 docker run -d \
   -e CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \
@@ -63,9 +79,8 @@ docker run -d \
   --name chmonitor \
   ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
-
-**Different credentials:**
-
+</Tab>
+<Tab value="Different credentials">
 ```bash
 docker run -d \
   -e CLICKHOUSE_HOST='http://ch-1:8123,http://ch-2:8123' \
@@ -76,13 +91,17 @@ docker run -d \
   --name chmonitor \
   ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
+</Tab>
+</Tabs>
 
 ---
 
 ## Kubernetes / Helm examples
 
+<Tabs items={['Same credentials', 'Different credentials']}>
+<Tab value="Same credentials">
 ```yaml
-# values.yaml — same credentials
+# values.yaml
 env:
   - name: CLICKHOUSE_HOST
     value: "http://ch-1:8123,http://ch-2:8123"
@@ -93,9 +112,10 @@ env:
   - name: CLICKHOUSE_PASSWORD
     value: ""
 ```
-
+</Tab>
+<Tab value="Different credentials">
 ```yaml
-# values.yaml — different credentials
+# values.yaml
 env:
   - name: CLICKHOUSE_HOST
     value: "http://ch-1:8123,http://ch-2:8123"
@@ -106,6 +126,8 @@ env:
   - name: CLICKHOUSE_PASSWORD
     value: "prod_pass,staging_pass"
 ```
+</Tab>
+</Tabs>
 
 Install or upgrade:
 
@@ -118,8 +140,10 @@ helm upgrade --install chmonitor chmonitor/chmonitor -f values.yaml
 
 ## Notes
 
+<Callout type="info">
 - Adding or removing a host requires a restart (env change).
 - Health alerts run over all configured hosts when `HEALTH_ALERT_ENABLED=true`.
 - The agent API accepts a `hostId` parameter to target a specific host.
+</Callout>
 
-See [Custom Name](/docs/advanced/custom-name) for display labels, and [Environment Variables](/docs/reference/environment-variables) for the full connection reference.
+See [Custom Name](/advanced/custom-name) for display labels, and [Environment Variables](/reference/environment-variables) for the full connection reference.

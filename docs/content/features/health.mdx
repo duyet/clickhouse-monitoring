@@ -1,3 +1,8 @@
+---
+description: At-a-glance cluster health dashboard with automated headless health-sweep alerts via webhook and Cloudflare Cron.
+icon: HeartPulse
+---
+
 # Health
 
 > At-a-glance cluster health dashboard and automated headless health-sweep alerts.
@@ -60,12 +65,29 @@ access = "authenticated"
 
 The health-sweep endpoint runs checks over all configured hosts and sends a webhook notification when a check meets or exceeds the minimum severity.
 
+<Mermaid chart={`sequenceDiagram
+  participant Cron as Cron / Caller
+  participant Sweep as /api/cron/health-sweep
+  participant CH as ClickHouse
+  participant Hook as Webhook (Slack/Discord)
+  Cron->>Sweep: GET (Authorization: Bearer)
+  Sweep->>CH: Query system tables
+  CH-->>Sweep: Check results
+  Sweep-->>Cron: JSON array (HTTP 200)
+  alt severity >= min
+    Sweep->>Hook: POST {"text": "..."}
+  end`} />
+
 | Variable | Default | Description |
 |---|---|---|
 | `CRON_SECRET` | (unset = open) | Guards `GET /api/cron/health-sweep`. Pass as `Authorization: Bearer <secret>`. **Setting this is strongly recommended** — without it the endpoint is publicly accessible to anyone who can reach your deployment. |
 | `HEALTH_ALERT_ENABLED` | `false` | Set to `true` to enable webhook dispatch. |
 | `HEALTH_ALERT_WEBHOOK_URL` | (required if enabled) | Slack or Discord incoming webhook URL. Payload is a JSON object with a `text` field. |
 | `HEALTH_ALERT_MIN_SEVERITY` | `warning` | Minimum severity that triggers a notification. Values: `warning` or `critical`. |
+
+<Callout type="warn" title="Secure the sweep endpoint">
+Without `CRON_SECRET`, the `/api/cron/health-sweep` endpoint is publicly accessible. Set it and pass it as `Authorization: Bearer <secret>` from your cron caller.
+</Callout>
 
 Example for Cloudflare Workers (using `wrangler secret put`):
 
@@ -112,7 +134,7 @@ The cron handler calls the health-sweep logic directly — no HTTP hop needed wh
 
 ## Related
 
-- [Metrics](/docs/features/metrics)
-- [Cluster](/docs/features/cluster)
-- [Feature permissions](/docs/advanced/feature-permissions)
-- [Authentication](/docs/authentication)
+- [Metrics](/features/metrics)
+- [Cluster](/features/cluster)
+- [Feature permissions](/advanced/feature-permissions)
+- [Authentication](/authentication)
