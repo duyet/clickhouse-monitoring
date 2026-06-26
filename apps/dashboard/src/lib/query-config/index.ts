@@ -102,6 +102,13 @@ import {
 } from './system/replicas-status'
 import { replicatedMergeTreeSettingsConfig } from './system/replicated-merge-tree-settings'
 import { warningsConfig } from './system/warnings'
+import { histogramMetricsConfig } from './system/histogram-metrics'
+import { latencyLogConfig } from './system/latency-log'
+import { workloadsConfig } from './system/workloads'
+import { schedulerConfig } from './system/scheduler'
+import { opentelemetrySpansConfig } from './system/opentelemetry-spans'
+import { indexAnalyticsConfig } from './system/index-analytics'
+import { projectionAnalyticsConfig } from './system/projection-analytics'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
 import { droppedTablesConfig } from './tables/dropped-tables'
@@ -215,6 +222,13 @@ export const queries: Array<QueryConfig> = [
   storageCompressionConfig,
   storagePoliciesConfig,
   ttlStorageMovesConfig,
+  histogramMetricsConfig,
+  latencyLogConfig,
+  workloadsConfig,
+  schedulerConfig,
+  opentelemetrySpansConfig,
+  indexAnalyticsConfig,
+  projectionAnalyticsConfig,
 
   // Security
   sessionsConfig,

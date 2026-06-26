@@ -17,6 +17,7 @@ import {
 } from '@radix-ui/react-icons'
 import {
   AlertTriangleIcon,
+  ActivityIcon,
   BookOpenIcon,
   CircleDollarSignIcon,
   CloudIcon,
@@ -45,6 +46,7 @@ import {
   UngroupIcon,
   UnplugIcon,
   UsersIcon,
+  WorkflowIcon,
 } from 'lucide-react'
 
 import type { MenuItem } from '@/components/menu/types'
@@ -363,6 +365,16 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/view_refreshes',
         tableCheck: 'system.view_refreshes',
       },
+      {
+        title: 'Index & Projection Analytics',
+        href: '/index-analytics',
+        description:
+          'Data-skipping index and projection inventory with storage cost; flags dead indexes and empty projections',
+        icon: LayersIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/data_skipping_indices',
+        tableCheck: 'system.data_skipping_indices',
+      },
     ],
   },
   {
@@ -657,6 +669,16 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/crash_log',
         tableCheck: 'system.crash_log',
       },
+      {
+        title: 'OpenTelemetry Spans',
+        href: '/opentelemetry-spans',
+        description:
+          'Distributed query trace waterfall from system.opentelemetry_span_log: spans across replicas and shards',
+        icon: ActivityIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log',
+        tableCheck: 'system.opentelemetry_span_log',
+      },
     ],
   },
   {
@@ -734,6 +756,26 @@ export const menuItemsConfig: MenuItem[] = [
         isNew: true,
         tableCheck: 'system.background_schedule_pool',
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/background_schedule_pool',
+      },
+      {
+        title: 'Histogram Metrics',
+        href: '/histogram-metrics',
+        description:
+          'Latency distribution panels for Keeper stages and query durations (system.histogram_metrics, CH 25.1+)',
+        icon: GaugeIcon,
+        isNew: true,
+        tableCheck: 'system.histogram_metrics',
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/histogram_metrics',
+      },
+      {
+        title: 'Workload Scheduling',
+        href: '/workload-scheduling',
+        description:
+          'SQL resource scheduling workload hierarchy and live scheduler state: weights, priorities, and concurrency caps (CH 25.4+)',
+        icon: WorkflowIcon,
+        isNew: true,
+        tableCheck: 'system.workloads',
+        docs: 'https://clickhouse.com/docs/en/operations/workload-scheduling',
       },
     ],
   },

@@ -106,6 +106,13 @@ import {
   replicaTablesDeclarative,
 } from './system/replicas-status'
 import { replicatedMergeTreeSettingsDeclarative } from './system/replicated-merge-tree-settings'
+import { histogramMetricsDeclarative } from './system/histogram-metrics'
+import { latencyLogDeclarative } from './system/latency-log'
+import { workloadsDeclarative } from './system/workloads'
+import { schedulerDeclarative } from './system/scheduler'
+import { opentelemetrySpansDeclarative } from './system/opentelemetry-spans'
+import { indexAnalyticsDeclarative } from './system/index-analytics'
+import { projectionAnalyticsDeclarative } from './system/projection-analytics'
 // Tables
 import { detachedPartsDeclarative } from './tables/detached-parts'
 import { distributedDdlQueueDeclarative } from './tables/distributed-ddl-queue'
@@ -216,6 +223,13 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
   replicatedMergeTreeSettingsDeclarative,
+  histogramMetricsDeclarative,
+  latencyLogDeclarative,
+  workloadsDeclarative,
+  schedulerDeclarative,
+  opentelemetrySpansDeclarative,
+  indexAnalyticsDeclarative,
+  projectionAnalyticsDeclarative,
 
   // Tables
   detachedPartsDeclarative,

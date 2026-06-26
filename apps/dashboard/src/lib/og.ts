@@ -165,6 +165,30 @@ export const OG_PAGES: Record<string, OgPage> = {
     description:
       'Active and upcoming background scheduled tasks with durations and failure history.',
   },
+  'histogram-metrics': {
+    eyebrow: 'DIAGNOSTICS',
+    title: 'Histogram Metrics',
+    description:
+      'Latency distribution panels for Keeper stages and query durations from system.histogram_metrics (CH 25.1+).',
+  },
+  'workload-scheduling': {
+    eyebrow: 'SCHEDULING',
+    title: 'Workload & Resource Scheduling',
+    description:
+      'SQL resource scheduling workload hierarchy and live scheduler state: weights, priorities, and concurrency caps.',
+  },
+  'opentelemetry-spans': {
+    eyebrow: 'TRACING',
+    title: 'OpenTelemetry Span Viewer',
+    description:
+      'Distributed query trace waterfall from system.opentelemetry_span_log: spans grouped by trace_id across replicas.',
+  },
+  'index-analytics': {
+    eyebrow: 'PERFORMANCE',
+    title: 'Index & Projection Analytics',
+    description:
+      'Data-skipping index and projection inventory with storage cost — flag dead indexes and empty projections.',
+  },
 }
 
 /** Absolute URL of a page's OG image, e.g. .../og-running-queries.png. */
