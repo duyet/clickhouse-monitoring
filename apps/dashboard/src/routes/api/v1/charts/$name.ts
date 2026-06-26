@@ -14,6 +14,7 @@ import {
   getChartQuery,
   hasChart,
 } from '@/lib/api/chart-registry'
+import { validateChartParams } from '@/lib/api/chart-param-validator'
 import {
   classifyError,
   getStatusCodeForErrorType,
@@ -23,6 +24,12 @@ import {
   executeMultiChartQuery,
   isValidInterval,
 } from '@/lib/api/query-executor'
+import {
+  checkRateLimit,
+  clientIpKey,
+  getApiRateLimitPerMin,
+  rateLimitResponse,
+} from '@/lib/api/rate-limiter'
 import { statusForFetchDataError } from '@/lib/api/shared/fetch-data-error'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
@@ -34,6 +41,11 @@ export async function handler(
   request: Request,
   name: string
 ): Promise<Response> {
+  // Rate-limit by client IP before doing any work
+  const ip = clientIpKey(request)
+  const rlResult = checkRateLimit(`charts:ip:${ip}`, getApiRateLimitPerMin())
+  if (!rlResult.allowed) return rateLimitResponse(rlResult.retryAfterSec)
+
   const bindings = env as Record<string, string | undefined>
   const { searchParams } = new URL(request.url)
 
@@ -82,17 +94,39 @@ export async function handler(
   const paramStr = searchParams.get('params')
   let chartParams: Record<string, unknown> | undefined
   if (paramStr) {
+    let parsed: unknown
     try {
-      const parsed: unknown = JSON.parse(paramStr)
-      if (
-        parsed !== null &&
-        typeof parsed === 'object' &&
-        !Array.isArray(parsed)
-      ) {
-        chartParams = parsed as Record<string, unknown>
-      }
+      parsed = JSON.parse(paramStr)
     } catch {
-      // Ignore invalid params JSON
+      return Response.json(
+        {
+          success: false,
+          error: { type: 'validation', message: 'Invalid JSON in params' },
+        },
+        { status: 400 }
+      )
+    }
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      !Array.isArray(parsed)
+    ) {
+      // Validate/sanitize before forwarding to the chart executor
+      const validation = validateChartParams(parsed as Record<string, unknown>)
+      if (validation.type === 'validation') {
+        return Response.json(
+          {
+            success: false,
+            error: {
+              type: 'validation',
+              message: validation.message,
+              field: validation.field,
+            },
+          },
+          { status: 400 }
+        )
+      }
+      chartParams = validation.params
     }
   }
 

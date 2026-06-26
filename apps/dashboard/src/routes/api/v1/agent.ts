@@ -29,6 +29,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { LanguageModelUsage } from 'ai'
 
 import { env } from 'cloudflare:workers'
+import {
+  checkRateLimit,
+  clientIpKey,
+  getAgentRateLimitPerMin,
+  rateLimitResponse,
+} from '@/lib/api/rate-limiter'
 import { pipeJsonRender } from '@json-render/core'
 import {
   convertToModelMessages,
@@ -268,6 +274,11 @@ function sanitizeIncomingMessages(
 async function handlePost(request: Request): Promise<Response> {
   bridgeClickHouseEnv(env as Record<string, string | undefined>)
 
+  // Rate-limit by IP first, then tighten per identity after auth resolves.
+  const ip = clientIpKey(request)
+  const rlResult = checkRateLimit(`agent:ip:${ip}`, getAgentRateLimitPerMin())
+  if (!rlResult.allowed) return rateLimitResponse(rlResult.retryAfterSec)
+
   const authResponse = await authorizeAgentApiRequest(request)
   if (authResponse) return authResponse
 
@@ -482,6 +493,7 @@ async function handlePost(request: Request): Promise<Response> {
     providerOptions: { openrouter: { user: openRouterUser } },
     referer: requestOrigin,
     includeControlTools,
+    sessionId,
   })
 
   const uiMessages: Array<{
