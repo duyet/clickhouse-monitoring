@@ -16,7 +16,7 @@ export interface DocsVersionEntry {
 }
 
 export const docsVersions: DocsVersionEntry[] = [
-  { label: 'v0.3', href: '/releases/v0-3', current: true },
+  { label: 'v0.3', href: '/reference/releases/v0-3', current: true },
 ]
 
 // Docs are served at the site root (docs.chmonitor.dev/).

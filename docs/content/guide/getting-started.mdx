@@ -1,0 +1,153 @@
+---
+description: Run chmonitor against your ClickHouse instance in minutes using Docker or from source — three environment variables and one command.
+icon: Rocket
+---
+
+# Getting Started
+
+The fastest path: run chmonitor against an existing ClickHouse instance. You need three environment variables and one command.
+
+## Prerequisites
+
+- A running ClickHouse instance reachable from where you deploy.
+- A ClickHouse user with `SELECT` on `system.*` — see [ClickHouse user & grants](/guide/getting-started/clickhouse-requirements).
+- Docker installed locally (for the Docker path below).
+
+## Quick start
+
+<Tabs items={["Docker", "From source"]}>
+
+<Tab value="Docker">
+
+<Steps>
+
+<Step>
+
+### Pull and run
+
+Replace `vX.Y.Z` with a real release tag from [GitHub releases](https://github.com/duyet/clickhouse-monitoring/releases):
+
+```bash
+docker run -d \
+  --name chmonitor \
+  -p 3000:3000 \
+  -e CLICKHOUSE_HOST=http://your-clickhouse-host:8123 \
+  -e CLICKHOUSE_USER=monitoring \
+  -e CLICKHOUSE_PASSWORD=your-password \
+  ghcr.io/duyet/chmonitor:vX.Y.Z
+```
+
+<Callout type="info" title="Docker host networking">
+If ClickHouse runs on the same Docker host, use the host gateway address instead of `localhost`. On Linux that is typically `172.17.0.1`; on Mac/Windows use `host.docker.internal`.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Open the dashboard
+
+Navigate to [http://localhost:3000](http://localhost:3000). The overview page loads immediately.
+
+</Step>
+
+<Step>
+
+### Verify it works
+
+If pages are empty or show errors:
+
+1. Check the container logs: `docker logs chmonitor`
+2. Confirm the ClickHouse user can query `system.query_log` directly.
+3. See [Enable system tables](/guide/getting-started/clickhouse-enable-system-tables) if some tables are missing.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="From source">
+
+<Steps>
+
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/duyet/clickhouse-monitoring
+cd clickhouse-monitoring
+bun install
+```
+
+</Step>
+
+<Step>
+
+### Configure environment
+
+Copy `.env.example` to `.env.local` and fill in your ClickHouse connection:
+
+```bash
+CLICKHOUSE_HOST=http://your-clickhouse-host:8123
+CLICKHOUSE_USER=monitoring
+CLICKHOUSE_PASSWORD=your-password
+```
+
+</Step>
+
+<Step>
+
+### Start the dev server
+
+```bash
+bun run dev
+```
+
+Open [http://localhost:3001](http://localhost:3001).
+
+</Step>
+
+</Steps>
+
+See the [Local development guide](/guide/getting-started/local) for the complete setup including testing and building.
+
+</Tab>
+
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card
+    title="ClickHouse user & grants"
+    href="/guide/getting-started/clickhouse-requirements"
+    description="Create a safe read-only monitoring user with the minimal grants needed."
+  />
+  <Card
+    title="Enable system tables"
+    href="/guide/getting-started/clickhouse-enable-system-tables"
+    description="Enable system log tables for full feature coverage."
+  />
+  <Card
+    title="Install & Configure"
+    href="/operate/deploy"
+    description="Deploy to Kubernetes, Cloudflare Workers, or another platform."
+  />
+  <Card
+    title="Authentication"
+    href="/operate/authentication"
+    description="Require login before accessing the dashboard."
+  />
+  <Card
+    title="AI Agent"
+    href="/guide/ai-agent"
+    description="Set up natural-language queries about your cluster."
+  />
+  <Card
+    title="Local development"
+    href="/guide/getting-started/local"
+    description="Develop from source with hot reload."
+  />
+</Cards>

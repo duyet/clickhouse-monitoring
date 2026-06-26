@@ -36,7 +36,7 @@ export function VersionSwitcher() {
           </a>
         ))}
         <a
-          href="/releases"
+          href="/reference/releases"
           className="mt-1 border-t pt-1.5 px-2 py-1.5 text-xs text-fd-muted-foreground transition-colors hover:text-fd-accent-foreground"
         >
           All releases →

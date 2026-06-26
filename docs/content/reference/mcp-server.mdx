@@ -73,19 +73,19 @@ Production deployments should protect the MCP endpoint. Two methods are supporte
 
 Set `CHM_API_KEY_SECRET` and issue `chm_` tokens at `POST /api/v1/auth/api-key`. Send as `Authorization: Bearer chm_...`. Tokens are HMAC-SHA-256 and time-limited.
 
-See [API Keys](/authentication/api-keys) for setup.
+See [API Keys](/operate/authentication/api-keys) for setup.
 
 **Clerk OAuth (for browser-based MCP clients):**
 
 When `CHM_AUTH_PROVIDER=clerk` is set, `/api/mcp` also accepts Clerk OAuth bearer tokens. The client completes a standard OAuth browser flow; chmonitor acts as the resource server and verifies tokens via Clerk REST introspection using `CLERK_SECRET_KEY`.
 
-See [Authentication](/authentication) for provider setup.
+See [Authentication](/operate/authentication) for provider setup.
 
 ---
 
 ## Available tools
 
-The MCP server exposes the same read-only capabilities as the dashboard agent. For a full list of tools, see [AI Agent — Capabilities](/ai-agent/capabilities).
+The MCP server exposes the same read-only capabilities as the dashboard agent. For a full list of tools, see [AI Agent — Capabilities](/guide/ai-agent/capabilities).
 
 Quick summary of core tools:
 
@@ -135,4 +135,4 @@ Do not expose the MCP endpoint publicly without setting `CHM_API_KEY_SECRET`. An
 </Callout>
 
 See [Environment Variables](/reference/environment-variables) for `CHM_API_KEY_SECRET` and auth variables.
-See [Features — MCP](/features/mcp) for more on the MCP feature and how to gate it.
+See [Features — MCP](/guide/features/mcp) for more on the MCP feature and how to gate it.
