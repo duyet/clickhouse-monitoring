@@ -15,7 +15,7 @@ export interface PaletteCommand {
   /** Display label shown in the palette list. */
   label: string
   /** Extra keywords used for fuzzy matching (not displayed). */
-  keywords?: string[]
+  keywords?: readonly string[]
   /** Route href to navigate to on activation (mutually exclusive with action). */
   href?: string
   /** Imperative callback invoked on activation. */
