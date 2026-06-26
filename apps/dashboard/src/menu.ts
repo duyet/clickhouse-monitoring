@@ -19,6 +19,7 @@ import {
   AlertTriangleIcon,
   BookOpenIcon,
   CircleDollarSignIcon,
+  CloudIcon,
   CombineIcon,
   CpuIcon,
   DownloadIcon,
@@ -686,6 +687,16 @@ export const menuItemsConfig: MenuItem[] = [
         tableCheck: 'system.disks',
       },
       {
+        title: 'Storage Economics',
+        href: '/storage-economics',
+        description:
+          'Per-table compression ratios, storage cost, storage policies, and TTL move activity',
+        icon: CircleDollarSignIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/parts',
+        tableCheck: 'system.parts',
+      },
+      {
         title: 'Warnings',
         href: '/warnings',
         description:
@@ -746,6 +757,16 @@ export const menuItemsConfig: MenuItem[] = [
         icon: ArchiveIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/backup_log',
         tableCheck: 'system.backup_log',
+      },
+      {
+        title: 'Blob Storage Log',
+        href: '/blob-storage-log',
+        description:
+          'Object storage I/O operations (reads, writes, deletes) on S3/blob disks',
+        icon: CloudIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/blob_storage_log',
+        tableCheck: 'system.blob_storage_log',
       },
       {
         title: 'Errors',
