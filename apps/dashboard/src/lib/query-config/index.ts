@@ -88,7 +88,12 @@ import {
   storagePoliciesConfig,
   ttlStorageMovesConfig,
 } from './system/storage-economics'
+import { asynchronousInsertLogConfig } from './system/asynchronous-insert-log'
+import { asynchronousInsertsConfig } from './system/asynchronous-inserts'
+import { backgroundSchedulePoolConfig } from './system/background-schedule-pool'
+import { backgroundSchedulePoolLogConfig } from './system/background-schedule-pool-log'
 import { kafkaConsumersConfig } from './system/kafka-consumers'
+import { rabbitmqConsumersConfig } from './system/rabbitmq-consumers'
 import { partLogConfig } from './system/part-log'
 import { queryMetricLogConfig } from './system/query-metric-log'
 import {
@@ -201,6 +206,11 @@ export const queries: Array<QueryConfig> = [
   tablesListConfig,
   warningsConfig,
   kafkaConsumersConfig,
+  rabbitmqConsumersConfig,
+  asynchronousInsertsConfig,
+  asynchronousInsertLogConfig,
+  backgroundSchedulePoolConfig,
+  backgroundSchedulePoolLogConfig,
   blobStorageLogConfig,
   storageCompressionConfig,
   storagePoliciesConfig,

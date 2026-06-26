@@ -93,7 +93,12 @@ import {
   databaseDiskSpaceDeclarative,
   diskSpaceDeclarative,
 } from './system/disks'
+import { asynchronousInsertLogDeclarative } from './system/asynchronous-insert-log'
+import { asynchronousInsertsDeclarative } from './system/asynchronous-inserts'
+import { backgroundSchedulePoolDeclarative } from './system/background-schedule-pool'
+import { backgroundSchedulePoolLogDeclarative } from './system/background-schedule-pool-log'
 import { kafkaConsumersDeclarative } from './system/kafka-consumers'
+import { rabbitmqConsumersDeclarative } from './system/rabbitmq-consumers'
 import { partLogDeclarative } from './system/part-log'
 import { queryMetricLogDeclarative } from './system/query-metric-log'
 import {
@@ -202,6 +207,11 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   databaseDiskSpaceByDatabaseDeclarative,
   queryMetricLogDeclarative,
   kafkaConsumersDeclarative,
+  rabbitmqConsumersDeclarative,
+  asynchronousInsertsDeclarative,
+  asynchronousInsertLogDeclarative,
+  backgroundSchedulePoolDeclarative,
+  backgroundSchedulePoolLogDeclarative,
   partLogDeclarative,
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
