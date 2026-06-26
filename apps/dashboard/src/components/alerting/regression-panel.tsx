@@ -32,7 +32,7 @@ export function RegressionPanel({ hostId, className }: RegressionPanelProps) {
   const { data, isLoading, error } = useChartData<SlowQueryRegression>({
     chartName: 'slow-query-regressions',
     hostId,
-    refreshInterval: REFRESH_INTERVAL.SLOW_60S,
+    refreshInterval: REFRESH_INTERVAL.DEFAULT_60S,
   })
 
   const rows: SlowQueryRegression[] = Array.isArray(data) ? data : []
