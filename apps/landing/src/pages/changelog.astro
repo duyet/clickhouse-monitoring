@@ -1,0 +1,103 @@
+---
+import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+
+interface Release {
+  tag_name: string
+  name: string
+  published_at: string
+  html_url: string
+  body: string
+  prerelease: boolean
+}
+
+let releases: Release[] = []
+try {
+  const res = await fetch(
+    'https://api.github.com/repos/duyet/clickhouse-monitoring/releases?per_page=20',
+    { headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }
+  )
+  if (res.ok) {
+    const data = await res.json()
+    releases = (data as Release[]).filter((r) => !r.prerelease).slice(0, 12)
+  }
+} catch (_) { /* build-time fetch unavailable */ }
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+// Convert basic GitHub markdown to HTML (just handle bold, code, links, headings, lists)
+function mdToHtml(md: string): string {
+  if (!md) return ''
+  return md
+    .split('\n')
+    .map((line) => {
+      // headings → skip (they're usually "What's Changed" etc)
+      if (/^#{1,3}\s/.test(line)) return ''
+      // list items → keep as-is with bullet
+      const li = line.replace(/^\*\s+/, '').replace(/^-\s+/, '')
+      const isLi = line !== li
+      let out = li
+        // inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // bold
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        // links [text](url)
+        .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      return isLi ? `<li>${out}</li>` : out ? `<span>${out}</span>` : ''
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+---
+<Base
+  title="Changelog — chmonitor"
+  description="Release history for chmonitor. See what's new in each version."
+>
+  <Nav />
+  <main style="min-height:70vh">
+    <section class="band">
+      <div class="wrap">
+        <div class="sec-head" style="margin-bottom:0">
+          <span class="eyebrow">What's new</span>
+          <h2>Changelog</h2>
+          <p>Release notes for chmonitor. Full history on <a href="https://github.com/duyet/clickhouse-monitoring/releases" target="_blank" rel="noopener" style="color:var(--orange)">GitHub Releases</a>.</p>
+        </div>
+
+        {releases.length > 0 ? (
+          <div class="cl-list">
+            {releases.map((r) => (
+              <div class="cl-entry">
+                <div class="cl-meta">
+                  <a class="cl-tag" href={r.html_url} target="_blank" rel="noopener">{r.tag_name}</a>
+                  <span class="cl-date">{fmtDate(r.published_at)}</span>
+                </div>
+                <div class="cl-body">
+                  <h4>{r.name || r.tag_name}</h4>
+                  {r.body && (
+                    <div class="cl-notes" set:html={mdToHtml(r.body)} />
+                  )}
+                  <a href={r.html_url} target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:13px;color:var(--orange);text-decoration:underline;text-underline-offset:3px">
+                    Full release notes
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style="margin-top:52px;text-align:center;padding:48px 24px;border:1px solid var(--border);border-radius:var(--radius)">
+            <p style="color:var(--muted-fg)">Release list could not be loaded at build time.</p>
+            <a class="btn btn-ghost" style="margin-top:16px;display:inline-flex" href="https://github.com/duyet/clickhouse-monitoring/releases" target="_blank" rel="noopener">
+              View all releases on GitHub
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        )}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

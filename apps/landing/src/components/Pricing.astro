@@ -1,0 +1,103 @@
+---
+const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>`
+---
+<section id="pricing" class="band">
+  <div class="wrap">
+    <div class="sec-head reveal" style="text-align:center">
+      <span class="eyebrow">Pricing</span>
+      <h2>Self-host free. Try cloud instantly.</h2>
+      <p>chmonitor is open source. Self-hosting is always free under the GPL-3.0 license. The hosted cloud lets you connect a cluster without any setup.</p>
+    </div>
+
+    <div class="pricing-grid reveal">
+      <!-- Self-host -->
+      <div class="price-card">
+        <div class="price-hd">
+          <div>
+            <span class="pname">Self-host</span>
+            <span class="ptag ptag-free">Free forever</span>
+          </div>
+          <div class="pamount">$0 <small>/ month</small></div>
+          <div class="pdesc">Run it on your own infrastructure. Docker, Cloudflare Workers, or Kubernetes — your choice, your data stays with you.</div>
+        </div>
+        <div class="price-body">
+          <ul class="price-rows">
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Full dashboard — all views, all features
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Connect unlimited ClickHouse clusters
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              AI agent and MCP server
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Docker, Cloudflare Workers, Kubernetes
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              GPL-3.0 — modify and redistribute freely
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Community support via GitHub Issues
+            </li>
+          </ul>
+          <div class="price-cta">
+            <a class="btn btn-primary" style="width:100%;justify-content:center" href="https://docs.chmonitor.dev" target="_blank" rel="noopener">
+              Read the quickstart
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cloud -->
+      <div class="price-card price-card-highlight">
+        <div class="price-hd">
+          <div>
+            <span class="pname">Cloud</span>
+            <span class="ptag ptag-beta">Early access</span>
+          </div>
+          <div class="pamount" style="font-size:24px;margin-top:16px">No setup required</div>
+          <div class="pdesc">Connect a ClickHouse cluster directly at <strong>dash.chmonitor.dev</strong> without deploying anything. Cloud pricing is not finalised — early access is free to try.</div>
+        </div>
+        <div class="price-body">
+          <ul class="price-rows">
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Everything in Self-host
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              No server to manage or maintain
+            </li>
+            <li class="price-row">
+              <span set:html={checkSvg} />
+              Connect with a read-only ClickHouse user
+            </li>
+            <li class="price-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              Pricing TBD — early access seats are limited
+            </li>
+          </ul>
+          <div class="price-cta">
+            <a class="btn btn-primary" style="width:100%;justify-content:center;background:var(--orange);border-color:var(--orange)" href="https://dash.chmonitor.dev" target="_blank" rel="noopener">
+              Try cloud now — free
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout reveal" style="margin-top:28px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <div>chmonitor only reads from ClickHouse system tables. It never writes to your data. Connect using a least-privilege <code>SELECT</code>-only user for maximum safety.</div>
+    </div>
+  </div>
+</section>
