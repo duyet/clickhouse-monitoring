@@ -497,6 +497,14 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/zookeeper_watches',
         tableCheck: 'system.zookeeper_watches',
       },
+      {
+        title: 'Keeper Deep-dive',
+        href: '/keeper/deep-dive',
+        description:
+          'Keeper internals (CH 26.6+): Raft cluster membership, snapshot files, and changelog (WAL) disk footprint',
+        icon: LayersIcon,
+        isNew: true,
+      },
     ],
   },
   {
