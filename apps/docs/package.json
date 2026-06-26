@@ -8,7 +8,7 @@
   "scripts": {
     "sync": "node scripts/sync-docs.mjs",
     "dev": "node scripts/sync-docs.mjs && vite dev",
-    "build": "node scripts/sync-docs.mjs && vite build",
+    "build": "node scripts/sync-docs.mjs && node scripts/generate-og.mjs && vite build",
     "start": "vite preview",
     "preview": "vite preview",
     "cf:deploy": "wrangler deploy",

@@ -3,22 +3,20 @@ import { source } from '@/lib/source'
 
 // OG image route: /og/docs/{...slugs}/image.webp
 //
-// Fumadocs Takumi integration (@takumi-rs/image-response) requires `ssr.external`
-// which is incompatible with @cloudflare/vite-plugin (CF refuses to mark packages
-// external in the Worker environment). As a result, per-page Takumi image generation
-// is not available on the CF Workers target. The route serves a redirect to the
-// static site-wide OG image instead.
+// Per-page OG images are PRE-GENERATED at build time by scripts/generate-og.mjs
+// (Node.js process, @takumi-rs/core native Napi-rs bindings) and written to
+// public/og/docs/{...slugs}/image.webp. Vite copies the public/ directory into
+// dist/, so the Cloudflare Worker serves these as static assets — this route
+// handler is never reached for known pages.
 //
-// Future options for per-page OG images on CF Workers:
-//  - Use CF Images Transformations to overlay text on a base image.
-//  - Pregenerate images in a CI step (separate Node.js process) and commit them
-//    to public/og/docs/.
-//  - Switch to a hosting target that supports Node.js native modules (e.g. Vercel).
+// This handler acts as a safety net for any request that slips through (e.g. a
+// new page deployed before the next build, or a request for a non-existent slug).
+// It validates that the slug at least maps to a known page and redirects to the
+// static fallback /og/og.png rather than returning 404.
 export const Route = createFileRoute('/og/docs/$')({
   server: {
     handlers: {
       GET: async ({ params }) => {
-        // Validate that the requested page exists; return 404 for unknown slugs.
         const rawSegments = (params._splat?.split('/') ?? []).filter(Boolean)
         const slugs =
           rawSegments[rawSegments.length - 1] === 'image.webp'
@@ -28,7 +26,7 @@ export const Route = createFileRoute('/og/docs/$')({
         const page = source.getPage(slugs)
         if (!page) throw notFound()
 
-        // Redirect to the static site-wide OG image (in public/og/og.png).
+        // Static image was pre-generated; this redirect is a last-resort fallback.
         return Response.redirect('/og/og.png', 302)
       },
     },

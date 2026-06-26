@@ -9,3 +9,7 @@ content/docs/
 
 # TanStack Router auto-generated route tree
 src/routeTree.gen.ts
+
+# Per-page OG images generated at build time by scripts/generate-og.mjs
+# Rebuilt each CI/deploy run from content/docs frontmatter; not committed.
+public/og/docs/
