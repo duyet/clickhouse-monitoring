@@ -23,6 +23,8 @@
     "test": "bun test src/ --isolate",
     "test:query-config": "bun test src/lib/query-config --isolate",
     "test:coverage": "bun test src/ --isolate --coverage --coverage-reporter=lcov --coverage-reporter=text",
+    "test:component": "cypress open --component",
+    "test:component:headless": "cypress run --component",
     "test:e2e": "cypress open --e2e",
     "test:e2e:headless": "cypress run --e2e",
     "smoke-test": "bun ../../scripts/smoke-test.ts --base-url https://dash.chmonitor.dev",
