@@ -91,7 +91,7 @@ function Hero() {
         </p>
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <a
-            href="/getting-started"
+            href="/guide/getting-started"
             className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
           >
             Get started
@@ -184,7 +184,7 @@ function ClosingCta() {
           Cloudflare Workers, or Vercel.
         </p>
         <a
-          href="/getting-started"
+          href="/guide/getting-started"
           className="mt-7 inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
         >
           Read the guide

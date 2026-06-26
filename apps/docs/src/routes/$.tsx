@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import browserCollections from 'collections/browser'
@@ -30,11 +30,46 @@ export const Route = createFileRoute('/$')({
   },
 })
 
+// Legacy → new path map after the 3-tab IA move (guide / operate / reference).
+// Keyed by the first URL segment; the value is the new prefix. Old links and
+// bookmarks (e.g. /features/overview) redirect to /guide/features/overview.
+// Keep in sync with FOLDER_META in scripts/sync-docs.mjs.
+const REDIRECT_PREFIX: Record<string, string> = {
+  'getting-started': 'guide/getting-started',
+  features: 'guide/features',
+  'ai-agent': 'guide/ai-agent',
+  guides: 'guide/guides',
+  introduction: 'guide',
+  deploy: 'operate/deploy',
+  authentication: 'operate/authentication',
+  advanced: 'operate/advanced',
+  releases: 'reference/releases',
+  migrating: 'reference/migrating',
+  faq: 'reference/faq',
+  settings: 'reference/settings',
+}
+
+// Returns the new path for a legacy slug array, or null if no mapping applies.
+function legacyRedirect(slugs: string[]): string | null {
+  const [first, ...rest] = slugs
+  const prefix = REDIRECT_PREFIX[first]
+  if (!prefix) return null
+  // `introduction` has no children, so rest is empty → /guide.
+  return `/${[prefix, ...rest].join('/')}`.replace(/\/$/, '')
+}
+
 const serverLoader = createServerFn({ method: 'GET' })
   .validator((slugs: string[]) => slugs)
   .handler(async ({ data: slugs }) => {
     const page = source.getPage(slugs)
-    if (!page) throw notFound()
+    if (!page) {
+      // Old flat URL? Permanently redirect to its new home under a tab.
+      const target = legacyRedirect(slugs)
+      if (target && source.getPage(target.split('/').filter(Boolean))) {
+        throw redirect({ href: target, statusCode: 301 })
+      }
+      throw notFound()
+    }
     return {
       path: page.path,
       markdownUrl: slugsToMarkdownPath(page.slugs).url,

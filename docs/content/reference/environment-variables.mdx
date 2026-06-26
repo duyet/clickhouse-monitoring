@@ -54,7 +54,7 @@ Required. Set at least `CLICKHOUSE_HOST`.
 
 `CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be either a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host index N.
 
-See [Multiple Hosts](/advanced/multiple-hosts) and [Custom Name](/advanced/custom-name).
+See [Multiple Hosts](/operate/advanced/multiple-hosts) and [Custom Name](/operate/advanced/custom-name).
 
 ---
 
@@ -118,13 +118,13 @@ CHM_FEATURE_METRICS_ENABLED=false
 CHM_DISABLED_FEATURES=settings,insights
 ```
 
-See [Feature Permissions](/advanced/feature-permissions) for config-file examples and precedence details.
+See [Feature Permissions](/operate/advanced/feature-permissions) for config-file examples and precedence details.
 
 ---
 
 ## Authentication
 
-The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authentication](/authentication) for the full model.
+The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authentication](/operate/authentication) for the full model.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -138,7 +138,7 @@ The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authent
 |---|---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). Build-time — must be set before `bun run build`. |
 | `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). Runtime only. Never expose to the browser. |
-| `CHM_CLERK_PUBLIC_READ` | `false` | When `true`, anonymous visitors can view read-only monitoring content; writes (AI agent, control actions, arbitrary SQL) still require sign-in. Runtime only. See [Clerk → Public read-only mode](/authentication/clerk#public-read-only-mode). |
+| `CHM_CLERK_PUBLIC_READ` | `false` | When `true`, anonymous visitors can view read-only monitoring content; writes (AI agent, control actions, arbitrary SQL) still require sign-in. Runtime only. See [Clerk → Public read-only mode](/operate/authentication/clerk#public-read-only-mode). |
 
 ### Reverse proxy (`CHM_AUTH_PROVIDER=proxy`)
 
@@ -191,7 +191,7 @@ Use when an upstream proxy (oauth2-proxy, Authelia, Traefik ForwardAuth, nginx a
 |---|---|---|
 | `CHM_TRUSTED_ALLOWED_GROUPS` | — | Comma-separated group names. When set, users whose forwarded groups do not intersect are denied `403`. Case-insensitive. |
 
-See [Trusted proxy](/authentication/trusted-proxy) for setup examples (oauth2-proxy + Dex + Traefik, nginx).
+See [Trusted proxy](/operate/authentication/trusted-proxy) for setup examples (oauth2-proxy + Dex + Traefik, nginx).
 
 ---
 
@@ -229,7 +229,7 @@ Provider-specific keys take priority over the generic `LLM_API_KEY` / `LLM_API_B
 | `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API (`POST /api/v1/agent`). Accepted when `CHM_FEATURE_AGENT_ACCESS=authenticated`. |
 | `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enable kill-query, optimize, and other write actions. Keep `false` unless users are trusted. |
 
-See [AI Agent — Configuration](/ai-agent/configuration) for full details.
+See [AI Agent — Configuration](/guide/ai-agent/configuration) for full details.
 
 ---
 
@@ -268,7 +268,7 @@ Agent conversations default to browser localStorage. Enable server-side persiste
 | `POSTGRES_URL` | Alternative PostgreSQL connection string. |
 | `POSTGRES_PRISMA_URL` | Prisma-specific PostgreSQL connection string. |
 
-See [Conversation History — Backends](/ai-agent/conversation-history/backends) for setup and fallback behavior.
+See [Conversation History — Backends](/guide/ai-agent/conversation-history/backends) for setup and fallback behavior.
 
 ---
 
@@ -283,7 +283,7 @@ The AI Insights panel on `/overview` persists its findings through a pluggable s
 
 `postgres` reuses `DATABASE_URL`; `agentstate` reuses `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`).
 
-See [AI Agent — AI Insights persistence](/ai-agent#ai-insights-persistence) for setup and fallback behavior. `GET /api/v1/insights/backend` reports the active backend.
+See [AI Agent — AI Insights persistence](/guide/ai-agent#ai-insights-persistence) for setup and fallback behavior. `GET /api/v1/insights/backend` reports the active backend.
 
 ---
 
@@ -364,4 +364,4 @@ Injected at build time for the About page.
 | `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | Renamed to `VITE_RUNNING_QUERIES_REFRESH_MS` in v0.3. |
 | `CLICKHOUSE_EXCLUDE_USER_DEFAULT` | Comma-separated usernames excluded from history-queries by default. |
 
-See [Migrate to v0.3](/migrating/v0-3) for the full rename list.
+See [Migrate to v0.3](/reference/migrating/v0-3) for the full rename list.

@@ -25,12 +25,12 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: 'Getting Started',
-        url: '/getting-started',
+        url: '/guide/getting-started',
         active: 'nested-url',
       },
       {
         text: 'Features',
-        url: '/features',
+        url: '/guide/features',
         active: 'nested-url',
       },
       {
@@ -40,7 +40,7 @@ export function baseOptions(): BaseLayoutProps {
       },
       {
         text: 'Releases',
-        url: '/releases',
+        url: '/reference/releases',
         active: 'nested-url',
       },
       // Version pill, pinned to the right of the nav (next to GitHub/search).

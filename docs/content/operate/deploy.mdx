@@ -1,0 +1,82 @@
+---
+description: Deploy chmonitor on Docker, Kubernetes, Cloudflare Workers, Vercel, or any Node.js server — each platform page is self-contained.
+icon: Ship
+---
+
+# Choosing a Platform
+
+Deploy chmonitor wherever your ClickHouse runs. Pick the platform that matches your infrastructure; each platform page is self-contained with install steps, all config categories, and migration notes.
+
+<Mermaid chart={`flowchart LR
+  U[Browser] --> W[chmonitor\\nWorker / Container / Node]
+  W --> CH[(ClickHouse)]
+  W --> DB[(Conversation Store\\npostgres / D1 / agentstate)]
+  W --> LLM[LLM API\\nopenrouter / openai]`} />
+
+## Platforms
+
+<Cards>
+  <Card
+    title="Docker"
+    href="/operate/deploy/docker"
+    description="Single-server self-host. Fastest path; pin a release tag. Supports none / clerk / proxy auth."
+  />
+  <Card
+    title="Kubernetes"
+    href="/operate/deploy/k8s"
+    description="Cluster-managed, multi-replica. Helm chart vendored in-repo; kustomize alternative."
+  />
+  <Card
+    title="Cloudflare Workers"
+    href="/operate/deploy/cloudflare"
+    description="Edge / serverless. D1 + Durable Objects for conversation store; Cron Trigger for health sweep."
+  />
+  <Card
+    title="Vercel"
+    href="/operate/deploy/vercel"
+    description="Quick hosted preview. Supports postgres or clickhouse for conversation store."
+  />
+  <Card
+    title="Node / standalone"
+    href="/operate/deploy/self-host"
+    description="Custom server, systemd, bare VM. Run bun run start or node server.js behind nginx."
+  />
+  <Card
+    title="Traefik"
+    href="/operate/deploy/traefik"
+    description="Put chmonitor behind a Traefik reverse proxy with optional ForwardAuth."
+  />
+  <Card
+    title="One-click deploy"
+    href="/operate/deploy/one-click"
+    description="Deploy to managed platforms with a single click."
+  />
+  <Card
+    title="Production checklist"
+    href="/operate/deploy/production-checklist"
+    description="Steps to harden and validate your deployment before going to production."
+  />
+</Cards>
+
+<Callout type="info" title="Not sure where to start?">
+- **Running Docker already?** → [Docker](/operate/deploy/docker)
+- **On Kubernetes?** → [Kubernetes](/operate/deploy/k8s)
+- **Want serverless edge?** → [Cloudflare Workers](/operate/deploy/cloudflare)
+- **Behind Traefik / a reverse proxy?** → [Traefik](/operate/deploy/traefik)
+- **Before going to production?** → [Production checklist](/operate/deploy/production-checklist)
+</Callout>
+
+## Configuration categories
+
+Every platform shares the same configuration categories. The links below go to the reference page for each.
+
+| Category | What it controls | Reference |
+|---|---|---|
+| ClickHouse connection | Hosts, credentials, query timeout, pool | [Configuration](/reference/configuration) |
+| Query / pool tuning | Execution time, cache TTL, pool size | [Configuration](/reference/configuration) |
+| Feature permissions | Enable/disable features; public vs authenticated access | [Features](/guide/features) |
+| Authentication | none / clerk / proxy (CF Access or trusted header) | [Authentication](/operate/authentication) |
+| AI agent | LLM key, model, control tools, agent API token | [AI Agent](/guide/ai-agent) |
+| Conversation store | Browser local / agentstate / D1 / postgres / clickhouse | [AI Agent](/guide/ai-agent) |
+| Health alerting | Cron sweep, webhook URL, severity threshold | [Configuration](/reference/configuration) |
+| Branding / analytics | Title, logo, GA / PostHog / Seline | [Configuration](/reference/configuration) |

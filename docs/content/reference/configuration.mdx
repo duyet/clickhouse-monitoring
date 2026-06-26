@@ -55,7 +55,7 @@ CLICKHOUSE_USER=default
 CLICKHOUSE_PASSWORD=
 ```
 
-For multiple hosts, use comma-separated values. See [Multiple Hosts](/advanced/multiple-hosts).
+For multiple hosts, use comma-separated values. See [Multiple Hosts](/operate/advanced/multiple-hosts).
 
 Full reference: [Environment Variables — ClickHouse Connection](/reference/environment-variables#clickhouse-connection).
 
@@ -83,7 +83,7 @@ Server auth is off by default (`CHM_AUTH_PROVIDER=none`). Choose a provider:
 
 An API key layer (`CHM_API_KEY_SECRET`) can run alongside any provider and issues signed `chm_` Bearer tokens for scripts and MCP clients.
 
-Full reference: [Authentication](/authentication).
+Full reference: [Authentication](/operate/authentication).
 
 ---
 
@@ -102,7 +102,7 @@ CHM_FEATURE_METRICS_ENABLED=false
 CHM_DISABLED_FEATURES=settings,insights
 ```
 
-Full reference: [Feature Permissions](/advanced/feature-permissions).
+Full reference: [Feature Permissions](/operate/advanced/feature-permissions).
 
 ---
 
@@ -118,7 +118,7 @@ LLM_MODEL=openrouter:openrouter/free           # default; format is provider:mod
 
 Keep LLM keys server-side. Never use `VITE_` or `NEXT_PUBLIC_` for them.
 
-Full reference: [AI Agent — Configuration](/ai-agent/configuration).
+Full reference: [AI Agent — Configuration](/guide/ai-agent/configuration).
 
 ---
 
@@ -134,7 +134,7 @@ VITE_FEATURE_CONVERSATION_DB=true
 CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory
 ```
 
-Full reference: [Conversation History — Backends](/ai-agent/conversation-history/backends).
+Full reference: [Conversation History — Backends](/guide/ai-agent/conversation-history/backends).
 
 ---
 
@@ -191,9 +191,9 @@ See the per-platform install guides for copy-paste examples.
 
 <Cards>
 <Card title="Environment Variables" href="/reference/environment-variables" description="Full list of every variable, grouped by category." />
-<Card title="Feature Permissions" href="/advanced/feature-permissions" description="Config-file and env-override details." />
-<Card title="Authentication" href="/authentication" description="Choose and configure an auth provider." />
-<Card title="AI Agent — Configuration" href="/ai-agent/configuration" description="LLM provider setup." />
+<Card title="Feature Permissions" href="/operate/advanced/feature-permissions" description="Config-file and env-override details." />
+<Card title="Authentication" href="/operate/authentication" description="Choose and configure an auth provider." />
+<Card title="AI Agent — Configuration" href="/guide/ai-agent/configuration" description="LLM provider setup." />
 <Card title="MCP Server" href="/reference/mcp-server" description="Connect external AI tools." />
 </Cards>
 

@@ -31,135 +31,158 @@ const SRC_DIR = resolve(REPO_ROOT, 'docs/content')
 const DEST_DIR = resolve(__dirname, '../content/docs')
 const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
 
-// Top-level sidebar order.
-// Groups: orientation → deployment → features → auth → AI → separator → advanced →
-// guides → reference → separator → meta → separator → utility.
-const ROOT_ORDER = [
-  'introduction',
-  'getting-started',
-  'features',
-  'ai-agent',
-  'deploy',
-  'authentication',
-  'guides',
-  '---',
-  'advanced',
-  'reference',
-  '---',
-  'migrating',
-  'releases',
-  '---',
-  'faq',
-  'settings',
-]
+// Information architecture: three top-level tabs (Fumadocs "Layout Tabs"),
+// rendered as a sidebar dropdown (tabMode: 'auto'). Only the active tab's tree
+// is shown. The source tree under docs/content/** mirrors this structure, so
+// page URLs are /<tab>/<section>/<page>. Old flat URLs are redirected in
+// src/routes/$.tsx (DOC_REDIRECTS).
+//
+// Tab order in the dropdown.
+const ROOT_PAGES = ['guide', 'operate', 'reference']
 
-// Sections promoted to Fumadocs "Layout Tabs" — root folders rendered as a
-// dropdown at the top of the sidebar (tabMode: 'auto'). Only the active tab's
-// pages show in the sidebar tree. Each entry maps 1:1 to an existing top-level
-// folder, so page URLs are unchanged. Trim/extend to change the dropdown set.
-const ROOT_TAB_SECTIONS = new Set([
-  'getting-started',
-  'features',
-  'ai-agent',
-  'deploy',
-  'authentication',
-  'advanced',
-  'reference',
-  'releases',
-])
-
-// Display title + sidebar icon (Lucide name, resolved by lucideIconsPlugin in
-// src/lib/source.ts) for each section folder. We set both explicitly so the
-// tree reads cleanly — e.g. "AI Agent" not "Ai Agent".
-const SECTION_META = {
-  'getting-started': { title: 'Getting Started', icon: 'Rocket' },
-  guides: { title: 'Guides', icon: 'Compass' },
-  deploy: { title: 'Deployment', icon: 'Ship' },
-  features: { title: 'Features', icon: 'LayoutGrid' },
-  'ai-agent': { title: 'AI Agent', icon: 'Bot' },
-  authentication: { title: 'Authentication', icon: 'ShieldCheck' },
-  advanced: { title: 'Advanced', icon: 'Settings2' },
-  reference: { title: 'Reference', icon: 'BookMarked' },
-  migrating: { title: 'Migrating', icon: 'ArrowRightLeft' },
-  releases: { title: 'Releases', icon: 'Tag' },
-}
-
-// Explicit page ordering within each section.
-// Entries are slug names relative to the section folder (no extension).
-// "index" refers to the section landing page (from a root-level .mdx with the
-// same name as the folder). Sections without a landing page omit "index".
-const SECTION_PAGE_ORDER = {
-  'getting-started': [
-    'index',
-    'clickhouse-requirements',
-    'clickhouse-enable-system-tables',
-    'local',
-  ],
-  guides: ['proxy-auth-setup', 'troubleshooting', 'upgrade-clickhouse'],
-  deploy: [
-    'index',
-    'docker',
-    'k8s',
-    'cloudflare',
-    'vercel',
-    'self-host',
-    'traefik',
-    'one-click',
-    'production-checklist',
-  ],
-  features: [
-    'index',
-    'overview',
-    'queries',
-    'tables',
-    'explorer',
-    'operations',
-    'cluster',
-    'metrics',
-    'insights',
-    'health',
-    'security',
-    'logs',
-    'dashboard',
-    'mcp',
-    'peerdb',
-    'browser-connections',
-    'user-connections',
-    'settings',
-  ],
-  'ai-agent': ['index', 'capabilities', 'configuration', 'conversation-history'],
-  authentication: [
-    'index',
-    'public',
-    'api-keys',
-    'clerk',
-    'cloudflare-access',
-    'trusted-header',
-    'trusted-proxy',
-  ],
-  advanced: [
-    'feature-permissions',
-    'multiple-hosts',
-    'editions',
-    'queries-history',
-    'self-tracking',
-    'telemetry',
-    'agent-conversation-storage',
-    'custom-name',
-    'peerdb-monitoring',
-  ],
-  reference: [
-    'environment-variables',
-    'configuration',
-    'mcp-server',
-    'mcp-clients',
-    'support-matrix',
-    'grafana-bridge',
-    'connection-presets',
-    'catalog-contributing',
-  ],
-  migrating: ['v0-3'],
-  releases: ['v0-3'],
+// Per-folder metadata, keyed by the folder's path relative to content/docs.
+// `root: true` promotes a folder to a layout tab. `pages` sets sidebar order;
+// "index" is the folder landing, "---Text---" renders a group separator.
+// Folders without an entry fall back to a humanized name and default order.
+const FOLDER_META = {
+  // ── Tab 1: Guide ────────────────────────────────────────────────────────
+  guide: {
+    title: 'Guide',
+    icon: 'BookOpen',
+    root: true,
+    pages: ['index', 'getting-started', 'features', 'ai-agent', 'guides'],
+  },
+  'guide/getting-started': {
+    title: 'Getting Started',
+    icon: 'Rocket',
+    pages: [
+      'index',
+      'clickhouse-requirements',
+      'clickhouse-enable-system-tables',
+      'local',
+    ],
+  },
+  'guide/features': {
+    title: 'Features',
+    icon: 'LayoutGrid',
+    pages: [
+      'index',
+      '---Monitoring---',
+      'overview',
+      'queries',
+      'tables',
+      'explorer',
+      'metrics',
+      'cluster',
+      '---Health & Insights---',
+      'health',
+      'insights',
+      'logs',
+      '---Operations---',
+      'operations',
+      'security',
+      'dashboard',
+      '---Integrations---',
+      'mcp',
+      'peerdb',
+      'browser-connections',
+      'user-connections',
+      'settings',
+    ],
+  },
+  'guide/ai-agent': {
+    title: 'AI Agent',
+    icon: 'Bot',
+    pages: ['index', 'capabilities', 'configuration', 'conversation-history'],
+  },
+  'guide/guides': {
+    title: 'Guides',
+    icon: 'Compass',
+    pages: ['proxy-auth-setup', 'troubleshooting', 'upgrade-clickhouse'],
+  },
+  // ── Tab 2: Deploy & Operate ────────────────────────────────────────────
+  operate: {
+    title: 'Deploy & Operate',
+    icon: 'Ship',
+    root: true,
+    pages: ['deploy', 'authentication', 'advanced'],
+  },
+  'operate/deploy': {
+    title: 'Deployment',
+    icon: 'Container',
+    pages: [
+      'index',
+      'docker',
+      'k8s',
+      'cloudflare',
+      'vercel',
+      'self-host',
+      'traefik',
+      'one-click',
+      'production-checklist',
+    ],
+  },
+  'operate/authentication': {
+    title: 'Authentication',
+    icon: 'ShieldCheck',
+    pages: [
+      'index',
+      'public',
+      'api-keys',
+      'clerk',
+      'cloudflare-access',
+      'trusted-header',
+      'trusted-proxy',
+    ],
+  },
+  'operate/advanced': {
+    title: 'Advanced',
+    icon: 'Settings2',
+    pages: [
+      'feature-permissions',
+      'multiple-hosts',
+      'editions',
+      'queries-history',
+      'self-tracking',
+      'telemetry',
+      'agent-conversation-storage',
+      'custom-name',
+      'peerdb-monitoring',
+    ],
+  },
+  // ── Tab 3: Reference ───────────────────────────────────────────────────
+  reference: {
+    title: 'Reference',
+    icon: 'BookMarked',
+    root: true,
+    pages: [
+      'environment-variables',
+      'configuration',
+      'connection-presets',
+      'support-matrix',
+      '---MCP---',
+      'mcp-server',
+      'mcp-clients',
+      '---Integrations---',
+      'grafana-bridge',
+      'catalog-contributing',
+      '---Project---',
+      'releases',
+      'migrating',
+      'faq',
+      'settings',
+    ],
+  },
+  'reference/releases': {
+    title: 'Releases',
+    icon: 'Tag',
+    pages: ['index', 'v0-3'],
+  },
+  'reference/migrating': {
+    title: 'Migrating',
+    icon: 'ArrowRightLeft',
+    pages: ['v0-3'],
+  },
 }
 
 async function walk(dir) {
@@ -247,16 +270,27 @@ function humanize(slug) {
   return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+// Set of every directory path (relative to `root`, posix-style) at any depth.
+async function collectDirs(root, base = root, out = new Set()) {
+  const entries = await readdir(root, { withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const full = join(root, entry.name)
+    out.add(relative(base, full).split(sep).join('/'))
+    await collectDirs(full, base, out)
+  }
+  return out
+}
+
 async function main() {
   if (!existsSync(SRC_DIR)) {
     throw new Error(`Source docs not found at ${SRC_DIR}`)
   }
 
-  // Determine which top-level names also have a sibling directory (section landings).
-  const topEntries = await readdir(SRC_DIR, { withFileTypes: true })
-  const sectionDirs = new Set(
-    topEntries.filter((e) => e.isDirectory()).map((e) => e.name),
-  )
+  // Collect every directory (at any depth) relative to SRC_DIR. A file whose
+  // path-without-extension matches a directory is that folder's landing page,
+  // e.g. guide/features.mdx + guide/features/ → guide/features/index.mdx.
+  const sectionDirs = await collectDirs(SRC_DIR)
 
   await rm(DEST_DIR, { recursive: true, force: true })
   await mkdir(DEST_DIR, { recursive: true })
@@ -266,7 +300,7 @@ async function main() {
   for (const fileAbs of files) {
     const rel = relative(SRC_DIR, fileAbs).split(sep).join('/')
     const noExt = rel.replace(/\.mdx?$/, '')
-    const isSectionLanding = !noExt.includes('/') && sectionDirs.has(noExt)
+    const isSectionLanding = sectionDirs.has(noExt)
 
     let content = await readFile(fileAbs, 'utf8')
     const { data: fm, body: afterFm } = parseFrontmatter(content)
@@ -299,33 +333,28 @@ async function main() {
     total++
   }
 
-  // Root meta.json — controls top-level sidebar order.
+  // Root meta.json — controls tab order in the dropdown.
   await writeFile(
     join(DEST_DIR, 'meta.json'),
-    JSON.stringify({ pages: ROOT_ORDER }, null, 2) + '\n',
+    JSON.stringify({ pages: ROOT_PAGES }, null, 2) + '\n',
     'utf8',
   )
 
-  // Per-section meta.json — sets display name, sidebar icon, and explicit page
-  // ordering. `defaultOpen: false` keeps the tree tidy; Fumadocs auto-expands
-  // the section containing the active page.
-  for (const [slug, { title, icon }] of Object.entries(SECTION_META)) {
-    const sectionDir = join(DEST_DIR, slug)
-    if (existsSync(sectionDir)) {
-      const pages = SECTION_PAGE_ORDER[slug]
-      const isRootTab = ROOT_TAB_SECTIONS.has(slug)
-      // Root tabs render as a sidebar dropdown (Fumadocs Layout Tabs). They are
-      // pulled out of the main tree, so `defaultOpen` is irrelevant for them.
-      const meta = isRootTab
-        ? { title, icon, root: true }
-        : { title, icon, defaultOpen: false }
-      if (pages) meta.pages = pages
-      await writeFile(
-        join(sectionDir, 'meta.json'),
-        JSON.stringify(meta, null, 2) + '\n',
-        'utf8',
-      )
-    }
+  // Per-folder meta.json — display name, sidebar icon, page order, and tab
+  // promotion (`root: true`). Non-root folders get `defaultOpen: false` so the
+  // tree stays tidy; Fumadocs auto-expands the folder of the active page.
+  for (const [folder, cfg] of Object.entries(FOLDER_META)) {
+    const folderDir = join(DEST_DIR, folder)
+    if (!existsSync(folderDir)) continue
+    const meta = cfg.root
+      ? { title: cfg.title, icon: cfg.icon, root: true }
+      : { title: cfg.title, icon: cfg.icon, defaultOpen: false }
+    if (cfg.pages) meta.pages = cfg.pages
+    await writeFile(
+      join(folderDir, 'meta.json'),
+      JSON.stringify(meta, null, 2) + '\n',
+      'utf8',
+    )
   }
 
   console.log(
