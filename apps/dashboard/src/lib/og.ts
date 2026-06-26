@@ -133,6 +133,12 @@ export const OG_PAGES: Record<string, OgPage> = {
     title: 'Server Settings',
     description: 'Current server and MergeTree settings for the cluster.',
   },
+  'settings-diff': {
+    eyebrow: 'SETTINGS',
+    title: 'Cross-Host Settings Diff',
+    description:
+      'Compare system.settings and merge_tree_settings across all configured ClickHouse hosts.',
+  },
   users: {
     eyebrow: 'ACCESS',
     title: 'Users & Roles',
