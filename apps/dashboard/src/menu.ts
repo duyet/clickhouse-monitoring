@@ -632,6 +632,14 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/roles',
         tableCheck: 'system.roles',
       },
+      {
+        title: 'RBAC Management',
+        href: '/security/management',
+        description:
+          'Create/alter/drop users, grant/revoke roles and privileges (requires CLICKHOUSE_MANAGEMENT_ENABLED)',
+        icon: ShieldAlertIcon,
+        isNew: true,
+      },
     ],
   },
   {
@@ -717,6 +725,15 @@ export const menuItemsConfig: MenuItem[] = [
         icon: SlidersHorizontalIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/replicated_merge_tree_settings',
         tableCheck: 'system.replicated_merge_tree_settings',
+      },
+      {
+        title: 'Settings Diff',
+        href: '/settings-diff',
+        description:
+          'Compare system.settings and merge_tree_settings across all configured hosts',
+        icon: GitCompareArrowsIcon,
+        isNew: true,
+        permission: { feature: 'settings' },
       },
       {
         title: 'Disks',
