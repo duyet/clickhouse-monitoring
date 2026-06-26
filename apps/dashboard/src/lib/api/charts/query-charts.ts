@@ -359,4 +359,105 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   `,
     }
   },
+
+  /**
+   * Slow query regression detection (#1921).
+   *
+   * Compares P95 query_duration_ms per normalized fingerprint between the
+   * current window (last 1h) and the baseline (previous 24h). Returns
+   * fingerprints where P95 has grown by ≥2× with at least 3 samples in each
+   * window. Ordered worst regression first.
+   */
+  'slow-query-regressions': () => ({
+    query: `
+    WITH
+      now() AS ref_time,
+      ref_time - INTERVAL 1 HOUR AS current_start,
+      current_start - INTERVAL 24 HOUR AS baseline_start,
+      current_data AS (
+        SELECT
+          replaceRegexpAll(
+            replaceRegexpAll(lower(trimBoth(query)), '(''[^'']*''|\\b\\d+(?:\\.\\d+)?\\b|\\{[^}]+\\})', '?'),
+            '\\s+', ' '
+          ) AS fingerprint,
+          query_duration_ms
+        FROM system.query_log
+        WHERE type = 'QueryFinish'
+          AND event_time >= current_start AND event_time < ref_time
+          AND query NOT LIKE '%system.%' AND is_initial_query = 1
+      ),
+      baseline_data AS (
+        SELECT
+          replaceRegexpAll(
+            replaceRegexpAll(lower(trimBoth(query)), '(''[^'']*''|\\b\\d+(?:\\.\\d+)?\\b|\\{[^}]+\\})', '?'),
+            '\\s+', ' '
+          ) AS fingerprint,
+          query_duration_ms
+        FROM system.query_log
+        WHERE type = 'QueryFinish'
+          AND event_time >= baseline_start AND event_time < current_start
+          AND query NOT LIKE '%system.%' AND is_initial_query = 1
+      ),
+      current_stats AS (
+        SELECT fingerprint,
+               count() AS current_count,
+               round(quantile(0.95)(query_duration_ms)) AS current_p95_ms,
+               round(avg(query_duration_ms)) AS current_avg_ms
+        FROM current_data GROUP BY fingerprint HAVING current_count >= 3
+      ),
+      baseline_stats AS (
+        SELECT fingerprint,
+               count() AS baseline_count,
+               round(quantile(0.95)(query_duration_ms)) AS baseline_p95_ms,
+               round(avg(query_duration_ms)) AS baseline_avg_ms
+        FROM baseline_data GROUP BY fingerprint HAVING baseline_count >= 3
+      )
+    SELECT
+      c.fingerprint,
+      c.current_count,
+      c.current_p95_ms,
+      c.current_avg_ms,
+      b.baseline_count,
+      b.baseline_p95_ms,
+      b.baseline_avg_ms,
+      round(c.current_p95_ms / nullIf(b.baseline_p95_ms, 0), 2) AS regression_factor,
+      substr(c.fingerprint, 1, 200) AS fingerprint_short
+    FROM current_stats c
+    INNER JOIN baseline_stats b USING (fingerprint)
+    WHERE c.current_p95_ms >= b.baseline_p95_ms * 2 AND b.baseline_p95_ms > 100
+    ORDER BY regression_factor DESC
+    LIMIT 20
+  `,
+    optional: true,
+    tableCheck: 'system.query_log',
+  }),
+
+  /**
+   * MV refresh staleness (#1925).
+   * Returns all view_refreshes rows enriched with staleness_seconds.
+   */
+  'mv-staleness': () => ({
+    query: `
+    SELECT
+      database,
+      view,
+      status,
+      last_success_time,
+      last_refresh_time,
+      next_refresh_time,
+      dateDiff('second', coalesce(last_success_time, toDateTime(0)), now()) AS staleness_seconds,
+      multiIf(
+        status IN ('Error', 'Failed'), 1,
+        isNull(last_success_time), 1,
+        dateDiff('second', last_success_time, now()) > 3600, 1,
+        0
+      ) AS is_failed,
+      exception
+    FROM system.view_refreshes
+    WHERE status NOT IN ('Running', 'Scheduled')
+    ORDER BY is_failed DESC, staleness_seconds DESC
+  `,
+    optional: true,
+    tableCheck: 'system.view_refreshes',
+  }),
 }
