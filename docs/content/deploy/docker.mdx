@@ -1,3 +1,8 @@
+---
+description: Run chmonitor as a Docker container or Compose service — the fastest path to a self-hosted ClickHouse dashboard.
+icon: Container
+---
+
 # Docker
 
 Run chmonitor as a Docker container. The image is published to GitHub Container Registry.
@@ -8,6 +13,10 @@ All releases: https://github.com/duyet/clickhouse-monitoring/pkgs/container/chmo
 The legacy name `ghcr.io/duyet/clickhouse-monitoring` also works and points at the same build.
 
 ## Quick start
+
+<Steps>
+<Step>
+### Pull and run
 
 ```bash
 docker run -d --name chmonitor -p 3000:3000 \
@@ -20,7 +29,19 @@ docker run -d --name chmonitor -p 3000:3000 \
 
 Open `http://localhost:3000`.
 
-`--add-host` is needed on Linux when ClickHouse runs on the Docker host (not needed on Docker Desktop for Mac/Windows).
+<Callout type="info" title="Linux host networking">
+`--add-host=host.docker.internal:host-gateway` is needed on Linux when ClickHouse runs on the Docker host. It is not needed on Docker Desktop for Mac/Windows.
+</Callout>
+</Step>
+
+<Step>
+### Verify
+
+```bash
+curl -sf http://localhost:3000/api/healthz && echo OK
+```
+</Step>
+</Steps>
 
 ## Docker Compose
 
@@ -167,7 +188,9 @@ Issue tokens at `POST /api/v1/auth/api-key`. Use `Authorization: Bearer chm_...`
 -e CLERK_SECRET_KEY='sk_live_...'
 ```
 
-`VITE_*` vars are build-time inlined; if you run the pre-built image, these must match what the image was built with. For a custom build, set them at build time. See [Authentication](/docs/authentication).
+<Callout type="warn" title="Build-time VITE_* vars">
+`VITE_*` vars are inlined at build time. If you run the pre-built image, these must match what the image was built with. For a custom build, set them at build time. See [Authentication](/authentication).
+</Callout>
 
 **Proxy — Cloudflare Access:**
 
@@ -197,7 +220,9 @@ Without `CHM_PROXY_AUTH_SECRET`, the trusted-header provider is disabled. Put ch
 -e AGENT_ENABLE_CONTROL_TOOLS='false'
 ```
 
-Keep `LLM_API_KEY` server-side; never put it in a `VITE_*` variable.
+<Callout type="warn" title="Keep LLM_API_KEY server-side">
+Never put `LLM_API_KEY` in a `VITE_*` variable — those are baked into browser JS.
+</Callout>
 
 Set `CHM_FEATURE_AGENT_ACCESS=authenticated` to require login before using the agent.
 
@@ -251,19 +276,25 @@ These are inlined at build time — pass them as `-e` flags when building a cust
 
 ## Upgrading
 
-1. Pull the new image tag:
+<Steps>
+<Step>
+### Pull the new tag
 
 ```bash
 docker pull ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
+</Step>
 
-2. Stop and remove the old container:
+<Step>
+### Stop and remove the old container
 
 ```bash
 docker rm -f chmonitor
 ```
+</Step>
 
-3. Start a new container with the same env vars:
+<Step>
+### Start with the same env vars
 
 ```bash
 docker run -d --name chmonitor -p 3000:3000 \
@@ -273,11 +304,16 @@ docker run -d --name chmonitor -p 3000:3000 \
 ```
 
 Or with Compose: update the `image:` tag, then `docker compose up -d --force-recreate`.
+</Step>
+</Steps>
 
-For breaking changes between major versions, see [Migrating to v0.3](/docs/migrating/v0-3).
+For breaking changes between major versions, see [Migrating to v0.3](/migrating/v0-3).
 
 ## Common problems
 
-- `localhost` inside the container resolves to the container itself, not the host. Use `host.docker.internal`.
+<Callout type="info" title="localhost resolves to the container">
+`localhost` inside the container resolves to the container itself, not the host. Use `host.docker.internal`.
+</Callout>
+
 - Empty pages usually mean the ClickHouse user lacks grants on system tables. Grant `SELECT` on `system.*`.
 - If pages load but charts are empty, check `CLICKHOUSE_MAX_EXECUTION_TIME` — the default is 60 s.

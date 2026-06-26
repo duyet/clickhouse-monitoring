@@ -1,3 +1,8 @@
+---
+description: History, failed, expensive, and slow query pages read from system.query_log — configure retention, grants, and default user exclusions.
+icon: History
+---
+
 # Query History
 
 The query history pages (`/history-queries`, `/failed-queries`, `/expensive-queries`, `/slow-queries`) read from `system.query_log`. This table is built into ClickHouse and records every completed query.
@@ -30,7 +35,9 @@ ClickHouse flushes query log entries every 7.5 seconds by default and retains th
 </query_log>
 ```
 
+<Callout type="info">
 Shorter retention reduces disk usage but limits how far back history pages can look.
+</Callout>
 
 ---
 
@@ -44,8 +51,8 @@ CLICKHOUSE_EXCLUDE_USER_DEFAULT=monitoring,healthcheck
 
 Set this to a comma-separated list of usernames to exclude from history page defaults. Users can still remove the filter in the UI.
 
-**Docker:**
-
+<Tabs items={['Docker', 'Kubernetes / Helm']}>
+<Tab value="Docker">
 ```bash
 docker run -d \
   -e CLICKHOUSE_HOST='http://ch-1:8123' \
@@ -55,9 +62,8 @@ docker run -d \
   -p 3000:3000 \
   ghcr.io/duyet/chmonitor:vX.Y.Z
 ```
-
-**Kubernetes / Helm:**
-
+</Tab>
+<Tab value="Kubernetes / Helm">
 ```yaml
 env:
   - name: CLICKHOUSE_HOST
@@ -69,6 +75,8 @@ env:
   - name: CLICKHOUSE_EXCLUDE_USER_DEFAULT
     value: "monitoring,healthcheck"
 ```
+</Tab>
+</Tabs>
 
 ---
 
@@ -87,12 +95,12 @@ env:
 
 - History pages respect the global time range selector.
 - If `system.query_log` is partitioned by day, queries crossing midnight may appear split across rows.
-- The AI agent can analyze query history and surface patterns or anomalies — see [AI Agent](/docs/ai-agent).
+- The AI agent can analyze query history and surface patterns or anomalies — see [AI Agent](/ai-agent).
 
 ---
 
 ## Related
 
-- [Features — Queries](/docs/features/queries) — full overview of all query pages.
-- [Environment Variables](/docs/reference/environment-variables) — `CLICKHOUSE_EXCLUDE_USER_DEFAULT` and connection settings.
-- [Self-Tracking](/docs/advanced/self-tracking) — the dashboard's own event table.
+- [Features — Queries](/features/queries) — full overview of all query pages.
+- [Environment Variables](/reference/environment-variables) — `CLICKHOUSE_EXCLUDE_USER_DEFAULT` and connection settings.
+- [Self-Tracking](/advanced/self-tracking) — the dashboard's own event table.

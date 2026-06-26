@@ -1,6 +1,18 @@
+---
+description: Deploy chmonitor on Kubernetes with the vendored Helm chart or kustomize overlays, with health probes, autoscaling, and secrets management.
+icon: Hexagon
+---
+
 # Kubernetes
 
 Run chmonitor on Kubernetes with the vendored Helm chart or raw kustomize manifests. Both use the same image (`ghcr.io/duyet/chmonitor:vX.Y.Z`), expose port `3000`, run as the non-root `app` user (uid/gid `1001`), and wire the same health probes.
+
+<Mermaid chart={`flowchart LR
+  I[Ingress / IngressRoute] --> S[Service :3000]
+  S --> P[chmonitor Pod]
+  P --> CH[(ClickHouse)]
+  P --> DB[(postgres / agentstate)]
+  CJ[CronJob] -->|health-sweep| S`} />
 
 ## Quick start with Helm
 
@@ -13,6 +25,10 @@ The chart is published in two registries:
 
 ### From the Helm repository
 
+<Steps>
+<Step>
+### Add the repo and install
+
 ```bash
 helm repo add chmonitor https://charts.chmonitor.dev
 helm repo update
@@ -21,10 +37,18 @@ helm install my-chm chmonitor/chmonitor \
   --set clickhouse.host="https://clickhouse.example.com:8443" \
   --set clickhouse.user="monitoring" \
   --set clickhouse.password="change-me"
+```
+</Step>
 
+<Step>
+### Verify
+
+```bash
 kubectl port-forward svc/my-chm-chmonitor 3000:3000
 # open http://localhost:3000
 ```
+</Step>
+</Steps>
 
 Upgrade and uninstall:
 
@@ -133,7 +157,9 @@ replicas:
 
 ### ClickHouse connection
 
-Store credentials in a Secret, not a ConfigMap.
+<Callout type="warn" title="Store credentials in a Secret, not a ConfigMap">
+ClickHouse credentials contain passwords. Always use a Kubernetes Secret, not a ConfigMap.
+</Callout>
 
 ```bash
 kubectl create secret generic chmonitor-clickhouse \
@@ -307,7 +333,9 @@ VITE_CLERK_PUBLISHABLE_KEY: "pk_live_..."
 CHM_AUTH_PROVIDER: "clerk"
 ```
 
-Note: `VITE_*` vars are inlined at build time. For a pre-built image, these must match what the image was built with. See [Authentication](/docs/authentication).
+<Callout type="warn" title="VITE_* vars are build-time only">
+`VITE_*` vars are inlined at build time. For a pre-built image, these must match what the image was built with. See [Authentication](/authentication).
+</Callout>
 
 **Proxy — Cloudflare Access:**
 
@@ -332,7 +360,7 @@ CHM_PROXY_AUTH_HEADER: "X-Forwarded-User"
 CHM_PROXY_SHARED_SECRET_HEADER: "X-Chm-Proxy-Secret"
 ```
 
-Without `CHM_PROXY_AUTH_SECRET`, the trusted-header provider is disabled. Configure your ingress to set the header and the secret. See [Authentication](/docs/authentication).
+Without `CHM_PROXY_AUTH_SECRET`, the trusted-header provider is disabled. Configure your ingress to set the header and the secret. See [Authentication](/authentication).
 
 ### AI agent
 
@@ -482,8 +510,15 @@ For GitOps workflows, do not commit real passwords. Use:
 
 ## Upgrading
 
-1. Update the image tag in your `values.yaml` or kustomize overlay.
-2. Apply the change:
+<Steps>
+<Step>
+### Update the image tag
+
+Update the image tag in your `values.yaml` or kustomize overlay.
+</Step>
+
+<Step>
+### Apply the change
 
 ```bash
 # Helm
@@ -492,14 +527,18 @@ helm upgrade my-chm ./deploy/helm/chmonitor -f values.yaml
 # kustomize
 kubectl apply -k deploy/kubernetes/overlays/prod
 ```
+</Step>
 
-3. Verify the rollout:
+<Step>
+### Verify the rollout
 
 ```bash
 kubectl rollout status deployment/chmonitor
 ```
+</Step>
+</Steps>
 
-For breaking changes between major versions, see [Migrating to v0.3](/docs/migrating/v0-3).
+For breaking changes between major versions, see [Migrating to v0.3](/migrating/v0-3).
 
 ## Validation
 

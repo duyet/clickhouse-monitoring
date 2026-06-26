@@ -1,3 +1,8 @@
+---
+description: Add personal ClickHouse connections in the browser with AES-256-GCM encrypted credentials and server-side proxy — no config changes needed.
+icon: Globe
+---
+
 # Browser Connections
 
 > Add personal ClickHouse connections in the browser and query them via the chmonitor proxy — without touching server config.
@@ -48,7 +53,10 @@ Server-configured hosts appear for all users without any browser setup.
 
 ## Notes & limitations
 
-- **Credentials are encrypted in browser localStorage**, but XSS on the dashboard could still expose decrypted values in memory. Do not use write-capable production credentials on shared or untrusted devices.
+<Callout type="warn" title="Do not use write-capable credentials on shared devices">
+Credentials are encrypted in browser localStorage, but XSS on the dashboard could still expose decrypted values in memory. Do not use write-capable production credentials on shared or untrusted devices.
+</Callout>
+
 - **Session tokens** expire after 15 minutes; the client refreshes them automatically when needed.
 - Browser connections are per-browser, per-device. They are not shared across users or synchronized.
 - All queries still go through the chmonitor server proxy — the browser never connects directly to ClickHouse. The chmonitor server must have network access to the target ClickHouse host.
@@ -57,6 +65,6 @@ Server-configured hosts appear for all users without any browser setup.
 
 ## Related
 
-- [Getting started](/docs/getting-started)
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
+- [Getting started](/getting-started)
+- [Authentication](/authentication)
+- [Settings reference](/settings)

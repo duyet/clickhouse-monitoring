@@ -1,3 +1,8 @@
+---
+description: Enable and configure ClickHouse system log tables required for full chmonitor feature coverage, including query_log, metric_log, and optional thread logs.
+icon: TerminalSquare
+---
+
 # Enable System Tables
 
 chmonitor reads from ClickHouse `system.*` log tables. Most are enabled by default in a fresh installation, but some deployments disable them with `<... remove="1"/>` to save disk. This page lists which tables are needed and how to enable them.

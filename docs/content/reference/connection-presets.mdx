@@ -1,3 +1,8 @@
+---
+description: Create a least-privilege read-only ClickHouse user for chmonitor on OSS, Altinity, and ClickHouse Cloud deployments.
+icon: Link2
+---
+
 # Least-Privilege Connection Presets
 
 chmonitor only reads ClickHouse system tables — it never issues writes, DDL, or schema changes. Running it under a dedicated read-only user follows the principle of least privilege and limits the blast radius if credentials are exposed.
@@ -18,7 +23,9 @@ This page shows how to create that user on each supported deployment type and ho
 
 Use the SQL console or `clickhouse-client` as an admin user.
 
-### 1. Create a read-only settings profile
+<Steps>
+<Step>
+### Create a read-only settings profile
 
 ```sql
 CREATE SETTINGS PROFILE IF NOT EXISTS chmonitor_readonly
@@ -29,16 +36,18 @@ SETTINGS readonly = 2,
 ```
 
 `readonly = 2` blocks all writes and DDL while still letting the client set per-query settings such as `max_execution_time` — which chmonitor requires. (The stricter `readonly = 1` also forbids settings changes, so chmonitor would fail under it; use `readonly = 2`.) `allow_ddl = 0` is redundant under `readonly` but makes the intent explicit.
-
-### 2. Create the user
+</Step>
+<Step>
+### Create the user
 
 ```sql
 CREATE USER IF NOT EXISTS chmonitor
 IDENTIFIED BY 'replace-with-a-strong-password'
 SETTINGS PROFILE 'chmonitor_readonly';
 ```
-
-### 3. Grant SELECT on system tables
+</Step>
+<Step>
+### Grant SELECT on system tables
 
 ```sql
 GRANT SELECT ON system.* TO chmonitor;
@@ -52,8 +61,9 @@ GRANT SELECT ON my_database.* TO chmonitor;
 ```
 
 Do **not** grant `INSERT`, `ALTER`, `DROP`, `CREATE`, or `SYSTEM` privileges. chmonitor does not need them.
-
-### 4. Verify
+</Step>
+<Step>
+### Verify
 
 ```sql
 SHOW GRANTS FOR chmonitor;
@@ -61,6 +71,8 @@ SHOW GRANTS FOR chmonitor;
 
 SELECT * FROM system.users WHERE name = 'chmonitor';
 ```
+</Step>
+</Steps>
 
 ---
 
@@ -90,7 +102,9 @@ SETTINGS PROFILE 'chmonitor_readonly';
 GRANT SELECT ON system.* TO chmonitor;
 ```
 
-> **Note on system table access in ClickHouse Cloud:** Some `system.*` tables are restricted at certain service tiers (e.g. `system.zookeeper` is not available on Serverless). See [Platform Support Matrix](/docs/reference/support-matrix) for per-table availability across distributions and versions.
+<Callout type="info" title="System table access in ClickHouse Cloud">
+Some `system.*` tables are restricted at certain service tiers (e.g. `system.zookeeper` is not available on Serverless). See [Platform Support Matrix](/reference/support-matrix) for per-table availability across distributions and versions.
+</Callout>
 
 ---
 
@@ -114,7 +128,7 @@ CLICKHOUSE_PASSWORD=secret-1,secret-2
 CLICKHOUSE_NAME=Shard 1,Shard 2
 ```
 
-See [Environment Variables](/docs/reference/environment-variables) for the full variable reference, and [Multiple Hosts](/docs/advanced/multiple-hosts) for multi-host setup.
+See [Environment Variables](/reference/environment-variables) for the full variable reference, and [Multiple Hosts](/advanced/multiple-hosts) for multi-host setup.
 
 ---
 

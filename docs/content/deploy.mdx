@@ -1,6 +1,17 @@
+---
+description: Deploy chmonitor on Docker, Kubernetes, Cloudflare Workers, Vercel, or any Node.js server — each platform page is self-contained.
+icon: Ship
+---
+
 # Choosing a Platform
 
 Deploy chmonitor wherever your ClickHouse runs. Pick the platform that matches your infrastructure; each platform page is self-contained with install steps, all config categories, and migration notes.
+
+<Mermaid chart={`flowchart LR
+  U[Browser] --> W[chmonitor\\nWorker / Container / Node]
+  W --> CH[(ClickHouse)]
+  W --> DB[(Conversation Store\\npostgres / D1 / agentstate)]
+  W --> LLM[LLM API\\nopenrouter / openai]`} />
 
 ## Platforms
 

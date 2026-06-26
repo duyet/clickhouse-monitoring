@@ -35,15 +35,15 @@ const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/
 // Groups: orientation → deployment → features → auth → AI → separator → advanced →
 // guides → reference → separator → meta → separator → utility.
 const ROOT_ORDER = [
-  'index',
+  'introduction',
   'getting-started',
-  'deploy',
   'features',
-  'authentication',
   'ai-agent',
+  'deploy',
+  'authentication',
+  'guides',
   '---',
   'advanced',
-  'guides',
   'reference',
   '---',
   'migrating',
@@ -53,19 +53,20 @@ const ROOT_ORDER = [
   'settings',
 ]
 
-// Display titles for section folders (Fumadocs would auto-format, but we want
-// exact control — e.g. "AI Agent" not "Ai Agent").
-const SECTION_TITLES = {
-  'getting-started': 'Getting Started',
-  guides: 'Guides',
-  deploy: 'Deployment',
-  features: 'Features',
-  'ai-agent': 'AI Agent',
-  authentication: 'Authentication',
-  advanced: 'Advanced',
-  reference: 'Reference',
-  migrating: 'Migrating',
-  releases: 'Releases',
+// Display title + sidebar icon (Lucide name, resolved by lucideIconsPlugin in
+// src/lib/source.ts) for each section folder. We set both explicitly so the
+// tree reads cleanly — e.g. "AI Agent" not "Ai Agent".
+const SECTION_META = {
+  'getting-started': { title: 'Getting Started', icon: 'Rocket' },
+  guides: { title: 'Guides', icon: 'Compass' },
+  deploy: { title: 'Deployment', icon: 'Ship' },
+  features: { title: 'Features', icon: 'LayoutGrid' },
+  'ai-agent': { title: 'AI Agent', icon: 'Bot' },
+  authentication: { title: 'Authentication', icon: 'ShieldCheck' },
+  advanced: { title: 'Advanced', icon: 'Settings2' },
+  reference: { title: 'Reference', icon: 'BookMarked' },
+  migrating: { title: 'Migrating', icon: 'ArrowRightLeft' },
+  releases: { title: 'Releases', icon: 'Tag' },
 }
 
 // Explicit page ordering within each section.
@@ -215,6 +216,18 @@ function rewriteImages(src, srcFileAbs) {
   })
 }
 
+// Rewrite legacy `/docs/...` internal links to root-relative `/...`.
+// The Starlight site served docs under `/docs`; Fumadocs serves them at the
+// site root, so any `/docs/` href is a dead link. This normalizes both Markdown
+// links `](/docs/x)` and JSX `href="/docs/x"` (used in <Card>) to `/x`.
+function rewriteDocLinks(src) {
+  return src
+    .replace(/\]\(\/docs\//g, '](/') // [text](/docs/x) → [text](/x)
+    .replace(/\]\(\/docs\)/g, '](/)') // [text](/docs)   → [text](/)
+    .replace(/href="\/docs\//g, 'href="/') // href="/docs/x" → href="/x"
+    .replace(/href="\/docs"/g, 'href="/"') // href="/docs"   → href="/"
+}
+
 function humanize(slug) {
   return slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
@@ -244,21 +257,26 @@ async function main() {
     const { data: fm, body: afterFm } = parseFrontmatter(content)
     content = stripImports(afterFm)
     content = rewriteImages(content, fileAbs)
-    // NOTE: /docs/X links are preserved — the docs site serves at root and
-    // the /docs/ prefix in hrefs resolves correctly in-browser.
+    // Legacy /docs/* links → root-relative (the site now serves at /).
+    content = rewriteDocLinks(content)
 
     const fallback = humanize(noExt.split('/').pop())
     const { title: h1Title, body } = extractTitle(content, fallback)
     const title = fm.title || h1Title
 
-    // Fumadocs frontmatter: only title and optional description.
+    // Fumadocs frontmatter: title, optional description, optional Lucide icon.
     let frontmatter = `---\ntitle: ${JSON.stringify(title)}\n`
     if (fm.description) frontmatter += `description: ${JSON.stringify(fm.description)}\n`
+    if (fm.icon) frontmatter += `icon: ${JSON.stringify(fm.icon)}\n`
     frontmatter += `---\n\n`
 
-    // Section landings: write as <section>/index.md so Fumadocs creates a
+    // Section landings: write as <section>/index.mdx so Fumadocs creates a
     // linked section root that appears as "Overview" first in its group.
-    const destRel = isSectionLanding ? `${noExt}/index.md` : `${noExt}.md`
+    //
+    // Output is .mdx (not .md) so MDX expression syntax — `<Tabs items={[…]}>`,
+    // `<Mermaid chart={`…`} />` — is evaluated. The `.md` (CommonMark) format
+    // treats `{…}` as literal text, which would render those components broken.
+    const destRel = isSectionLanding ? `${noExt}/index.mdx` : `${noExt}.mdx`
     const dest = join(DEST_DIR, destRel)
 
     await mkdir(dirname(dest), { recursive: true })
@@ -273,12 +291,15 @@ async function main() {
     'utf8',
   )
 
-  // Per-section meta.json — sets display name and explicit page ordering.
-  for (const [slug, title] of Object.entries(SECTION_TITLES)) {
+  // Per-section meta.json — sets display name, sidebar icon, and explicit page
+  // ordering. `defaultOpen: false` keeps the tree tidy; Fumadocs auto-expands
+  // the section containing the active page.
+  for (const [slug, { title, icon }] of Object.entries(SECTION_META)) {
     const sectionDir = join(DEST_DIR, slug)
     if (existsSync(sectionDir)) {
       const pages = SECTION_PAGE_ORDER[slug]
-      const meta = pages ? { title, pages } : { title }
+      const meta = { title, icon, defaultOpen: false }
+      if (pages) meta.pages = pages
       await writeFile(
         join(sectionDir, 'meta.json'),
         JSON.stringify(meta, null, 2) + '\n',

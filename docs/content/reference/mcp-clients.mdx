@@ -1,8 +1,13 @@
+---
+description: Connect Claude Desktop, Cursor, Claude Code, or any MCP-compatible client to your chmonitor deployment.
+icon: PlugZap
+---
+
 # MCP Client Setup
 
 Step-by-step setup for connecting Claude Desktop, Cursor, Claude Code, or any MCP-compatible client to your chmonitor deployment.
 
-The server-side reference (endpoint, tools, security model) is at [MCP Server](/docs/reference/mcp-server).
+The server-side reference (endpoint, tools, security model) is at [MCP Server](/reference/mcp-server).
 
 ---
 
@@ -42,7 +47,10 @@ If neither `CHM_API_KEY_SECRET` nor Clerk is configured, the endpoint accepts an
 
 ---
 
-## Claude Desktop
+## Client setup
+
+<Tabs items={['Claude Desktop', 'Claude Code', 'Cursor', 'Any MCP Client']}>
+<Tab value="Claude Desktop">
 
 Open the config file:
 
@@ -68,9 +76,8 @@ Omit the `headers` block for an unauthenticated local instance.
 
 Restart Claude Desktop. The `clickhouse-monitor` server should appear in the tools panel.
 
----
-
-## Claude Code
+</Tab>
+<Tab value="Claude Code">
 
 Run the one-liner in your terminal:
 
@@ -91,9 +98,8 @@ Verify the server was registered:
 claude mcp list
 ```
 
----
-
-## Cursor
+</Tab>
+<Tab value="Cursor">
 
 **Via Settings UI:** open Cursor Settings (`Cmd+,` on macOS), go to **Features → MCP**, and click **Add MCP Server**. Paste the endpoint URL and set the transport to `http`.
 
@@ -112,9 +118,8 @@ claude mcp list
 
 If auth is enabled, add a `headers` block (same shape as the Claude Desktop example above).
 
----
-
-## Any MCP client
+</Tab>
+<Tab value="Any MCP Client">
 
 The server uses the **Streamable HTTP** transport in stateless mode (`POST /api/mcp`). No session handshake is required.
 
@@ -130,6 +135,9 @@ curl -X POST https://dash.example.com/api/mcp \
 A successful response lists the available tools. If you get `401`, the token is missing or invalid.
 
 Point your client at `https://dash.example.com/api/mcp`. The three methods the server handles are `POST`, `GET`, and `DELETE`; it also responds to `OPTIONS` for CORS preflight.
+
+</Tab>
+</Tabs>
 
 ---
 
@@ -184,4 +192,4 @@ Paste any of these into Claude, Cursor, or your MCP client after connecting:
 
 ---
 
-See [MCP Server](/docs/reference/mcp-server) for the full security model, resource URIs, and pre-built prompts.
+See [MCP Server](/reference/mcp-server) for the full security model, resource URIs, and pre-built prompts.

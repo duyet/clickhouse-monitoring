@@ -1,3 +1,8 @@
+---
+description: Full reference for every chmonitor environment variable, grouped by category with build-time vs runtime notes.
+icon: Variable
+---
+
 # Environment Variables
 
 Full reference of every supported environment variable, grouped by category.
@@ -28,7 +33,9 @@ There are two categories of environment variables:
 | **Build-time** | When `bun run build` runs | CI environment / shell before the build | `VITE_FEATURE_CONVERSATION_DB`, `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
 | **Runtime** | When the server process starts per request | `wrangler.toml [vars]`, `wrangler secret put`, Docker `-e`, k8s ConfigMap/Secret | `CLICKHOUSE_HOST`, `CONVERSATION_STORE_BACKEND` |
 
-`VITE_*` vars are always build-time. They are inlined into the browser bundle and cannot be changed without a rebuild. Setting a `VITE_*` var in `wrangler.toml [vars]` or as a Docker `-e` flag has no effect on the running app — the bundle already has the value from when it was built.
+<Callout type="warn" title="VITE_* variables are build-time only">
+Setting a `VITE_*` var in `wrangler.toml [vars]` or as a Docker `-e` flag has no effect on the running app — the bundle already has the value from when it was built. Always rebuild and redeploy when changing these variables.
+</Callout>
 
 All other vars (unless noted) are runtime — read from `process.env` when the Worker or Node process handles a request.
 
@@ -47,7 +54,7 @@ Required. Set at least `CLICKHOUSE_HOST`.
 
 `CLICKHOUSE_HOST` defines the host count. `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` may be either a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional. Position N maps to host index N.
 
-See [Multiple Hosts](/docs/advanced/multiple-hosts) and [Custom Name](/docs/advanced/custom-name).
+See [Multiple Hosts](/advanced/multiple-hosts) and [Custom Name](/advanced/custom-name).
 
 ---
 
@@ -72,7 +79,7 @@ See [Multiple Hosts](/docs/advanced/multiple-hosts) and [Custom Name](/docs/adva
 
 ## Health Alerting
 
-The cron sweep (`GET /api/cron/health-sweep`, Cloudflare Cron Trigger every 5 minutes) runs health checks over all hosts and can post webhook alerts without a browser tab open. See [Environment Variables — Health Alerting](/docs/reference/environment-variables#health-alerting) in context.
+The cron sweep (`GET /api/cron/health-sweep`, Cloudflare Cron Trigger every 5 minutes) runs health checks over all hosts and can post webhook alerts without a browser tab open. See [Environment Variables — Health Alerting](/reference/environment-variables#health-alerting) in context.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -111,13 +118,13 @@ CHM_FEATURE_METRICS_ENABLED=false
 CHM_DISABLED_FEATURES=settings,insights
 ```
 
-See [Feature Permissions](/docs/advanced/feature-permissions) for config-file examples and precedence details.
+See [Feature Permissions](/advanced/feature-permissions) for config-file examples and precedence details.
 
 ---
 
 ## Authentication
 
-The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authentication](/docs/authentication) for the full model.
+The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authentication](/authentication) for the full model.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -131,7 +138,7 @@ The active server-side auth provider is set by `CHM_AUTH_PROVIDER`. See [Authent
 |---|---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | — | Clerk publishable key (`pk_...`). Build-time — must be set before `bun run build`. |
 | `CLERK_SECRET_KEY` | — | Clerk secret key (`sk_...`). Runtime only. Never expose to the browser. |
-| `CHM_CLERK_PUBLIC_READ` | `false` | When `true`, anonymous visitors can view read-only monitoring content; writes (AI agent, control actions, arbitrary SQL) still require sign-in. Runtime only. See [Clerk → Public read-only mode](/docs/authentication/clerk#public-read-only-mode). |
+| `CHM_CLERK_PUBLIC_READ` | `false` | When `true`, anonymous visitors can view read-only monitoring content; writes (AI agent, control actions, arbitrary SQL) still require sign-in. Runtime only. See [Clerk → Public read-only mode](/authentication/clerk#public-read-only-mode). |
 
 ### Reverse proxy (`CHM_AUTH_PROVIDER=proxy`)
 
@@ -184,7 +191,7 @@ Use when an upstream proxy (oauth2-proxy, Authelia, Traefik ForwardAuth, nginx a
 |---|---|---|
 | `CHM_TRUSTED_ALLOWED_GROUPS` | — | Comma-separated group names. When set, users whose forwarded groups do not intersect are denied `403`. Case-insensitive. |
 
-See [Trusted proxy](/docs/authentication/trusted-proxy) for setup examples (oauth2-proxy + Dex + Traefik, nginx).
+See [Trusted proxy](/authentication/trusted-proxy) for setup examples (oauth2-proxy + Dex + Traefik, nginx).
 
 ---
 
@@ -222,7 +229,7 @@ Provider-specific keys take priority over the generic `LLM_API_KEY` / `LLM_API_B
 | `AGENT_API_TOKEN` | — | Shared Bearer token for the agent API (`POST /api/v1/agent`). Accepted when `CHM_FEATURE_AGENT_ACCESS=authenticated`. |
 | `AGENT_ENABLE_CONTROL_TOOLS` | `false` | Enable kill-query, optimize, and other write actions. Keep `false` unless users are trusted. |
 
-See [AI Agent — Configuration](/docs/ai-agent/configuration) for full details.
+See [AI Agent — Configuration](/ai-agent/configuration) for full details.
 
 ---
 
@@ -261,7 +268,7 @@ Agent conversations default to browser localStorage. Enable server-side persiste
 | `POSTGRES_URL` | Alternative PostgreSQL connection string. |
 | `POSTGRES_PRISMA_URL` | Prisma-specific PostgreSQL connection string. |
 
-See [Conversation History — Backends](/docs/ai-agent/conversation-history/backends) for setup and fallback behavior.
+See [Conversation History — Backends](/ai-agent/conversation-history/backends) for setup and fallback behavior.
 
 ---
 
@@ -276,7 +283,7 @@ The AI Insights panel on `/overview` persists its findings through a pluggable s
 
 `postgres` reuses `DATABASE_URL`; `agentstate` reuses `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`).
 
-See [AI Agent — AI Insights persistence](/docs/ai-agent#ai-insights-persistence) for setup and fallback behavior. `GET /api/v1/insights/backend` reports the active backend.
+See [AI Agent — AI Insights persistence](/ai-agent#ai-insights-persistence) for setup and fallback behavior. `GET /api/v1/insights/backend` reports the active backend.
 
 ---
 
@@ -357,4 +364,4 @@ Injected at build time for the About page.
 | `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | Renamed to `VITE_RUNNING_QUERIES_REFRESH_MS` in v0.3. |
 | `CLICKHOUSE_EXCLUDE_USER_DEFAULT` | Comma-separated usernames excluded from history-queries by default. |
 
-See [Migrate to v0.3](/docs/migrating/v0-3) for the full rename list.
+See [Migrate to v0.3](/migrating/v0-3) for the full rename list.

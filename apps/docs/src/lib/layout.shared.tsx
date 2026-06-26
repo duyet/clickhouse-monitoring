@@ -1,6 +1,10 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
-import { appName, gitConfig } from './shared'
 
+import { appName, gitConfig } from './shared'
+import { VersionSwitcher } from '@/components/version-switcher'
+
+// Shared nav/layout options used by both the home (HomeLayout) and docs
+// (DocsLayout) pages so the top bar stays consistent across the site.
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
@@ -25,15 +29,25 @@ export function baseOptions(): BaseLayoutProps {
         active: 'nested-url',
       },
       {
-        text: 'Dashboard',
-        url: 'https://dash.chmonitor.dev',
-        active: 'none',
-        external: true,
+        text: 'Features',
+        url: '/features',
+        active: 'nested-url',
+      },
+      {
+        text: 'Reference',
+        url: '/reference/environment-variables',
+        active: 'nested-url',
       },
       {
         text: 'Releases',
         url: '/releases',
         active: 'nested-url',
+      },
+      // Version pill, pinned to the right of the nav (next to GitHub/search).
+      {
+        type: 'custom',
+        children: <VersionSwitcher />,
+        secondary: true,
       },
     ],
   }

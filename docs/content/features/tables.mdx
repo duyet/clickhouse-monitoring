@@ -1,3 +1,8 @@
+---
+description: Inspect table storage, replication health, schema, dictionaries, and background data-movement operations across all databases.
+icon: Table2
+---
+
 # Tables
 
 > Inspect table storage, replication health, schema details, dictionaries, and background data-movement operations across all databases.
@@ -70,16 +75,26 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 
 ## Notes & limitations
 
-- **`system.kafka_consumers`** — only exists when Kafka table engine is in use. If no Kafka tables are configured, the page shows a table-not-found notice. This is expected.
-- **`system.replicated_fetches`** — only present on servers running replicated tables. Empty if no replication is active.
-- **`system.dropped_tables`** — only available with the Atomic database engine (default since ClickHouse 20.6). Empty on servers using the Ordinary engine.
-- **`system.distributed_ddl_queue`** — only relevant on clusters using `ON CLUSTER` DDL. Single-node servers will see an empty table.
-- **OPTIMIZE action** — the Tables page can issue `OPTIMIZE TABLE`. The ClickHouse user must have `ALTER TABLE ... OPTIMIZE` (or broader `ALTER`) privilege. Without it the action returns an error.
+<Callout type="warn" title="OPTIMIZE TABLE privilege required">
+  The Tables page can issue `OPTIMIZE TABLE`. The ClickHouse user must have `ALTER TABLE ... OPTIMIZE` (or broader `ALTER`) privilege. Without it the action returns an error.
+</Callout>
+
+<Callout type="info" title="Optional and environment-dependent tables">
+  Several pages are only relevant in specific configurations and show an informational empty state when their backing table is absent.
+
+  | Page | Condition |
+  |---|---|
+  | Kafka Consumers | Requires at least one Kafka table engine to be configured |
+  | Replicated Fetches | Only present on servers running replicated tables |
+  | Dropped Tables | Requires Atomic database engine (default since ClickHouse 20.6) |
+  | DDL Queue | Only meaningful on clusters using `ON CLUSTER` DDL |
+</Callout>
+
 - **Readonly Tables** — a replica enters read-only mode when it cannot reach Keeper/ZooKeeper. The `/readonly-tables` page is a filtered view of `system.replicas`; it shows a zero-row table when all replicas are healthy.
 
 ## Related
 
-- [Data Explorer](/docs/features/explorer)
-- [Operations (merges & mutations)](/docs/features/operations)
-- [Authentication](/docs/authentication)
-- [Settings reference](/docs/settings)
+- [Data Explorer](/features/explorer)
+- [Operations (merges & mutations)](/features/operations)
+- [Authentication](/authentication)
+- [Settings reference](/settings)

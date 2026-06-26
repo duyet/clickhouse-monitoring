@@ -1,3 +1,8 @@
+---
+description: GPL-3.0 community build plus planned Team and Enterprise tiers — understand what each edition includes and how the edition flag works.
+icon: Layers
+---
+
 # Editions
 
 chmonitor is **GPL-3.0 and free forever** for a single operator monitoring their own ClickHouse cluster. Nothing is crippled, nag-screened, or artificially limited in the community build.
@@ -17,7 +22,9 @@ The edition is resolved at runtime from one of two variables, checked in order:
 
 Valid values: `community` (default) or `enterprise`. Any other value — including unset, empty, or a typo — resolves to `community`. The parser never throws.
 
-**Fail-open guarantee:** if `CHM_EDITION` is missing or unrecognised, the edition is `community` and all community features remain fully accessible.
+<Callout type="info" title="Fail-open guarantee">
+If `CHM_EDITION` is missing or unrecognised, the edition is `community` and all community features remain fully accessible.
+</Callout>
 
 ---
 
@@ -64,14 +71,19 @@ Enterprise-only code is isolated so the GPL core never depends on it. The planne
 
 ## Summary
 
-- **Community:** everything an individual operator needs to monitor their own cluster. Free, self-hosted, fully functional, no time limit.
-- **Team / Enterprise:** team-scale convenience and governance features (alerting, fleet, SSO, RBAC). Most are planned; the scaffolds exist but are not yet functional.
-- **Misconfiguration is safe:** an unset or wrong `CHM_EDITION` always falls back to community.
+<Cards>
+  <Card title="Community" description="Everything an individual operator needs — all system-table views, AI agent, MCP. Free, self-hosted, no time limit." href="/getting-started" />
+  <Card title="Team / Enterprise" description="Team-scale convenience and governance (alerting, fleet, SSO, RBAC). Most are planned; scaffolds exist but are not yet functional." href="/advanced/feature-permissions" />
+</Cards>
+
+<Callout type="info" title="Misconfiguration is safe">
+An unset or wrong `CHM_EDITION` always falls back to community.
+</Callout>
 
 ---
 
 ## Related
 
-- [Environment Variables](/docs/reference/environment-variables) — full reference for all configuration variables.
-- [Feature Permissions](/docs/advanced/feature-permissions) — per-feature access control within an edition.
-- [Telemetry](/docs/advanced/telemetry) — opt-in, privacy-first usage metrics (off by default).
+- [Environment Variables](/reference/environment-variables) — full reference for all configuration variables.
+- [Feature Permissions](/advanced/feature-permissions) — per-feature access control within an edition.
+- [Telemetry](/advanced/telemetry) — opt-in, privacy-first usage metrics (off by default).

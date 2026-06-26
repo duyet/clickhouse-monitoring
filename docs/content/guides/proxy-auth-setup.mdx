@@ -1,3 +1,8 @@
+---
+description: Set up Cloudflare Access, nginx + oauth2-proxy, or Traefik ForwardAuth in front of chmonitor using the proxy or trusted auth provider.
+icon: ShieldCheck
+---
+
 # Proxy & SSO auth setup
 
 End-to-end setup guides for putting chmonitor behind a proxy that handles login. Three patterns are covered:
@@ -6,7 +11,7 @@ End-to-end setup guides for putting chmonitor behind a proxy that handles login.
 - **nginx + oauth2-proxy** — self-hosted OIDC login in front of nginx.
 - **Traefik ForwardAuth + OIDC** — Traefik middleware forwarding an OIDC session.
 
-All three use chmonitor's `trusted` or `proxy` auth provider. See [Authentication](/docs/authentication) for the full comparison.
+All three use chmonitor's `trusted` or `proxy` auth provider. See [Authentication](/authentication) for the full comparison.
 
 ---
 
@@ -24,7 +29,15 @@ All three use chmonitor's `trusted` or `proxy` auth provider. See [Authenticatio
 
 Cloudflare Access sits in front of chmonitor and issues a signed JWT on every authenticated request. chmonitor verifies the JWT cryptographically against Cloudflare's JWKS — no secret to share.
 
-### 1. Create an Access application
+<Mermaid chart={`flowchart LR
+  B["Browser"] -->|"1. Request"| CF["Cloudflare Access"]
+  CF -->|"2. Authenticate & issue JWT"| B
+  B -->|"3. Cf-Access-Jwt-Assertion"| CHM["chmonitor (proxy provider)"]
+  CHM -->|"4. Verify via JWKS"| CF`} />
+
+<Steps>
+<Step>
+### Create an Access application
 
 In the Cloudflare Zero Trust dashboard:
 
@@ -33,8 +46,9 @@ In the Cloudflare Zero Trust dashboard:
 3. Under **Session duration**, pick a reasonable window (e.g. 24 hours).
 4. Add an **Access policy** (e.g. allow users in your team's email domain).
 5. Note the **Application Audience (AUD) tag** from the application overview page — it looks like a 64-character hex string.
-
-### 2. Create a Cloudflare Tunnel
+</Step>
+<Step>
+### Create a Cloudflare Tunnel
 
 ```bash
 cloudflared tunnel create chmonitor
@@ -58,19 +72,9 @@ Run the tunnel:
 ```bash
 cloudflared tunnel run chmonitor
 ```
-
-### 3. Configure chmonitor
-
-```bash
-CHM_AUTH_PROVIDER=trusted              # server-side
-VITE_AUTH_PROVIDER=trusted             # build-time client mirror
-
-# Cloudflare Access verification
-CHM_CF_ACCESS_TEAM_DOMAIN=yourteam.cloudflareaccess.com
-CHM_CF_ACCESS_AUD=<64-char-aud-tag>
-```
-
-Wait — actually chmonitor's Cloudflare Access support uses the `proxy` provider, not `trusted`. Use:
+</Step>
+<Step>
+### Configure chmonitor
 
 ```bash
 CHM_AUTH_PROVIDER=proxy
@@ -81,8 +85,9 @@ CHM_CF_ACCESS_AUD=<64-char-aud-tag>
 ```
 
 The `proxy` provider verifies the `Cf-Access-Jwt-Assertion` header against the team's JWKS automatically. No shared secret is needed — the JWT signature is the proof.
-
-### 4. Verify
+</Step>
+<Step>
+### Verify
 
 ```bash
 # Should return authenticated identity from Access
@@ -91,6 +96,8 @@ curl -H "Cf-Access-Jwt-Assertion: <token>" \
 ```
 
 Unauthenticated requests hit the Access login page (Cloudflare redirects them) before reaching chmonitor.
+</Step>
+</Steps>
 
 ---
 
@@ -106,7 +113,9 @@ Browser → nginx → oauth2-proxy (login) → nginx → chmonitor
 
 nginx uses `auth_request` to check with oauth2-proxy on every request. If the session is valid, oauth2-proxy sets identity headers; nginx forwards them to chmonitor along with a shared secret.
 
-### 1. Run oauth2-proxy
+<Steps>
+<Step>
+### Run oauth2-proxy
 
 Example with Google OIDC (replace with your provider):
 
@@ -126,8 +135,9 @@ docker run -d \
 ```
 
 `--set-xauthrequest` makes oauth2-proxy emit `X-Auth-Request-User` and `X-Auth-Request-Email` on authenticated requests. Those map to chmonitor's default identity headers.
-
-### 2. Configure nginx
+</Step>
+<Step>
+### Configure nginx
 
 ```nginx
 server {
@@ -164,8 +174,9 @@ server {
   }
 }
 ```
-
-### 3. Configure chmonitor
+</Step>
+<Step>
+### Configure chmonitor
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
@@ -180,8 +191,9 @@ CHM_TRUSTED_AUTH_SECRET=your-shared-secret-here
 ```
 
 oauth2-proxy's `--set-xauthrequest` emits `X-Auth-Request-User` and `X-Auth-Request-Email`. The nginx `auth_request_set` block copies them to `X-Forwarded-User` / `X-Forwarded-Email`, which are chmonitor's defaults.
-
-### 4. Verify
+</Step>
+<Step>
+### Verify
 
 ```bash
 # Hit chmonitor directly (bypasses nginx) — should 401 (no shared secret)
@@ -190,6 +202,8 @@ curl http://chmonitor:8080/api/v1/auth/me
 # Through nginx with a valid session cookie — should return authenticated principal
 curl -b "session=..." https://chmonitor.yourcompany.com/api/v1/auth/me | jq .
 ```
+</Step>
+</Steps>
 
 ---
 
@@ -203,7 +217,9 @@ Traefik's `forwardAuth` middleware sends every request to an external auth serve
 Browser → Traefik → Authelia (forwardAuth) → Traefik → chmonitor
 ```
 
-### 1. Configure Authelia (or Authentik)
+<Steps>
+<Step>
+### Configure Authelia (or Authentik)
 
 This example uses Authelia. Authelia adds `Remote-User`, `Remote-Name`, `Remote-Groups`, and `Remote-Email` headers on authenticated requests.
 
@@ -216,8 +232,9 @@ access_control:
     - domain: chmonitor.yourcompany.com
       policy: one_factor
 ```
-
-### 2. Configure Traefik
+</Step>
+<Step>
+### Configure Traefik
 
 `docker-compose.yml` (extract):
 
@@ -248,8 +265,9 @@ services:
 ```
 
 Authelia sets `Remote-User`, `Remote-Name`, `Remote-Groups`, `Remote-Email`. Tell chmonitor to read those:
-
-### 3. Configure chmonitor
+</Step>
+<Step>
+### Configure chmonitor
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
@@ -270,9 +288,12 @@ CHM_TRUSTED_ALLOW_INSECURE=true
 # CHM_TRUSTED_SHARED_SECRET_HEADER=X-Chm-Proxy-Secret
 ```
 
+<Callout type="warn" title="Network isolation requirement">
 If you use `CHM_TRUSTED_ALLOW_INSECURE=true`, make sure chmonitor's port (8080) is not exposed on the host — only reachable via Traefik inside the Docker network.
-
-### 4. Optional: group-based access control
+</Callout>
+</Step>
+<Step>
+### Optional: group-based access control
 
 Restrict chmonitor to specific Authelia groups:
 
@@ -282,13 +303,16 @@ CHM_TRUSTED_ALLOWED_GROUPS=ops,admin
 ```
 
 Authelia forwards groups as a comma-separated list in `Remote-Groups`; chmonitor checks intersection (case-insensitive).
-
-### 5. Verify
+</Step>
+<Step>
+### Verify
 
 ```bash
 # Auth/me should show the identity forwarded by Authelia
 curl https://chmonitor.yourcompany.com/api/v1/auth/me | jq .
 ```
+</Step>
+</Steps>
 
 ---
 
@@ -326,8 +350,8 @@ All env vars for `CHM_AUTH_PROVIDER=trusted`:
 
 ## Related
 
-- [Authentication overview](/docs/authentication)
-- [Trusted proxy docs](/docs/authentication/trusted-proxy)
-- [Cloudflare Access docs](/docs/authentication/cloudflare-access)
-- [Trusted header docs](/docs/authentication/trusted-header)
-- [API keys](/docs/authentication/api-keys)
+- [Authentication overview](/authentication)
+- [Trusted proxy docs](/authentication/trusted-proxy)
+- [Cloudflare Access docs](/authentication/cloudflare-access)
+- [Trusted header docs](/authentication/trusted-header)
+- [API keys](/authentication/api-keys)

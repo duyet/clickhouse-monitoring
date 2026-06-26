@@ -1,3 +1,8 @@
+---
+description: Diagnose and fix common chmonitor issues — connection failures, auth errors, performance problems, and Kubernetes probe failures.
+icon: Wrench
+---
+
 # Troubleshooting
 
 Common issues and how to diagnose them.
@@ -32,7 +37,9 @@ If host count differs from user/password count, the second host silently falls b
 
 **TLS / certificate errors:**
 
+<Callout type="warn" title="Self-signed certificates">
 If ClickHouse uses a self-signed cert, set `CLICKHOUSE_VERIFY_CERT=false` or pass `?verify=false` in the URL. In production, install the CA cert instead.
+</Callout>
 
 ### Health endpoint returns 503
 
@@ -108,7 +115,9 @@ curl -X POST https://your-dashboard/api/v1/auth/api-key \
 
 ### MCP client returns 401
 
-The MCP endpoint is closed by default. One of `CHM_API_KEY_SECRET`, `CLERK_SECRET_KEY`, or `CHM_MCP_PUBLIC=true` must be set. See [MCP Server — Permissions](/docs/features/mcp#permissions--access).
+<Callout type="info" title="MCP endpoint is closed by default">
+One of `CHM_API_KEY_SECRET`, `CLERK_SECRET_KEY`, or `CHM_MCP_PUBLIC=true` must be set to open the endpoint. See [MCP Server — Permissions](/features/mcp#permissions--access).
+</Callout>
 
 ---
 
@@ -134,7 +143,7 @@ Default refresh is 60 seconds for most charts. Reduce load by setting a longer i
 # Give the monitoring user a query-cache profile to avoid hitting ClickHouse on every refresh
 ```
 
-Alternatively, enable query caching on the monitoring user profile (see [ClickHouse User & Grants](/docs/getting-started/clickhouse-requirements#recommended-clickhouse-profile)).
+Alternatively, enable query caching on the monitoring user profile (see [ClickHouse User & Grants](/getting-started/clickhouse-requirements#recommended-clickhouse-profile)).
 
 ### `max_query_size exceeded` errors
 
@@ -191,15 +200,12 @@ Long conversations accumulate context. Start a new conversation to reset the con
 
 ### Pod stuck in `CrashLoopBackOff`
 
-Common cause: the image pulled is stale (`latest` tag was not updated). Check the image digest:
+<Callout type="warn" title="Stale image tag">
+Common cause: the image pulled is stale (`latest` tag was not updated after a deploy). Check the image digest with `kubectl describe pod` and force a re-pull with `kubectl rollout restart deployment chmonitor`.
+</Callout>
 
 ```bash
 kubectl describe pod <chmonitor-pod> | grep Image
-```
-
-If the digest matches an old build, force a re-pull:
-
-```bash
 kubectl rollout restart deployment chmonitor
 ```
 
@@ -262,7 +268,7 @@ If the host uses `https://`, confirm TLS is allowed or `CLICKHOUSE_VERIFY_CERT=f
 
 ## Related
 
-- [ClickHouse User & Grants](/docs/getting-started/clickhouse-requirements)
-- [MCP Server — Permissions](/docs/features/mcp#permissions--access)
-- [Authentication](/docs/authentication)
-- [Upgrading ClickHouse](/docs/guides/upgrade-clickhouse)
+- [ClickHouse User & Grants](/getting-started/clickhouse-requirements)
+- [MCP Server — Permissions](/features/mcp#permissions--access)
+- [Authentication](/authentication)
+- [Upgrading ClickHouse](/guides/upgrade-clickhouse)

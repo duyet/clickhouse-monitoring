@@ -1,8 +1,21 @@
+---
+description: chmonitor is a read-only ClickHouse monitoring dashboard with an AI agent and MCP server, deployable on Docker, Kubernetes, or Cloudflare Workers.
+icon: BookOpen
+---
+
 # Introduction
 
 chmonitor is a client-rendered ClickHouse monitoring dashboard. The core dashboard reads from ClickHouse `system.*` tables and renders query performance, storage, cluster health, and operational metrics directly in the browser. No SSR of your ClickHouse data; no database writes except optional self-tracking events.
 
 It also ships an AI agent that can answer natural-language questions about your cluster, and an MCP server that exposes monitoring tools to external AI clients.
+
+<Mermaid chart={`graph LR
+  A[Browser] -->|fetch| B[chmonitor]
+  B -->|SELECT on system.*| C[(ClickHouse)]
+  B --- D[AI Agent]
+  D -->|queries| C
+  B --- E[MCP Server]
+  E -->|tools| D`} />
 
 <Callout type="info" title="Read-only by default">
 chmonitor does not manage schema, run DDL, or modify ClickHouse configuration. Optional action grants (kill query, optimize table) are off by default.

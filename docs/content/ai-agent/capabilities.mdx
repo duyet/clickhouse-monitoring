@@ -1,3 +1,8 @@
+---
+description: Full reference for the agent's 18+ tools, 18 expert skills, plan-and-verify mode, and worked example questions.
+icon: Sparkles
+---
+
 # Agent capabilities
 
 The agent exposes a small set of **powerful primitives** (18 tools, plus 3
@@ -89,6 +94,19 @@ system table for a finding, running `explain_query` on both versions before clai
 a rewrite is faster, and separating what is verified from what is a hypothesis. The
 `plan-and-verify` and `incident-response` skills encode the recipes. Simple one-step
 questions skip the plan entirely.
+
+<Mermaid chart={`flowchart TD
+    Q([Multi-step question]) --> P[update_plan: draft steps]
+    P --> S1[Step 1 in progress]
+    S1 --> T1[Tool call]
+    T1 --> V1{Result verified?}
+    V1 -- yes --> P2[update_plan: step 1 done]
+    V1 -- no --> T1
+    P2 --> S2[Step 2 in progress]
+    S2 --> T2[Tool call]
+    T2 --> V2{Result verified?}
+    V2 -- yes --> R([Answer with evidence])
+    V2 -- no --> T2`} />
 
 ## Example questions
 

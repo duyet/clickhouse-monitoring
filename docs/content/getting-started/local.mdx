@@ -1,3 +1,8 @@
+---
+description: Run the chmonitor dashboard from source using Bun and TanStack Start for local development and testing before deploying.
+icon: TerminalSquare
+---
+
 # Local Development
 
 Run chmonitor from source for development or to test changes before deploying.
@@ -8,14 +13,22 @@ The dashboard is `apps/dashboard` (TanStack Start, v0.3+). Client env vars use t
 
 ## Steps
 
-**1. Clone the repo**
+<Steps>
+
+<Step>
+
+### Clone the repo
 
 ```bash
 git clone https://github.com/duyet/clickhouse-monitoring
 cd clickhouse-monitoring
 ```
 
-**2. Install dependencies**
+</Step>
+
+<Step>
+
+### Install dependencies
 
 The project uses [Bun](https://bun.sh). Install it first if you don't have it.
 
@@ -23,7 +36,11 @@ The project uses [Bun](https://bun.sh). Install it first if you don't have it.
 bun install
 ```
 
-**3. Create `.env.local`**
+</Step>
+
+<Step>
+
+### Create `.env.local`
 
 In `apps/dashboard/`, create `.env.local`:
 
@@ -48,16 +65,26 @@ Client-side variables in the TanStack app use `VITE_*` prefix. The Next.js app u
 | `VITE_CLERK_PUBLISHABLE_KEY` | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |
 | `VITE_TITLE_SHORT` | `NEXT_PUBLIC_TITLE_SHORT` |
 
-Client vars are inlined at build time. Never put secrets in `VITE_*` variables.
+<Callout type="warn" title="Never put secrets in VITE_* variables">
+Client vars are inlined at build time and shipped to the browser.
+</Callout>
 
-**4. Configure ClickHouse**
+</Step>
+
+<Step>
+
+### Configure ClickHouse
 
 Make sure the user you set in step 3 has the right grants. See:
 
-- [ClickHouse user & grants](/docs/getting-started/clickhouse-requirements)
-- [Enable system tables](/docs/getting-started/clickhouse-enable-system-tables)
+- [ClickHouse user & grants](/getting-started/clickhouse-requirements)
+- [Enable system tables](/getting-started/clickhouse-enable-system-tables)
 
-**5. Start the dev server**
+</Step>
+
+<Step>
+
+### Start the dev server
 
 ```bash
 cd apps/dashboard
@@ -66,10 +93,14 @@ bun run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+</Step>
+
+</Steps>
+
 ## Common issues
 
 **`localhost` connection refused** — If ClickHouse is not running locally, update `CLICKHOUSE_HOST` to point at your remote instance.
 
 **Type errors on first run** — Run `bun run type-check` from the repo root. Some generated types require a build pass first.
 
-**Missing system tables** — See [Enable system tables](/docs/getting-started/clickhouse-enable-system-tables).
+**Missing system tables** — See [Enable system tables](/getting-started/clickhouse-enable-system-tables).

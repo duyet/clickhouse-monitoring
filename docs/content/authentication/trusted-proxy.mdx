@@ -1,6 +1,23 @@
+---
+description: Authenticate chmonitor via forwarded headers from oauth2-proxy, Authelia, Traefik ForwardAuth, or similar — full user profile with group-based access gating.
+icon: Network
+---
+
 # Reverse proxy: trusted forwarded headers
 
 Use this when chmonitor sits behind a proxy that has already authenticated the user — oauth2-proxy with Dex, Authelia, Traefik ForwardAuth, nginx + auth-url, or similar. The proxy forwards the user's identity as HTTP headers; chmonitor trusts them and builds a full principal (name, email, avatar, groups) from those headers.
+
+<Mermaid chart={`sequenceDiagram
+  participant B as Browser
+  participant OP as oauth2-proxy / Authelia
+  participant P as Traefik / nginx
+  participant A as chmonitor
+  B->>P: request
+  P->>OP: ForwardAuth check
+  OP-->>P: X-Auth-Request-* identity headers
+  P->>A: forwarded headers + X-Chm-Proxy-Secret
+  A->>A: verify secret, build principal (name, email, groups)
+  A-->>B: 200 data (authenticated)`} />
 
 ## When to use
 
@@ -9,8 +26,8 @@ Use this when chmonitor sits behind a proxy that has already authenticated the u
 | oauth2-proxy + Dex (or any OIDC provider) | `trusted` provider |
 | Authelia / Authentik in front of chmonitor | `trusted` provider |
 | Traefik ForwardAuth or nginx `auth_request` | `trusted` provider |
-| Cloudflare Access (signed JWT) | [`proxy` provider](/docs/authentication/cloudflare-access) |
-| nginx + a shared-secret header only (no full profile) | [`proxy` provider / trusted-header](/docs/authentication/trusted-header) |
+| Cloudflare Access (signed JWT) | [`proxy` provider](/authentication/cloudflare-access) |
+| nginx + a shared-secret header only (no full profile) | [`proxy` provider / trusted-header](/authentication/trusted-header) |
 
 The `trusted` provider differs from the `proxy` provider:
 - `proxy` is Cloudflare Access-centric (verifies a `Cf-Access-Jwt-Assertion` JWT) or carries a bare subject via a single identity header.
@@ -36,7 +53,9 @@ The identity is available at `GET /api/v1/auth/me` and displayed in the sidebar 
 | `CHM_TRUSTED_ALLOW_INSECURE` | `false` | When `true`, headers are trusted with no secret check. Only safe when the worker/Service is unreachable except via the proxy (e.g. k8s ClusterIP behind an ingress). |
 | `CHM_TRUSTED_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header name carrying the shared secret. |
 
-Set the secret out-of-band — never in plaintext env files committed to source control:
+<Callout type="warn" title="Set the secret out-of-band">
+Never put `CHM_TRUSTED_AUTH_SECRET` in YAML manifests, `.env` files, or source control. Use a k8s Secret (or `wrangler secret put`) and inject as an environment variable at runtime.
+</Callout>
 
 ```bash
 wrangler secret put CHM_TRUSTED_AUTH_SECRET
@@ -232,9 +251,9 @@ Keep the default `CHM_TRUSTED_*_HEADER` names in this case (they match `X-Forwar
 
 ## Security notes
 
-**Header forgery.** Without a trust gate, any client that can reach the chmonitor service directly can send arbitrary headers and forge any identity. Always:
-- Use `CHM_TRUSTED_AUTH_SECRET` with a strong random value, **or**
-- Ensure the Service is network-isolated (k8s ClusterIP, not exposed externally) and set `CHM_TRUSTED_ALLOW_INSECURE=true`.
+<Callout type="error" title="Header forgery risk">
+Without a trust gate, any client that can reach the chmonitor service directly can send arbitrary headers and forge any identity. Always use `CHM_TRUSTED_AUTH_SECRET` with a strong random value, **or** ensure the Service is network-isolated (k8s ClusterIP, not exposed externally) and set `CHM_TRUSTED_ALLOW_INSECURE=true`.
+</Callout>
 
 **Fail closed.** If neither `CHM_TRUSTED_AUTH_SECRET` nor `CHM_TRUSTED_ALLOW_INSECURE=true` is configured, the `trusted` provider rejects all requests with `401`. There is no open fallback.
 
@@ -253,13 +272,13 @@ curl -X POST https://chmonitor.example.com/api/v1/auth/api-key \
   -H "Authorization: Bearer <secret>"
 ```
 
-See [API keys](/docs/authentication/api-keys).
+See [API keys](/authentication/api-keys).
 
 ## Related
 
-- [Authentication overview](/docs/authentication)
-- [Cloudflare Access](/docs/authentication/cloudflare-access)
-- [Trusted header (proxy provider)](/docs/authentication/trusted-header)
-- [API keys](/docs/authentication/api-keys)
-- [Feature Permissions](/docs/advanced/feature-permissions)
-- [Environment Variables — Authentication](/docs/reference/environment-variables#authentication)
+- [Authentication overview](/authentication)
+- [Cloudflare Access](/authentication/cloudflare-access)
+- [Trusted header (proxy provider)](/authentication/trusted-header)
+- [API keys](/authentication/api-keys)
+- [Feature Permissions](/advanced/feature-permissions)
+- [Environment Variables — Authentication](/reference/environment-variables#authentication)

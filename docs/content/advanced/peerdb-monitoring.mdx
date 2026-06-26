@@ -1,3 +1,8 @@
+---
+description: Read-only PeerDB Mirrors and Peers section — configure PEERDB_API_URL to surface replication status, throughput, and lag without mutating PeerDB.
+icon: Replace
+---
+
 # PeerDB Monitoring
 
 CHM includes an optional, **view-only** PeerDB section (Mirrors and Peers) that
@@ -5,8 +10,9 @@ surfaces replication status, throughput, lag, and per-mirror detail from a
 [PeerDB](https://docs.peerdb.io) deployment. CHM never mutates PeerDB — it
 proxies a read-only allowlist of the PeerDB REST API.
 
-> Open it at `/peerdb` once configured. The section is hidden until
-> `PEERDB_API_URL` is set.
+<Callout type="info">
+Open it at `/peerdb` once configured. The section is hidden until `PEERDB_API_URL` is set.
+</Callout>
 
 ---
 
@@ -32,7 +38,7 @@ PEERDB_API_URL=http://localhost:8113
 | `PEERDB_CACHE_MAX_ENTRIES` | `500` | Max cached responses before oldest entries are evicted. |
 | `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream request timeout. |
 
-See the full list in [Environment Variables](/docs/reference/environment-variables).
+See the full list in [Environment Variables](/reference/environment-variables).
 
 ---
 
@@ -56,7 +62,7 @@ config, maintenance) are rejected with `403`. The PeerDB credential is attached
 server-side and never reaches the browser bundle, and secret-shaped peer config
 fields are masked in the UI.
 
-The section also respects [Feature Permissions](/docs/advanced/feature-permissions)
+The section also respects [Feature Permissions](/advanced/feature-permissions)
 — gate it with `CHM_FEATURE_PEERDB_ACCESS=authenticated` or disable it with
 `CHM_FEATURE_PEERDB_ENABLED=false`. The proxy enforces the same gate, so it
 cannot be reached directly when the feature is disabled or restricted.

@@ -1,8 +1,13 @@
+---
+description: Opt-in anonymous product telemetry — off by default, no PII, no third-party trackers, and inert until both a flag and an endpoint are set.
+icon: Radio
+---
+
 # Product Telemetry
 
 chmonitor includes an opt-in, anonymous telemetry system. It is **off by default** — no data leaves your instance unless you explicitly enable it.
 
-This is separate from [Self-Tracking](/docs/advanced/self-tracking), which writes dashboard usage events to your own ClickHouse instance. Telemetry is lightweight product analytics (five events, three dimensions, no PII) intended to help the project understand how the dashboard is used at a high level.
+This is separate from [Self-Tracking](/advanced/self-tracking), which writes dashboard usage events to your own ClickHouse instance. Telemetry is lightweight product analytics (five events, three dimensions, no PII) intended to help the project understand how the dashboard is used at a high level.
 
 ---
 
@@ -57,19 +62,22 @@ The ClickHouse version is always truncated to `MAJOR.MINOR` (e.g. `24.8`) — ne
 
 ## How to enable
 
-**Server-side** (Cloudflare Worker, Docker, Kubernetes):
-
+<Tabs items={['Server-side', 'Client build-time']}>
+<Tab value="Server-side">
 ```bash
 CHM_TELEMETRY=on
 ```
 
-**Client build-time** (inlined at `bun run build` / `vite build`):
-
+Applies to Cloudflare Worker, Docker, and Kubernetes deployments.
+</Tab>
+<Tab value="Client build-time">
 ```bash
 VITE_TELEMETRY_ENABLED=true
 ```
 
-Both variables are independent. You can enable server-side telemetry without a client rebuild or vice versa.
+Inlined at `bun run build` / `vite build`. Both variables are independent — you can enable server-side telemetry without a client rebuild or vice versa.
+</Tab>
+</Tabs>
 
 ---
 
@@ -105,15 +113,17 @@ A session is considered activated when a cluster is connected and the user viewe
 
 ## Privacy stance
 
+<Callout type="info" title="Privacy by design">
 - **Opt-in only** — telemetry is off unless you set the env var.
 - **Self-hosted** — chmonitor is fully self-hostable; your ClickHouse data never leaves your network regardless of telemetry settings.
 - **No third-party trackers** — there are no analytics SDKs, beacon scripts, or third-party pixels in the application.
 - **No PII by design** — the event schema and redaction layer are written to make PII collection structurally impossible, not just policy-forbidden.
 - **Inert by default** — both the telemetry flag and a collection endpoint must be explicitly set for any network call to occur. Enabling just the flag (without an endpoint) still makes zero network calls.
+</Callout>
 
 ---
 
 ## Related
 
-- [Self-Tracking](/docs/advanced/self-tracking) — writes dashboard usage events (page visits, query executions) to your own ClickHouse instance. A different system, entirely within your infrastructure.
-- [Environment Variables](/docs/reference/environment-variables) — full reference for all configuration variables.
+- [Self-Tracking](/advanced/self-tracking) — writes dashboard usage events (page visits, query executions) to your own ClickHouse instance. A different system, entirely within your infrastructure.
+- [Environment Variables](/reference/environment-variables) — full reference for all configuration variables.

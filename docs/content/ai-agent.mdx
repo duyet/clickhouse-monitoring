@@ -1,6 +1,23 @@
+---
+description: The AI Agent turns natural language into ClickHouse insights using read-only tools, expert skills, and plan-and-verify reasoning.
+icon: Bot
+---
+
 # AI Agent
 
 The AI Agent turns natural language into ClickHouse insights. Ask a question and the agent plans a series of read-only tool calls — querying system tables, inspecting schema, comparing hosts, spotting anomalies — then streams back a concise answer with optional inline charts.
+
+<Mermaid chart={`flowchart LR
+  Q([User question]) --> A[Agent]
+  A --> SK{Need skill?}
+  SK -- yes --> L[load_skill]
+  SK -- no --> T[Tool call]
+  L --> T
+  T --> CH[(ClickHouse)]
+  CH --> A
+  A --> P[update_plan]
+  P --> A
+  A --> R([Streamed answer])`} />
 
 The agent connects through the **same ClickHouse host and user** as the rest of the dashboard. Its visibility is bounded by the grants on that user. By default it only runs read-only queries. Keep control tools off and use a restricted ClickHouse user for safe exposure.
 
@@ -17,11 +34,11 @@ The agent connects through the **same ClickHouse host and user** as the rest of 
 | Tuning & upgrades | Hardware-based settings, version-upgrade guidance |
 | Charts & visualization | Run SQL and render an interactive chart inline |
 
-A small set of tools delivers this: dedicated primitives for the common reads, and the `query` tool plus an expert **skill** recipe for everything else. See [Capabilities](/docs/ai-agent/capabilities) for the full list.
+A small set of tools delivers this: dedicated primitives for the common reads, and the `query` tool plus an expert **skill** recipe for everything else. See [Capabilities](/ai-agent/capabilities) for the full list.
 
 **Skills** — when a question needs domain depth, the agent loads a bundled expert guide (a skill) with copy-pasteable SQL recipes before answering. Eighteen skills cover data analysis, anomaly detection, query tuning, schema & data-type design, hardware tuning, version upgrades, concept explanations, incident response, plan-and-verify, and the core domains (replication, cluster, storage, migration, security, best practices, troubleshooting, system tables). Available skills: `GET /api/v1/agent/skills`.
 
-**Plan and verify** — for multi-step tasks (incident triage, investigations, find-and-fix) the agent authors a live checklist with `update_plan`, keeps one step in progress, and verifies each result before stating it. Simple one-step questions skip the plan. See [Capabilities](/docs/ai-agent/capabilities) for details.
+**Plan and verify** — for multi-step tasks (incident triage, investigations, find-and-fix) the agent authors a live checklist with `update_plan`, keeps one step in progress, and verifies each result before stating it. Simple one-step questions skip the plan. See [Capabilities](/ai-agent/capabilities) for details.
 
 ## Quick start
 
@@ -33,7 +50,7 @@ LLM_API_KEY=your-provider-key
 
 Then open `/agents` in the dashboard, pick a host, and start asking questions. The agent uses OpenRouter by default (`https://openrouter.ai/api/v1`) with the free model tier.
 
-For full configuration options see [Configuration](/docs/ai-agent/configuration).
+For full configuration options see [Configuration](/ai-agent/configuration).
 
 ## Child pages
 
@@ -73,7 +90,7 @@ Agent chat history is persisted by a server-side `ConversationStore` chosen at *
 
 Selection priority when persistence is enabled: **AgentState** (if `AGENTSTATE_API_KEY`) → **D1** (Cloudflare binding) → **Postgres** (`DATABASE_URL`) → **Memory** (last-resort, non-persistent). With the feature flag off, history stays in the **Browser**.
 
-Server persistence requires `VITE_FEATURE_CONVERSATION_DB=true` and an authenticated user — configure Clerk (`VITE_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`) so history can be scoped per user. Unauthenticated sessions always fall back to browser history. See [Authentication](/docs/authentication).
+Server persistence requires `VITE_FEATURE_CONVERSATION_DB=true` and an authenticated user — configure Clerk (`VITE_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`) so history can be scoped per user. Unauthenticated sessions always fall back to browser history. See [Authentication](/authentication).
 
 ### AgentState
 

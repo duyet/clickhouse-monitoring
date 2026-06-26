@@ -1,3 +1,8 @@
+---
+description: Audit ClickHouse users, roles, session history, login attempts, and security-relevant events from one place.
+icon: ShieldCheck
+---
+
 # Security
 
 > Audit user sessions, login attempts, access control roles, and user definitions.
@@ -39,7 +44,9 @@ The Security section gives operators visibility into who has access to ClickHous
 
 All Security pages share the `security` feature id.
 
-This section contains sensitive access-control data. It is recommended to gate it behind authentication in production:
+<Callout type="warn" title="Gate in production">
+This section contains sensitive access-control data. It is recommended to gate it behind authentication in production.
+</Callout>
 
 ```bash
 CHM_FEATURE_SECURITY_ACCESS=authenticated
@@ -82,6 +89,6 @@ Alternatively, `SHOW ACCESS` grants read access to all access-related system tab
 
 ## Related
 
-- [Authentication](/docs/authentication)
-- [Feature permissions](/docs/advanced/feature-permissions)
+- [Authentication](/authentication)
+- [Feature permissions](/advanced/feature-permissions)
 - [ClickHouse system.session_log docs](https://clickhouse.com/docs/en/operations/system-tables/session_log)

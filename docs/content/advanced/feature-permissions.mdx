@@ -1,8 +1,13 @@
+---
+description: Hide or protect specific dashboard sections per-feature using config files or environment variables, without changing application code.
+icon: Lock
+---
+
 # Feature Permissions
 
 Feature permissions let you hide or protect specific dashboard sections without changing application code. Features are enabled and public by default — except the **AI agent** (`agent`) and **control actions** (`actions`), which default to `authenticated`. Configure only what needs different behavior.
 
-Permissions also carry a **read / write** classification. Reads are predefined monitoring data; writes are the AI agent, control actions, and arbitrary SQL execution. Under `auth=clerk` with [`CHM_CLERK_PUBLIC_READ`](/docs/authentication/clerk#public-read-only-mode), anonymous visitors may perform reads but never writes; with `auth=none` everyone may do both.
+Permissions also carry a **read / write** classification. Reads are predefined monitoring data; writes are the AI agent, control actions, and arbitrary SQL execution. Under `auth=clerk` with [`CHM_CLERK_PUBLIC_READ`](/authentication/clerk#public-read-only-mode), anonymous visitors may perform reads but never writes; with `auth=none` everyone may do both.
 
 ---
 
@@ -25,7 +30,9 @@ A self-hosted deployment with no auth configured works out of the box. Every pag
 | `guest` | Alias for `public`. |
 | `authenticated` | Requires a valid session. Accepted: Clerk browser session, `AGENT_API_TOKEN` Bearer (agent APIs), or `chm_` API key. |
 
+<Callout type="info" title="v1 access levels">
 v1 has no roles — only public and authenticated access levels.
+</Callout>
 
 ---
 
@@ -46,8 +53,8 @@ built-in allow-all defaults
 
 Point `CHM_CONFIG_FILE` at a TOML or YAML file. Feature names are lowercase in the file.
 
-**TOML:**
-
+<Tabs items={['TOML', 'YAML']}>
+<Tab value="TOML">
 ```toml
 # /etc/clickhouse-monitor/config.toml
 
@@ -62,9 +69,8 @@ access = "guest"
 [features.settings]
 enabled = false
 ```
-
-**YAML:**
-
+</Tab>
+<Tab value="YAML">
 ```yaml
 # /etc/clickhouse-monitor/config.yaml
 
@@ -78,6 +84,8 @@ features:
   settings:
     enabled: false
 ```
+</Tab>
+</Tabs>
 
 ---
 
@@ -170,7 +178,9 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_live_your_key
 CLERK_SECRET_KEY=sk_live_your_key
 ```
 
-> `VITE_*` vars are build-time inlined — set them before running `bun run build`. See [Migrate to v0.3](/docs/migrating/v0-3) if you are upgrading from the legacy Next.js app and need the old `NEXT_PUBLIC_*` names.
+<Callout type="warn" title="Build-time vars">
+`VITE_*` vars are build-time inlined — set them before running `bun run build`. See [Migrate to v0.3](/migrating/v0-3) if you are upgrading from the legacy Next.js app and need the old `NEXT_PUBLIC_*` names.
+</Callout>
 
 **Agent API token (agent API endpoints only — does not provide UI-level user authentication):**
 
@@ -184,7 +194,7 @@ curl -H "Authorization: Bearer your-shared-token" \
   https://your-deployment.example.com/api/v1/agent
 ```
 
-See [Authentication](/docs/authentication) for the full auth model, including API keys and reverse-proxy options.
+See [Authentication](/authentication) for the full auth model, including API keys and reverse-proxy options.
 
 ---
 
@@ -230,6 +240,6 @@ CHM_DISABLED_FEATURES=insights
 
 ## Related
 
-- [Authentication](/docs/authentication) — auth providers and API keys.
-- [Environment Variables — Feature Permissions](/docs/reference/environment-variables#feature-permissions) — full env var reference.
-- [Features](/docs/features) — what each feature does.
+- [Authentication](/authentication) — auth providers and API keys.
+- [Environment Variables — Feature Permissions](/reference/environment-variables#feature-permissions) — full env var reference.
+- [Features](/features) — what each feature does.
