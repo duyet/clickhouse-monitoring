@@ -37,11 +37,28 @@ For full configuration options see [Configuration](/docs/ai-agent/configuration)
 
 ## Child pages
 
-- [Configuration](/docs/ai-agent/configuration) — all env vars, providers, access control
-- [Capabilities](/docs/ai-agent/capabilities) — tools, skills, plan & verify, examples
-- [Conversation History](/docs/ai-agent/conversation-history) — how history works, how to enable server persistence
-  - [Store Backends](/docs/ai-agent/conversation-history/backends) — per-backend setup (D1, ClickHouse, Postgres, …)
-  - [AgentState](#conversation-history-backends) — managed/self-hosted persistence with AI enrichment (auto-titles, follow-ups)
+<Cards>
+  <Card
+    title="Capabilities"
+    href="/ai-agent/capabilities"
+    description="Full tool list, skills, plan & verify mode, and worked examples."
+  />
+  <Card
+    title="Configuration"
+    href="/ai-agent/configuration"
+    description="All environment variables, LLM providers, and access control."
+  />
+  <Card
+    title="Conversation History"
+    href="/ai-agent/conversation-history"
+    description="How chat history works and how to enable server-side persistence."
+  />
+  <Card
+    title="Store Backends"
+    href="/ai-agent/conversation-history/backends"
+    description="Per-backend setup: D1, ClickHouse, Postgres, AgentState, and more."
+  />
+</Cards>
 
 ## Conversation history backends
 
@@ -195,7 +212,11 @@ All other MCP tools run fixed SELECT queries and pass `readonly: '1'` to the Cli
 
 ## Security
 
+<Callout type="warn" title="Security guidelines">
+
 - Use a **read-only ClickHouse user** scoped to the system tables the dashboard needs.
 - Keep **control tools off** (`AGENT_ENABLE_CONTROL_TOOLS=false`, the default) unless you trust the user and need kill/optimize.
 - On public deployments, **require authentication**: `CHM_FEATURE_AGENT_ACCESS=authenticated`.
 - Keep LLM keys **server-side** — never in `VITE_*` variables (those are baked into browser JS at build time).
+
+</Callout>

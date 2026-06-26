@@ -31,17 +31,21 @@ const SRC_DIR = resolve(REPO_ROOT, 'docs/content')
 const DEST_DIR = resolve(__dirname, '../content/docs')
 const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
 
-// Top-level sidebar order. Matches the order in the old astro.config.mjs.
+// Top-level sidebar order.
+// Groups: orientation → deployment → features → auth → AI → separator → advanced →
+// guides → reference → separator → meta → separator → utility.
 const ROOT_ORDER = [
   'index',
   'getting-started',
-  'guides',
   'deploy',
   'features',
-  'ai-agent',
   'authentication',
+  'ai-agent',
+  '---',
   'advanced',
+  'guides',
   'reference',
+  '---',
   'migrating',
   'releases',
   '---',
@@ -62,6 +66,84 @@ const SECTION_TITLES = {
   reference: 'Reference',
   migrating: 'Migrating',
   releases: 'Releases',
+}
+
+// Explicit page ordering within each section.
+// Entries are slug names relative to the section folder (no extension).
+// "index" refers to the section landing page (from a root-level .mdx with the
+// same name as the folder). Sections without a landing page omit "index".
+const SECTION_PAGE_ORDER = {
+  'getting-started': [
+    'index',
+    'clickhouse-requirements',
+    'clickhouse-enable-system-tables',
+    'local',
+  ],
+  guides: ['proxy-auth-setup', 'troubleshooting', 'upgrade-clickhouse'],
+  deploy: [
+    'index',
+    'docker',
+    'k8s',
+    'cloudflare',
+    'vercel',
+    'self-host',
+    'traefik',
+    'one-click',
+    'production-checklist',
+  ],
+  features: [
+    'index',
+    'overview',
+    'queries',
+    'tables',
+    'explorer',
+    'operations',
+    'cluster',
+    'metrics',
+    'insights',
+    'health',
+    'security',
+    'logs',
+    'dashboard',
+    'mcp',
+    'peerdb',
+    'browser-connections',
+    'user-connections',
+    'settings',
+  ],
+  'ai-agent': ['index', 'capabilities', 'configuration', 'conversation-history'],
+  authentication: [
+    'index',
+    'public',
+    'api-keys',
+    'clerk',
+    'cloudflare-access',
+    'trusted-header',
+    'trusted-proxy',
+  ],
+  advanced: [
+    'feature-permissions',
+    'multiple-hosts',
+    'editions',
+    'queries-history',
+    'self-tracking',
+    'telemetry',
+    'agent-conversation-storage',
+    'custom-name',
+    'peerdb-monitoring',
+  ],
+  reference: [
+    'environment-variables',
+    'configuration',
+    'mcp-server',
+    'mcp-clients',
+    'support-matrix',
+    'grafana-bridge',
+    'connection-presets',
+    'catalog-contributing',
+  ],
+  migrating: ['v0-3'],
+  releases: ['v0-3'],
 }
 
 async function walk(dir) {
@@ -191,13 +273,15 @@ async function main() {
     'utf8',
   )
 
-  // Per-section meta.json — sets display names for folder labels.
+  // Per-section meta.json — sets display name and explicit page ordering.
   for (const [slug, title] of Object.entries(SECTION_TITLES)) {
     const sectionDir = join(DEST_DIR, slug)
     if (existsSync(sectionDir)) {
+      const pages = SECTION_PAGE_ORDER[slug]
+      const meta = pages ? { title, pages } : { title }
       await writeFile(
         join(sectionDir, 'meta.json'),
-        JSON.stringify({ title }, null, 2) + '\n',
+        JSON.stringify(meta, null, 2) + '\n',
         'utf8',
       )
     }
