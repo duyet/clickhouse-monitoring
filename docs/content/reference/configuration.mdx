@@ -189,3 +189,41 @@ See the per-platform install guides for copy-paste examples.
 - [Authentication](/docs/authentication) — choose and configure an auth provider.
 - [AI Agent — Configuration](/docs/ai-agent/configuration) — LLM provider setup.
 - [MCP Server](/docs/reference/mcp-server) — connect external AI tools.
+
+---
+
+## Architecture overview
+
+How the three configuration sources layer together at startup:
+
+```mermaid
+flowchart LR
+    A[Built-in defaults] --> B[CHM_CONFIG_FILE]
+    B --> C[Environment variables]
+    C --> D[Runtime config]
+    style D fill:#4ade80,color:#000
+```
+
+## TypeScript SDK example
+
+The public MCP client exposes typed helpers.  Hover any identifier for its type:
+
+```ts twoslash
+// @noErrors
+interface ChmonitorConfig {
+  host: string
+  user: string
+  password: string
+  maxExecutionTime?: number
+}
+
+const config: ChmonitorConfig = {
+  host: 'https://clickhouse.example.com:8443',
+  user: 'monitoring',
+  password: 'secret',
+  maxExecutionTime: 60,
+}
+
+console.log(config.host)
+//                 ^?
+```
