@@ -203,7 +203,7 @@ export function SqlConsole({
             <Sparkles className="mr-1.5 size-3.5" /> Format
           </Button>
           <SaveFavoriteButton
-            sql={committedSql}
+            sql={committedSql ?? ''}
             hostId={hostId}
             database={database ?? null}
           />
