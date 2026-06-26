@@ -105,7 +105,7 @@ const FOLDER_META = {
     title: 'Deploy & Operate',
     icon: 'Ship',
     root: true,
-    pages: ['deploy', 'authentication', 'advanced'],
+    pages: ['index', 'deploy', 'authentication', 'advanced'],
   },
   'operate/deploy': {
     title: 'Deployment',
@@ -156,6 +156,7 @@ const FOLDER_META = {
     icon: 'BookMarked',
     root: true,
     pages: [
+      'index',
       'environment-variables',
       'configuration',
       'connection-presets',
