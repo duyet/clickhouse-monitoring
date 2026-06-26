@@ -36,21 +36,22 @@ afterEach(() => {
 
 /** Build a minimal AI-SDK-compatible tool with the given execute function. */
 function makeTool(
-  executeFn: (input: unknown, opts: ToolExecutionOptions<unknown>) => unknown
+  executeFn: (input: unknown, opts: ToolExecutionOptions<undefined>) => unknown
 ) {
   return tool({
     description: 'test tool',
     inputSchema: jsonSchema<Record<string, unknown>>({}),
     execute: executeFn as (
       input: Record<string, unknown>,
-      opts: ToolExecutionOptions<unknown>
+      opts: ToolExecutionOptions<undefined>
     ) => unknown,
   })
 }
 
-const FAKE_OPTIONS: ToolExecutionOptions<unknown> = {
+const FAKE_OPTIONS: ToolExecutionOptions<undefined> = {
   toolCallId: 'call-abc-123',
   messages: [],
+  context: undefined,
 }
 
 // ─── tests ──────────────────────────────────────────────────────────────────
