@@ -14,6 +14,7 @@
  */
 
 import type { ToolExecutionOptions, ToolSet } from 'ai'
+
 import { log, error as logError } from '@chm/logger'
 
 /** Keys whose values are redacted in logged args. */
@@ -121,7 +122,7 @@ export function wrapToolsWithLogging<T extends ToolSet>(
       ...tool,
       execute: async (
         input: unknown,
-        options: ToolExecutionOptions
+        options: ToolExecutionOptions<unknown>
       ): Promise<unknown> => {
         const traceId = options?.toolCallId ?? crypto.randomUUID()
         const startMs = Date.now()

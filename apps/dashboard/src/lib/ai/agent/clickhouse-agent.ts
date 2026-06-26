@@ -12,7 +12,7 @@ import { CLICKHOUSE_AGENT_INSTRUCTIONS } from './prompts/clickhouse-instructions
 import { DEFAULT_MODEL, resolveAgentChatModel } from './provider-chat-model'
 import { wrapToolsWithLogging } from './tool-logging'
 import { createAllTools } from './tools'
-import { stepCountIs, ToolLoopAgent } from 'ai'
+import { isStepCount, ToolLoopAgent } from 'ai'
 
 function filterTools<T extends Record<string, unknown>>(
   tools: T,
@@ -70,7 +70,7 @@ export function createClickHouseAgent(options: {
     model: modelInstance,
     tools,
     instructions: systemPrompt,
-    stopWhen: stepCountIs(maxSteps),
+    stopWhen: isStepCount(maxSteps),
     ...(providerOptions && { providerOptions }),
   })
 }
