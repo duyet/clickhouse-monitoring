@@ -1,34 +1,25 @@
-# wrangler.toml for the chmonitor documentation worker.
+# wrangler.toml — chmonitor Fumadocs documentation Worker.
 #
-# Static-assets-only Worker: Astro builds to ./dist, served directly by Workers
-# ASSETS (no `main` script). All pages are pre-rendered HTML at build time.
+# TanStack Start + @cloudflare/vite-plugin produces a native Workers bundle;
+# `main` is the server entry resolved by the plugin at build time.
 #
 # Deploy: cd apps/docs && bun run build && wrangler deploy
 
 name = "chmonitor-docs"
+main = "@tanstack/react-start/server-entry"
 compatibility_date = "2026-05-28"
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 
-[assets]
-directory = "./dist"
-# Serve /getting-started from dist/getting-started/index.html without a 307 to
-# /getting-started/ — avoids an extra edge round-trip on every bare-path link.
-html_handling = "drop-trailing-slash"
+[observability]
+enabled = true
 
 [[routes]]
 pattern = "docs.chmonitor.dev"
 custom_domain = true
 
-# Preview environment for PR deployments. Mirrors production topology: docs prod
-# is docs.chmonitor.dev, so its preview is preview.docs.chmonitor.dev. Routes are
-# not inherited by named environments, so the custom domain must be declared
-# explicitly here. On the first deploy Wrangler provisions DNS + TLS
-# automatically (chmonitor.dev zone must be in the same account).
+# Preview environment for PR deployments.
 [env.preview]
 name = "preview-chmonitor-docs"
-
-[env.preview.assets]
-directory = "./dist"
-html_handling = "drop-trailing-slash"
 
 [[env.preview.routes]]
 pattern = "preview.docs.chmonitor.dev"
