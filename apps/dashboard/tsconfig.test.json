@@ -59,6 +59,8 @@
     ".turbo",
     "coverage",
     "cypress",
-    "cypress.config.ts"
+    "cypress.config.ts",
+    "**/*.cy.ts",
+    "**/*.cy.tsx"
   ]
 }
