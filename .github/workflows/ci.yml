@@ -60,7 +60,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Bun Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-v1-${{ hashFiles('**/bun.lock') }}
@@ -113,7 +113,7 @@ jobs:
       packages: write
     steps:
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -185,7 +185,7 @@ jobs:
       packages: write
     steps:
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -258,7 +258,7 @@ jobs:
 
     steps:
       - name: Login to Container registry
-        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
