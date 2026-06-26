@@ -81,7 +81,7 @@ export const Route = createFileRoute('/api/v1/settings-diff')({
 
         const results = await Promise.allSettled(
           tasks.map((t) =>
-            fetchData<SettingRow>({
+            fetchData<SettingRow[]>({
               query: t.query,
               hostId: t.hostId,
               format: 'JSONEachRow',
