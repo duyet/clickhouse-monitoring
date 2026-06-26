@@ -1,0 +1,79 @@
+name: Bug report
+description: Something is broken or behaving unexpectedly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Fill in as much as you can
+        — incomplete reports take much longer to diagnose.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: "When I open /overview?host=0, the page shows a blank white screen instead of the dashboard."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered list of steps to reproduce the issue.
+      placeholder: |
+        1. Open https://dash.chmonitor.dev
+        2. Navigate to /running-queries?host=0
+        3. Click the "Kill query" action
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment type
+      options:
+        - Cloudflare Workers (dash.chmonitor.dev)
+        - Docker / docker compose
+        - Kubernetes / Helm
+        - Local dev (bun run dev)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: clickhouse-version
+    attributes:
+      label: ClickHouse version
+      description: Check via `SELECT version()` in the SQL console.
+      options:
+        - "25.x"
+        - "24.x"
+        - "23.x"
+        - "22.x or older"
+        - Unknown
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors
+      description: Paste any errors from the browser DevTools console (F12).
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots, network traces, or anything else that might help.

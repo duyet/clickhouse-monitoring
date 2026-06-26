@@ -1,0 +1,138 @@
+name: Accessibility (axe-core)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# Cancel in-progress runs for same workflow and branch/PR
+concurrency:
+  group: a11y-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+jobs:
+  axe-core:
+    name: axe-core
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Non-required: informational gate — reports violations but does not block
+    # PR merges. Remove continue-on-error once a stable axe baseline is
+    # established and the check is added to required branch-protection checks.
+    # Serious/critical violations print ::error:: annotations; others print
+    # ::warning::. Both are visible in the PR Checks tab.
+    continue-on-error: true
+
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('apps/dashboard/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-tsr-v1-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Node target
+        # CHM_SKIP_PRERENDER=1: skip the 119-route prerender — same flag used
+        # by the e2e-test job to keep build time under the timeout.
+        run: bun scripts/build-node-ci.ts
+
+      - name: Start server
+        run: |
+          node .output/server/index.mjs &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+          # Wait up to 60s for the server to accept connections.
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/api/health >/dev/null 2>&1; then
+              echo "Server is up"
+              break
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health >/dev/null || { echo "::error::Server did not start within 60s"; exit 1; }
+        env:
+          PORT: '3000'
+          CHM_AUTH_PROVIDER: none
+          CHM_API_KEY_SECRET: ci-a11y-secret
+
+      - name: Run axe-core accessibility checks
+        # Scans a representative set of dashboard routes.
+        # Pages render in their loading/skeleton state without ClickHouse
+        # data — structural a11y issues (missing labels, contrast, landmarks)
+        # are still caught. Uses @axe-core/cli@4 via npx (no lockfile change
+        # needed). Chrome is pre-installed on ubuntu-latest runners.
+        # --tags wcag2a,wcag2aa: WCAG 2.0 A + AA rules only.
+        # --load-delay 2000: wait 2s after navigation for React hydration.
+        # Exit codes: 0 = no violations, 1 = violations found (overridden by
+        # continue-on-error at the job level, but still reported).
+        run: |
+          set -euo pipefail
+          ROUTES=(
+            "http://localhost:3000/overview?host=0"
+            "http://localhost:3000/dashboard?host=0"
+            "http://localhost:3000/tables?host=0"
+            "http://localhost:3000/running-queries?host=0"
+            "http://localhost:3000/about?host=0"
+          )
+
+          VIOLATIONS=0
+          for ROUTE in "${ROUTES[@]}"; do
+            echo "--- axe: $ROUTE ---"
+            if ! npx --yes @axe-core/cli@4 "$ROUTE" \
+              --tags wcag2a,wcag2aa \
+              --load-delay 2000 \
+              --timeout 30000; then
+              VIOLATIONS=$((VIOLATIONS + 1))
+              echo "::warning::axe-core found violations on $ROUTE"
+            fi
+          done
+
+          echo "violations=$VIOLATIONS" >> "$GITHUB_ENV"
+
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "::warning::axe-core found violations on $VIOLATIONS route(s). See step output for details."
+          else
+            echo "No axe-core violations found on checked routes."
+          fi
+
+      - name: Stop server
+        if: always()
+        run: kill "$SERVER_PID" 2>/dev/null || true
+
+      - name: Step summary
+        if: always()
+        run: |
+          echo "### Accessibility (axe-core)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          VIOLATIONS="${violations:-?}"
+          if [ "$VIOLATIONS" = "0" ]; then
+            echo "No WCAG 2.0 A/AA violations detected on checked routes." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**${VIOLATIONS} route(s) with violations** — see step output for details." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Routes checked: overview, dashboard, tables, running-queries, about (all with ?host=0)." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_This job is non-required and does not block merges. See CONTRIBUTING.md §Accessibility._" >> $GITHUB_STEP_SUMMARY

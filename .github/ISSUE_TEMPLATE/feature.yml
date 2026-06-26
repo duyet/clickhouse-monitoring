@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, check whether an existing issue or PR already covers
+        this. Search open issues and the [CHANGELOG](../CHANGELOG.md).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: >
+        Describe the gap or pain point. "I always have to..." or "There is no
+        way to..." is a good format.
+      placeholder: "There is no way to compare query performance between two ClickHouse hosts side-by-side."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work? Sketches or mockups welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about and why you prefer the proposal.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dashboard UI / charts
+        - AI agent / MCP
+        - Query monitoring
+        - Table / storage management
+        - Cluster topology
+        - Deployment / configuration
+        - Docs
+        - CLI (Rust)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Links, prior art, ClickHouse docs, or anything else relevant.

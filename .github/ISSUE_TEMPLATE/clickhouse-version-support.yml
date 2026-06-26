@@ -1,0 +1,59 @@
+name: ClickHouse version support
+description: Request support for a new or legacy ClickHouse version, or report a compatibility regression
+labels: ["clickhouse-compat"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ClickHouse system tables change between releases. Use this template to
+        report a version-specific query failure or to request compatibility for
+        a version that is not yet tested.
+
+        **Supported versions tested in CI:** see the matrix in
+        `.github/workflows/base.yml` (`clickhouse-versions` input).
+
+  - type: input
+    id: ch-version
+    attributes:
+      label: ClickHouse version
+      description: "Exact version string from `SELECT version()`"
+      placeholder: "24.8.5.115"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue type
+      options:
+        - Regression — worked on an older version, broken on this one
+        - New version — please add CI coverage for this version
+        - Query failure — a specific system table query fails
+        - Schema change — a column was added, removed, or renamed
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: >
+        What fails? Which page or query? Paste the error message or SQL
+        if relevant. For query failures, the affected config is usually
+        in `apps/dashboard/src/lib/query-config/`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: schema
+    attributes:
+      label: Relevant schema diff (optional)
+      description: >
+        Output of `DESCRIBE system.<table>` or a diff between versions if
+        you have it. See `docs/clickhouse-schemas/` for existing schema docs.
+      render: sql
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
