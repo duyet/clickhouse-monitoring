@@ -81,7 +81,10 @@ describe('rateLimitResponse', () => {
 
   test('body contains retryAfterSec', async () => {
     const response = rateLimitResponse(42)
-    const body = await response.json()
+    const body = (await response.json()) as {
+      success: boolean
+      error: { type: string; retryAfterSec: number }
+    }
     expect(body.error.retryAfterSec).toBe(42)
     expect(body.success).toBe(false)
     expect(body.error.type).toBe('rate_limited')
