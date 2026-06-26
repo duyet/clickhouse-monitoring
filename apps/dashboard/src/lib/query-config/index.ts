@@ -81,6 +81,12 @@ import {
   databaseDiskSpaceConfig,
   diskSpaceConfig,
 } from './system/disks'
+import { blobStorageLogConfig } from './system/blob-storage-log'
+import {
+  storageCompressionConfig,
+  storagePoliciesConfig,
+  ttlStorageMovesConfig,
+} from './system/storage-economics'
 import { kafkaConsumersConfig } from './system/kafka-consumers'
 import { partLogConfig } from './system/part-log'
 import { queryMetricLogConfig } from './system/query-metric-log'
@@ -193,6 +199,10 @@ export const queries: Array<QueryConfig> = [
   tablesListConfig,
   warningsConfig,
   kafkaConsumersConfig,
+  blobStorageLogConfig,
+  storageCompressionConfig,
+  storagePoliciesConfig,
+  ttlStorageMovesConfig,
 
   // Security
   sessionsConfig,
