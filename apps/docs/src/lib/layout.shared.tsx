@@ -20,9 +20,20 @@ export function baseOptions(): BaseLayoutProps {
     githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
     links: [
       {
+        text: 'Getting Started',
+        url: '/getting-started',
+        active: 'nested-url',
+      },
+      {
         text: 'Dashboard',
         url: 'https://dash.chmonitor.dev',
         active: 'none',
+        external: true,
+      },
+      {
+        text: 'Releases',
+        url: '/releases',
+        active: 'nested-url',
       },
     ],
   }

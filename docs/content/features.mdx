@@ -2,31 +2,98 @@
 
 chmonitor is organized around the operational questions you answer while running a ClickHouse cluster. Each feature maps to one or more routes in the UI and a feature id you can use to control access or disable it.
 
-All features are **public and enabled by default**. You only configure what you want to restrict or turn off.
+<Callout type="info" title="All features are public and enabled by default">
+You only configure what you want to restrict or turn off. The only exceptions are the AI agent (`agent`) and control actions (`actions`), which default to `authenticated` access.
+</Callout>
+
+## Feature overview
+
+<Cards>
+  <Card
+    title="Overview"
+    href="/features/overview"
+    description="Cluster health at a glance — active queries, memory, disk, and CPU."
+  />
+  <Card
+    title="Query Monitoring"
+    href="/features/queries"
+    description="Live, historical, failed, slow, and expensive query analysis."
+  />
+  <Card
+    title="Tables & Storage"
+    href="/features/tables"
+    description="Table sizes, disk usage, parts, and storage breakdown."
+  />
+  <Card
+    title="Data Explorer"
+    href="/features/explorer"
+    description="Browse column definitions, dependencies, and projections for any table."
+  />
+  <Card
+    title="Merges & Operations"
+    href="/features/operations"
+    description="Active merges, mutations, and background operation throughput."
+  />
+  <Card
+    title="Clusters & Replication"
+    href="/features/cluster"
+    description="Replication lag, queue size, and replica health across hosts."
+  />
+  <Card
+    title="Metrics & Profiler"
+    href="/features/metrics"
+    description="Server CPU, memory, IO metrics and ClickHouse profiling data."
+  />
+  <Card
+    title="Insights"
+    href="/features/insights"
+    description="AI-surfaced anomalies, performance patterns, and observations."
+  />
+  <Card
+    title="Health & Alerting"
+    href="/features/health"
+    description="Active alerts from the health sweep cron with severity thresholds."
+  />
+  <Card
+    title="Security & Audit"
+    href="/features/security"
+    description="Who is accessing ClickHouse, with what grants, and how often."
+  />
+  <Card
+    title="Logs"
+    href="/features/logs"
+    description="Server log entries from system.text_log and related tables."
+  />
+  <Card
+    title="MCP Server"
+    href="/features/mcp"
+    description="ClickHouse monitoring tools for AI clients via the Model Context Protocol."
+  />
+</Cards>
 
 ## Feature index
 
 | Feature | What it answers | Feature id | Page |
 |---|---|---|---|
-| Overview | Is my cluster healthy right now? | `overview` | [Overview](/docs/features/overview) |
-| Query Monitoring | What queries are running or slow? | `queries` | [Query Monitoring](/docs/features/queries) |
-| Tables & Storage | How big are my tables? Where is disk going? | `tables` | [Tables & Storage](/docs/features/tables) |
-| Data Explorer | What columns/dependencies does this table have? | `tables` | [Data Explorer](/docs/features/explorer) |
-| Merges & Operations | Are merges/mutations keeping up? | `operations` | [Merges & Operations](/docs/features/operations) |
-| Clusters & Replication | Is replication lagging? Are replicas healthy? | `cluster` | [Clusters & Replication](/docs/features/cluster) |
-| Metrics & Profiler | What are the server's CPU/memory/IO metrics? | `metrics` | [Metrics & Profiler](/docs/features/metrics) |
-| Insights | What patterns or anomalies does the AI surface? | `insights` | [Insights](/docs/features/insights) |
-| Health & Alerting | Are there active alerts? | `health` | [Health & Alerting](/docs/features/health) |
-| Security & Audit | Who is accessing ClickHouse and how? | `security` | [Security & Audit](/docs/features/security) |
-| Logs | What did the server log? | `logs` | [Logs](/docs/features/logs) |
-| Dashboard | Custom pinned metrics view | `dashboard` | [Dashboard](/docs/features/dashboard) |
-| AI Agent | Natural language questions about my cluster | `agent` | [AI Agent](/docs/ai-agent) |
-| MCP Server | ClickHouse monitoring tools for AI clients | `mcp` | [MCP Server](/docs/features/mcp) |
-| PeerDB | PeerDB replication pipeline status | `peerdb` | [PeerDB](/docs/features/peerdb) |
-| Browser Connections | Personal ad-hoc connections stored in the browser | — | [Browser Connections](/docs/features/browser-connections) |
+| Overview | Is my cluster healthy right now? | `overview` | [Overview](/features/overview) |
+| Query Monitoring | What queries are running or slow? | `queries` | [Query Monitoring](/features/queries) |
+| Tables & Storage | How big are my tables? Where is disk going? | `tables` | [Tables & Storage](/features/tables) |
+| Data Explorer | What columns/dependencies does this table have? | `tables` | [Data Explorer](/features/explorer) |
+| Merges & Operations | Are merges/mutations keeping up? | `operations` | [Merges & Operations](/features/operations) |
+| Clusters & Replication | Is replication lagging? Are replicas healthy? | `cluster` | [Clusters & Replication](/features/cluster) |
+| Metrics & Profiler | What are the server's CPU/memory/IO metrics? | `metrics` | [Metrics & Profiler](/features/metrics) |
+| Insights | What patterns or anomalies does the AI surface? | `insights` | [Insights](/features/insights) |
+| Health & Alerting | Are there active alerts? | `health` | [Health & Alerting](/features/health) |
+| Security & Audit | Who is accessing ClickHouse and how? | `security` | [Security & Audit](/features/security) |
+| Logs | What did the server log? | `logs` | [Logs](/features/logs) |
+| Dashboard | Custom pinned metrics view | `dashboard` | [Dashboard](/features/dashboard) |
+| AI Agent | Natural language questions about my cluster | `agent` | [AI Agent](/ai-agent) |
+| MCP Server | ClickHouse monitoring tools for AI clients | `mcp` | [MCP Server](/features/mcp) |
+| PeerDB | PeerDB replication pipeline status | `peerdb` | [PeerDB](/features/peerdb) |
+| Browser Connections | Personal ad-hoc connections stored in the browser | — | [Browser Connections](/features/browser-connections) |
 | Actions | Row-level actions across data pages (kill query, optimize, etc.) | `actions` | — |
-| Settings | In-app settings and configuration | `settings` | [Settings](/docs/settings) |
-| Authentication | Who can sign in and what each visitor may access | — | [Authentication](/docs/authentication) |
+| Settings | In-app settings and configuration | `settings` | [Settings](/settings) |
+| Authentication | Who can sign in and what each visitor may access | — | [Authentication](/authentication) |
 
 ## Controlling features
 
@@ -63,4 +130,4 @@ access = "authenticated"
 enabled = false
 ```
 
-See [Feature Permissions](/docs/advanced/feature-permissions) for the full reference.
+See [Feature Permissions](/advanced/feature-permissions) for the full reference.

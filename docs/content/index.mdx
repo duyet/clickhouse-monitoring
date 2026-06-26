@@ -4,23 +4,47 @@ chmonitor is a client-rendered ClickHouse monitoring dashboard. The core dashboa
 
 It also ships an AI agent that can answer natural-language questions about your cluster, and an MCP server that exposes monitoring tools to external AI clients.
 
+<Callout type="info" title="Read-only by default">
+chmonitor does not manage schema, run DDL, or modify ClickHouse configuration. Optional action grants (kill query, optimize table) are off by default.
+</Callout>
+
 ## Who it's for
 
 - **Self-hosting teams** who run ClickHouse on their own infrastructure and need an operational dashboard they can deploy and own.
 - **Operators** who want to inspect running queries, track storage growth, monitor replication lag, or debug merge performance without writing ad-hoc queries by hand.
 - **Platform engineers** who want to integrate ClickHouse monitoring into their existing auth and deployment stack (Docker, Kubernetes, Cloudflare Workers).
 
-## What it is not
-
-chmonitor is read-only by default. It does not manage schema, run DDL, or modify ClickHouse configuration. Optional action grants (kill query, optimize table) are off by default.
-
 ## Pick your path
 
-| I want to… | Start here |
-|---|---|
-| Get a dashboard running in 5 minutes | [Getting Started](/docs/getting-started) |
-| Install on Docker, Kubernetes, or Cloudflare | [Install & Configure](/docs/deploy) |
-| Add authentication | [Authentication](/docs/authentication) |
-| Understand what pages do what | [Features](/docs/features) |
-| Set up the AI agent | [AI Agent](/docs/ai-agent) |
-| See all environment variables | [Reference](/docs/reference/environment-variables) |
+<Cards>
+  <Card
+    title="Getting Started"
+    href="/getting-started"
+    description="Get a monitoring dashboard running in 5 minutes with Docker."
+  />
+  <Card
+    title="Install & Configure"
+    href="/deploy"
+    description="Deploy on Docker, Kubernetes, Cloudflare Workers, or Vercel."
+  />
+  <Card
+    title="Features"
+    href="/features"
+    description="Understand what each dashboard page does and its feature id."
+  />
+  <Card
+    title="Authentication"
+    href="/authentication"
+    description="Add login and fine-grained access control."
+  />
+  <Card
+    title="AI Agent"
+    href="/ai-agent"
+    description="Ask natural-language questions about your ClickHouse cluster."
+  />
+  <Card
+    title="Reference"
+    href="/reference/environment-variables"
+    description="Every environment variable, grouped by category."
+  />
+</Cards>
