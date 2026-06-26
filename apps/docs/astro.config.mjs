@@ -100,6 +100,7 @@ export default defineConfig({
       // automatically (alphabetically, Overview first via sidebar.order).
       sidebar: [
         { label: 'Getting Started', items: [{ autogenerate: { directory: 'getting-started' } }] },
+        { label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] },
         { label: 'Deployment', items: [{ autogenerate: { directory: 'deploy' } }] },
         { label: 'Features', items: [{ autogenerate: { directory: 'features' } }] },
         { label: 'AI Agent', items: [{ autogenerate: { directory: 'ai-agent' } }] },
