@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SaveFavoriteButton } from '@/components/query-favorites'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
 import { apiFetch } from '@/lib/swr/api-fetch'
@@ -379,14 +380,21 @@ function ExplainContent() {
           <CardTitle className="flex items-center gap-2 text-lg">
             <InfoCircledIcon className="size-5" />
             Explain Query
-            <a
-              href="https://clickhouse.com/docs/sql-reference/statements/explain"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground ml-auto text-xs font-normal"
-            >
-              Docs <ExternalLinkIcon className="inline size-3" />
-            </a>
+            <div className="ml-auto flex items-center gap-2">
+              <SaveFavoriteButton
+                sql={committedQuery}
+                hostId={hostId}
+                database={null}
+              />
+              <a
+                href="https://clickhouse.com/docs/sql-reference/statements/explain"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground text-xs font-normal"
+              >
+                Docs <ExternalLinkIcon className="inline size-3" />
+              </a>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

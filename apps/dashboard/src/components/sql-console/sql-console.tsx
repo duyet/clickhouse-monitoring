@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  Bookmark,
   CheckCircle2,
   Clock,
   History,
@@ -13,6 +14,10 @@ import type { StatementOutcome } from './hooks/use-sql-runner'
 
 import { DatabaseCombobox } from './database-combobox'
 import { useQueryHistory } from './hooks/use-query-history'
+import {
+  QueryFavoritesPanel,
+  SaveFavoriteButton,
+} from '@/components/query-favorites'
 import { useSqlRunner } from './hooks/use-sql-runner'
 import { QueryHistoryPanel } from './query-history-panel'
 import { AnalysisTab } from './tabs/analysis-tab'
@@ -74,6 +79,7 @@ export function SqlConsole({
   const history = useQueryHistory()
   const [tab, setTab] = useState<ResultTabValue>('results')
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [favoritesOpen, setFavoritesOpen] = useState(false)
 
   const {
     editorValue,
@@ -196,6 +202,11 @@ export function SqlConsole({
           >
             <Sparkles className="mr-1.5 size-3.5" /> Format
           </Button>
+          <SaveFavoriteButton
+            sql={committedSql ?? ''}
+            hostId={hostId}
+            database={database ?? null}
+          />
           {onDatabaseChange && (
             <DatabaseCombobox
               hostId={hostId}
@@ -205,32 +216,59 @@ export function SqlConsole({
           )}
         </div>
 
-        <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-          <SheetTrigger asChild>
-            <Button size="sm" variant="outline">
-              <History className="mr-1.5 size-3.5" /> History
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="right"
-            className="flex w-[380px] flex-col p-0 sm:w-[440px]"
-          >
-            <SheetHeader className="border-b px-4 py-3">
-              <SheetTitle>Query history</SheetTitle>
-            </SheetHeader>
-            <div className="min-h-0 flex-1">
-              <QueryHistoryPanel
-                hostId={hostId}
-                entries={history.entries}
-                onSelect={handleSelectHistory}
-                onRemove={history.remove}
-                onTogglePin={history.togglePin}
-                onClear={history.clear}
-                serverEnabled={historyOpen}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline">
+                <History className="mr-1.5 size-3.5" /> History
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="flex w-[380px] flex-col p-0 sm:w-[440px]"
+            >
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle>Query history</SheetTitle>
+              </SheetHeader>
+              <div className="min-h-0 flex-1">
+                <QueryHistoryPanel
+                  hostId={hostId}
+                  entries={history.entries}
+                  onSelect={handleSelectHistory}
+                  onRemove={history.remove}
+                  onTogglePin={history.togglePin}
+                  onClear={history.clear}
+                  serverEnabled={historyOpen}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline">
+                <Bookmark className="mr-1.5 size-3.5" /> Favorites
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="flex w-[380px] flex-col p-0 sm:w-[440px]"
+            >
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle>Saved favorites</SheetTitle>
+              </SheetHeader>
+              <div className="min-h-0 flex-1">
+                <QueryFavoritesPanel
+                  onSelect={(sql, run) => {
+                    setEditorValue(sql)
+                    setFavoritesOpen(false)
+                    if (run) handleRun(sql)
+                  }}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       {/* Status bar */}
