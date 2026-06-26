@@ -9,15 +9,9 @@
  *  - resultCount is present for array results
  */
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  mock,
-  spyOn,
-  test,
-} from 'bun:test'
+import { afterEach, describe, expect, mock, test } from 'bun:test'
+
+import { jsonSchema, tool, type ToolExecutionOptions, type ToolSet } from 'ai'
 
 // Stub @chm/logger before importing the module under test
 const logCalls: Array<[string, unknown]> = []
@@ -41,17 +35,24 @@ afterEach(() => {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+/** Build a minimal AI-SDK-compatible tool with the given execute function. */
 function makeTool(
-  execute: (input: unknown, opts: { toolCallId: string }) => unknown
+  executeFn: (input: unknown, opts: ToolExecutionOptions) => unknown
 ) {
-  return {
+  return tool({
     description: 'test tool',
-    inputSchema: {},
-    execute,
-  }
+    inputSchema: jsonSchema<Record<string, unknown>>({}),
+    execute: executeFn as (
+      input: Record<string, unknown>,
+      opts: ToolExecutionOptions
+    ) => unknown,
+  })
 }
 
-const FAKE_OPTIONS = { toolCallId: 'call-abc-123' }
+const FAKE_OPTIONS: ToolExecutionOptions = {
+  toolCallId: 'call-abc-123',
+  messages: [],
+}
 
 // ─── tests ──────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,10 @@ describe('wrapToolsWithLogging — success path', () => {
       { my_tool: makeTool(async () => [{ row: 1 }, { row: 2 }]) },
       'session-1'
     )
-    const result = await tools.my_tool.execute({}, FAKE_OPTIONS)
+    const result = await tools.my_tool.execute!(
+      FAKE_OPTIONS.toolCallId ? {} : {},
+      FAKE_OPTIONS
+    )
     expect(result).toEqual([{ row: 1 }, { row: 2 }])
   })
 
@@ -70,7 +74,7 @@ describe('wrapToolsWithLogging — success path', () => {
       { count_tool: makeTool(async () => [1, 2, 3]) },
       'session-2'
     )
-    await tools.count_tool.execute({}, FAKE_OPTIONS)
+    await tools.count_tool.execute!({}, FAKE_OPTIONS)
 
     expect(logCalls.length).toBeGreaterThanOrEqual(1)
     const [msg, data] = logCalls[logCalls.length - 1]
@@ -86,7 +90,7 @@ describe('wrapToolsWithLogging — success path', () => {
       { arr_tool: makeTool(async () => ['a', 'b', 'c']) },
       'session-3'
     )
-    await tools.arr_tool.execute({}, FAKE_OPTIONS)
+    await tools.arr_tool.execute!({}, FAKE_OPTIONS)
 
     const [, data] = logCalls[logCalls.length - 1]
     expect((data as Record<string, unknown>).resultCount).toBe(3)
@@ -97,7 +101,7 @@ describe('wrapToolsWithLogging — success path', () => {
       { scalar_tool: makeTool(async () => 'done') },
       'session-4'
     )
-    await tools.scalar_tool.execute({}, FAKE_OPTIONS)
+    await tools.scalar_tool.execute!({}, FAKE_OPTIONS)
 
     const [, data] = logCalls[logCalls.length - 1]
     expect('resultCount' in (data as Record<string, unknown>)).toBe(false)
@@ -115,7 +119,7 @@ describe('wrapToolsWithLogging — failure path', () => {
       },
       'session-5'
     )
-    expect(() => tools.bad_tool.execute({}, FAKE_OPTIONS)).toThrow(
+    expect(() => tools.bad_tool.execute!({}, FAKE_OPTIONS)).toThrow(
       'CH connection refused'
     )
   })
@@ -131,7 +135,7 @@ describe('wrapToolsWithLogging — failure path', () => {
       'session-6'
     )
     try {
-      await tools.slow_tool.execute({}, FAKE_OPTIONS)
+      await tools.slow_tool.execute!({}, FAKE_OPTIONS)
     } catch {
       /* expected */
     }
@@ -150,7 +154,7 @@ describe('wrapToolsWithLogging — failure path', () => {
       'session-7'
     )
     try {
-      await tools.t.execute({}, FAKE_OPTIONS)
+      await tools.t.execute!({}, FAKE_OPTIONS)
     } catch {
       /* expected */
     }
@@ -171,7 +175,7 @@ describe('wrapToolsWithLogging — arg redaction', () => {
       { q: makeTool(async () => []) },
       'session-8'
     )
-    await tools.q.execute(
+    await tools.q.execute!(
       { password: 'secret123', user: 'alice' },
       FAKE_OPTIONS
     )
@@ -191,7 +195,7 @@ describe('wrapToolsWithLogging — arg redaction', () => {
       'session-9'
     )
     const longSql = 'SELECT '.repeat(100)
-    await tools.q.execute({ sql: longSql }, FAKE_OPTIONS)
+    await tools.q.execute!({ sql: longSql }, FAKE_OPTIONS)
 
     const [, data] = logCalls[logCalls.length - 1]
     const args = (data as Record<string, unknown>).args as Record<
@@ -206,15 +210,12 @@ describe('wrapToolsWithLogging — arg redaction', () => {
 
 describe('wrapToolsWithLogging — passthrough', () => {
   test('tools without execute are passed through unchanged', () => {
-    const noExec = { description: 'no execute', inputSchema: {} }
+    const noExec = {
+      description: 'no execute',
+      inputSchema: jsonSchema({}),
+    }
     const tools = wrapToolsWithLogging(
-      {
-        plain: noExec as unknown as {
-          execute: () => unknown
-          description: string
-          inputSchema: object
-        },
-      },
+      { plain: noExec as unknown as ToolSet[string] },
       'session-10'
     )
     expect(tools.plain).toBe(noExec)
