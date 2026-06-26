@@ -35,8 +35,10 @@ helm uninstall my-chm
 
 ### From the OCI registry (GHCR)
 
+Replace `vX.Y.Z` with the latest release tag from [GitHub Releases](https://github.com/duyet/clickhouse-monitoring/releases).
+
 ```bash
-helm install my-chm oci://ghcr.io/duyet/chmonitor --version 0.2.9 \
+helm install my-chm oci://ghcr.io/duyet/chmonitor --version vX.Y.Z \
   --set clickhouse.host="https://clickhouse.example.com:8443" \
   --set clickhouse.user="monitoring" \
   --set clickhouse.password="change-me"
@@ -45,7 +47,7 @@ helm install my-chm oci://ghcr.io/duyet/chmonitor --version 0.2.9 \
 Pull and inspect the chart before installing:
 
 ```bash
-helm pull oci://ghcr.io/duyet/chmonitor --version 0.2.9 --untar
+helm pull oci://ghcr.io/duyet/chmonitor --version vX.Y.Z --untar
 helm show values ./chmonitor
 ```
 
@@ -73,7 +75,7 @@ Example `values.yaml`:
 
 ```yaml
 image:
-  tag: "0.2.9"
+  tag: "vX.Y.Z"   # use the latest release tag from https://github.com/duyet/clickhouse-monitoring/releases
 
 clickhouse:
   host: "https://clickhouse.example.com:8443"
@@ -203,7 +205,6 @@ metadata:
 data:
   CLICKHOUSE_MAX_EXECUTION_TIME: "30"
   CLICKHOUSE_TZ: "UTC"
-  NEXT_QUERY_CACHE_TTL: "3600"
   CLICKHOUSE_DATABASE: "system"
   CLICKHOUSE_POOL_SIZE: "10"
   CLICKHOUSE_POOL_TIMEOUT: "300000"
@@ -354,19 +355,11 @@ Set `CHM_FEATURE_AGENT_ACCESS=authenticated` in the ConfigMap to require login. 
 
 **Default:** browser localStorage — no server config needed.
 
-**Enable server-side persistence:**
+Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` baked into the image at build time (a `VITE_*` build-time variable). Build a custom image with this flag to enable it. At runtime, set the backend via `CONVERSATION_STORE_BACKEND` in a ConfigMap.
 
-```yaml
-# in ConfigMap
-AGENT_CONVERSATION_PERSISTENCE: "true"
-AGENT_CONVERSATION_STORE: "clickhouse"
-CLICKHOUSE_AGENT_CONVERSATIONS_TABLE: "system.agent_conversations"
-CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE: "true"
-```
+On Kubernetes, use `postgres` or `agentstate` for the conversation store. D1 and Durable Object stores are Cloudflare-only.
 
-On Kubernetes, use `clickhouse` or `postgres` for the conversation store. D1 and Durable Object stores are Cloudflare-only.
-
-**Postgres store:**
+**Postgres store (recommended on Kubernetes):**
 
 ```bash
 kubectl create secret generic chmonitor-postgres \
@@ -375,7 +368,19 @@ kubectl create secret generic chmonitor-postgres \
 
 ```yaml
 # in ConfigMap
-AGENT_CONVERSATION_STORE: "postgres"
+CONVERSATION_STORE_BACKEND: "postgres"
+```
+
+**AgentState store:**
+
+```bash
+kubectl create secret generic chmonitor-agentstate \
+  --from-literal=AGENTSTATE_API_KEY='as_live_...'
+```
+
+```yaml
+# in ConfigMap
+CONVERSATION_STORE_BACKEND: "agentstate"
 ```
 
 ### Health alerting

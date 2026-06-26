@@ -72,20 +72,18 @@ Check that `LLM_API_KEY` is set and that `LLM_API_BASE` points at a reachable Op
 
 **Agent conversation history disappears after I close the browser.**
 
-By default, history lives in browser `localStorage`. To persist it server-side, set:
+By default, history lives in browser `localStorage`. To persist it server-side:
 
-```bash
-AGENT_CONVERSATION_PERSISTENCE=true
-AGENT_CONVERSATION_STORE=auto
-```
+1. Set `VITE_FEATURE_CONVERSATION_DB=true` at build time (before `bun run build`). Also requires Clerk auth.
+2. Set `CONVERSATION_STORE_BACKEND` at runtime to `agentstate`, `d1`, `postgres`, or `memory`.
 
-Then configure a backend store (AgentState, D1, ClickHouse, Postgres). See [Store Backends](/docs/ai-agent/conversation-history/backends).
+See [Conversation History](/docs/ai-agent/conversation-history) and [Store Backends](/docs/ai-agent/conversation-history/backends).
 
 ## Data freshness
 
 **The dashboard shows stale data.**
 
-The app caches query results. Lower `NEXT_QUERY_CACHE_TTL` (default 3600 seconds) for fresher data at the cost of more ClickHouse queries. In the TanStack app, client-side SWR also revalidates on focus and on a polling interval.
+The TanStack app revalidates data on focus and on a polling interval. Reduce `CLICKHOUSE_MAX_EXECUTION_TIME` if queries are taking too long, or adjust the client-side refresh interval per chart.
 
 ## Deployment
 

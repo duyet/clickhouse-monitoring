@@ -19,6 +19,21 @@ Authoritative example: [`apps/dashboard/.env.example`](https://github.com/duyet/
 
 ---
 
+## Build-time vs runtime
+
+There are two categories of environment variables:
+
+| Category | When resolved | How to set | Example |
+|---|---|---|---|
+| **Build-time** | When `bun run build` runs | CI environment / shell before the build | `VITE_FEATURE_CONVERSATION_DB`, `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
+| **Runtime** | When the server process starts per request | `wrangler.toml [vars]`, `wrangler secret put`, Docker `-e`, k8s ConfigMap/Secret | `CLICKHOUSE_HOST`, `CONVERSATION_STORE_BACKEND` |
+
+`VITE_*` vars are always build-time. They are inlined into the browser bundle and cannot be changed without a rebuild. Setting a `VITE_*` var in `wrangler.toml [vars]` or as a Docker `-e` flag has no effect on the running app — the bundle already has the value from when it was built.
+
+All other vars (unless noted) are runtime — read from `process.env` when the Worker or Node process handles a request.
+
+---
+
 ## ClickHouse Connection
 
 Required. Set at least `CLICKHOUSE_HOST`.
@@ -42,7 +57,6 @@ See [Multiple Hosts](/docs/advanced/multiple-hosts) and [Custom Name](/docs/adva
 |---|---|---|
 | `CLICKHOUSE_MAX_EXECUTION_TIME` | `60` | Query timeout in seconds. |
 | `CLICKHOUSE_TZ` | server default | Time zone for date/time display. |
-| `NEXT_QUERY_CACHE_TTL` | `3600` | Server-side query-result cache TTL in seconds. |
 | `CLICKHOUSE_DATABASE` | `system` | Database used for app-owned tables (self-tracking events, dashboards). |
 | `EVENTS_TABLE_NAME` | `system.monitoring_events` | Full table name override for self-tracking events. |
 
@@ -214,19 +228,23 @@ See [AI Agent — Configuration](/docs/ai-agent/configuration) for full details.
 
 ## Conversation Store
 
-Agent conversations default to browser localStorage. Enable server-side persistence with `AGENT_CONVERSATION_PERSISTENCE=true`.
+Agent conversations default to browser localStorage. Enable server-side persistence with two steps:
+
+1. Set `VITE_FEATURE_CONVERSATION_DB=true` at **build time** (this is a `VITE_*` variable — must be set before `bun run build`). Also requires Clerk auth (`VITE_AUTH_PROVIDER=clerk`).
+2. Configure a backend at runtime via `CONVERSATION_STORE_BACKEND`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enable server-side conversation persistence. |
-| `AGENT_CONVERSATION_STORE` | `auto` | Backend: `auto`, `agentstate`, `d1`, `durable-object`, `clickhouse`, `postgres`, `memory`, or `local`. |
+| `VITE_FEATURE_CONVERSATION_DB` | `false` | **Build-time.** Set `true` to enable server-side conversation persistence. Requires Clerk. Must be set before `bun run build`. |
+| `CONVERSATION_STORE_BACKEND` | (auto) | **Runtime.** Backend: `agentstate`, `d1`, `postgres`, or `memory`. When unset, the server auto-selects the first available backend (AgentState if key present → D1 binding → Postgres via `DATABASE_URL` → Memory). |
 
 **AgentState backend:**
 
 | Variable | Default | Description |
 |---|---|---|
-| `AGENTSTATE_API_KEY` | — | AgentState API key. Must start with `as_live_`. |
-| `AGENTSTATE_API_BASE` | `https://agentstate.app/api` | AgentState API base URL. |
+| `AGENTSTATE_API_KEY` | — | AgentState API key. Required when `CONVERSATION_STORE_BACKEND=agentstate`. |
+| `AGENTSTATE_BASE_URL` | `https://agentstate.app/api` | AgentState API base URL. |
+| `AGENTSTATE_AI_ENRICH` | `false` | Set `true` to enable AI enrichment of stored conversations. |
 
 **Cloudflare D1 backend:**
 
@@ -234,19 +252,6 @@ Agent conversations default to browser localStorage. Enable server-side persiste
 |---|---|---|
 | `CONVERSATIONS_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the `CONVERSATIONS_D1` binding. |
 | `AGENT_CONVERSATIONS_D1_DATABASE_ID` | — | Alias for `CONVERSATIONS_D1_DATABASE_ID`. |
-
-**Cloudflare Durable Object backend:**
-
-| Variable | Default | Description |
-|---|---|---|
-| `AGENT_CONVERSATIONS_DO_BINDING` | `AGENT_CONVERSATIONS_DO` | Durable Object binding name. |
-
-**ClickHouse backend:**
-
-| Variable | Default | Description |
-|---|---|---|
-| `CLICKHOUSE_AGENT_CONVERSATIONS_TABLE` | `${CLICKHOUSE_DATABASE}.agent_conversations` | ClickHouse table for conversation storage. In `auto` mode, ClickHouse is tried only when this is explicitly set. |
-| `CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE` | `true` | Create the table at runtime if it does not exist. |
 
 **PostgreSQL backend:**
 
@@ -347,7 +352,7 @@ Injected at build time for the About page.
 |---|---|
 | `NEXT_PUBLIC_AUTH_PROVIDER` | Renamed to `VITE_AUTH_PROVIDER` in v0.3. Old name still works as a fallback. |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Renamed to `VITE_CLERK_PUBLISHABLE_KEY` in v0.3. |
-| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | Deprecated alias for `AGENT_CONVERSATION_PERSISTENCE=true`. |
+| `NEXT_PUBLIC_FEATURE_CONVERSATION_DB` | Deprecated alias for `VITE_FEATURE_CONVERSATION_DB=true`. |
 | `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | Renamed to `VITE_AUTOCOMPLETE_LIMIT` in v0.3. |
 | `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | Renamed to `VITE_RUNNING_QUERIES_REFRESH_MS` in v0.3. |
 | `CLICKHOUSE_EXCLUDE_USER_DEFAULT` | Comma-separated usernames excluded from history-queries by default. |

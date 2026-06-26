@@ -250,7 +250,7 @@ v0.3 adds optional new configuration. None is required for the upgrade — set t
 | `CHM_CF_ACCESS_TEAM_DOMAIN` + `CHM_CF_ACCESS_AUD` | Cloudflare Access proxy auth |
 | `CHM_PROXY_AUTH_SECRET` | Trusted-header proxy auth |
 | `HEALTH_ALERT_ENABLED` + `HEALTH_ALERT_WEBHOOK_URL` | Health alerting cron sweep |
-| `AGENT_CONVERSATION_PERSISTENCE` + `AGENT_CONVERSATION_STORE` | Server-side conversation history |
+| `VITE_FEATURE_CONVERSATION_DB` (build-time) + `CONVERSATION_STORE_BACKEND` (runtime) | Server-side conversation history |
 
 See [Environment Variables](/docs/reference/environment-variables) for the full list.
 
