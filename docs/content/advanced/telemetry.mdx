@@ -81,7 +81,15 @@ Telemetry is off by default — you do not need to do anything to disable it. To
 
 ## Current transport status
 
-There is currently **no default network sink**. Events are typed, redacted, and emitted internally, but no transport is wired yet — meaning even when enabled, events go nowhere. A self-hosted sink (writing to your own ClickHouse) will be added in a later release. This means enabling telemetry today has no effect on data leaving your instance.
+Two separate systems exist, each with its own no-op guarantee:
+
+**Instance ping** (`maybePingInstance`) is wired to the app and runs once per day when due. It is a hard no-op unless **both** conditions hold simultaneously:
+1. Telemetry is explicitly enabled (`CHM_TELEMETRY=on` / `VITE_TELEMETRY_ENABLED=true`).
+2. A collection endpoint is explicitly configured (`CHM_TELEMETRY_ENDPOINT` / `VITE_TELEMETRY_ENDPOINT`).
+
+Neither variable is set by default. Because both are required, enabling just the flag makes zero network calls — the code short-circuits before any `fetch()` is invoked.
+
+**Event tracking** (`track()`) has no default transport sink. Events are typed and redacted internally, but with no sink registered they are silently dropped. A self-hosted sink (writing to your own ClickHouse) will be added in a later release. Enabling telemetry today produces no network traffic from event tracking.
 
 ---
 
@@ -101,7 +109,7 @@ A session is considered activated when a cluster is connected and the user viewe
 - **Self-hosted** — chmonitor is fully self-hostable; your ClickHouse data never leaves your network regardless of telemetry settings.
 - **No third-party trackers** — there are no analytics SDKs, beacon scripts, or third-party pixels in the application.
 - **No PII by design** — the event schema and redaction layer are written to make PII collection structurally impossible, not just policy-forbidden.
-- **Inert today** — no transport sink is wired, so enabling telemetry currently produces no network traffic.
+- **Inert by default** — both the telemetry flag and a collection endpoint must be explicitly set for any network call to occur. Enabling just the flag (without an endpoint) still makes zero network calls.
 
 ---
 

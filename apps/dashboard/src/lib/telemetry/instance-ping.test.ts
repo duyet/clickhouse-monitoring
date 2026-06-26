@@ -1,5 +1,6 @@
 import {
   buildPingPayload,
+  getPingEndpoint,
   PING_INTERVAL_MS,
   type PingDeps,
   runInstancePing,
@@ -247,6 +248,35 @@ describe('runInstancePing error resilience', () => {
     })
     await runInstancePing(deps)
     expect(deps.store.chm_telemetry_last_ping_at).toBe(String(now))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// No-op safety contract: when no endpoint is configured, fetch is never called.
+//
+// This is the critical invariant: the default build ships VITE_TELEMETRY_ENDPOINT=''
+// (see vite.config.ts), so even if a user sets VITE_TELEMETRY_ENABLED=true they
+// still make zero network calls until they also provide a collection endpoint.
+
+describe('no-op safety contract: no endpoint configured', () => {
+  test('getPingEndpoint returns empty string when runtimeEnv has no endpoint key', () => {
+    expect(getPingEndpoint({})).toBe('')
+    expect(getPingEndpoint({ UNRELATED: 'foo' })).toBe('')
+  })
+
+  test('runInstancePing never calls post when endpoint is empty — even with enabled:true', async () => {
+    const posts: Array<{ url: string; body: string }> = []
+    const result = await runInstancePing(
+      makeDeps({
+        enabled: true,
+        endpoint: getPingEndpoint({}), // '' — mirrors the default build config
+        post: async (url, body) => {
+          posts.push({ url, body })
+        },
+      })
+    )
+    expect(result).toBe('skipped-no-endpoint')
+    expect(posts).toHaveLength(0)
   })
 })
 
