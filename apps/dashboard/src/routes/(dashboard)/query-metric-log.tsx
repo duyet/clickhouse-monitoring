@@ -3,11 +3,31 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { useSearchParams } from '@/lib/next-compat'
 import { queryMetricLogConfig } from '@/lib/query-config/system/query-metric-log'
 
 function QueryMetricLogPageContent() {
+  const searchParams = useSearchParams()
+
+  // When navigated from "View Resource Timeline" action on a query row,
+  // ?query_id= is set to filter the metric log to that specific query.
+  // ?last_hours= overrides the default 1-hour lookback window.
+  const tableSearchParams: Record<string, string> = {}
+  const queryId = searchParams.get('query_id')
+  if (queryId?.trim()) {
+    tableSearchParams.query_id = queryId.trim()
+  }
+  const lastHours = searchParams.get('last_hours')
+  if (lastHours?.trim()) {
+    tableSearchParams.last_hours = lastHours.trim()
+  }
+
   return (
-    <PageLayout queryConfig={queryMetricLogConfig} title="Query Metric Log" />
+    <PageLayout
+      queryConfig={queryMetricLogConfig}
+      title="Query Metric Log"
+      searchParams={tableSearchParams}
+    />
   )
 }
 

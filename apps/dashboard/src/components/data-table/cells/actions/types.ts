@@ -8,6 +8,7 @@ export type Action =
   | 'optimize'
   | 'query-settings'
   | 'generate-ai-prompt'
+  | 'view-resource-timeline'
 
 export type ActionResponse = {
   action: 'redirect' | 'toast'

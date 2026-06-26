@@ -1,4 +1,5 @@
 import {
+  BotIcon,
   ClockIcon,
   HashIcon,
   MemoryStickIcon,
@@ -8,7 +9,7 @@ import {
 } from 'lucide-react'
 
 import type { FilterSchema } from '@/lib/filters/types'
-import type { QueryConfig } from '@/types/query-config'
+import type { QueryConfig, VersionedSql } from '@/types/query-config'
 
 import { QUERY_COMMENT } from '@chm/clickhouse-client/constants'
 import { RunningQueryExpandedDetails } from '@/components/data-table/cells/running-query-expanded-details'
@@ -74,6 +75,15 @@ export const runningQueriesFilterSchema: FilterSchema = {
       scale: 1024 * 1024,
       placeholder: 'megabytes',
     },
+    {
+      key: 'client_agent',
+      column: 'client_agent',
+      label: 'Client agent',
+      type: 'select',
+      operators: ['in', 'contains', 'eq', 'ne'],
+      icon: BotIcon,
+      description: 'AI coding agent that issued the query (CH 26.6+).',
+    },
   ],
   presets: [
     {
@@ -111,7 +121,11 @@ export const runningQueriesConfig: QueryConfig = {
   // We alias the inner query (`q`) and use `q.*` rather than a bare `SELECT *`
   // because the latter is explicitly disallowed for this frequently-refreshed
   // path by `lib/__tests__/versioned-sql.test.ts`.
-  sql: `
+  sql: [
+    {
+      since: '23.8',
+      description: 'Base running queries query',
+      sql: `
     ${QUERY_COMMENT}
     SELECT q.* FROM (
       SELECT
@@ -173,7 +187,76 @@ export const runningQueriesConfig: QueryConfig = {
     ${FILTER_PLACEHOLDER}
     ORDER BY elapsed DESC
   `,
-  columns: ['action', 'query'],
+    },
+    {
+      since: '26.6',
+      description: 'Added client_agent column from system.processes (CH 26.6+)',
+      sql: `
+    ${QUERY_COMMENT}
+    SELECT q.* FROM (
+      SELECT
+        query_id,
+        query,
+        query_kind,
+        user,
+        os_user,
+        current_database,
+        initial_query_id,
+        is_initial_query,
+        address,
+        port,
+        interface,
+        client_name,
+        client_hostname,
+        client_agent,
+        distributed_depth,
+        elapsed,
+        read_rows,
+        read_bytes,
+        total_rows_approx,
+        written_rows,
+        written_bytes,
+        memory_usage,
+        peak_memory_usage,
+        ProfileEvents,
+        length(thread_ids) AS thread_count,
+        query_id AS action,
+        multiIf (elapsed < 30, format('{} seconds', round(elapsed, 1)),
+                 elapsed < 90, 'a minute',
+                 formatReadableTimeDelta(elapsed, 'days', 'minutes')) AS readable_elapsed,
+        formatReadableQuantity(read_rows) AS readable_read_rows,
+        formatReadableSize(read_bytes) AS readable_read_bytes,
+        formatReadableQuantity(written_rows) AS readable_written_rows,
+        formatReadableSize(written_bytes) AS readable_written_bytes,
+        formatReadableQuantity(total_rows_approx) AS readable_total_rows_approx,
+        formatReadableSize(peak_memory_usage) AS readable_peak_memory_usage,
+        multiIf (
+          memory_usage = 0, formatReadableSize(memory_usage),
+          formatReadableSize(memory_usage) = formatReadableSize(peak_memory_usage), formatReadableSize(memory_usage),
+          formatReadableSize(memory_usage) || ' (peak ' || readable_peak_memory_usage || ')'
+        ) AS readable_memory_usage,
+        if(total_rows_approx > 0 AND query_kind = 'Select', toString(round((100 * read_rows) / total_rows_approx, 2)) || '%', '') AS progress,
+        if(total_rows_approx > 0 AND query_kind = 'Select', least(100., round((100 * read_rows) / total_rows_approx, 1)), 0.) AS pct_progress,
+        if(total_rows_approx > 0 AND read_rows > 0 AND read_rows < total_rows_approx AND query_kind = 'Select',
+           round(elapsed * (total_rows_approx - read_rows) / read_rows, 1), NULL) AS estimated_remaining_time,
+        formatReadableQuantity(ProfileEvents['Merge']) AS launched_merges,
+        multiIf(interface = 1, 'TCP',
+                interface = 2, 'HTTP',
+                interface = 3, 'gRPC',
+                interface = 4, 'MySQL',
+                interface = 5, 'PostgreSQL',
+                interface = 6, 'Local',
+                interface = 7, 'Interserver',
+                toString(interface)) AS interface_label
+      FROM system.processes
+      WHERE is_cancelled = 0
+    ) AS q
+    ${FILTER_PLACEHOLDER}
+    ORDER BY elapsed DESC
+  `,
+    },
+  ] as VersionedSql[],
+  columns: ['action', 'query', 'client_agent'],
   rowClassName: (row) => {
     // elapsed is in seconds for running queries
     const elapsed = Number(row.elapsed || 0)
@@ -190,6 +273,7 @@ export const runningQueriesConfig: QueryConfig = {
       ['kill-query', 'analyze-with-ai', 'open-in-explorer'],
     ],
     query: ColumnFormat.RunningQuerySummary,
+    client_agent: ColumnFormat.ColoredBadge,
   },
 
   /**

@@ -9,11 +9,23 @@ export const queryMetricLogDeclarative: DeclarativeQueryConfig = {
   // system.query_metric_log is opt-in and may not exist on every server / version
   optional: true,
   tableCheck: 'system.query_metric_log',
-  // Pre-aggregate one row per query over the last hour instead of returning
-  // every raw per-interval sample. system.query_metric_log is high-cardinality
-  // (one row per query per sampling interval), so a raw SELECT can scan enough
-  // data to exceed Cloudflare Worker CPU/memory limits (HTTP 503). Aggregating
-  // server-side and bounding the time window keeps the result small and useful.
+  // Pre-aggregate one row per query instead of returning every raw per-interval
+  // sample. system.query_metric_log is high-cardinality (one row per query per
+  // sampling interval), so a raw SELECT can scan enough data to exceed Cloudflare
+  // Worker CPU/memory limits (HTTP 503). Aggregating server-side and bounding
+  // the time window keeps the result small and useful.
+  //
+  // When query_id is provided (e.g. from the "View Resource Timeline" action),
+  // the result is filtered to that single query.
+  defaultParams: {
+    query_id: '',
+    last_hours: '1',
+  },
+  filterParamPresets: [
+    { name: 'Last 1 hour', key: 'last_hours', value: '1' },
+    { name: 'Last 6 hours', key: 'last_hours', value: '6' },
+    { name: 'Last 24 hours', key: 'last_hours', value: '24' },
+  ],
   sql: `
       WITH per_query AS (
         SELECT
@@ -28,7 +40,8 @@ export const queryMetricLogDeclarative: DeclarativeQueryConfig = {
           max(ProfileEvent_RealTimeMicroseconds) AS real_time_us,
           max(ProfileEvent_OSCPUVirtualTimeMicroseconds) AS cpu_time_us
         FROM system.query_metric_log
-        WHERE event_time >= now() - INTERVAL 1 HOUR
+        WHERE event_time >= now() - INTERVAL {last_hours:UInt64} HOUR
+          AND ({query_id:String} = '' OR query_id = {query_id:String})
         GROUP BY query_id
       )
       SELECT
@@ -55,7 +68,14 @@ export const queryMetricLogDeclarative: DeclarativeQueryConfig = {
     'cpu_time_us',
   ],
   columnFormats: {
-    query_id: 'colored-badge',
+    query_id: [
+      'link',
+      {
+        href: '/query?query_id=[query_id]&host=[ctx.hostId]',
+        className: 'truncate max-w-48 font-mono text-xs',
+        title: 'View query detail',
+      },
+    ],
     readable_memory: 'background-bar',
     readable_peak_memory: 'background-bar',
     selected_rows: 'number-short',

@@ -172,6 +172,37 @@ export const slowQueriesConfig: QueryConfig = {
         LIMIT 10
       `,
     },
+    {
+      since: '26.6',
+      description: 'Added client_agent column (CH 26.6+)',
+      sql: `
+        SELECT
+            query_id,
+            query_start_time,
+            query_duration_ms,
+            query_duration_ms / 1000 AS query_duration,
+            user,
+            query_cache_usage,
+            replace(substr(query, 1, 500), '\n', ' ') AS query,
+            read_rows,
+            formatReadableQuantity(read_rows) AS readable_read_rows,
+            round(read_rows * 100.0 / nullIf(max(read_rows) OVER (), 0), 2) AS pct_read_rows,
+            read_bytes,
+            formatReadableSize(read_bytes) AS readable_read_bytes,
+            round(read_bytes * 100.0 / nullIf(max(read_bytes) OVER (), 0), 2) AS pct_read_bytes,
+            memory_usage,
+            formatReadableSize(memory_usage) AS readable_memory_usage,
+            round(memory_usage * 100.0 / nullIf(max(memory_usage) OVER (), 0), 2) AS pct_memory_usage,
+            client_agent
+        FROM system.query_log
+        WHERE type = 'QueryFinish'
+            AND query_duration_ms >= {min_duration_s:UInt64} * 1000
+            AND event_time > now() - interval {last_hours:UInt64} hour
+            AND ({user:String} = '' OR user = {user:String})
+        ORDER BY query_duration_ms DESC
+        LIMIT 10
+      `,
+    },
   ] as VersionedSql[],
   rowClassName: (row) => {
     const durationS = Number(row.query_duration || 0)
@@ -190,9 +221,13 @@ export const slowQueriesConfig: QueryConfig = {
     'readable_read_rows',
     'readable_read_bytes',
     'readable_memory_usage',
+    'client_agent',
   ],
   columnFormats: {
-    action: [ColumnFormat.Action, ['explain-query', 'open-in-explorer']],
+    action: [
+      ColumnFormat.Action,
+      ['explain-query', 'open-in-explorer', 'view-resource-timeline'],
+    ],
     query_id: [
       ColumnFormat.Link,
       {
@@ -212,6 +247,7 @@ export const slowQueriesConfig: QueryConfig = {
     readable_read_rows: ColumnFormat.BackgroundBar,
     readable_read_bytes: ColumnFormat.BackgroundBar,
     readable_memory_usage: ColumnFormat.BackgroundBar,
+    client_agent: ColumnFormat.ColoredBadge,
   },
   relatedCharts: [['slow-query-occurrences', {}]],
 }

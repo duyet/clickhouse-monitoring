@@ -194,6 +194,16 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_cache',
         tableCheck: 'system.query_cache',
       },
+      {
+        title: 'Query Condition Cache',
+        href: '/query-condition-cache',
+        description:
+          'Cached WHERE-clause conditions for repeated query optimization (ClickHouse 25.3+)',
+        icon: LightningBoltIcon,
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/query_condition_cache',
+        tableCheck: 'system.query_condition_cache',
+      },
     ],
   },
   {
