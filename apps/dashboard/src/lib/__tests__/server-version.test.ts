@@ -79,13 +79,23 @@ describe('compareVersions', () => {
 // meetsMinVersion — requires mocking getClickHouseVersion
 // ---------------------------------------------------------------------------
 
-const mockGetClickHouseVersion = mock(async (hostId: number) => ({
-  major: 26,
-  minor: 6,
-  patch: 1,
-  build: 0,
-  raw: '26.6.1.0',
-}))
+type MockVersion = {
+  major: number
+  minor: number
+  patch: number
+  build: number
+  raw: string
+} | null
+
+const mockGetClickHouseVersion = mock(
+  async (_hostId: number): Promise<MockVersion> => ({
+    major: 26,
+    minor: 6,
+    patch: 1,
+    build: 0,
+    raw: '26.6.1.0',
+  })
+)
 
 mock.module('@chm/clickhouse-client/clickhouse-version', () => ({
   getClickHouseVersion: mockGetClickHouseVersion,
