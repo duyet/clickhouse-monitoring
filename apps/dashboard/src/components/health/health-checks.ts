@@ -418,4 +418,144 @@ WHERE error = 'KEEPER_EXCEPTION'
     sql: `SELECT round(max((total_space - free_space) * 100.0 / nullIf(total_space, 0)), 1) AS disk_percent
 FROM system.disks`,
   },
+  {
+    id: 'failed-mutations',
+    title: 'Failed Mutations',
+    icon: XCircle,
+    chartName: 'health-failed-mutations',
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 5 },
+    formatLabel: fmtCount('failed mutation'),
+    description:
+      'Mutations that are not done and have recorded a failure. Failed mutations block subsequent mutations on the same table.',
+    systemTables: ['system.mutations'],
+    commonCauses: [
+      'Mutation references a column that no longer exists',
+      'Disk full on a replica preventing part writes',
+      'Hardware / network fault during part rewrite',
+    ],
+    relatedLinks: [{ label: 'Mutations', href: '/mutations' }],
+    docsLinks: [
+      {
+        label: 'system.mutations',
+        url: 'https://clickhouse.com/docs/en/operations/system-tables/mutations',
+      },
+    ],
+    sql: `SELECT countIf(is_done = 0 AND isNotNull(latest_fail_time)) AS failed_count
+FROM system.mutations`,
+  },
+  {
+    id: 'stuck-merges',
+    title: 'Stuck Merges (>10m)',
+    icon: Timer,
+    chartName: 'health-stuck-merges',
+    valueKey: 'stuck_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('stuck merge'),
+    description:
+      'Merges that have been running for more than 10 minutes. Stuck merges hold disk space, consume background threads, and can block inserts.',
+    systemTables: ['system.merges'],
+    commonCauses: [
+      'Very large parts requiring many hours to merge',
+      'Disk I/O saturation or slow storage',
+      'Insufficient background_pool_size',
+    ],
+    relatedLinks: [{ label: 'Merges', href: '/merges' }],
+    docsLinks: [
+      {
+        label: 'system.merges',
+        url: 'https://clickhouse.com/docs/en/operations/system-tables/merges',
+      },
+    ],
+    sql: `SELECT count() AS stuck_count
+FROM system.merges
+WHERE elapsed > 600`,
+  },
+  {
+    id: 'query-timeout',
+    title: 'Query Timeout Breaches (1h)',
+    icon: Clock,
+    chartName: 'health-query-timeouts',
+    valueKey: 'timeout_count',
+    defaults: { warning: 1, critical: 10 },
+    formatLabel: (v) =>
+      `${(v ?? 0).toLocaleString()} timeout kills in last hour`,
+    description:
+      'Queries terminated by TIMEOUT_EXCEEDED in the last hour. Frequent timeouts may indicate missing indexes, under-provisioned resources, or runaway queries.',
+    systemTables: ['system.query_log'],
+    commonCauses: [
+      'max_execution_time set too low for heavy analytical queries',
+      'Missing sort key for the filter predicate',
+      'Cross-shard queries without proper distribution settings',
+    ],
+    relatedLinks: [
+      { label: 'Failed Queries', href: '/failed-queries' },
+      { label: 'Slow Queries', href: '/slow-queries' },
+    ],
+    docsLinks: [
+      {
+        label: 'max_execution_time',
+        url: 'https://clickhouse.com/docs/en/operations/settings/query-complexity#max-execution-time',
+      },
+    ],
+    sql: `SELECT count() AS timeout_count
+FROM system.query_log
+WHERE event_time > now() - INTERVAL 1 HOUR
+  AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+  AND (exception_code = 159 OR exception LIKE '%TIMEOUT_EXCEEDED%')`,
+  },
+  {
+    id: 'failed-backups',
+    title: 'Failed Backups (24h)',
+    icon: HardDrive,
+    chartName: 'health-failed-backups',
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('failed backup'),
+    description:
+      'Backup operations that ended in FAILED status in the last 24 hours.',
+    systemTables: ['system.backup_log'],
+    commonCauses: [
+      'Remote storage unavailable or credentials expired',
+      'Disk full on backup destination',
+      'Network interruption during backup transfer',
+    ],
+    relatedLinks: [{ label: 'Backups', href: '/backups' }],
+    docsLinks: [
+      {
+        label: 'system.backup_log',
+        url: 'https://clickhouse.com/docs/en/operations/system-tables/backup_log',
+      },
+    ],
+    sql: `SELECT count() AS failed_count
+FROM system.backup_log
+WHERE event_time > now() - INTERVAL 24 HOUR
+  AND status = 'FAILED'`,
+  },
+  {
+    id: 'mv-refresh-failures',
+    title: 'MV Refresh Failures',
+    icon: ShieldAlert,
+    chartName: 'health-mv-refresh-failures',
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('failed MV refresh'),
+    description:
+      'Materialized views with REFRESH schedule that have failed or errored their last refresh cycle.',
+    systemTables: ['system.view_refreshes'],
+    commonCauses: [
+      'Source table schema changed incompatibly',
+      'MV query references a missing table or column',
+      'Resource exhaustion during refresh',
+    ],
+    relatedLinks: [{ label: 'View Refreshes', href: '/view-refreshes' }],
+    docsLinks: [
+      {
+        label: 'system.view_refreshes',
+        url: 'https://clickhouse.com/docs/en/operations/system-tables/view_refreshes',
+      },
+    ],
+    sql: `SELECT countIf(status IN ('Error', 'Failed')) AS failed_count
+FROM system.view_refreshes`,
+  },
 ] as const

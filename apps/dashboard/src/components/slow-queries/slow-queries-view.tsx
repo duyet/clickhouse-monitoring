@@ -4,6 +4,7 @@ import type { SlowQueryRow } from '@/components/slow-queries/slow-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useMemo, useState } from 'react'
+import { RegressionPanel } from '@/components/alerting/regression-panel'
 import { PageHeader } from '@/components/layout'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
 import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
@@ -262,6 +263,7 @@ export function SlowQueriesView() {
             ) : (
               <SlowQueriesTable rows={rows} />
             )}
+            <RegressionPanel hostId={hostId} />
           </>
         )}
       </div>

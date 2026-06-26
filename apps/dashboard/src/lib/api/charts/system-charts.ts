@@ -549,6 +549,59 @@ export const systemCharts: Record<string, ChartQueryBuilder> = {
     tableCheck: 'system.disks',
   }),
 
+  // New charts for #1911 alert rule types
+
+  'health-failed-mutations': () => ({
+    query: `
+    SELECT countIf(is_done = 0 AND isNotNull(latest_fail_time)) AS failed_count
+    FROM system.mutations
+  `,
+    optional: true,
+    tableCheck: 'system.mutations',
+  }),
+
+  'health-stuck-merges': () => ({
+    query: `
+    SELECT count() AS stuck_count
+    FROM system.merges
+    WHERE elapsed > 600
+  `,
+    optional: true,
+    tableCheck: 'system.merges',
+  }),
+
+  'health-query-timeouts': () => ({
+    query: `
+    SELECT count() AS timeout_count
+    FROM system.query_log
+    WHERE event_time > now() - INTERVAL 1 HOUR
+      AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+      AND (exception_code = 159 OR exception LIKE '%TIMEOUT_EXCEEDED%')
+  `,
+    optional: true,
+    tableCheck: 'system.query_log',
+  }),
+
+  'health-failed-backups': () => ({
+    query: `
+    SELECT count() AS failed_count
+    FROM system.backup_log
+    WHERE event_time > now() - INTERVAL 24 HOUR
+      AND status = 'FAILED'
+  `,
+    optional: true,
+    tableCheck: 'system.backup_log',
+  }),
+
+  'health-mv-refresh-failures': () => ({
+    query: `
+    SELECT countIf(status IN ('Error', 'Failed')) AS failed_count
+    FROM system.view_refreshes
+  `,
+    optional: true,
+    tableCheck: 'system.view_refreshes',
+  }),
+
   'keeper-requests': ({
     interval = 'toStartOfFifteenMinutes',
     lastHours = 24,

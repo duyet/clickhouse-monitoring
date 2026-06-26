@@ -5,6 +5,11 @@ import { fetchData, getClickHouseConfigs } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { HEALTH_CHECKS } from '@/components/health/health-checks'
 import { generateInsights } from '@/lib/insights/generate-insights'
+import { registerBuiltinRules } from '@/lib/alerting/builtin-rules'
+
+// Register pluggable alert rules into the global ruleRegistry once at module
+// load. HEALTH_CHECKS (same rule set) continue to drive the /health page UI.
+registerBuiltinRules()
 
 type Severity = 'ok' | 'warning' | 'critical'
 

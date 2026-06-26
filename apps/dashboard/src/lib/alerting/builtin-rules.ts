@@ -1,0 +1,189 @@
+/**
+ * Built-in Alert Rules
+ *
+ * Registers all built-in rules into the global ruleRegistry.
+ * Call registerBuiltinRules() once at app startup (server-sweep.ts entry).
+ *
+ * Rules mirror the existing HEALTH_CHECKS where applicable so thresholds are
+ * shared. New rule types (failed-mutations, stuck-merges, query-timeout,
+ * failed-backups, mv-refresh-failures) extend the engine with rule IDs that
+ * the health page does not yet track.
+ */
+
+import type { AlertRuleDef } from './rule-registry'
+
+import { ruleRegistry } from './rule-registry'
+
+const fmtCount =
+  (singular: string, plural?: string) =>
+  (v: number | null): string => {
+    const n = v ?? 0
+    return `${n.toLocaleString()} ${n === 1 ? singular : (plural ?? `${singular}s`)}`
+  }
+
+/**
+ * All built-in alert rule definitions.
+ * Exported so they can be individually imported for tests.
+ */
+export const BUILTIN_RULES: readonly AlertRuleDef[] = [
+  // -------------------------------------------------------------------------
+  // Existing health-check parity rules (matching health-checks.ts IDs)
+  // -------------------------------------------------------------------------
+
+  {
+    id: 'readonly-replicas',
+    type: 'readonly-replicas',
+    title: 'Readonly Replicas',
+    description: 'Replicas in read-only mode cannot accept writes.',
+    sql: `SELECT count() AS readonly_count
+FROM system.replicas
+WHERE is_readonly = 1`,
+    valueKey: 'readonly_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('readonly replica'),
+    optional: true,
+    tableCheck: 'system.replicas',
+  },
+
+  {
+    id: 'replication-lag',
+    type: 'replication-lag',
+    title: 'Replication Lag',
+    description:
+      'Maximum absolute_delay across all replicas (seconds behind leader).',
+    sql: `SELECT max(absolute_delay) AS max_lag
+FROM system.replicas`,
+    valueKey: 'max_lag',
+    defaults: { warning: 30, critical: 300 },
+    formatLabel: (v) => `${(v ?? 0).toLocaleString()}s max delay`,
+    optional: true,
+    tableCheck: 'system.replicas',
+  },
+
+  {
+    id: 'disk-usage',
+    type: 'disk-usage',
+    title: 'Disk Usage',
+    description: 'Worst-case disk utilization across all configured volumes.',
+    sql: `SELECT round(max((total_space - free_space) * 100.0 / nullIf(total_space, 0)), 1) AS disk_percent
+FROM system.disks`,
+    valueKey: 'disk_percent',
+    defaults: { warning: 80, critical: 95 },
+    formatLabel: (v) => `${v ?? 0}% used (worst disk)`,
+    optional: true,
+    tableCheck: 'system.disks',
+  },
+
+  {
+    id: 'keeper-unavailable',
+    type: 'keeper-unavailable',
+    title: 'Keeper Exceptions',
+    description:
+      'Recent KEEPER_EXCEPTION events. Sustained exceptions indicate quorum issues.',
+    sql: `SELECT coalesce(max(value) - min(value), 0) AS exception_count
+FROM merge('system', '^error_log')
+WHERE error = 'KEEPER_EXCEPTION'
+  AND event_time > now() - INTERVAL 1 HOUR`,
+    valueKey: 'exception_count',
+    defaults: { warning: 1, critical: 20 },
+    formatLabel: fmtCount('exception'),
+    optional: true,
+    tableCheck: 'system.error_log',
+  },
+
+  // -------------------------------------------------------------------------
+  // New rule types (not yet tracked in HEALTH_CHECKS)
+  // -------------------------------------------------------------------------
+
+  {
+    id: 'failed-mutations',
+    type: 'failed-mutations',
+    title: 'Failed Mutations',
+    description:
+      'Mutations that are not complete and have recorded a failure. Failed mutations block subsequent mutations on the same table.',
+    sql: `SELECT countIf(is_done = 0 AND isNotNull(latest_fail_time)) AS failed_count
+FROM system.mutations`,
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 5 },
+    formatLabel: fmtCount('failed mutation'),
+    optional: true,
+    tableCheck: 'system.mutations',
+  },
+
+  {
+    id: 'stuck-merges',
+    type: 'stuck-merges',
+    title: 'Stuck Merges',
+    description:
+      'Merges running for more than 10 minutes. Stuck merges block table inserts and consume resources.',
+    sql: `SELECT count() AS stuck_count
+FROM system.merges
+WHERE elapsed > 600`,
+    valueKey: 'stuck_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('stuck merge'),
+    optional: true,
+    tableCheck: 'system.merges',
+  },
+
+  {
+    id: 'query-timeout',
+    type: 'query-timeout',
+    title: 'Query Timeout Breaches (1h)',
+    description:
+      'Queries killed due to timeout (TIMEOUT_EXCEEDED) in the last hour.',
+    sql: `SELECT count() AS timeout_count
+FROM system.query_log
+WHERE event_time > now() - INTERVAL 1 HOUR
+  AND type IN ('ExceptionWhileProcessing', 'ExceptionBeforeStart')
+  AND (exception_code = 159 OR exception LIKE '%TIMEOUT_EXCEEDED%')`,
+    valueKey: 'timeout_count',
+    defaults: { warning: 1, critical: 10 },
+    formatLabel: (v) =>
+      `${(v ?? 0).toLocaleString()} timeout kills in last hour`,
+    optional: true,
+    tableCheck: 'system.query_log',
+  },
+
+  {
+    id: 'failed-backups',
+    type: 'failed-backups',
+    title: 'Failed Backups (24h)',
+    description:
+      'Backup operations that ended in FAILED status in the last 24 hours.',
+    sql: `SELECT count() AS failed_count
+FROM system.backup_log
+WHERE event_time > now() - INTERVAL 24 HOUR
+  AND status = 'FAILED'`,
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('failed backup'),
+    optional: true,
+    tableCheck: 'system.backup_log',
+  },
+
+  {
+    id: 'mv-refresh-failures',
+    type: 'mv-refresh-failures',
+    title: 'MV Refresh Failures',
+    description:
+      'Materialized views with REFRESH schedule that have failed or errored their last refresh cycle.',
+    sql: `SELECT countIf(status IN ('Error', 'Failed')) AS failed_count
+FROM system.view_refreshes`,
+    valueKey: 'failed_count',
+    defaults: { warning: 1, critical: 3 },
+    formatLabel: fmtCount('failed MV refresh'),
+    optional: true,
+    tableCheck: 'system.view_refreshes',
+  },
+]
+
+/**
+ * Register all built-in rules into the global registry.
+ * Safe to call multiple times (idempotent: later call overwrites same ID).
+ */
+export function registerBuiltinRules(): void {
+  for (const rule of BUILTIN_RULES) {
+    ruleRegistry.register(rule)
+  }
+}
