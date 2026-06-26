@@ -13,6 +13,7 @@
  *   const tools = wrapToolsWithLogging(createAllTools(hostId), sessionId)
  */
 
+import type { ToolExecutionOptions, ToolSet } from 'ai'
 import { log, error as logError } from '@chm/logger'
 
 /** Keys whose values are redacted in logged args. */
@@ -89,41 +90,39 @@ function classifyToolError(err: unknown): string {
   return 'unknown'
 }
 
-/** Minimal tool shape we need to wrap. */
-interface WrappableTool {
-  execute: (input: unknown, options: { toolCallId: string }) => unknown
-  [key: string]: unknown
-}
-
-type ToolRecord = Record<string, WrappableTool>
-
 /**
  * Return a new tools record where each tool's `execute` is wrapped with
  * structured logging. The original tool objects are not mutated.
  *
- * @param tools      - Tool record from `createAllTools`.
+ * Generic over `T extends ToolSet` so the return type is identical to the
+ * input type — no AI SDK type information is lost at the call site.
+ *
+ * @param tools      - Tool record from `createAllTools` (satisfies `ToolSet`).
  * @param sessionId  - Agent session / conversation identifier for log correlation.
  */
-export function wrapToolsWithLogging<T extends ToolRecord>(
+export function wrapToolsWithLogging<T extends ToolSet>(
   tools: T,
   sessionId: string
 ): T {
-  const wrapped: Record<string, unknown> = {}
+  const wrapped: ToolSet = {}
 
-  for (const [toolName, tool] of Object.entries(tools)) {
-    if (typeof tool.execute !== 'function') {
+  for (const [toolName, tool] of Object.entries(tools) as [
+    string,
+    ToolSet[string],
+  ][]) {
+    const originalExecute = tool.execute
+
+    if (typeof originalExecute !== 'function') {
       wrapped[toolName] = tool
       continue
     }
-
-    const originalExecute = tool.execute.bind(tool)
 
     wrapped[toolName] = {
       ...tool,
       execute: async (
         input: unknown,
-        options: { toolCallId: string; abortSignal?: AbortSignal }
-      ) => {
+        options: ToolExecutionOptions
+      ): Promise<unknown> => {
         const traceId = options?.toolCallId ?? crypto.randomUUID()
         const startMs = Date.now()
 
@@ -166,5 +165,7 @@ export function wrapToolsWithLogging<T extends ToolRecord>(
     }
   }
 
+  // We've preserved every tool field via spread and only replaced the execute
+  // implementation (same signature). The assertion is safe; no `any` is used.
   return wrapped as T
 }
