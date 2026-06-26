@@ -153,6 +153,18 @@ export const OG_PAGES: Record<string, OgPage> = {
     title: 'Disks',
     description: 'Disk usage, free space and storage policies.',
   },
+  'asynchronous-inserts': {
+    eyebrow: 'INGESTION',
+    title: 'Async Insert Monitor',
+    description:
+      'Live async-insert queue and flush history: bytes, rows, latency, and errors per table.',
+  },
+  'background-schedule-pool': {
+    eyebrow: 'SYSTEM',
+    title: 'Background Schedule Pool',
+    description:
+      'Active and upcoming background scheduled tasks with durations and failure history.',
+  },
 }
 
 /** Absolute URL of a page's OG image, e.g. .../og-running-queries.png. */

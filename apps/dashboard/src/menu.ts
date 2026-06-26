@@ -324,6 +324,26 @@ export const menuItemsConfig: MenuItem[] = [
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/kafka',
       },
       {
+        title: 'RabbitMQ Consumers',
+        href: '/rabbitmq-consumers',
+        description:
+          'RabbitMQ table engine consumer state: active consumers, messages received, and errors',
+        icon: RssIcon,
+        tableCheck: 'system.rabbitmq_consumers',
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/engines/table-engines/integrations/rabbitmq',
+      },
+      {
+        title: 'Async Inserts',
+        href: '/asynchronous-inserts',
+        description:
+          'Live async-insert queue and flush history: bytes queued, latency, and flush errors per table',
+        icon: LayersIcon,
+        tableCheck: 'system.asynchronous_inserts',
+        isNew: true,
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/asynchronous_inserts',
+      },
+      {
         title: 'Detached Parts',
         href: '/detached-parts',
         description:
@@ -704,6 +724,16 @@ export const menuItemsConfig: MenuItem[] = [
         icon: AlertTriangleIcon,
         docs: 'https://clickhouse.com/docs/en/operations/system-tables/warnings',
         tableCheck: 'system.warnings',
+      },
+      {
+        title: 'Background Schedule Pool',
+        href: '/background-schedule-pool',
+        description:
+          'Live background scheduled tasks and execution history (CH 25.12+)',
+        icon: UpdateIcon,
+        isNew: true,
+        tableCheck: 'system.background_schedule_pool',
+        docs: 'https://clickhouse.com/docs/en/operations/system-tables/background_schedule_pool',
       },
     ],
   },
