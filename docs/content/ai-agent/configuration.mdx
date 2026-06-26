@@ -81,10 +81,10 @@ curl -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 ## Conversation persistence
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `AGENT_CONVERSATION_PERSISTENCE` | `false` | Enable server-side conversation storage. |
-| `AGENT_CONVERSATION_STORE` | `auto` | Store backend. |
+| Variable | Type | Default | Purpose |
+|---|---|---|---|
+| `VITE_FEATURE_CONVERSATION_DB` | Build-time | `false` | Enable server-side conversation storage. Must be set before `bun run build`. Requires Clerk. |
+| `CONVERSATION_STORE_BACKEND` | Runtime | (auto) | Backend: `agentstate`, `d1`, `postgres`, or `memory`. Auto-selects when unset. |
 
 See [Conversation History](/docs/ai-agent/conversation-history) and [Store Backends](/docs/ai-agent/conversation-history/backends) for per-backend env vars and setup.
 

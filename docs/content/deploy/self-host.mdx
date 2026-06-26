@@ -33,7 +33,6 @@ CLICKHOUSE_PASSWORD=change-me
 CLICKHOUSE_NAME=prod
 CLICKHOUSE_MAX_EXECUTION_TIME=30
 CLICKHOUSE_TZ=UTC
-NEXT_QUERY_CACHE_TTL=3600
 EOF
 
 bun run start
@@ -67,7 +66,6 @@ export CLICKHOUSE_NAME='shard-1,shard-2'
 |---|---|---|
 | `CLICKHOUSE_MAX_EXECUTION_TIME` | `60` | Query timeout in seconds |
 | `CLICKHOUSE_TZ` | — | Timezone for queries |
-| `NEXT_QUERY_CACHE_TTL` | `3600` | Query cache TTL in seconds |
 | `CLICKHOUSE_DATABASE` | `system` | Default database |
 | `CLICKHOUSE_POOL_SIZE` | `10` | Connection pool size |
 | `CLICKHOUSE_POOL_TIMEOUT` | `300000` | Pool acquire timeout (ms) |
@@ -184,23 +182,22 @@ Keep `LLM_API_KEY` server-side — never set it as a `VITE_*` variable.
 
 ### Conversation store
 
-**Default:** browser localStorage.
+**Default:** browser localStorage. No server config needed.
 
-**ClickHouse store:**
+Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` set at build time (a `VITE_*` build-time variable). Build a custom image or binary with this flag set. At runtime, select the backend:
+
+**Postgres store (recommended for self-host):**
 
 ```bash
-export AGENT_CONVERSATION_PERSISTENCE='true'
-export AGENT_CONVERSATION_STORE='clickhouse'
-export CLICKHOUSE_AGENT_CONVERSATIONS_TABLE='system.agent_conversations'
-export CLICKHOUSE_AGENT_CONVERSATIONS_AUTO_CREATE='true'
+export CONVERSATION_STORE_BACKEND='postgres'
+export DATABASE_URL='postgresql://user:pass@host:5432/dbname'
 ```
 
-**Postgres store:**
+**AgentState store:**
 
 ```bash
-export AGENT_CONVERSATION_PERSISTENCE='true'
-export AGENT_CONVERSATION_STORE='postgres'
-export DATABASE_URL='postgresql://user:pass@host:5432/dbname'
+export CONVERSATION_STORE_BACKEND='agentstate'
+export AGENTSTATE_API_KEY='as_live_...'
 ```
 
 D1 and Durable Object stores are Cloudflare-only.

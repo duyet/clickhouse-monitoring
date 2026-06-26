@@ -70,7 +70,6 @@ CLICKHOUSE_NAME=prod-a,prod-b
 ```bash
 CLICKHOUSE_MAX_EXECUTION_TIME=60    # seconds
 CLICKHOUSE_TZ=UTC
-NEXT_QUERY_CACHE_TTL=3600           # seconds; lower for fresher data
 ```
 
 **Feature permissions**
@@ -99,11 +98,14 @@ LLM_API_BASE=https://openrouter.ai/api/v1
 LLM_MODEL=openrouter/free
 ```
 
-**Conversation persistence**
+**Conversation persistence** (build-time flag + runtime backend)
 
 ```bash
-AGENT_CONVERSATION_PERSISTENCE=true
-AGENT_CONVERSATION_STORE=auto
+# Set at build time (before bun run build):
+VITE_FEATURE_CONVERSATION_DB=true
+
+# Set at runtime:
+CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory
 ```
 
 **Branding (build-time, TanStack app)**

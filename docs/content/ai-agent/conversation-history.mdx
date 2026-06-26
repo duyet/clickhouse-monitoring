@@ -6,7 +6,7 @@ Agent chat history is stored in **browser localStorage** by default. No server s
 
 ```mermaid
 flowchart TD
-    A[User sends message] --> B{Persistence enabled?}
+    A[User sends message] --> B{VITE_FEATURE_CONVERSATION_DB=true?}
     B -- No --> C[Browser localStorage]
     B -- Yes --> D{Authenticated?}
     D -- No --> C
@@ -23,12 +23,97 @@ flowchart TD
 
 ## Enable server persistence
 
+Server-side persistence requires two things:
+
+1. `VITE_FEATURE_CONVERSATION_DB=true` must be set **at build time** (before `bun run build`). This is a `VITE_*` variable — it is baked into the bundle and cannot be changed at runtime. It also requires Clerk auth to be active (`VITE_AUTH_PROVIDER=clerk`).
+2. A backend must be reachable at runtime.
+
 ```bash
-AGENT_CONVERSATION_PERSISTENCE=true
-AGENT_CONVERSATION_STORE=auto   # or a specific backend
+# In CI / build environment (before bun run build):
+VITE_FEATURE_CONVERSATION_DB=true
+VITE_AUTH_PROVIDER=clerk
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 
-With `auto`, the server picks the first available backend in priority order (AgentState → D1 → Durable Object → Postgres → ClickHouse). See [Store Backends](/docs/ai-agent/conversation-history/backends) for the full resolution order and per-backend setup.
+```bash
+# Runtime — select or force a backend:
+CONVERSATION_STORE_BACKEND=postgres   # or: agentstate, d1, memory
+DATABASE_URL=postgresql://user:pass@host:5432/db
+```
+
+When `CONVERSATION_STORE_BACKEND` is not set, the server auto-selects the first available backend in the order described below.
+
+## Backend resolution order
+
+When `CONVERSATION_STORE_BACKEND` is not set (or set to an unrecognized value), the server picks the first available backend in this order:
+
+1. **AgentState** — when `AGENTSTATE_API_KEY` is set and `CONVERSATION_STORE_BACKEND` is not `d1`, `postgres`, or `memory`.
+2. **Cloudflare D1** — when the `CONVERSATIONS_D1` binding is present (Cloudflare Workers only).
+3. **Postgres** — when `DATABASE_URL` is set.
+4. **Memory** — fallback in development/CI. Conversations are lost on process restart.
+
+You can force a specific backend by setting `CONVERSATION_STORE_BACKEND` to `agentstate`, `d1`, `postgres`, or `memory`.
+
+## AgentState self-host quickstart
+
+AgentState is a cloud-hosted conversation store. It works on any deployment target (Cloudflare Workers, Docker, Kubernetes, Vercel).
+
+1. Get an API key at [agentstate.app](https://agentstate.app).
+
+2. Set at build time:
+
+```bash
+VITE_FEATURE_CONVERSATION_DB=true
+VITE_AUTH_PROVIDER=clerk
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+```
+
+3. Set at runtime:
+
+```bash
+AGENTSTATE_API_KEY=as_live_...
+# CONVERSATION_STORE_BACKEND=agentstate  # optional — auto-selected when key is present
+```
+
+4. Optional: enable AI enrichment of stored conversation titles:
+
+```bash
+AGENTSTATE_AI_ENRICH=true
+```
+
+5. Deploy. No migrations needed — AgentState manages the schema.
+
+**Cloudflare Workers** — add via `wrangler secret put`:
+
+```bash
+wrangler secret put AGENTSTATE_API_KEY
+```
+
+```toml
+# wrangler.toml [vars]
+CONVERSATION_STORE_BACKEND = "agentstate"
+```
+
+**Docker:**
+
+```bash
+docker run -d --name chmonitor -p 3000:3000 \
+  -e AGENTSTATE_API_KEY='as_live_...' \
+  -e CONVERSATION_STORE_BACKEND='agentstate' \
+  ghcr.io/duyet/chmonitor:vX.Y.Z
+```
+
+**Kubernetes:**
+
+```bash
+kubectl create secret generic chmonitor-agentstate \
+  --from-literal=AGENTSTATE_API_KEY='as_live_...'
+```
+
+```yaml
+# in ConfigMap
+CONVERSATION_STORE_BACKEND: "agentstate"
+```
 
 ## Request / response flow
 
@@ -55,7 +140,7 @@ Server stores require an authenticated user identity to namespace threads. If th
 
 ## Deprecated alias
 
-`NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true` is accepted as an alias for `AGENT_CONVERSATION_PERSISTENCE=true` but is deprecated. Do not use it for new deployments.
+`NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true` is accepted as an alias for `VITE_FEATURE_CONVERSATION_DB=true` but is deprecated. Do not use it for new deployments.
 
 ## Next steps
 

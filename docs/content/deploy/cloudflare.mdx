@@ -70,13 +70,11 @@ CLICKHOUSE_USER = "monitoring"
 CLICKHOUSE_NAME = "prod"
 CLICKHOUSE_MAX_EXECUTION_TIME = "30"
 CLICKHOUSE_TZ = "UTC"
-NEXT_QUERY_CACHE_TTL = "3600"
 CLICKHOUSE_POOL_SIZE = "10"
 CLOUDFLARE_WORKERS = "1"
 HEALTH_ALERT_ENABLED = "true"
 HEALTH_ALERT_MIN_SEVERITY = "warning"
-AGENT_CONVERSATION_STORE = "d1"
-AGENT_CONVERSATION_PERSISTENCE = "true"
+CONVERSATION_STORE_BACKEND = "d1"
 CHM_AUTH_PROVIDER = "none"
 LLM_API_BASE = "https://openrouter.ai/api/v1"
 LLM_MODEL = "openrouter/free"
@@ -133,7 +131,6 @@ CLICKHOUSE_NAME = "shard-1,shard-2"
 [vars]
 CLICKHOUSE_MAX_EXECUTION_TIME = "30"
 CLICKHOUSE_TZ = "UTC"
-NEXT_QUERY_CACHE_TTL = "3600"
 CLICKHOUSE_DATABASE = "system"
 CLICKHOUSE_POOL_SIZE = "10"
 CLICKHOUSE_POOL_TIMEOUT = "300000"
@@ -238,6 +235,8 @@ Never put `LLM_API_KEY` in a `VITE_*` var or `[vars]` — use `wrangler secret p
 
 ### Conversation store
 
+Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` set **at build time** (in CI before `bun run build`), plus Clerk auth. The backend is then selected at runtime.
+
 **D1 (Cloudflare-native, recommended):**
 
 Create a D1 database:
@@ -257,9 +256,15 @@ database_id = "<database-id-from-above>"
 
 ```toml
 [vars]
-AGENT_CONVERSATION_PERSISTENCE = "true"
-AGENT_CONVERSATION_STORE = "d1"
+CONVERSATION_STORE_BACKEND = "d1"
 CONVERSATIONS_D1_DATABASE_ID = "<database-id>"
+```
+
+In CI, also set `VITE_FEATURE_CONVERSATION_DB=true` before the build step:
+
+```bash
+# In your CI environment or GitHub Actions secrets:
+VITE_FEATURE_CONVERSATION_DB=true
 ```
 
 Run migrations:
@@ -268,15 +273,18 @@ Run migrations:
 bun run cf:migrate-conversations
 ```
 
-**Durable Object store:**
+**AgentState (cloud-hosted):**
 
 ```toml
 [vars]
-AGENT_CONVERSATION_STORE = "durable-object"
-AGENT_CONVERSATIONS_DO_BINDING = "AGENT_CONVERSATIONS_DO"
+CONVERSATION_STORE_BACKEND = "agentstate"
 ```
 
-**ClickHouse or Postgres:** also available on Cloudflare Workers via outbound HTTP.
+```bash
+wrangler secret put AGENTSTATE_API_KEY
+```
+
+**Postgres:** also available on Cloudflare Workers via outbound HTTP (`DATABASE_URL` runtime secret).
 
 ### Health alerting — Cron Trigger
 

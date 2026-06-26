@@ -60,7 +60,7 @@ Full reference: [Environment Variables — ClickHouse Connection](/docs/referenc
 
 Controls timeouts, caching, and the connection pool. Defaults are sensible; override only if needed.
 
-Key variables: `CLICKHOUSE_MAX_EXECUTION_TIME` (60 s), `NEXT_QUERY_CACHE_TTL` (3600 s), `CLICKHOUSE_POOL_SIZE` (10).
+Key variables: `CLICKHOUSE_MAX_EXECUTION_TIME` (60 s), `CLICKHOUSE_POOL_SIZE` (10).
 
 Full reference: [Environment Variables — Query Execution](/docs/reference/environment-variables#query-execution).
 
@@ -119,11 +119,14 @@ Full reference: [AI Agent — Configuration](/docs/ai-agent/configuration).
 
 ### Conversation store
 
-Agent conversations default to browser localStorage. Enable server persistence with:
+Agent conversations default to browser localStorage. Enable server persistence:
 
 ```bash
-AGENT_CONVERSATION_PERSISTENCE=true
-AGENT_CONVERSATION_STORE=auto   # picks the best available backend
+# Build time (before bun run build); also requires VITE_AUTH_PROVIDER=clerk:
+VITE_FEATURE_CONVERSATION_DB=true
+
+# Runtime — force a backend (optional; auto-selects when unset):
+CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory
 ```
 
 Full reference: [Conversation History — Backends](/docs/ai-agent/conversation-history/backends).
