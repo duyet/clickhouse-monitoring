@@ -814,6 +814,13 @@ export const menuItemsConfig: MenuItem[] = [
         tableCheck: 'system.clusters',
       },
       {
+        title: 'Fleet Overview',
+        href: '/fleet',
+        description: 'Health signals across all ClickHouse hosts in one view',
+        icon: Grid2x2CheckIcon,
+        isNew: true,
+      },
+      {
         title: 'Connections',
         href: '/charts?name=connections-http,connections-interserver',
         description: 'Client and inter-server connection metrics',

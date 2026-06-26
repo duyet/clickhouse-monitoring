@@ -195,6 +195,11 @@ export const OG_PAGES: Record<string, OgPage> = {
     description:
       'Data-skipping index and projection inventory with storage cost — flag dead indexes and empty projections.',
   },
+  fleet: {
+    eyebrow: 'FLEET',
+    title: 'Fleet Overview',
+    description: 'Health signals across all ClickHouse hosts in one view.',
+  },
 }
 
 /** Absolute URL of a page's OG image, e.g. .../og-running-queries.png. */
