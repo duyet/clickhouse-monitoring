@@ -10,8 +10,7 @@
  */
 
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-
-import { jsonSchema, tool, type ToolExecutionOptions, type ToolSet } from 'ai'
+import { jsonSchema, type ToolExecutionOptions, type ToolSet, tool } from 'ai'
 
 // Stub @chm/logger before importing the module under test
 const logCalls: Array<[string, unknown]> = []
@@ -37,19 +36,19 @@ afterEach(() => {
 
 /** Build a minimal AI-SDK-compatible tool with the given execute function. */
 function makeTool(
-  executeFn: (input: unknown, opts: ToolExecutionOptions) => unknown
+  executeFn: (input: unknown, opts: ToolExecutionOptions<unknown>) => unknown
 ) {
   return tool({
     description: 'test tool',
     inputSchema: jsonSchema<Record<string, unknown>>({}),
     execute: executeFn as (
       input: Record<string, unknown>,
-      opts: ToolExecutionOptions
+      opts: ToolExecutionOptions<unknown>
     ) => unknown,
   })
 }
 
-const FAKE_OPTIONS: ToolExecutionOptions = {
+const FAKE_OPTIONS: ToolExecutionOptions<unknown> = {
   toolCallId: 'call-abc-123',
   messages: [],
 }
