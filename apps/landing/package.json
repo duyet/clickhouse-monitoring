@@ -11,6 +11,7 @@
     "cf:deploy": "wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.3.0",
     "astro": "^6.1.10"
   },
   "devDependencies": {

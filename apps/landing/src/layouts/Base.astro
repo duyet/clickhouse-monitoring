@@ -29,6 +29,33 @@ const ogImage = new URL(image, Astro.site).toString()
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#f97316" />
+  <meta name="twitter:site" content="@chmonitor" />
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://chmonitor.dev/#organization",
+        "name": "chmonitor",
+        "url": "https://chmonitor.dev",
+        "logo": { "@type": "ImageObject", "url": "https://chmonitor.dev/brand/logo-mark.svg" },
+        "sameAs": ["https://github.com/duyet/clickhouse-monitoring"]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://chmonitor.dev/#software",
+        "name": "chmonitor",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS, Windows",
+        "license": "https://github.com/duyet/clickhouse-monitoring/blob/main/LICENSE",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "url": "https://chmonitor.dev",
+        "downloadUrl": "https://github.com/duyet/clickhouse-monitoring",
+        "description": "An open-source dashboard to monitor ClickHouse clusters. Reads system tables directly — queries, merges, parts, replication, health and an AI agent.",
+        "screenshot": "https://chmonitor.dev/og/og.png"
+      }
+    ]
+  })} />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -327,6 +354,81 @@ const ogImage = new URL(image, Astro.site).toString()
       .nav-cta .btn-ghost{display:none}
       .hero-sub{font-size:16.5px}
     }
+
+    /* ── social proof ── */
+    .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+    .stat{padding:28px 24px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;text-align:center;box-shadow:var(--shadow-card)}
+    .stat .snum{font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1}
+    .stat .slabel{font-size:13.5px;color:var(--muted-fg);margin-top:8px}
+    .stat-badges{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+    @media (max-width:640px){.stat-grid{grid-template-columns:1fr 1fr}}
+    @media (max-width:400px){.stat-grid{grid-template-columns:1fr}}
+
+    /* ── pricing ── */
+    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:start}
+    .price-card{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
+    .price-card-highlight{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),var(--shadow-card)}
+    .price-hd{padding:28px 28px 20px;border-bottom:1px solid var(--border-soft)}
+    .price-hd .pname{font-size:20px;font-weight:700;letter-spacing:-.015em}
+    .price-hd .ptag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;margin-left:8px}
+    .ptag-free{background:#d1fae5;color:#065f46}
+    .ptag-beta{background:#fef3c7;color:#92400e}
+    .price-hd .pamount{font-size:36px;font-weight:700;letter-spacing:-.03em;margin-top:16px;line-height:1}
+    .price-hd .pamount small{font-size:15px;font-weight:500;color:var(--muted-fg);letter-spacing:0}
+    .price-hd .pdesc{font-size:14px;color:var(--muted-fg);margin-top:10px;text-wrap:pretty}
+    .price-body{padding:22px 28px 28px}
+    .price-rows{display:flex;flex-direction:column;gap:13px}
+    .price-row{display:flex;gap:10px;font-size:14px;color:var(--fg-soft);list-style:none}
+    .price-row svg{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
+    .price-cta{margin-top:24px}
+    @media (max-width:640px){.pricing-grid{grid-template-columns:1fr}}
+
+    /* ── comparison ── */
+    .cmp-wrap{margin-top:52px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-card)}
+    .cmp-scroll{overflow-x:auto}
+    table.cmp-table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+    .cmp-table th{text-align:left;padding:14px 20px;background:var(--bg-soft);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);border-bottom:1px solid var(--border);white-space:nowrap}
+    .cmp-table th:first-child{min-width:160px}
+    .cmp-table td{padding:14px 20px;border-top:1px solid var(--border-soft);vertical-align:top;color:var(--muted-fg);text-wrap:pretty}
+    .cmp-table td:first-child{font-weight:600;color:var(--fg);white-space:nowrap}
+    .cmp-table td.cmp-highlight{background:rgba(249,115,22,.04)}
+    .cmp-table th.cmp-highlight{background:rgba(249,115,22,.06)}
+    .cmp-yes{color:var(--emerald)}
+    .cmp-no{color:#f43f5e}
+    .cmp-partial{color:var(--amber)}
+    .cmp-note{padding:14px 20px;border-top:1px solid var(--border-soft);font-size:12.5px;color:var(--muted-fg);background:var(--bg-soft)}
+
+    /* ── faq ── */
+    .faq-list{margin-top:52px;display:flex;flex-direction:column;gap:0}
+    .faq-item{border-top:1px solid var(--border-soft)}
+    .faq-item:last-child{border-bottom:1px solid var(--border-soft)}
+    details.faq-item summary{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:22px 0;cursor:pointer;list-style:none;font-size:16.5px;font-weight:600;letter-spacing:-.01em;
+      color:var(--fg);transition:color .15s}
+    details.faq-item summary::-webkit-details-marker{display:none}
+    details.faq-item summary::after{
+      content:"";flex:0 0 auto;width:20px;height:20px;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:center;background-size:20px;
+      transition:transform .25s cubic-bezier(.22,1,.36,1)}
+    details.faq-item[open] summary::after{transform:rotate(180deg)}
+    details.faq-item summary:hover{color:var(--orange)}
+    .faq-ans{padding:0 0 22px;font-size:15.5px;color:var(--muted-fg);line-height:1.7;max-width:72ch;text-wrap:pretty}
+    .faq-ans code{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--muted);padding:2px 6px;border-radius:5px;color:var(--fg)}
+    .faq-ans a{color:var(--orange);text-decoration:underline;text-underline-offset:3px}
+
+    /* ── changelog ── */
+    .cl-list{margin-top:52px;display:flex;flex-direction:column;gap:0}
+    .cl-entry{border-top:1px solid var(--border-soft);padding:28px 0;display:grid;grid-template-columns:160px 1fr;gap:24px;align-items:start}
+    .cl-entry:last-child{border-bottom:1px solid var(--border-soft)}
+    .cl-meta{display:flex;flex-direction:column;gap:6px}
+    .cl-tag{display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:999px;background:var(--muted);font-size:12.5px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--fg-soft);width:fit-content}
+    .cl-date{font-size:12.5px;color:var(--muted-fg)}
+    .cl-body h4{font-size:17px;font-weight:600;letter-spacing:-.01em}
+    .cl-body .cl-notes{margin-top:10px;font-size:14px;color:var(--muted-fg);line-height:1.7;text-wrap:pretty}
+    .cl-body .cl-notes a{color:var(--orange)}
+    @media (max-width:640px){.cl-entry{grid-template-columns:1fr;gap:8px}}
   </style>
 </head>
 <body>

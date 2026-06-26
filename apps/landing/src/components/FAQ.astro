@@ -1,0 +1,70 @@
+---
+const faqs = [
+  {
+    q: 'How do I deploy chmonitor?',
+    a: 'The fastest path is Docker: <code>docker run -d -p 3000:3000 -e CLICKHOUSE_HOST=... ghcr.io/duyet/chmonitor:latest</code>. It also deploys to <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Cloudflare Workers</a> and Kubernetes via the bundled Helm chart. See the <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">quickstart</a> for step-by-step instructions.',
+  },
+  {
+    q: 'Does it need exporters or agents installed on ClickHouse?',
+    a: 'No. chmonitor reads ClickHouse system tables directly over the standard HTTP interface. There is no sidecar to run, no exporter to configure, and no extra storage to provision.',
+  },
+  {
+    q: 'Is it safe to connect my production cluster?',
+    a: 'Yes, when you use a read-only ClickHouse user. chmonitor only issues <code>SELECT</code> queries against system tables and never writes to your data. The AI agent is also read-only. You control what the connection user can access.',
+  },
+  {
+    q: 'What is the performance impact on ClickHouse?',
+    a: 'Low. All queries target system tables with a configurable execution timeout (default 60 s). Dashboard pages cache responses via TanStack Query so repeated views do not re-query the cluster.',
+  },
+  {
+    q: 'What license is chmonitor under?',
+    a: 'chmonitor is open source under the <a href="https://github.com/duyet/clickhouse-monitoring/blob/main/LICENSE" target="_blank" rel="noopener">GPL-3.0 license</a>. You are free to use, modify and redistribute it under those terms.',
+  },
+  {
+    q: 'What is the difference between self-host and cloud?',
+    a: 'Self-hosting gives you full control over deployment, data routing and configuration — and it is always free. The hosted cloud at <a href="https://dash.chmonitor.dev" target="_blank" rel="noopener">dash.chmonitor.dev</a> lets you connect a ClickHouse cluster without deploying anything. Cloud is currently in early access; pricing is not yet finalised.',
+  },
+  {
+    q: 'Which ClickHouse versions are supported?',
+    a: 'chmonitor uses version-aware SQL — queries adapt to the system table schema of the connected ClickHouse version. It is regularly tested against recent stable releases.',
+  },
+]
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      // strip HTML tags for the structured data text value
+      text: a.replace(/<[^>]+>/g, ''),
+    },
+  })),
+}
+---
+<script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+
+<section id="faq" class="band band-soft">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">FAQ</span>
+      <h2>Common questions</h2>
+      <p>Answers to what evaluators ask most before deploying chmonitor.</p>
+    </div>
+
+    <div class="faq-list reveal">
+      {faqs.map(({ q, a }) => (
+        <details class="faq-item">
+          <summary>{q}</summary>
+          <div class="faq-ans" set:html={a} />
+        </details>
+      ))}
+    </div>
+
+    <p style="margin-top:28px;font-size:14px;color:var(--muted-fg)" class="reveal">
+      More questions? <a href="https://github.com/duyet/clickhouse-monitoring/discussions" target="_blank" rel="noopener" style="color:var(--orange)">Ask on GitHub Discussions</a>.
+    </p>
+  </div>
+</section>

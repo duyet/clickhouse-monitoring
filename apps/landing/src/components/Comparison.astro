@@ -1,0 +1,82 @@
+---
+const checkSvg = `<svg class="cmp-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:inline-block;vertical-align:middle"><path d="m5 12 5 5L20 7"/></svg>`
+const crossSvg = `<svg class="cmp-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:inline-block;vertical-align:middle"><path d="m18 6-12 12M6 6l12 12"/></svg>`
+const partialSvg = `<svg class="cmp-partial" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:inline-block;vertical-align:middle"><path d="M5 12h14"/></svg>`
+---
+<section id="comparison" class="band band-soft">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Why chmonitor</span>
+      <h2>Purpose-built for ClickHouse</h2>
+      <p>Generic monitoring tools work. Purpose-built tools work better. Here's how chmonitor stacks up against the most common alternatives.</p>
+    </div>
+
+    <div class="cmp-wrap reveal">
+      <div class="cmp-scroll">
+        <table class="cmp-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="cmp-highlight">chmonitor</th>
+              <th>Grafana + CH plugin</th>
+              <th>Datadog</th>
+              <th>CH native /dashboard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Setup time</td>
+              <td class="cmp-highlight">~5 min (Docker or CF Workers)</td>
+              <td>Grafana + datasource plugin install</td>
+              <td>Agent on each ClickHouse node</td>
+              <td>Enable in ClickHouse config, restart</td>
+            </tr>
+            <tr>
+              <td>No exporters / agents needed</td>
+              <td class="cmp-highlight"><Fragment set:html={checkSvg} /> reads system tables directly</td>
+              <td><Fragment set:html={partialSvg} /> optional CH datasource plugin</td>
+              <td><Fragment set:html={crossSvg} /> agent required on each node</td>
+              <td><Fragment set:html={checkSvg} /> built into CH</td>
+            </tr>
+            <tr>
+              <td>ClickHouse-specific depth</td>
+              <td class="cmp-highlight">Purpose-built: merges, parts, replication, query log, system health</td>
+              <td>Generic SQL panels — you write the queries</td>
+              <td>Generic agent metrics; limited CH specifics</td>
+              <td>Basic built-in panel; minimal detail</td>
+            </tr>
+            <tr>
+              <td>AI agent + MCP</td>
+              <td class="cmp-highlight"><Fragment set:html={checkSvg} /> built-in AI agent; MCP server at /api/mcp</td>
+              <td><Fragment set:html={crossSvg} /> none</td>
+              <td><Fragment set:html={partialSvg} /> AI Advisor on paid plans</td>
+              <td><Fragment set:html={crossSvg} /> none</td>
+            </tr>
+            <tr>
+              <td>Version-aware queries</td>
+              <td class="cmp-highlight"><Fragment set:html={checkSvg} /> SQL adapts to CH schema by version</td>
+              <td><Fragment set:html={crossSvg} /> you manage query compatibility</td>
+              <td>N/A</td>
+              <td><Fragment set:html={crossSvg} /> fixed to bundled version</td>
+            </tr>
+            <tr>
+              <td>Cost</td>
+              <td class="cmp-highlight">Free self-host; cloud in early access</td>
+              <td>Grafana OSS free; Grafana Cloud paid</td>
+              <td>~$15–30 per host per month (varies)</td>
+              <td>Free (bundled with ClickHouse)</td>
+            </tr>
+            <tr>
+              <td>Open source / self-host</td>
+              <td class="cmp-highlight"><Fragment set:html={checkSvg} /> GPL-3.0; Docker, CF Workers, K8s Helm</td>
+              <td><Fragment set:html={checkSvg} /> Grafana OSS (AGPL-3.0)</td>
+              <td><Fragment set:html={crossSvg} /> SaaS only</td>
+              <td><Fragment set:html={checkSvg} /> within ClickHouse</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cmp-note">Costs and features for third-party tools reflect publicly available information and may change. Always verify before purchasing.</div>
+    </div>
+  </div>
+</section>
