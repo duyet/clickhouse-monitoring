@@ -74,58 +74,70 @@ describe('card config', () => {
 // ---------------------------------------------------------------------------
 
 describe('SQL content', () => {
-  const sql = mutationsConfig.sql as string
+  // sql is now a versioned array (VersionedSql[]) — two entries: 19.1 base
+  // and 25.12 which adds parts_in_progress_names.
+  const sqlField = mutationsConfig.sql
+  const sqlEntries = sqlField as Array<{
+    since: string
+    sql: string
+    description?: string
+  }>
+  // Combined SQL for content assertions that apply across all versions
+  const allSql = sqlEntries.map((e) => e.sql).join('\n')
 
-  test('sql is a string', () => {
-    expect(typeof sql).toBe('string')
+  test('sql is a versioned array with 2 entries (19.1 base, 25.12 adds parts_in_progress_names)', () => {
+    expect(Array.isArray(sqlField)).toBe(true)
+    expect(sqlEntries.length).toBe(2)
+    expect(sqlEntries[0].since).toBe('19.1')
+    expect(sqlEntries[1].since).toBe('25.12')
   })
 
   test('queries system.mutations', () => {
-    expect(sql).toContain('system.mutations')
+    expect(allSql).toContain('system.mutations')
   })
 
   test('selects database and table as concatenated "table" column', () => {
-    expect(sql).toContain("database || '.' || table as table")
+    expect(allSql).toContain("database || '.' || table as table")
   })
 
   test('includes mutation_id', () => {
-    expect(sql).toContain('mutation_id')
+    expect(allSql).toContain('mutation_id')
   })
 
   test('includes command', () => {
-    expect(sql).toContain('command')
+    expect(allSql).toContain('command')
   })
 
   test('includes create_time and elapsed', () => {
-    expect(sql).toContain('create_time')
-    expect(sql).toContain('now() - create_time AS elapsed')
+    expect(allSql).toContain('create_time')
+    expect(allSql).toContain('now() - create_time AS elapsed')
   })
 
   test('includes parts_to_do with background-bar triple', () => {
-    expect(sql).toContain('parts_to_do')
-    expect(sql).toContain(
+    expect(allSql).toContain('parts_to_do')
+    expect(allSql).toContain(
       'formatReadableQuantity(parts_to_do) AS readable_parts_to_do'
     )
-    expect(sql).toContain('pct_parts_to_do')
+    expect(allSql).toContain('pct_parts_to_do')
   })
 
   test('includes is_done', () => {
-    expect(sql).toContain('is_done')
+    expect(allSql).toContain('is_done')
   })
 
   test('is_stuck derived using STUCK_THRESHOLD_SECONDS (600)', () => {
-    expect(sql).toContain('is_stuck')
-    expect(sql).toContain(String(STUCK_THRESHOLD_SECONDS))
+    expect(allSql).toContain('is_stuck')
+    expect(allSql).toContain(String(STUCK_THRESHOLD_SECONDS))
   })
 
   test('includes latest_failed_part, latest_fail_time, latest_fail_reason', () => {
-    expect(sql).toContain('latest_failed_part')
-    expect(sql).toContain('latest_fail_time')
-    expect(sql).toContain('latest_fail_reason')
+    expect(allSql).toContain('latest_failed_part')
+    expect(allSql).toContain('latest_fail_time')
+    expect(allSql).toContain('latest_fail_reason')
   })
 
   test('orders by is_done ASC, is_stuck DESC, create_time DESC', () => {
-    expect(sql).toContain(
+    expect(allSql).toContain(
       'ORDER BY is_done ASC, is_stuck DESC, create_time DESC'
     )
   })
