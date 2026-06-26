@@ -136,6 +136,16 @@ export function ActionItem<TData extends RowData, TValue>({
       label: 'Query Settings',
       handler: () => querySettings(String(value)),
     },
+    'view-resource-timeline': {
+      label: 'View Resource Timeline',
+      handler: async () => {
+        const queryId = String(row.getValue('query_id') || value || '')
+        return {
+          success: true,
+          message: `/query-metric-log?query_id=${encodeURIComponent(queryId)}&host=${hostId}`,
+        }
+      },
+    },
   }
 
   const actionConfig = availableActions[action]
@@ -153,7 +163,8 @@ export function ActionItem<TData extends RowData, TValue>({
       if (
         (action === 'explain-query' ||
           action === 'open-in-explorer' ||
-          action === 'analyze-with-ai') &&
+          action === 'analyze-with-ai' ||
+          action === 'view-resource-timeline') &&
         result.success
       ) {
         router.push(result.message)

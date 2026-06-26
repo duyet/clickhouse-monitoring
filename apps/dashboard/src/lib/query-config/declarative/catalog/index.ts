@@ -70,6 +70,7 @@ import { commonErrorsDeclarative } from './queries/common-errors'
 import { parallelizationDeclarative } from './queries/parallelization'
 import { profilerDeclarative } from './queries/profiler'
 import { queryCacheDeclarative } from './queries/query-cache'
+import { queryConditionCacheDeclarative } from './queries/query-condition-cache'
 import { queryDetailDeclarative } from './queries/query-detail'
 import { queryViewsLogDeclarative } from './queries/query-views-log'
 import { threadAnalysisDeclarative } from './queries/thread-analysis'
@@ -180,6 +181,7 @@ const ALL_DECLARATIVE: DeclarativeQueryConfig[] = [
   parallelizationDeclarative,
   profilerDeclarative,
   queryCacheDeclarative,
+  queryConditionCacheDeclarative,
   queryDetailDeclarative,
   queryViewsLogDeclarative,
   threadAnalysisDeclarative,

@@ -1,5 +1,6 @@
 import {
   ActivityIcon,
+  BotIcon,
   ClockIcon,
   DatabaseIcon,
   FileOutputIcon,
@@ -212,6 +213,16 @@ export const historyQueryFilterSchema: FilterSchema = {
       dynamicOptions: queryLogDynamicOptions('client_name'),
       icon: MonitorIcon,
     },
+    {
+      key: 'client_agent',
+      column: 'client_agent',
+      label: 'Client agent',
+      type: 'select',
+      operators: ['in', 'contains', 'eq', 'ne'],
+      dynamicOptions: queryLogDynamicOptions('client_agent'),
+      icon: BotIcon,
+      description: 'AI coding agent that issued the query (CH 26.6+).',
+    },
   ],
   presets: [
     {
@@ -341,6 +352,7 @@ export const historyQueriesConfig: QueryConfig = {
             'query_id',
             'user',
             'client_name',
+            'client_agent',
             'query_kind',
             'type',
             'event_time',
@@ -412,6 +424,36 @@ ${historyQueryTail}
 ${historyQueryTail}
       `,
     },
+    {
+      since: '26.6',
+      description: 'Added client_agent column (CH 26.6+)',
+      sql: `
+          SELECT
+              type,
+              query_id,
+              query_duration_ms,
+              query_duration_ms / 1000 as query_duration,
+              event_time,
+              query,
+              user,
+              read_rows,
+              formatReadableQuantity(read_rows) AS readable_read_rows,
+              round(100 * read_rows / MAX(read_rows) OVER ()) AS pct_read_rows,
+              written_rows,
+              formatReadableQuantity(written_rows) AS readable_written_rows,
+              round(100 * written_rows / MAX(written_rows) OVER ()) AS pct_written_rows,
+              result_rows,
+              formatReadableQuantity(result_rows) AS readable_result_rows,
+              memory_usage,
+              formatReadableSize(memory_usage) AS readable_memory_usage,
+              round(100 * memory_usage / MAX(memory_usage) OVER ()) AS pct_memory_usage,
+              query_kind,
+              query_cache_usage,
+              client_name,
+              client_agent
+${historyQueryTail}
+      `,
+    },
   ],
 
   columns: [
@@ -429,6 +471,7 @@ ${historyQueryTail}
     'query_cache_usage',
     'type',
     'client_name',
+    'client_agent',
   ],
   columnSizing: {
     action: { size: 64, minSize: 56, maxSize: 72 },
@@ -441,11 +484,17 @@ ${historyQueryTail}
     query_kind: { size: 140, minSize: 120, maxSize: 180 },
     type: { size: 150, minSize: 120, maxSize: 180 },
     client_name: { size: 180, minSize: 140, maxSize: 240 },
+    client_agent: { size: 180, minSize: 140, maxSize: 240 },
   },
   columnFormats: {
     action: [
       ColumnFormat.Action,
-      ['explain-query', 'analyze-with-ai', 'open-in-explorer'],
+      [
+        'explain-query',
+        'analyze-with-ai',
+        'open-in-explorer',
+        'view-resource-timeline',
+      ],
     ],
     user: ColumnFormat.ColoredBadge,
     type: ColumnFormat.ColoredBadge,
@@ -474,6 +523,7 @@ ${historyQueryTail}
         title: 'Query Detail',
       },
     ],
+    client_agent: ColumnFormat.ColoredBadge,
   },
 
   rowClassName: (row) => {
