@@ -29,12 +29,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { LanguageModelUsage } from 'ai'
 
 import { env } from 'cloudflare:workers'
-import {
-  checkRateLimit,
-  clientIpKey,
-  getAgentRateLimitPerMin,
-  rateLimitResponse,
-} from '@/lib/api/rate-limiter'
 import { pipeJsonRender } from '@json-render/core'
 import {
   convertToModelMessages,
@@ -56,6 +50,12 @@ import {
   isProviderConfigured,
   parseModelId,
 } from '@/lib/ai/providers'
+import {
+  checkRateLimit,
+  clientIpKey,
+  getAgentRateLimitPerMin,
+  rateLimitResponse,
+} from '@/lib/api/rate-limiter'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
@@ -553,7 +553,7 @@ async function handlePost(request: Request): Promise<Response> {
 
   const usageSteps: LanguageModelUsage[] = []
   // Tracks the provider-reported model ID from the last completed step.
-  // Populated synchronously in onStepFinish so it is available after consumeStream().
+  // Populated synchronously in onStepEnd so it is available after consumeStream().
   let lastStepModelId: string | undefined
 
   const stream = createUIMessageStream({
@@ -584,7 +584,7 @@ async function handlePost(request: Request): Promise<Response> {
       try {
         const result = await agent.stream({
           messages: modelMessages,
-          onStepFinish: (step) => {
+          onStepEnd: (step) => {
             usageSteps.push(step.usage)
             // Capture the provider-reported model ID (e.g., the resolved model
             // behind an auto-router preset). Falls back gracefully if absent.
@@ -683,7 +683,7 @@ async function handlePost(request: Request): Promise<Response> {
       console.error('[Agent API] Classified error:', classified)
       return JSON.stringify(classified)
     },
-    onFinish: () => {
+    onEnd: () => {
       if (AGENT_DEBUG_LOGS && usageSteps.length > 0) {
         const stats = {
           ...aggregateUsageWithCost(usageSteps, model),

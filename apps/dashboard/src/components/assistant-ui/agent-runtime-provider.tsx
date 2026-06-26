@@ -3,13 +3,17 @@
 /**
  * assistant-ui runtime for the ClickHouse agent.
  *
- * Replaces the hand-rolled `useChat` host in the old `agents-chat-area.tsx`:
- *
- * - `useChatRuntime` wraps the unchanged Vercel AI SDK v6 backend at
- *   `/api/v1/agent`, carrying the custom request body (`hostId`, `model`,
- *   `disabledTools`, `sessionId`) the route expects.
+ * - `useChatRuntime` wraps the Vercel AI SDK backend at `/api/v1/agent`,
+ *   carrying the custom request body (`hostId`, `model`, `disabledTools`,
+ *   `sessionId`) the route expects.
  * - `useRemoteThreadListRuntime` layers persistent conversation history on top,
  *   backed by either D1 or localStorage (see `resolve-thread-list-adapter`).
+ *
+ * NOTE — dual-ai transport cast: `DefaultChatTransport` is from ai@7 (root).
+ * `@assistant-ui/react-ai-sdk` still depends on `@ai-sdk/react@3` which bundles
+ * ai@6 internally, so `UIMessageChunk` types diverge at the TypeScript level
+ * (they're wire-compatible). The `as any` cast below is intentional until
+ * @assistant-ui/react-ai-sdk ships a version targeting ai@7.
  */
 
 import {
@@ -45,7 +49,8 @@ function useAgentChatRuntime() {
     [hostId, model, disabledTools, sessionId]
   )
 
-  return useChatRuntime({ transport })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return useChatRuntime({ transport: transport as any })
 }
 
 /**

@@ -321,7 +321,7 @@ export const ContextReasoningUsage = ({
   ...props
 }: ContextReasoningUsageProps) => {
   const { usage, modelId } = useContextValue()
-  const reasoningTokens = usage?.reasoningTokens ?? 0
+  const reasoningTokens = usage?.outputTokenDetails?.reasoningTokens ?? 0
 
   if (children) {
     return children
@@ -361,7 +361,7 @@ export const ContextCacheUsage = ({
   ...props
 }: ContextCacheUsageProps) => {
   const { usage, modelId } = useContextValue()
-  const cacheTokens = usage?.cachedInputTokens ?? 0
+  const cacheTokens = usage?.inputTokenDetails?.cacheReadTokens ?? 0
 
   if (children) {
     return children
