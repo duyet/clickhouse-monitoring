@@ -2,6 +2,7 @@ import type { DeclarativeQueryConfig } from '../../schema'
 
 export const projectionAnalyticsDeclarative: DeclarativeQueryConfig = {
   name: 'projection-analytics',
+  optional: false,
   defaultView: 'auto',
   card: { primary: 'table', badges: ['database', 'table', 'projection_name'] },
   description:
