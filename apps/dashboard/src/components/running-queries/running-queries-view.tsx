@@ -285,7 +285,15 @@ export const RunningQueriesView = function RunningQueriesView() {
         ) : (
           <>
             {chartsOpen ? (
-              <RunningQueriesCharts rows={rows} />
+              <>
+                {/* Trend charts on this page use a fixed 14-day window for historical
+                    context and are not affected by the global time-range picker. */}
+                <p className="text-[11px] text-muted-foreground">
+                  Trend charts use a fixed 14-day window · not affected by the
+                  global time-range picker
+                </p>
+                <RunningQueriesCharts rows={rows} />
+              </>
             ) : (
               <CollapsedChartsRow
                 labels={[

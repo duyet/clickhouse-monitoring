@@ -50,9 +50,19 @@ export const expensiveQueriesConfig: QueryConfig = {
       primaryColumns: ['action', 'query'],
     }),
   },
-  description: 'Most expensive queries finished over last 24 hours',
+  description: 'Most expensive queries finished over the selected time window',
   docs: QUERY_LOG,
   tableCheck: 'system.query_log',
+  defaultParams: {
+    last_hours: '24',
+  },
+  filterParamPresets: [
+    { name: 'Last 1h', key: 'last_hours', value: '1' },
+    { name: 'Last 6h', key: 'last_hours', value: '6' },
+    { name: 'Last 24h', key: 'last_hours', value: '24' },
+    { name: 'Last 7d', key: 'last_hours', value: '168' },
+    { name: 'Last 30d', key: 'last_hours', value: '720' },
+  ],
   sql: [
     {
       since: '23.8',
@@ -92,7 +102,7 @@ export const expensiveQueriesConfig: QueryConfig = {
             formatReadableSize(sum(written_bytes)) AS written_bytes,
             formatReadableSize(sum(result_bytes)) AS result_bytes
         FROM merge('system', '^query_log')
-        WHERE (event_time > (now() - interval 24 hours)) AND (type IN (2, 4))
+        WHERE (event_time > (now() - interval {last_hours:UInt64} hour)) AND (type IN (2, 4))
         GROUP BY normalized_query_hash
     )
     SELECT
@@ -152,7 +162,7 @@ export const expensiveQueriesConfig: QueryConfig = {
             formatReadableSize(sum(written_bytes)) AS written_bytes,
             formatReadableSize(sum(result_bytes)) AS result_bytes
         FROM merge('system', '^query_log')
-        WHERE (event_time > (now() - interval 24 hours)) AND (type IN (2, 4))
+        WHERE (event_time > (now() - interval {last_hours:UInt64} hour)) AND (type IN (2, 4))
         GROUP BY normalized_query_hash
     )
     SELECT
@@ -213,7 +223,7 @@ export const expensiveQueriesConfig: QueryConfig = {
             formatReadableSize(sum(written_bytes)) AS written_bytes,
             formatReadableSize(sum(result_bytes)) AS result_bytes
         FROM merge('system', '^query_log')
-        WHERE (event_time > (now() - interval 24 hours)) AND (type IN (2, 4))
+        WHERE (event_time > (now() - interval {last_hours:UInt64} hour)) AND (type IN (2, 4))
         GROUP BY normalized_query_hash
     )
     SELECT

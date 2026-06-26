@@ -1,9 +1,10 @@
-import { ChevronDown, Gauge, RefreshCw, Timer } from 'lucide-react'
+import { ChevronDown, Gauge, RefreshCw, ScanSearch, Timer } from 'lucide-react'
 
 import type { SlowQueryRow } from '@/components/slow-queries/slow-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useMemo, useState } from 'react'
+import { BulkExplainDialog } from '@/components/explain/bulk-explain-dialog'
 import { RegressionPanel } from '@/components/alerting/regression-panel'
 import { PageHeader } from '@/components/layout'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
@@ -19,10 +20,12 @@ import {
   getCardErrorTitle,
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
+import { useTimeRange } from '@/lib/context/time-range-context'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useTableData } from '@/lib/query/use-table-data'
 import { slowQueriesConfig } from '@/lib/query-config/queries/slow-queries'
 import { useHostId } from '@/lib/swr/use-host'
+import { truncateSql } from '@/lib/explain-heuristics'
 import { cn } from '@/lib/utils'
 
 /** Refresh the slow-queries list every 60s — `query_log` is append-only. */
@@ -95,21 +98,31 @@ function FilterGroup({
  */
 export function SlowQueriesView() {
   const hostId = useHostId()
+  const { timeRange } = useTimeRange()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [chartsOpen, setChartsOpen] = useState(true)
+  const [explainOpen, setExplainOpen] = useState(false)
 
-  // Resolve the active value of each filter key: URL param → default.
+  // Resolve the active value of each filter key:
+  //   URL param → global time-range context (for last_hours) → config default.
+  // This means the global picker seeds the initial window, but explicit URL
+  // params (e.g. from a shared link or the filter chips) take priority.
   const filterParams = useMemo(() => {
     const params: Record<string, string> = {}
     for (const [key, value] of Object.entries(DEFAULTS)) {
       const fromUrl = searchParams.get(key)
-      const resolved = fromUrl ?? (value as string)
+      let resolved: string
+      if (key === 'last_hours') {
+        resolved = fromUrl ?? String(timeRange.lastHours)
+      } else {
+        resolved = fromUrl ?? (value as string)
+      }
       if (resolved !== '') params[key] = resolved
     }
     return params
-  }, [searchParams])
+  }, [searchParams, timeRange.lastHours])
 
   const { data, error, isLoading, isValidating, refresh } =
     useTableData<SlowQueryRow>(
@@ -120,6 +133,11 @@ export function SlowQueriesView() {
     )
 
   const rows = data ?? []
+
+  const explainItems = rows.slice(0, 20).map((r) => ({
+    sql: String(r.query ?? ''),
+    title: truncateSql(String(r.query ?? ''), 60),
+  }))
 
   // Slowest duration drives the header highlight.
   const slowest = useMemo(() => {
@@ -159,6 +177,16 @@ export function SlowQueriesView() {
           description="The slowest finished queries from the query log, worst first"
           actions={
             <div className="flex flex-wrap items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-[12px]"
+                onClick={() => setExplainOpen(true)}
+                disabled={rows.length === 0}
+              >
+                <ScanSearch className="size-3.5" />
+                Explain top N
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -267,6 +295,13 @@ export function SlowQueriesView() {
           </>
         )}
       </div>
+
+      <BulkExplainDialog
+        queries={explainItems}
+        hostId={hostId}
+        open={explainOpen}
+        onOpenChange={setExplainOpen}
+      />
     </TooltipProvider>
   )
 }

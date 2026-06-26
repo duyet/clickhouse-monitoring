@@ -9,6 +9,7 @@ import { ChartContainer } from '@/components/charts/chart-container'
 import { ChartEmpty } from '@/components/charts/chart-empty'
 import { AreaChart } from '@/components/charts/primitives/area'
 import { resolveDateRangeConfig } from '@/components/date-range'
+import { useTimeRange } from '@/lib/context/time-range-context'
 import { useTimezone } from '@/lib/context/timezone-context'
 import { useChartData, useHostId } from '@/lib/swr'
 import { REFRESH_INTERVAL } from '@/lib/swr/config'
@@ -59,8 +60,8 @@ export function createAreaChart(
 
   return memo(function Chart({
     title = config.defaultTitle,
-    interval = config.defaultInterval,
-    lastHours = config.defaultLastHours,
+    interval,
+    lastHours,
     className,
     chartClassName,
     chartCardContentClassName,
@@ -71,15 +72,26 @@ export function createAreaChart(
     const routeHostId = useHostId()
     const hostId = hostIdProp ?? routeHostId
     const userTimezone = useTimezone()
+    const { timeRange } = useTimeRange()
 
     // Date range state (only used when dateRangeConfig is provided)
     const [rangeOverride, setRangeOverride] = useState<DateRangeValue | null>(
       null
     )
 
-    // Use override values when date range is selected, otherwise use props/defaults
-    const effectiveLastHours = rangeOverride?.lastHours ?? lastHours
-    const effectiveInterval = rangeOverride?.interval ?? interval
+    // Priority: per-chart date range override → explicit prop → global context → factory config default.
+    // Charts that pass an explicit lastHours prop keep their value; charts without one follow
+    // the global time-range picker so the header control affects all time-series charts.
+    const effectiveLastHours =
+      rangeOverride?.lastHours ??
+      lastHours ??
+      timeRange.lastHours ??
+      config.defaultLastHours
+    const effectiveInterval =
+      rangeOverride?.interval ??
+      interval ??
+      timeRange.interval ??
+      config.defaultInterval
 
     const swr = useChartData({
       chartName: config.chartName,
