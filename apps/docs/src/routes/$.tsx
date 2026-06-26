@@ -75,6 +75,9 @@ function Page() {
     <DocsLayout
       {...baseOptions()}
       tree={pageTree}
+      // Root folders (meta.json `root: true`) render as a sidebar dropdown
+      // (Fumadocs Layout Tabs); only the active tab's pages show in the tree.
+      tabMode="auto"
       sidebar={{ footer: <SidebarFooter /> }}
     >
       <Suspense>

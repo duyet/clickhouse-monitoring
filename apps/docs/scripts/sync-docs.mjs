@@ -53,6 +53,21 @@ const ROOT_ORDER = [
   'settings',
 ]
 
+// Sections promoted to Fumadocs "Layout Tabs" — root folders rendered as a
+// dropdown at the top of the sidebar (tabMode: 'auto'). Only the active tab's
+// pages show in the sidebar tree. Each entry maps 1:1 to an existing top-level
+// folder, so page URLs are unchanged. Trim/extend to change the dropdown set.
+const ROOT_TAB_SECTIONS = new Set([
+  'getting-started',
+  'features',
+  'ai-agent',
+  'deploy',
+  'authentication',
+  'advanced',
+  'reference',
+  'releases',
+])
+
 // Display title + sidebar icon (Lucide name, resolved by lucideIconsPlugin in
 // src/lib/source.ts) for each section folder. We set both explicitly so the
 // tree reads cleanly — e.g. "AI Agent" not "Ai Agent".
@@ -298,7 +313,12 @@ async function main() {
     const sectionDir = join(DEST_DIR, slug)
     if (existsSync(sectionDir)) {
       const pages = SECTION_PAGE_ORDER[slug]
-      const meta = { title, icon, defaultOpen: false }
+      const isRootTab = ROOT_TAB_SECTIONS.has(slug)
+      // Root tabs render as a sidebar dropdown (Fumadocs Layout Tabs). They are
+      // pulled out of the main tree, so `defaultOpen` is irrelevant for them.
+      const meta = isRootTab
+        ? { title, icon, root: true }
+        : { title, icon, defaultOpen: false }
       if (pages) meta.pages = pages
       await writeFile(
         join(sectionDir, 'meta.json'),
