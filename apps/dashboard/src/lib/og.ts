@@ -59,6 +59,27 @@ export const OG_PAGES: Record<string, OgPage> = {
       'An AI agent that answers questions about queries, schema, performance and health.',
   },
 
+  // ── New monitoring pages (audit wave): registered so pageOgHead() does not
+  //    throw "Cannot read properties of undefined (reading 'headTitle')" at prerender.
+  'blob-storage-log': {
+    eyebrow: 'STORAGE',
+    title: 'Object Storage Operations',
+    description:
+      'Uploads, deletes and errors against S3/GCS/Azure object storage from system.blob_storage_log.',
+  },
+  'storage-economics': {
+    eyebrow: 'STORAGE',
+    title: 'Storage Economics',
+    description:
+      'Compression ratios, tier utilization and TTL moves to track storage cost and efficiency.',
+  },
+  'query-condition-cache': {
+    eyebrow: 'CACHE',
+    title: 'Query Condition Cache',
+    description:
+      'Usage of the query condition cache (ClickHouse 25.3+) that skips granules for filtered scans.',
+  },
+
   // ── New: key query / monitoring pages.
   'running-queries': {
     eyebrow: 'QUERIES',
