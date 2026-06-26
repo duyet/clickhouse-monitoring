@@ -1,0 +1,140 @@
+name: Bundle Size
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# Cancel in-progress runs for same workflow and branch/PR
+concurrency:
+  group: bundle-size-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Budget constants (KiB). Baseline: ~1820 KiB gzip (PR #1613, 2026-06-14).
+  # See docs/knowledge/worker-bundle-size.md for history and investigation notes.
+  #
+  # BUNDLE_SIZE_WARN_KIB  = 2.5 MiB — warn-only gate, comfortable headroom
+  #   before the CF free-plan limit. Raise with a note when a justified size
+  #   increase ships.
+  # BUNDLE_SIZE_ERROR_KIB = 3.0 MiB — Cloudflare Workers free-plan hard ceiling.
+  #   Crossing this breaks production deploys (wrangler rejects the upload).
+  BUNDLE_SIZE_WARN_KIB: '2560'
+  BUNDLE_SIZE_ERROR_KIB: '3072'
+
+permissions:
+  contents: read
+
+jobs:
+  bundle-size:
+    name: bundle-size
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Non-required: informational gate that does not block PR merges.
+    # Annotates with ::warning:: above BUNDLE_SIZE_WARN_KIB and ::error::
+    # (exit 1, still continue-on-error) above BUNDLE_SIZE_ERROR_KIB.
+    # Remove continue-on-error once the budget has been validated over several
+    # cycles and the check is added to the required-checks list in GitHub
+    # branch protection settings.
+    continue-on-error: true
+
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Bun Cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-tsr-v1-${{ hashFiles('apps/dashboard/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-tsr-v1-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build for Cloudflare
+        # Use the Clerk test key so the bundle is representative of production
+        # (Clerk auth code is included in the prod build). The pk_test_* key is
+        # a public constant already committed in cloudflare.yml — safe to hardcode.
+        env:
+          VITE_AUTH_PROVIDER: clerk
+          VITE_CLERK_PUBLISHABLE_KEY: pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ
+          VITE_GIT_SHA: ${{ github.sha }}
+          VITE_GIT_REF: ${{ github.head_ref || github.ref_name }}
+          VITE_CI: 'true'
+          VITE_DEPLOY_TARGET: cf
+        run: bunx vite build
+
+      - name: Measure bundle size (wrangler dry-run)
+        id: size
+        env:
+          BUNDLE_SIZE_WARN_KIB: ${{ env.BUNDLE_SIZE_WARN_KIB }}
+          BUNDLE_SIZE_ERROR_KIB: ${{ env.BUNDLE_SIZE_ERROR_KIB }}
+        run: |
+          set -euo pipefail
+          DRY_OUTPUT=$(bunx wrangler deploy --minify --dry-run 2>&1)
+          echo "$DRY_OUTPUT"
+
+          # Parse "gzip: X.XX MiB" from wrangler output.
+          # Example: "Total Upload: 8.5 MiB / gzip: 1.82 MiB   (440 modules)"
+          PARSED=$(echo "$DRY_OUTPUT" | python3 -c "
+          import re, sys
+          out = sys.stdin.read()
+          m = re.search(r'gzip:\s*([0-9]+\.[0-9]+)\s*MiB', out)
+          if m:
+              mib = float(m.group(1))
+              kib = int(mib * 1024)
+              print(f'{mib:.2f} {kib}')
+          ")
+
+          if [ -z "$PARSED" ]; then
+            echo "::warning::Could not parse gzip size from wrangler dry-run output"
+            exit 0
+          fi
+
+          GZIP_MIB=$(echo "$PARSED" | awk '{print $1}')
+          GZIP_KIB=$(echo "$PARSED" | awk '{print $2}')
+          echo "gzip_mib=$GZIP_MIB" >> "$GITHUB_OUTPUT"
+          echo "gzip_kib=$GZIP_KIB" >> "$GITHUB_OUTPUT"
+
+          if [ "$GZIP_KIB" -gt "$BUNDLE_SIZE_ERROR_KIB" ]; then
+            echo "::error::Worker gzip bundle ${GZIP_MIB} MiB (${GZIP_KIB} KiB) exceeds the CF free-plan hard limit ${BUNDLE_SIZE_ERROR_KIB} KiB (3 MiB). Production deploys will be rejected."
+            exit 1
+          elif [ "$GZIP_KIB" -gt "$BUNDLE_SIZE_WARN_KIB" ]; then
+            echo "::warning::Worker gzip bundle ${GZIP_MIB} MiB (${GZIP_KIB} KiB) exceeds warn budget ${BUNDLE_SIZE_WARN_KIB} KiB (2.5 MiB). Investigate before the CF limit is reached."
+          else
+            echo "Bundle OK: ${GZIP_MIB} MiB gzip (budget: ${BUNDLE_SIZE_WARN_KIB} KiB warn / ${BUNDLE_SIZE_ERROR_KIB} KiB hard limit)"
+          fi
+
+      - name: Step summary
+        if: always()
+        env:
+          BUNDLE_SIZE_WARN_KIB: ${{ env.BUNDLE_SIZE_WARN_KIB }}
+          BUNDLE_SIZE_ERROR_KIB: ${{ env.BUNDLE_SIZE_ERROR_KIB }}
+          GZIP_MIB: ${{ steps.size.outputs.gzip_mib }}
+          GZIP_KIB: ${{ steps.size.outputs.gzip_kib }}
+        run: |
+          echo "### Worker Bundle Size" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$GZIP_MIB" ]; then
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Gzip size | **${GZIP_MIB} MiB** (${GZIP_KIB} KiB) |" >> $GITHUB_STEP_SUMMARY
+            echo "| Warn budget | 2.5 MiB (${BUNDLE_SIZE_WARN_KIB} KiB) |" >> $GITHUB_STEP_SUMMARY
+            echo "| CF free-plan hard limit | 3 MiB (${BUNDLE_SIZE_ERROR_KIB} KiB) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_Could not parse bundle size from wrangler output._" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Baseline: ~1.82 MiB (PR #1613, 2026-06-14). See [worker-bundle-size.md](../../docs/knowledge/worker-bundle-size.md)._" >> $GITHUB_STEP_SUMMARY
