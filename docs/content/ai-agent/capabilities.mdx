@@ -25,6 +25,32 @@ with a much smaller, more reliable tool surface.
 Control tools (`kill_query`, `kill_mutation`, `optimize_table`) are disabled unless
 `AGENT_ENABLE_CONTROL_TOOLS=true`. The agent always confirms before using them.
 
+### Tool reference
+
+| Tool | Description | Notes |
+|---|---|---|
+| `query` | Execute a read-only SQL query on ClickHouse. | SELECT / WITH / DESCRIBE / EXPLAIN only. Write statements are rejected. |
+| `list_databases` | List all databases with engine and comment metadata. | |
+| `list_tables` | List tables in a database with row counts and size. | |
+| `get_table_schema` | Get column definitions for a specific table. | |
+| `explore_table_schema` | Three-mode exploration: no args → databases; database only → tables; database + table → full schema with indexes and keys. | |
+| `get_running_queries` | Currently running queries ordered by elapsed time. | Reads `system.processes`. |
+| `get_slow_queries` | Slowest completed queries from the query log. | Reads `system.query_log`. |
+| `get_failed_queries` | Recent failed queries with error details. | Reads `system.query_log`. |
+| `explain_query` | EXPLAIN PLAN / PIPELINE / PLAN with indexes for a query. | |
+| `get_metrics` | Server health: version, uptime, active connections, memory. | Reads `system.metrics`. |
+| `get_disk_usage` | Per-disk free and total space. | Reads `system.disks`. |
+| `get_table_parts` | Part-level info for a table: rows, size, compression ratio. | Reads `system.parts`. |
+| `get_replication_status` | Per-table replication delay, queue size, and replica counts. | Reads `system.replicas`. |
+| `get_merge_status` | Currently running merges with progress and elapsed time. | Reads `system.merges`. |
+| `update_plan` | Create or update a step-by-step workflow plan for the current investigation. | Rendered as a live checklist in the UI. |
+| `load_skill` | Load an expert guide (skill) with SQL recipes for a specific domain. | |
+| `ask_user` | Ask the user a question to gather information before proceeding. | |
+| `query_and_visualize` | Run a SQL query and return an interactive chart config. | Chart type is auto-detected from result columns. |
+| `kill_query` | Kill a running query by `query_id`. | **DESTRUCTIVE.** Env-gated: requires `AGENT_ENABLE_CONTROL_TOOLS=true`. Agent always confirms first. |
+| `kill_mutation` | Cancel a running mutation on a table. | **DESTRUCTIVE.** Env-gated: requires `AGENT_ENABLE_CONTROL_TOOLS=true`. Agent always confirms first. |
+| `optimize_table` | Trigger an OPTIMIZE on a table to force merges. | **DESTRUCTIVE.** Env-gated: requires `AGENT_ENABLE_CONTROL_TOOLS=true`. Agent always confirms first. |
+
 ## Skills
 
 Skills are expert guides — with copy-pasteable SQL recipes against `system.*` — that

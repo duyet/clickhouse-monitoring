@@ -28,6 +28,16 @@ See [MCP Server reference](/docs/reference/mcp-server) for the full tool list an
 
 ## Permissions & access
 
+:::caution[Secure by default]
+The MCP endpoint (`/api/mcp`) returns **401 Unauthorized** by default. It only opens when you explicitly configure at least one of:
+
+- **`CHM_API_KEY_SECRET`** — API key auth (recommended). See [API keys](/docs/authentication/api-keys).
+- **`CLERK_SECRET_KEY`** — Clerk OAuth token introspection. See [Clerk authentication](/docs/authentication/clerk).
+- **`CHM_MCP_PUBLIC=true`** — explicit opt-in for trusted private networks. A warning is logged on every request.
+
+Without one of these, every request — including from Claude Desktop, Cursor, and other MCP clients — is rejected with `401`.
+:::
+
 The MCP endpoint (`/api/mcp`) is **closed by default**. Anonymous requests receive a `401` response unless at least one of the following is true:
 
 - `CHM_API_KEY_SECRET` is set (API key auth — recommended for production)
