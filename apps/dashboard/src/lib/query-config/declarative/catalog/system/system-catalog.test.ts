@@ -297,9 +297,10 @@ describe('replicated-merge-tree-settings declarative', () => {
 
 // ---------------------------------------------------------------------------
 // kafka-consumers — rowClassName migrated to declarative rowStyle.
+// CH 25.12 adds missing_dependencies (amber) before last_exception (red).
 // rowClassName is a function (excluded from deep-equal); verify behavioural
 // equivalence by applying both the compiled and legacy functions to rows that
-// cover every boundary of the last_exception condition.
+// cover every boundary condition.
 // ---------------------------------------------------------------------------
 
 describe('kafka-consumers declarative', () => {
@@ -312,6 +313,16 @@ describe('kafka-consumers declarative', () => {
     compareSerializable(loaded, kafkaConsumersConfig)
   })
 
+  test('sql is versioned array with 2 entries', () => {
+    const loaded = loadDeclarativeConfig(kafkaConsumersDeclarative)
+    expect(Array.isArray(loaded.sql)).toBe(true)
+    if (Array.isArray(loaded.sql)) {
+      expect(loaded.sql.length).toBe(2)
+      expect(loaded.sql[0].since).toBe('22.8')
+      expect(loaded.sql[1].since).toBe('25.12')
+    }
+  })
+
   test('compiled rowClassName matches legacy across boundary rows', () => {
     const loaded = loadDeclarativeConfig(kafkaConsumersDeclarative)
     const compiled = loaded.rowClassName
@@ -321,12 +332,19 @@ describe('kafka-consumers declarative', () => {
     if (!compiled || !legacy) return
 
     const rows: Record<string, unknown>[] = [
+      // last_exception boundary (no missing_dependencies)
       { last_exception: '' },
       { last_exception: 'Cannot connect to broker' },
       { last_exception: null },
       { last_exception: undefined },
-      {}, // missing key
+      {}, // missing keys
       { last_exception: 0 }, // numeric falsy → String(0 || '') === ''
+      // missing_dependencies boundary (amber wins over last_exception)
+      { missing_dependencies: 'mv_target', last_exception: '' },
+      { missing_dependencies: 'mv_target', last_exception: 'some error' },
+      { missing_dependencies: '', last_exception: 'some error' }, // amber empty → red
+      { missing_dependencies: null }, // null → empty string → no amber
+      { missing_dependencies: undefined }, // undefined → empty string → no amber
     ]
     for (const row of rows) {
       expect(compiled(row)).toBe(legacy(row))
