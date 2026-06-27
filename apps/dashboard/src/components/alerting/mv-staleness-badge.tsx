@@ -17,14 +17,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { dispatchAlert } from '@/lib/health/alert-dispatcher'
-import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
-import { cn } from '@/lib/utils'
 import {
   countMvIssues,
   formatMvStaleness,
   type MvRefreshRow,
 } from '@/lib/alerting/mv-refresh-staleness'
+import { dispatchAlert } from '@/lib/health/alert-dispatcher'
+import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
+import { cn } from '@/lib/utils'
 
 interface MvStalenessBadgeProps {
   hostId: number

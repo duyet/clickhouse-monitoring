@@ -9,14 +9,13 @@
  *  - clientIpKey extraction from various headers
  */
 
-import { afterEach, describe, expect, test } from 'bun:test'
-
 import {
   _resetBucketsForTest,
   checkRateLimit,
   clientIpKey,
   rateLimitResponse,
 } from '../rate-limiter'
+import { afterEach, describe, expect, test } from 'bun:test'
 
 afterEach(() => {
   _resetBucketsForTest()

@@ -12,8 +12,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
 import { fetchData } from '@chm/clickhouse-client'
-import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { getClickHouseConfigsFromEnv } from '@/lib/api/clickhouse-config'
+import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 
 const SETTINGS_QUERY = `
   SELECT name, value, changed, description, default AS defaultValue

@@ -13,9 +13,8 @@
  *  - Coercion: number and boolean pass through typed
  */
 
-import { describe, expect, test } from 'bun:test'
-
 import { validateChartParams } from '../chart-param-validator'
+import { describe, expect, test } from 'bun:test'
 
 describe('validateChartParams — happy path', () => {
   test('valid string/number/boolean params pass through', () => {

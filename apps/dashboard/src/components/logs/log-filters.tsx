@@ -36,12 +36,16 @@ const DEBOUNCE_MS = 300
  *
  * URL params used: `?severity=Error&search=keyword`
  */
-export function LogFilters({ onSeverityChange, onSearchChange }: LogFiltersProps) {
+export function LogFilters({
+  onSeverityChange,
+  onSearchChange,
+}: LogFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const severityFromUrl = (searchParams.get('severity') ?? 'All') as SeverityLevel
+  const severityFromUrl = (searchParams.get('severity') ??
+    'All') as SeverityLevel
   const searchFromUrl = searchParams.get('search') ?? ''
 
   const [searchInput, setSearchInput] = useState(searchFromUrl)

@@ -2,11 +2,11 @@
  * Replication Lag Health Score Tests (#1914)
  */
 
-import { describe, expect, test } from 'bun:test'
 import {
   computeReplicaHealthScore,
   getLagStatus,
 } from '../replication-lag-health'
+import { describe, expect, test } from 'bun:test'
 
 describe('getLagStatus', () => {
   test('0s → synced', () => {

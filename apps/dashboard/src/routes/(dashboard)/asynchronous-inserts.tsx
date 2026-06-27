@@ -1,11 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageOgHead } from '@/lib/og'
-import { asynchronousInsertsConfig } from '@/lib/query-config/system/asynchronous-inserts'
 import { asynchronousInsertLogConfig } from '@/lib/query-config/system/asynchronous-insert-log'
+import { asynchronousInsertsConfig } from '@/lib/query-config/system/asynchronous-inserts'
 
 function AsyncInsertsPageContent() {
   return (

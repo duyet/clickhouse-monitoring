@@ -10,13 +10,14 @@
 
 import { AlertTriangle, TrendingUp } from 'lucide-react'
 
+import type { SlowQueryRegression } from '@/lib/alerting/slow-query-regression'
+
 import { useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { dispatchAlert } from '@/lib/health/alert-dispatcher'
 import { REFRESH_INTERVAL, useChartData } from '@/lib/swr'
 import { cn } from '@/lib/utils'
-import type { SlowQueryRegression } from '@/lib/alerting/slow-query-regression'
 
 interface RegressionPanelProps {
   hostId: number

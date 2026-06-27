@@ -9,10 +9,10 @@
  * Each operation follows a DDL-preview → confirm → execute pattern.
  */
 
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'

@@ -19,20 +19,6 @@ export const docsVersions: DocsVersionEntry[] = [
   { label: 'v0.3', href: '/reference/releases/v0-3', current: true },
 ]
 
-// Top-level documentation sections (matches ROOT_PAGES in scripts/sync-docs.mjs).
-// Drives the sidebar section dropdown. Keep in sync with FOLDER_META root entries.
-export interface DocsSectionEntry {
-  title: string
-  /** Section index URL — also the prefix used to detect the active section. */
-  url: string
-}
-
-export const docsSections: DocsSectionEntry[] = [
-  { title: 'Guide', url: '/guide' },
-  { title: 'Deploy & Operate', url: '/operate' },
-  { title: 'Reference', url: '/reference' },
-]
-
 // Docs are served at the site root (docs.chmonitor.dev/).
 // Empty string means the base URL for doc pages is '/'.
 export const docsRoute = ''

@@ -15,7 +15,6 @@ import {
 import { Suspense } from 'react'
 import { useMDXComponents } from '@/components/mdx'
 import { SidebarFooter } from '@/components/sidebar-footer'
-import { SidebarNavHeader } from '@/components/sidebar-nav-header'
 import { baseOptions } from '@/lib/layout.shared'
 import { gitConfig } from '@/lib/shared'
 import { getPageImage, slugsToMarkdownPath, source } from '@/lib/source'
@@ -111,12 +110,12 @@ function Page() {
     <DocsLayout
       {...baseOptions()}
       tree={pageTree}
-      // tabMode is intentionally omitted: the section dropdown is rendered
-      // manually in sidebar.banner (SidebarNavHeader) so that the version
-      // dropdown can sit above it. Root-folder filtering still works because
-      // it relies on `root: true` in meta.json via useTreeContext, not tabMode.
+      // Sections are switched with Fumadocs' built-in sidebar tabs dropdown,
+      // auto-generated from the `root: true` folders — the single section
+      // switcher. tabMode stays default ('auto') so it renders inside the
+      // sidebar and keeps the tree scoped to the active section. Version lives
+      // once in the footer; no custom banner so the sidebar stays compact.
       sidebar={{
-        banner: <SidebarNavHeader />,
         footer: <SidebarFooter />,
       }}
     >

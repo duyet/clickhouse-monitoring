@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 
 import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
