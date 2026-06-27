@@ -33,7 +33,7 @@
     "@cloudflare/workers-types": "^4.20260603.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^22.15.21",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.5.1",
