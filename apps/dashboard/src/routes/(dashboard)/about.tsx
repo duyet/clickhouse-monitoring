@@ -14,8 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 
 const GITHUB_REPO =
-  packageInfo.repository?.url ||
-  'https://github.com/duyet/clickhouse-monitoring'
+  packageInfo.repository?.url || 'https://github.com/chmonitor/chmonitor'
 const LICENSE = 'MIT'
 
 function FeatureCard({

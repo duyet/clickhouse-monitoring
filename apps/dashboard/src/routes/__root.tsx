@@ -46,7 +46,7 @@ const STRUCTURED_DATA = {
   description:
     'Open-source ClickHouse monitoring UI — real-time dashboards for cluster metrics, query performance, merges, replication and health.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  sameAs: ['https://github.com/duyet/clickhouse-monitoring'],
+  sameAs: ['https://github.com/chmonitor/chmonitor'],
 } as const
 
 function validateSearch(search: Record<string, unknown>): RootSearch {

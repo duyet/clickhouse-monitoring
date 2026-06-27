@@ -158,7 +158,7 @@ export function NavUser({
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <a
-                      href="https://github.com/duyet/clickhouse-monitoring"
+                      href="https://github.com/chmonitor/chmonitor"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2"

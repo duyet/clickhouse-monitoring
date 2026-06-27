@@ -247,7 +247,7 @@ services:
       - --entrypoints.websecure.address=:443
 
   chmonitor:
-    image: ghcr.io/duyet/chmonitor:latest
+    image: ghcr.io/chmonitor/chmonitor:latest
     labels:
       traefik.enable: "true"
       traefik.http.routers.chmonitor.rule: "Host(`chmonitor.yourcompany.com`)"

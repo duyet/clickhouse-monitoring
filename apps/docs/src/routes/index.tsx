@@ -132,7 +132,7 @@ function Hero() {
                 </span>
                 {'\n'}docker run -p 3000:3000 \{'\n'}
                 {'  '}-e CLICKHOUSE_HOST=https://your-host:8443 \{'\n'}
-                {'  '}duyet/clickhouse-monitoring
+                {'  '}chmonitor/chmonitor
               </code>
             </pre>
           </div>
