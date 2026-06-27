@@ -20,7 +20,7 @@
     "@tanstack/react-start": "^1.168.26",
     "fumadocs-core": "^16.10.5",
     "fumadocs-mdx": "^15.0.12",
-    "fumadocs-twoslash": "^2.0.0",
+    "fumadocs-twoslash": "^3.0.0",
     "fumadocs-ui": "^16.10.5",
     "lucide-react": "^0.488.0",
     "mermaid": "^11.0.0",
