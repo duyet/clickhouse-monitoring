@@ -23,16 +23,14 @@ export const docsVersions: DocsVersionEntry[] = [
 // Drives the sidebar section dropdown. Keep in sync with FOLDER_META root entries.
 export interface DocsSectionEntry {
   title: string
-  /** Index URL navigated to when the reader switches to this section. */
+  /** Section index URL — also the prefix used to detect the active section. */
   url: string
-  /** URL prefix used to detect which section is active. */
-  prefix: string
 }
 
 export const docsSections: DocsSectionEntry[] = [
-  { title: 'Guide', url: '/guide', prefix: '/guide' },
-  { title: 'Deploy & Operate', url: '/operate', prefix: '/operate' },
-  { title: 'Reference', url: '/reference', prefix: '/reference' },
+  { title: 'Guide', url: '/guide' },
+  { title: 'Deploy & Operate', url: '/operate' },
+  { title: 'Reference', url: '/reference' },
 ]
 
 // Docs are served at the site root (docs.chmonitor.dev/).
@@ -44,7 +42,7 @@ export const dashboardUrl = 'https://dash.chmonitor.dev'
 
 // GitHub repository info — used for "Edit on GitHub" links.
 export const gitConfig = {
-  user: 'duyet',
-  repo: 'clickhouse-monitoring',
+  user: 'chmonitor',
+  repo: 'chmonitor',
   branch: 'main',
 }
