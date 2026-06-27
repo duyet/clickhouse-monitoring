@@ -15,7 +15,7 @@ interface Release {
 let releases: Release[] = []
 try {
   const res = await fetch(
-    'https://api.github.com/repos/duyet/clickhouse-monitoring/releases?per_page=20',
+    'https://api.github.com/repos/chmonitor/chmonitor/releases?per_page=20',
     { headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }
   )
   if (res.ok) {
@@ -63,7 +63,7 @@ function mdToHtml(md: string): string {
         <div class="sec-head" style="margin-bottom:0">
           <span class="eyebrow">What's new</span>
           <h2>Changelog</h2>
-          <p>Release notes for chmonitor. Full history on <a href="https://github.com/duyet/clickhouse-monitoring/releases" target="_blank" rel="noopener" style="color:var(--orange)">GitHub Releases</a>.</p>
+          <p>Release notes for chmonitor. Full history on <a href="https://github.com/chmonitor/chmonitor/releases" target="_blank" rel="noopener" style="color:var(--orange)">GitHub Releases</a>.</p>
         </div>
 
         {releases.length > 0 ? (
@@ -90,7 +90,7 @@ function mdToHtml(md: string): string {
         ) : (
           <div style="margin-top:52px;text-align:center;padding:48px 24px;border:1px solid var(--border);border-radius:var(--radius)">
             <p style="color:var(--muted-fg)">Release list could not be loaded at build time.</p>
-            <a class="btn btn-ghost" style="margin-top:16px;display:inline-flex" href="https://github.com/duyet/clickhouse-monitoring/releases" target="_blank" rel="noopener">
+            <a class="btn btn-ghost" style="margin-top:16px;display:inline-flex" href="https://github.com/chmonitor/chmonitor/releases" target="_blank" rel="noopener">
               View all releases on GitHub
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>

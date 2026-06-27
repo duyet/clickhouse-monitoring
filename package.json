@@ -1,8 +1,9 @@
 {
   "name": "chmonitor",
-  "description": "Simple ClickHouse UI that relies on system tables to help monitor and provide overview of your cluster",
+  "description": "A simple ClickHouse monitoring UI powered by system tables.",
   "version": "0.2.9",
   "private": true,
+  "homepage": "https://docs.chmonitor.dev",
   "workspaces": [
     "apps/mcp",
     "packages/*"
@@ -12,7 +13,7 @@
     "node": ">=22.22.1"
   },
   "repository": {
-    "url": "https://github.com/duyet/clickhouse-monitoring"
+    "url": "https://github.com/chmonitor/chmonitor"
   },
   "scripts": {
     "dev": "turbo run dev",

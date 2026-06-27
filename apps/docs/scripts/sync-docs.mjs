@@ -29,7 +29,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '../../..')
 const SRC_DIR = resolve(REPO_ROOT, 'docs/content')
 const DEST_DIR = resolve(__dirname, '../content/docs')
-const RAW_BASE = 'https://raw.githubusercontent.com/duyet/clickhouse-monitoring/main'
+const RAW_BASE = 'https://raw.githubusercontent.com/chmonitor/chmonitor/main'
 
 // Information architecture: three top-level tabs (Fumadocs "Layout Tabs"),
 // rendered as a sidebar dropdown (tabMode: 'auto'). Only the active tab's tree

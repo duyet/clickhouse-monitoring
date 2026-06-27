@@ -17,7 +17,7 @@
  * 2. Optionally specify `tableCheck: "system.backup_log"`
  * 3. Use `fetchData` with `queryConfig` parameter
  *
- * @see https://github.com/duyet/clickhouse-monitoring/issues/510
+ * @see https://github.com/chmonitor/chmonitor/issues/510
  */
 
 import type { QueryConfigLike } from '@chm/sql-builder'
