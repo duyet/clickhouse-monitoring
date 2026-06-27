@@ -365,8 +365,8 @@ const ogImage = new URL(image, Astro.site).toString()
     @media (max-width:400px){.stat-grid{grid-template-columns:1fr}}
 
     /* ── pricing ── */
-    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:start}
-    .price-card{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
+    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:stretch}
+    .price-card{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
     .price-card-highlight{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),var(--shadow-card)}
     .price-hd{padding:28px 28px 20px;border-bottom:1px solid var(--border-soft)}
     .price-hd .pname{font-size:20px;font-weight:700;letter-spacing:-.015em}
@@ -376,11 +376,11 @@ const ogImage = new URL(image, Astro.site).toString()
     .price-hd .pamount{font-size:36px;font-weight:700;letter-spacing:-.03em;margin-top:16px;line-height:1}
     .price-hd .pamount small{font-size:15px;font-weight:500;color:var(--muted-fg);letter-spacing:0}
     .price-hd .pdesc{font-size:14px;color:var(--muted-fg);margin-top:10px;text-wrap:pretty}
-    .price-body{padding:22px 28px 28px}
+    .price-body{display:flex;flex-direction:column;flex:1;padding:22px 28px 28px}
     .price-rows{display:flex;flex-direction:column;gap:13px}
     .price-row{display:flex;gap:10px;font-size:14px;color:var(--fg-soft);list-style:none}
     .price-row svg{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
-    .price-cta{margin-top:24px}
+    .price-cta{margin-top:auto;padding-top:24px}
     @media (max-width:640px){.pricing-grid{grid-template-columns:1fr}}
 
     /* ── comparison ── */
