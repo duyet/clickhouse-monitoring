@@ -10,14 +10,14 @@ export const explorerTableOverviewConfig: QueryConfig = {
       total_rows,
       engine,
       engine_full,
-      primary_key_bytes_in_memory,
-      primary_key_bytes_in_memory_allocated,
       metadata_modification_time,
-      (SELECT sum(data_compressed_bytes)   FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS compressed_bytes,
-      (SELECT sum(data_uncompressed_bytes) FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS uncompressed_bytes,
-      (SELECT count()                      FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS active_parts,
-      (SELECT uniqExact(partition)         FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS partitions,
-      (SELECT max(modification_time)       FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS last_modified
+      (SELECT sum(primary_key_bytes_in_memory)           FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS primary_key_bytes_in_memory,
+      (SELECT sum(primary_key_bytes_in_memory_allocated) FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS primary_key_bytes_in_memory_allocated,
+      (SELECT sum(data_compressed_bytes)                 FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS compressed_bytes,
+      (SELECT sum(data_uncompressed_bytes)               FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS uncompressed_bytes,
+      (SELECT count()                                    FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS active_parts,
+      (SELECT uniqExact(partition)                       FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS partitions,
+      (SELECT max(modification_time)                     FROM system.parts WHERE database = {database:String} AND table = {table:String} AND active) AS last_modified
     FROM system.tables
     WHERE database = {database:String} AND name = {table:String}
   `,
