@@ -1,39 +1,8 @@
----
-let stars = '—'
-let forks = '—'
-try {
-  const res = await fetch('https://api.github.com/repos/chmonitor/chmonitor', {
-    headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
-  })
-  if (res.ok) {
-    const data = await res.json()
-    const fmt = (n: number) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
-    stars = fmt(data.stargazers_count ?? 0)
-    forks = fmt(data.forks_count ?? 0)
-  }
-} catch (_) { /* build-time fetch unavailable — show placeholders */ }
----
 <section class="band band-soft">
   <div class="wrap">
     <div class="sec-head reveal" style="text-align:center">
       <span class="eyebrow">Community</span>
       <h2>Open source, built in public</h2>
-      <p>chmonitor is developed openly on GitHub. Bug reports, feature requests and pull requests are all welcome.</p>
-    </div>
-
-    <div class="stat-grid reveal">
-      <div class="stat">
-        <div class="snum">{stars}</div>
-        <div class="slabel">GitHub stars</div>
-      </div>
-      <div class="stat">
-        <div class="snum">{forks}</div>
-        <div class="slabel">Forks</div>
-      </div>
-      <div class="stat">
-        <div class="snum">GPL-3.0</div>
-        <div class="slabel">Open source license</div>
-      </div>
     </div>
 
     <div class="stat-badges reveal">

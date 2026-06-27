@@ -119,12 +119,12 @@ const ogImage = new URL(image, Astro.site).toString()
     /* ── nav ── */
     header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.78);
       backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--border-soft)}
-    .nav-row{display:flex;align-items:center;justify-content:space-between;height:64px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:650;font-weight:600;font-size:16px;letter-spacing:-.01em}
-    .nav-links{display:flex;align-items:center;gap:30px}
-    .nav-links a{font-size:14px;color:var(--muted-fg);font-weight:500;transition:color .15s}
+    .nav-row{display:flex;align-items:center;justify-content:space-between;gap:28px;height:64px}
+    .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;font-weight:650;font-weight:600;font-size:16px;letter-spacing:-.01em}
+    .nav-links{display:flex;align-items:center;gap:22px}
+    .nav-links a{font-size:14px;color:var(--muted-fg);font-weight:500;white-space:nowrap;transition:color .15s}
     .nav-links a:hover{color:var(--fg)}
-    .nav-cta{display:flex;align-items:center;gap:10px}
+    .nav-cta{display:flex;align-items:center;gap:10px;flex:0 0 auto}
     .nav-toggle{display:none}
 
     /* ── hero ── */
@@ -339,8 +339,10 @@ const ogImage = new URL(image, Astro.site).toString()
     @media (prefers-reduced-motion:reduce){html.js .reveal{opacity:1;transform:none;transition:none}}
 
     /* ── responsive ── */
-    @media (max-width:880px){
+    @media (max-width:1024px){
       .nav-links{display:none}
+    }
+    @media (max-width:880px){
       .feature,.os{grid-template-columns:1fr;gap:34px}
       .feature.flip .feat-text{order:0}
       .feature + .feature{margin-top:72px}
@@ -356,13 +358,7 @@ const ogImage = new URL(image, Astro.site).toString()
     }
 
     /* ── social proof ── */
-    .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
-    .stat{padding:28px 24px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;text-align:center;box-shadow:var(--shadow-card)}
-    .stat .snum{font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1}
-    .stat .slabel{font-size:13.5px;color:var(--muted-fg);margin-top:8px}
-    .stat-badges{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
-    @media (max-width:640px){.stat-grid{grid-template-columns:1fr 1fr}}
-    @media (max-width:400px){.stat-grid{grid-template-columns:1fr}}
+    .stat-badges{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:40px;flex-wrap:wrap}
 
     /* ── pricing ── */
     .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:stretch}

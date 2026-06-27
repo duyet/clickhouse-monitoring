@@ -1,11 +1,16 @@
+import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRight,
+  BookOpen,
   Bot,
-  Boxes,
   Database,
-  Gauge,
+  FileText,
   Github,
+  LifeBuoy,
   Plug,
+  Rocket,
+  Server,
+  Settings,
   ShieldCheck,
 } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
@@ -18,179 +23,259 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
-const FEATURES = [
+interface DocLink {
+  title: string
+  href: string
+  desc: string
+}
+
+interface DocSection {
+  icon: LucideIcon
+  name: string
+  href: string
+  tagline: string
+  links: DocLink[]
+}
+
+const SECTIONS: DocSection[] = [
   {
-    icon: Gauge,
-    title: 'Real-time monitoring',
-    body: 'Live queries, memory, disk, and CPU read straight from system.* tables — no agents, no extra storage.',
+    icon: BookOpen,
+    name: 'Guide',
+    href: '/guide',
+    tagline: 'Install chmonitor, connect a cluster, and learn each feature.',
+    links: [
+      {
+        title: 'Getting started',
+        href: '/guide/getting-started',
+        desc: 'Run the dashboard against your first ClickHouse host.',
+      },
+      {
+        title: 'Features',
+        href: '/guide/features',
+        desc: 'Overview, queries, tables, cluster, explorer, and more.',
+      },
+      {
+        title: 'AI agent',
+        href: '/guide/ai-agent',
+        desc: 'Ask natural-language questions grounded in live data.',
+      },
+      {
+        title: 'Guides',
+        href: '/guide/guides/troubleshooting',
+        desc: 'Proxy auth, upgrades, and troubleshooting walkthroughs.',
+      },
+    ],
   },
   {
-    icon: Database,
-    title: 'Tables & storage',
-    body: 'Track table sizes, parts, compression, and disk growth across every database.',
+    icon: Server,
+    name: 'Operate',
+    href: '/operate',
+    tagline: 'Deploy, secure, and tune chmonitor for production.',
+    links: [
+      {
+        title: 'Deploy',
+        href: '/operate/deploy',
+        desc: 'Docker, Kubernetes, Cloudflare Workers, Vercel, Traefik.',
+      },
+      {
+        title: 'Authentication',
+        href: '/operate/authentication',
+        desc: 'Public, Clerk, Cloudflare Access, or trusted-header.',
+      },
+      {
+        title: 'Multiple hosts',
+        href: '/operate/advanced/multiple-hosts',
+        desc: 'Monitor several clusters from one deployment.',
+      },
+      {
+        title: 'Feature permissions',
+        href: '/operate/advanced/feature-permissions',
+        desc: 'Per-feature access control and editions.',
+      },
+    ],
   },
   {
-    icon: Boxes,
-    title: 'Cluster & replication',
-    body: 'Replication lag, queue depth, and replica health across every host in the cluster.',
+    icon: FileText,
+    name: 'Reference',
+    href: '/reference',
+    tagline: 'Configuration, APIs, integrations, and release history.',
+    links: [
+      {
+        title: 'Configuration',
+        href: '/reference/configuration',
+        desc: 'Every setting that shapes the dashboard.',
+      },
+      {
+        title: 'Environment variables',
+        href: '/reference/environment-variables',
+        desc: 'The full list of supported env vars.',
+      },
+      {
+        title: 'MCP server',
+        href: '/reference/mcp-server',
+        desc: 'Expose monitoring tools to MCP-compatible clients.',
+      },
+      {
+        title: 'Migrating to v0.3',
+        href: '/reference/migrating/v0-3',
+        desc: 'Upgrade notes from the Next.js-era app.',
+      },
+    ],
   },
-  {
-    icon: Bot,
-    title: 'AI agent',
-    body: 'Ask natural-language questions about your cluster and get answers grounded in live data.',
-  },
-  {
-    icon: Plug,
-    title: 'MCP server',
-    body: 'Expose monitoring tools to Claude, Cursor, and any MCP-compatible AI client.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Pluggable auth',
-    body: 'Public, Clerk, Cloudflare Access, or trusted-header — with per-feature access control.',
-  },
+]
+
+const HIGHLIGHTS = [
+  { icon: Database, label: 'Reads system.* tables — no agents' },
+  { icon: Bot, label: 'Built-in AI agent' },
+  { icon: Plug, label: 'MCP server' },
+  { icon: ShieldCheck, label: 'Pluggable auth' },
 ]
 
 function HomePage() {
   return (
     <HomeLayout {...baseOptions()}>
-      <main className="flex flex-1 flex-col">
-        <Hero />
-        <FeatureGrid />
-        <ClosingCta />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14 sm:py-20">
+        <Intro />
+        <SectionGrid />
+        <HelpRow />
       </main>
     </HomeLayout>
   )
 }
 
-function Hero() {
+function Intro() {
   return (
-    <section className="relative overflow-hidden border-b">
-      {/* Visual art: layered radial glow + grid, in the fumadocs.dev spirit. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_-20%,var(--color-fd-primary)/18%,transparent_55%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(circle_at_50%_0%,black,transparent_70%)] bg-[linear-gradient(to_right,var(--color-fd-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-fd-border)_1px,transparent_1px)] bg-[size:36px_36px] opacity-40"
-      />
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-24 text-center sm:py-32">
-        <span className="mb-5 inline-flex items-center gap-2 rounded-full border bg-fd-secondary/40 px-3 py-1 text-xs font-medium text-fd-muted-foreground">
-          Open source · self-hostable · read-only by default
-        </span>
-        <h1 className="bg-gradient-to-b from-fd-foreground to-fd-foreground/70 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-6xl">
-          Monitor ClickHouse,
-          <br className="hidden sm:block" /> without the guesswork.
-        </h1>
-        <p className="mt-6 max-w-2xl text-balance text-lg text-fd-muted-foreground">
-          chmonitor is a client-rendered dashboard for ClickHouse — query
-          performance, storage, cluster health, and an AI agent, all reading
-          live from your <code className="text-fd-foreground">system.*</code>{' '}
-          tables.
-        </p>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="/guide/getting-started"
-            className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
+    <section className="mb-14 max-w-3xl">
+      <span className="inline-flex items-center gap-2 rounded-full border bg-fd-secondary/40 px-3 py-1 text-xs font-medium text-fd-muted-foreground">
+        Documentation
+      </span>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+        chmonitor documentation
+      </h1>
+      <p className="mt-4 text-balance text-lg text-fd-muted-foreground">
+        Everything to install, operate, and extend chmonitor — a read-only
+        ClickHouse dashboard powered by your{' '}
+        <code className="text-fd-foreground">system.*</code> tables. Pick a
+        section below, or jump straight to{' '}
+        <a
+          href="/guide/getting-started"
+          className="font-medium text-fd-primary underline underline-offset-4"
+        >
+          getting started
+        </a>
+        .
+      </p>
+      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+        {HIGHLIGHTS.map(({ icon: Icon, label }) => (
+          <span
+            key={label}
+            className="inline-flex items-center gap-2 text-sm text-fd-muted-foreground"
           >
-            Get started
-            <ArrowRight className="size-4" />
-          </a>
-          <a
-            href={dashboardUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg border bg-fd-card px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
-          >
-            Live demo
-          </a>
-          <a
-            href={`https://github.com/${gitConfig.user}/${gitConfig.repo}`}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-fd-muted-foreground transition-colors hover:text-fd-foreground"
-          >
-            <Github className="size-4" />
-            Star on GitHub
-          </a>
-        </div>
-        <div className="mt-10 w-full max-w-xl">
-          <div className="overflow-hidden rounded-xl border bg-fd-card text-left shadow-sm">
-            <div className="flex items-center gap-1.5 border-b bg-fd-secondary/30 px-4 py-2.5">
-              <span className="size-2.5 rounded-full bg-red-400/70" />
-              <span className="size-2.5 rounded-full bg-yellow-400/70" />
-              <span className="size-2.5 rounded-full bg-green-400/70" />
-              <span className="ml-2 text-xs text-fd-muted-foreground">
-                docker
-              </span>
-            </div>
-            <pre className="overflow-x-auto px-4 py-4 text-sm leading-relaxed">
-              <code>
-                <span className="text-fd-muted-foreground">
-                  # one command to run the dashboard
-                </span>
-                {'\n'}docker run -p 3000:3000 \{'\n'}
-                {'  '}-e CLICKHOUSE_HOST=https://your-host:8443 \{'\n'}
-                {'  '}chmonitor/chmonitor
-              </code>
-            </pre>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function FeatureGrid() {
-  return (
-    <section className="mx-auto w-full max-w-6xl px-4 py-20">
-      <div className="mx-auto mb-12 max-w-2xl text-center">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Everything you need to operate ClickHouse
-        </h2>
-        <p className="mt-3 text-fd-muted-foreground">
-          One dashboard for queries, storage, replication, and the AI tooling on
-          top of it.
-        </p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ icon: Icon, title, body }) => (
-          <div
-            key={title}
-            className="group rounded-xl border bg-fd-card p-5 transition-colors hover:border-fd-primary/40"
-          >
-            <div className="mb-3 inline-flex rounded-lg border bg-fd-secondary/40 p-2 text-fd-primary">
-              <Icon className="size-5" />
-            </div>
-            <h3 className="font-semibold">{title}</h3>
-            <p className="mt-1.5 text-sm text-fd-muted-foreground">{body}</p>
-          </div>
+            <Icon className="size-4 text-fd-primary" />
+            {label}
+          </span>
         ))}
       </div>
     </section>
   )
 }
 
-function ClosingCta() {
+function SectionGrid() {
   return (
-    <section className="border-t">
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Ready in five minutes
-        </h2>
-        <p className="mt-3 max-w-xl text-fd-muted-foreground">
-          Point it at a ClickHouse host and deploy on Docker, Kubernetes,
-          Cloudflare Workers, or Vercel.
-        </p>
-        <a
-          href="/guide/getting-started"
-          className="mt-7 inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
+    <section className="grid gap-5 lg:grid-cols-3">
+      {SECTIONS.map(({ icon: Icon, name, href, tagline, links }) => (
+        <div
+          key={name}
+          className="flex flex-col rounded-2xl border bg-fd-card p-6 transition-colors hover:border-fd-primary/40"
         >
-          Read the guide
-          <ArrowRight className="size-4" />
+          <a href={href} className="group flex items-center gap-3">
+            <span className="inline-flex rounded-lg border bg-fd-secondary/40 p-2 text-fd-primary">
+              <Icon className="size-5" />
+            </span>
+            <span className="text-lg font-semibold tracking-tight group-hover:text-fd-primary">
+              {name}
+            </span>
+            <ArrowRight className="size-4 text-fd-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-fd-primary" />
+          </a>
+          <p className="mt-3 text-sm text-fd-muted-foreground">{tagline}</p>
+          <ul className="mt-5 flex flex-col gap-1">
+            {links.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className="group block rounded-lg px-3 py-2 -mx-3 transition-colors hover:bg-fd-accent"
+                >
+                  <span className="flex items-center gap-1.5 text-sm font-medium group-hover:text-fd-accent-foreground">
+                    {link.title}
+                    <ArrowRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  </span>
+                  <span className="mt-0.5 block text-xs text-fd-muted-foreground">
+                    {link.desc}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function HelpRow() {
+  const repo = `https://github.com/${gitConfig.user}/${gitConfig.repo}`
+  const cards = [
+    {
+      icon: Rocket,
+      title: 'Live demo',
+      desc: 'Open the hosted dashboard.',
+      href: dashboardUrl,
+      external: true,
+    },
+    {
+      icon: LifeBuoy,
+      title: 'Troubleshooting',
+      desc: 'Fixes for common setup issues.',
+      href: '/guide/guides/troubleshooting',
+      external: false,
+    },
+    {
+      icon: Settings,
+      title: 'FAQ',
+      desc: 'Answers to frequent questions.',
+      href: '/reference/faq',
+      external: false,
+    },
+    {
+      icon: Github,
+      title: 'GitHub',
+      desc: 'Source, issues, and discussions.',
+      href: repo,
+      external: true,
+    },
+  ]
+  return (
+    <section className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map(({ icon: Icon, title, desc, href, external }) => (
+        <a
+          key={title}
+          href={href}
+          {...(external
+            ? { target: '_blank', rel: 'noreferrer noopener' }
+            : {})}
+          className="group flex items-start gap-3 rounded-xl border bg-fd-card p-4 transition-colors hover:border-fd-primary/40"
+        >
+          <span className="inline-flex rounded-lg border bg-fd-secondary/40 p-2 text-fd-primary">
+            <Icon className="size-4" />
+          </span>
+          <span className="flex flex-col">
+            <span className="text-sm font-semibold group-hover:text-fd-primary">
+              {title}
+            </span>
+            <span className="text-xs text-fd-muted-foreground">{desc}</span>
+          </span>
         </a>
-      </div>
+      ))}
     </section>
   )
 }
