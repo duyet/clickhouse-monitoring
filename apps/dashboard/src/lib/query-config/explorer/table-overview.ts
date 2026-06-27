@@ -55,6 +55,7 @@ export const explorerTableUsageConfig: QueryConfig = {
           countIf(event_time >= now() - INTERVAL 7 DAY) AS queries_7d
         FROM system.query_log
         WHERE type = 'QueryFinish'
+          AND is_initial_query = 1
           AND event_time >= now() - INTERVAL 7 DAY
           AND has(tables, concat({database:String}, '.', {table:String}))
       `,
