@@ -15,6 +15,7 @@ import {
 import { Suspense } from 'react'
 import { useMDXComponents } from '@/components/mdx'
 import { SidebarFooter } from '@/components/sidebar-footer'
+import { SidebarNavHeader } from '@/components/sidebar-nav-header'
 import { baseOptions } from '@/lib/layout.shared'
 import { gitConfig } from '@/lib/shared'
 import { getPageImage, slugsToMarkdownPath, source } from '@/lib/source'
@@ -110,10 +111,14 @@ function Page() {
     <DocsLayout
       {...baseOptions()}
       tree={pageTree}
-      // Root folders (meta.json `root: true`) render as a sidebar dropdown
-      // (Fumadocs Layout Tabs); only the active tab's pages show in the tree.
-      tabMode="auto"
-      sidebar={{ footer: <SidebarFooter /> }}
+      // tabMode is intentionally omitted: the section dropdown is rendered
+      // manually in sidebar.banner (SidebarNavHeader) so that the version
+      // dropdown can sit above it. Root-folder filtering still works because
+      // it relies on `root: true` in meta.json via useTreeContext, not tabMode.
+      sidebar={{
+        banner: <SidebarNavHeader />,
+        footer: <SidebarFooter />,
+      }}
     >
       <Suspense>
         {clientLoader.useContent(path, { markdownUrl, path })}
