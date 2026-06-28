@@ -24,6 +24,17 @@ export interface MergedHostInfo extends HostInfo {
 }
 
 /**
+ * Whether a host is backed by the server's env-configured list (addressed by
+ * numeric index): `env` (self-hosted) and `demo` (cloud) both are. `browser` /
+ * `database` connections carry their own credentials instead. Use this anywhere
+ * that routes by host source so a `demo` host is never treated as a missing
+ * connection — see resolve-host-fetch.ts and host-switcher.tsx.
+ */
+export function isServerHost(source: MergedHostInfo['source']): boolean {
+  return source === 'env' || source === 'demo'
+}
+
+/**
  * Combines env-configured hosts with browser- and server-stored connections into
  * a unified, ordered array.
  *
