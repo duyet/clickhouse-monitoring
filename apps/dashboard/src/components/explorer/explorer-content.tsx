@@ -8,6 +8,7 @@ import { DataTab } from './tabs/data-tab'
 import { DdlTab } from './tabs/ddl-tab'
 import { DependenciesTab } from './tabs/dependencies-tab'
 import { IndexesTab } from './tabs/indexes-tab'
+import { OverviewTab } from './tabs/overview-tab'
 import { QueryTab } from './tabs/query-tab'
 import { StructureTab } from './tabs/structure-tab'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -23,7 +24,7 @@ interface ExplorerContentProps {
 // Track which tabs have been visited for this table to enable pre-loading
 function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
   const [visitedTabs, setVisitedTabs] = useState<Set<ExplorerTab>>(
-    () => new Set<ExplorerTab>(['data', currentTab])
+    () => new Set<ExplorerTab>(['overview', 'data', currentTab])
   )
   const prevTableKey = useRef<string | null>(null)
 
@@ -31,7 +32,7 @@ function useTabVisitTracker(tableKey: string | null, currentTab: ExplorerTab) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: currentTab is only used to seed the set on table reset
   useEffect(() => {
     if (tableKey !== prevTableKey.current) {
-      setVisitedTabs(new Set<ExplorerTab>(['data', currentTab]))
+      setVisitedTabs(new Set<ExplorerTab>(['overview', 'data', currentTab]))
       prevTableKey.current = tableKey
     }
   }, [tableKey])
@@ -101,6 +102,7 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
 
       <Tabs id="explorer-tabs" value={tab} onValueChange={handleTabChange}>
         <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
           <TabsTrigger value="structure">Structure</TabsTrigger>
           <TabsTrigger value="ddl">DDL</TabsTrigger>
@@ -118,6 +120,15 @@ export function ExplorerContent({ hostName }: ExplorerContentProps) {
             <ExternalLink className="size-3" />
           </Link>
         </TabsList>
+
+        {/* Overview tab: force-mounted to keep summary cached */}
+        <TabsContent
+          value="overview"
+          className={cn('mt-4', tab !== 'overview' && 'hidden flex-none')}
+          forceMount
+        >
+          {visitedTabs.has('overview') && <OverviewTab />}
+        </TabsContent>
 
         {/* Data tab: always force-mounted to preserve pagination state */}
         <TabsContent
