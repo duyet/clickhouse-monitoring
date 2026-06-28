@@ -11,7 +11,7 @@ Community templates for deploying chmonitor on Railway, Render, and Fly.io.
 These are starting-point templates, not verified CI pipelines. They have not been boot-tested end-to-end against a live ClickHouse instance in automated CI. Review the env var placeholders, substitute real values, and verify the deployment works in your environment before relying on it in production.
 </Callout>
 
-All three templates run the published image `ghcr.io/duyet/chmonitor:latest`, expose port 3000, and define a health check against `/api/healthz`. You must supply three env vars:
+All three templates run the published image `ghcr.io/chmonitor/chmonitor:latest`, expose port 3000, and define a health check against `/api/healthz`. You must supply three env vars:
 
 | Variable | Description |
 |---|---|
@@ -19,19 +19,19 @@ All three templates run the published image `ghcr.io/duyet/chmonitor:latest`, ex
 | `CLICKHOUSE_USER` | ClickHouse username |
 | `CLICKHOUSE_PASSWORD` | ClickHouse password (use your platform's secret store) |
 
-The template files live in [`deploy/templates/`](https://github.com/duyet/clickhouse-monitoring/tree/main/deploy/templates) in the repository.
+The template files live in [`deploy/templates/`](https://github.com/chmonitor/chmonitor/tree/main/deploy/templates) in the repository.
 
 ---
 
 ## Railway
 
-Template: [`deploy/templates/railway.json`](https://github.com/duyet/clickhouse-monitoring/blob/main/deploy/templates/railway.json)
+Template: [`deploy/templates/railway.json`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/railway.json)
 
 <Steps>
 <Step>
 ### Create a new project
 
-In the Railway dashboard, choose **New Project → Deploy from image** and set the image to `ghcr.io/duyet/chmonitor:latest`.
+In the Railway dashboard, choose **New Project → Deploy from image** and set the image to `ghcr.io/chmonitor/chmonitor:latest`.
 </Step>
 
 <Step>
@@ -53,7 +53,7 @@ Alternatively, copy `deploy/templates/railway.json` into your repository root as
 {
   "build": {
     "builder": "IMAGE",
-    "image": "ghcr.io/duyet/chmonitor:latest"
+    "image": "ghcr.io/chmonitor/chmonitor:latest"
   },
   "deploy": {
     "healthcheckPath": "/api/healthz"
@@ -65,7 +65,7 @@ Alternatively, copy `deploy/templates/railway.json` into your repository root as
 
 ## Render
 
-Template: [`deploy/templates/render.yaml`](https://github.com/duyet/clickhouse-monitoring/blob/main/deploy/templates/render.yaml)
+Template: [`deploy/templates/render.yaml`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/render.yaml)
 
 <Steps>
 <Step>
@@ -83,7 +83,7 @@ In the Render dashboard, choose **New → Blueprint** and point it at your repos
 <Step>
 ### Set the password as a secret
 
-Render reads `render.yaml`, pulls `ghcr.io/duyet/chmonitor:latest`, and creates the service. Set `CLICKHOUSE_PASSWORD` as a **Secret** in the Render environment (do not store it in plain text in `render.yaml`).
+Render reads `render.yaml`, pulls `ghcr.io/chmonitor/chmonitor:latest`, and creates the service. Set `CLICKHOUSE_PASSWORD` as a **Secret** in the Render environment (do not store it in plain text in `render.yaml`).
 </Step>
 </Steps>
 
@@ -93,7 +93,7 @@ Key snippet:
 services:
   - type: web
     name: chmonitor
-    image: ghcr.io/duyet/chmonitor:latest
+    image: ghcr.io/chmonitor/chmonitor:latest
     healthCheckPath: /api/healthz
     envVars:
       - key: CLICKHOUSE_HOST
@@ -108,7 +108,7 @@ services:
 
 ## Fly.io
 
-Template: [`deploy/templates/fly.toml`](https://github.com/duyet/clickhouse-monitoring/blob/main/deploy/templates/fly.toml)
+Template: [`deploy/templates/fly.toml`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/fly.toml)
 
 <Steps>
 <Step>

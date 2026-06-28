@@ -77,6 +77,10 @@ import { threadAnalysisDeclarative } from './queries/thread-analysis'
 // Security
 import { loginAttemptsDeclarative } from './security/login-attempts'
 import { sessionsDeclarative } from './security/sessions'
+import { asynchronousInsertLogDeclarative } from './system/asynchronous-insert-log'
+import { asynchronousInsertsDeclarative } from './system/asynchronous-inserts'
+import { backgroundSchedulePoolDeclarative } from './system/background-schedule-pool'
+import { backgroundSchedulePoolLogDeclarative } from './system/background-schedule-pool-log'
 // System
 import {
   clusterLiveMetricsAllDeclarative,
@@ -93,26 +97,22 @@ import {
   databaseDiskSpaceDeclarative,
   diskSpaceDeclarative,
 } from './system/disks'
-import { asynchronousInsertLogDeclarative } from './system/asynchronous-insert-log'
-import { asynchronousInsertsDeclarative } from './system/asynchronous-inserts'
-import { backgroundSchedulePoolDeclarative } from './system/background-schedule-pool'
-import { backgroundSchedulePoolLogDeclarative } from './system/background-schedule-pool-log'
+import { histogramMetricsDeclarative } from './system/histogram-metrics'
+import { indexAnalyticsDeclarative } from './system/index-analytics'
 import { kafkaConsumersDeclarative } from './system/kafka-consumers'
-import { rabbitmqConsumersDeclarative } from './system/rabbitmq-consumers'
+import { latencyLogDeclarative } from './system/latency-log'
+import { opentelemetrySpansDeclarative } from './system/opentelemetry-spans'
 import { partLogDeclarative } from './system/part-log'
+import { projectionAnalyticsDeclarative } from './system/projection-analytics'
 import { queryMetricLogDeclarative } from './system/query-metric-log'
+import { rabbitmqConsumersDeclarative } from './system/rabbitmq-consumers'
 import {
   clustersReplicasStatusDeclarative,
   replicaTablesDeclarative,
 } from './system/replicas-status'
 import { replicatedMergeTreeSettingsDeclarative } from './system/replicated-merge-tree-settings'
-import { histogramMetricsDeclarative } from './system/histogram-metrics'
-import { latencyLogDeclarative } from './system/latency-log'
-import { workloadsDeclarative } from './system/workloads'
 import { schedulerDeclarative } from './system/scheduler'
-import { opentelemetrySpansDeclarative } from './system/opentelemetry-spans'
-import { indexAnalyticsDeclarative } from './system/index-analytics'
-import { projectionAnalyticsDeclarative } from './system/projection-analytics'
+import { workloadsDeclarative } from './system/workloads'
 // Tables
 import { detachedPartsDeclarative } from './tables/detached-parts'
 import { distributedDdlQueueDeclarative } from './tables/distributed-ddl-queue'

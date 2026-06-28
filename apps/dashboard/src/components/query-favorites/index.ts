@@ -1,6 +1,7 @@
-export { QueryFavoritesPanel } from './query-favorites-panel'
 export type { QueryFavoritesPanelProps } from './query-favorites-panel'
-export { SaveFavoriteButton } from './save-favorite-button'
 export type { SaveFavoriteButtonProps } from './save-favorite-button'
-export { SaveFavoriteDialog } from './save-favorite-dialog'
 export type { SaveFavoriteDialogProps } from './save-favorite-dialog'
+
+export { QueryFavoritesPanel } from './query-favorites-panel'
+export { SaveFavoriteButton } from './save-favorite-button'
+export { SaveFavoriteDialog } from './save-favorite-dialog'

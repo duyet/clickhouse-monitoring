@@ -28,7 +28,7 @@ green**, the branch is up to date with `main`, and the bot did not re-review
 after you triggered it (push a new commit, then `@coderabbitai review` /
 `@coderabbitai full review`, then a formal re-request — give it a few minutes).
 Dismiss with
-`gh api -X PUT repos/duyet/clickhouse-monitoring/pulls/<n>/reviews/<id>/dismissals -f event=DISMISS -f message="<why each point is addressed>"`
+`gh api -X PUT repos/chmonitor/chmonitor/pulls/<n>/reviews/<id>/dismissals -f event=DISMISS -f message="<why each point is addressed>"`
 (bot reviews use the `coderabbitai[bot]` login; there may be more than one to
 dismiss). Do NOT dismiss a human reviewer's changes-requested, and never dismiss
 to skip an unaddressed finding. To avoid the gate entirely, prefer
@@ -45,7 +45,7 @@ This is a monorepo ClickHouse monitoring dashboard. The primary (and only) dashb
 For comprehensive dashboard knowledge, use the standalone agent skill:
 
 ```bash
-npx skills add duyet/clickhouse-monitoring
+npx skills add chmonitor/chmonitor
 ```
 
 The skill covers:
@@ -55,7 +55,7 @@ The skill covers:
 - Development patterns and conventions
 - ClickHouse version compatibility
 
-**Repository**: https://github.com/duyet/clickhouse-monitoring
+**Repository**: https://github.com/chmonitor/chmonitor
 
 ### Internal: clickhouse-query-config
 

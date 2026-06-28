@@ -41,7 +41,7 @@ Browser variables must be set **at build time** (in your CI build step or build 
 ### Pull the new image
 
 ```bash
-docker pull ghcr.io/duyet/chmonitor:v0.3.0
+docker pull ghcr.io/chmonitor/chmonitor:v0.3.0
 ```
 </Step>
 <Step>
@@ -77,7 +77,7 @@ docker run -d \
   -e CLERK_SECRET_KEY=sk_live_... \
   -p 3000:3000 \
   --name chmonitor \
-  ghcr.io/duyet/chmonitor:v0.3.0
+  ghcr.io/chmonitor/chmonitor:v0.3.0
 ```
 </Step>
 <Step>
@@ -118,7 +118,7 @@ If you store `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in a Secret, rename the key the
 ### Apply and roll out
 
 ```bash
-helm upgrade chmonitor duyet/clickhouse-monitoring -f values.yaml
+helm upgrade chmonitor chmonitor/chmonitor -f values.yaml
 kubectl rollout status deployment/chmonitor
 ```
 </Step>

@@ -16,8 +16,8 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import {
-  AlertTriangleIcon,
   ActivityIcon,
+  AlertTriangleIcon,
   BookOpenIcon,
   CircleDollarSignIcon,
   CloudIcon,

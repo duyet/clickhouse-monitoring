@@ -58,7 +58,7 @@ jobs:
           # Publish ONLY on a definitive 404; treat 200/403/5xx as "skip" so a
           # transient API quirk never triggers a doomed `cargo publish`.
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/duyet/clickhouse-monitoring)" \
+            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/chmonitor/chmonitor)" \
             "https://crates.io/api/v1/crates/ch-json/$VERSION" || true)
           if [ "$STATUS_CODE" = "404" ]; then
             echo "ch-json v$VERSION not found on crates.io. Publishing..."
@@ -80,7 +80,7 @@ jobs:
           # Publish ONLY on a definitive 404; treat 200/403/5xx as "skip" so a
           # transient API quirk never triggers a doomed `cargo publish`.
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/duyet/clickhouse-monitoring)" \
+            -H "User-Agent: clickhouse-monitoring-ci (https://github.com/chmonitor/chmonitor)" \
             "https://crates.io/api/v1/crates/ch-pivot/$VERSION" || true)
           if [ "$STATUS_CODE" = "404" ]; then
             echo "ch-pivot v$VERSION not found on crates.io. Publishing..."
