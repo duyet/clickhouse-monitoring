@@ -64,6 +64,14 @@ export const menuItemsConfig: MenuItem[] = [
     permission: { feature: 'overview' },
   },
   {
+    // Standalone welcome/setup surface — add a ClickHouse host at any time.
+    // No permission gate: useful in every mode (cloud demo, signed-in, self-host).
+    title: 'Connect a host',
+    href: '/setup',
+    icon: UnplugIcon,
+    section: 'main',
+  },
+  {
     title: 'AI Agent',
     href: '/agents',
     icon: SparklesIcon,
