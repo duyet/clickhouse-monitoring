@@ -1,0 +1,51 @@
+# wrangler.toml — chmonitor telemetry collector
+#
+# Public, write-only ingest for the anonymous instance ping + aggregate events
+# emitted by apps/dashboard/src/lib/telemetry. Records to Cloudflare Analytics
+# Engine (no database to manage; queried via the AE SQL API from the project's
+# Cloudflare account only).
+#
+# Deploy:
+#   cd apps/telemetry && bun run deploy
+#
+# Point instances at it by setting, on the dashboard deployment:
+#   CHM_TELEMETRY=on
+#   CHM_TELEMETRY_ENDPOINT=https://telemetry.chmonitor.dev/v1/ping
+# (Both are required — telemetry is inert unless flag AND endpoint are set.)
+
+name = "chmonitor-telemetry"
+main = "src/index.ts"
+compatibility_date = "2026-05-28"
+
+minify = true
+upload_source_maps = false
+
+compatibility_flags = ["global_fetch_strictly_public"]
+
+[observability]
+enabled = true
+
+# Analytics Engine — the storage sink. No binding-side config needed beyond the
+# dataset name; rows are written via env.TELEMETRY.writeDataPoint().
+[[analytics_engine_datasets]]
+binding = "TELEMETRY"
+dataset = "chm_telemetry"
+
+# Custom domain — auto-provisions DNS + cert on the chmonitor.dev zone.
+[[routes]]
+pattern = "telemetry.chmonitor.dev"
+custom_domain = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview environment
+# ─────────────────────────────────────────────────────────────────────────────
+[env.preview]
+name = "preview-chmonitor-telemetry"
+
+[[env.preview.analytics_engine_datasets]]
+binding = "TELEMETRY"
+dataset = "chm_telemetry_preview"
+
+[[env.preview.routes]]
+pattern = "preview.telemetry.chmonitor.dev"
+custom_domain = true
