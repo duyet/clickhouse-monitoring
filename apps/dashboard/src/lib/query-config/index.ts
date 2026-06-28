@@ -70,6 +70,11 @@ import { threadAnalysisConfig } from './queries/thread-analysis'
 import { loginAttemptsConfig } from './security/login-attempts'
 // Security
 import { sessionsConfig } from './security/sessions'
+import { asynchronousInsertLogConfig } from './system/asynchronous-insert-log'
+import { asynchronousInsertsConfig } from './system/asynchronous-inserts'
+import { backgroundSchedulePoolConfig } from './system/background-schedule-pool'
+import { backgroundSchedulePoolLogConfig } from './system/background-schedule-pool-log'
+import { blobStorageLogConfig } from './system/blob-storage-log'
 import { clusterLiveMetricsConfig } from './system/cluster-live-metrics'
 import { clustersConfig } from './system/clusters'
 import { clustersTopologyConfig } from './system/clusters-topology'
@@ -82,33 +87,28 @@ import {
   databaseDiskSpaceConfig,
   diskSpaceConfig,
 } from './system/disks'
-import { blobStorageLogConfig } from './system/blob-storage-log'
-import {
-  storageCompressionConfig,
-  storagePoliciesConfig,
-  ttlStorageMovesConfig,
-} from './system/storage-economics'
-import { asynchronousInsertLogConfig } from './system/asynchronous-insert-log'
-import { asynchronousInsertsConfig } from './system/asynchronous-inserts'
-import { backgroundSchedulePoolConfig } from './system/background-schedule-pool'
-import { backgroundSchedulePoolLogConfig } from './system/background-schedule-pool-log'
+import { histogramMetricsConfig } from './system/histogram-metrics'
+import { indexAnalyticsConfig } from './system/index-analytics'
 import { kafkaConsumersConfig } from './system/kafka-consumers'
-import { rabbitmqConsumersConfig } from './system/rabbitmq-consumers'
+import { latencyLogConfig } from './system/latency-log'
+import { opentelemetrySpansConfig } from './system/opentelemetry-spans'
 import { partLogConfig } from './system/part-log'
+import { projectionAnalyticsConfig } from './system/projection-analytics'
 import { queryMetricLogConfig } from './system/query-metric-log'
+import { rabbitmqConsumersConfig } from './system/rabbitmq-consumers'
 import {
   clustersReplicasStatusConfig,
   replicaTablesConfig,
 } from './system/replicas-status'
 import { replicatedMergeTreeSettingsConfig } from './system/replicated-merge-tree-settings'
-import { warningsConfig } from './system/warnings'
-import { histogramMetricsConfig } from './system/histogram-metrics'
-import { latencyLogConfig } from './system/latency-log'
-import { workloadsConfig } from './system/workloads'
 import { schedulerConfig } from './system/scheduler'
-import { opentelemetrySpansConfig } from './system/opentelemetry-spans'
-import { indexAnalyticsConfig } from './system/index-analytics'
-import { projectionAnalyticsConfig } from './system/projection-analytics'
+import {
+  storageCompressionConfig,
+  storagePoliciesConfig,
+  ttlStorageMovesConfig,
+} from './system/storage-economics'
+import { warningsConfig } from './system/warnings'
+import { workloadsConfig } from './system/workloads'
 import { detachedPartsConfig } from './tables/detached-parts'
 import { distributedDdlQueueConfig } from './tables/distributed-ddl-queue'
 import { droppedTablesConfig } from './tables/dropped-tables'

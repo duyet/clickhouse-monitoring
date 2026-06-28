@@ -1,6 +1,8 @@
 import { Check, Copy, Pencil, Play, Trash2, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+
 import type { QueryFavorite } from '@/lib/stores/use-query-favorites'
+
+import { useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

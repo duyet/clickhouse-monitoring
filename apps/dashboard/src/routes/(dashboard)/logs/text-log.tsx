@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
-import { LogFilters } from '@/components/logs/log-filters'
 import { PageLayout } from '@/components/layout/query-page'
+import { LogFilters } from '@/components/logs/log-filters'
 import { PageSkeleton } from '@/components/skeletons'
 import { useSearchParams } from '@/lib/next-compat'
 import { textLogConfig } from '@/lib/query-config/logs/text-log'
@@ -26,7 +26,9 @@ function TextLogContent() {
       <PageLayout
         queryConfig={textLogConfig}
         title="Server Text Log"
-        searchParams={Object.keys(extraParams).length > 0 ? extraParams : undefined}
+        searchParams={
+          Object.keys(extraParams).length > 0 ? extraParams : undefined
+        }
       />
     </div>
   )

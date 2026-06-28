@@ -41,6 +41,8 @@ export function createClickHouseAgent(options: {
   includeControlTools?: boolean
   /** Session / conversation ID for structured log correlation. */
   sessionId?: string
+  /** Additional tools from connected custom MCP servers (prefixed mcp_*). */
+  extraTools?: Record<string, unknown>
 }) {
   const {
     model = DEFAULT_MODEL,
@@ -52,12 +54,18 @@ export function createClickHouseAgent(options: {
     referer,
     includeControlTools = false,
     sessionId = crypto.randomUUID(),
+    extraTools,
   } = options
 
   const allTools = createAllTools(hostId, includeControlTools)
   const filteredTools = filterTools(allTools, disabledTools)
   // Wrap each tool's execute to emit structured logs (toolName, durationMs, etc.)
-  const tools = wrapToolsWithLogging(filteredTools, sessionId)
+  // Built-in tools take precedence over MCP tools on key collision (mcp_ prefix
+  // prevents collisions in practice).
+  const mergedTools = extraTools
+    ? { ...extraTools, ...filteredTools }
+    : filteredTools
+  const tools = wrapToolsWithLogging(mergedTools, sessionId)
   const hasTools = Object.keys(tools).length > 0
   const { model: modelInstance } = resolveAgentChatModel({
     model,

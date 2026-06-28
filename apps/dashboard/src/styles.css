@@ -760,3 +760,54 @@
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   scroll-fade — fade the leading/trailing edge of a scroll container.
+   Ported minimally from the shadcn `scroll-fade` utility (it normally ships
+   via `shadcn/tailwind.css`). We inline only the masks we use to avoid pulling
+   the whole `shadcn` package + its CSS into the Tailwind v4 pipeline.
+   Used by `components/ui/message-scroller` (`scroll-fade-b`).
+--------------------------------------------------------------------------- */
+@utility scroll-fade-b {
+  --scroll-fade-size: 2rem;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+}
+@utility scroll-fade-t {
+  --scroll-fade-size: 2rem;
+  -webkit-mask-image: linear-gradient(
+    to top,
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to top,
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+}
+@utility scroll-fade-y {
+  --scroll-fade-size: 2rem;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--scroll-fade-size),
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black var(--scroll-fade-size),
+    black calc(100% - var(--scroll-fade-size)),
+    transparent
+  );
+}

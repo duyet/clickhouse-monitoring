@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
-import { LogFilters } from '@/components/logs/log-filters'
 import { PageLayout } from '@/components/layout/query-page'
+import { LogFilters } from '@/components/logs/log-filters'
 import { PageSkeleton } from '@/components/skeletons'
 import { useSearchParams } from '@/lib/next-compat'
 import { crashLogConfig } from '@/lib/query-config/logs/crashes'
@@ -24,7 +24,9 @@ function CrashesContent() {
       <PageLayout
         queryConfig={crashLogConfig}
         title="Crash Log"
-        searchParams={Object.keys(extraParams).length > 0 ? extraParams : undefined}
+        searchParams={
+          Object.keys(extraParams).length > 0 ? extraParams : undefined
+        }
         footerContent={
           <p className="text-xs text-muted-foreground">
             Tip: click a version in the table, then search{' '}

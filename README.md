@@ -1,10 +1,10 @@
 # chmonitor Dashboard
 
-[![Build and Test](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/clickhouse-monitoring/actions/workflows/ci.yml)
+[![Build and Test](https://github.com/chmonitor/chmonitor/actions/workflows/ci.yml/badge.svg)](https://github.com/chmonitor/chmonitor/actions/workflows/ci.yml)
 [![All-time uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fduyet%2Fuptime%2FHEAD%2Fapi%2Fclickhouse-monitoring-vercel-app%2Fuptime.json)](https://duyet.github.io/uptime/history/clickhouse-monitoring-vercel-app)
-[![Latest release](https://img.shields.io/github/v/release/duyet/clickhouse-monitoring?sort=semver&label=release)](https://github.com/duyet/clickhouse-monitoring/releases)
-[![Docker image](https://img.shields.io/badge/ghcr.io-duyet%2Fchmonitor-2496ED?logo=docker&logoColor=white)](https://github.com/duyet/clickhouse-monitoring/pkgs/container/chmonitor)
-[![License](https://img.shields.io/github/license/duyet/clickhouse-monitoring)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/chmonitor/chmonitor?sort=semver&label=release)](https://github.com/chmonitor/chmonitor/releases)
+[![Docker image](https://img.shields.io/badge/ghcr.io-chmonitor%2Fchmonitor-2496ED?logo=docker&logoColor=white)](https://github.com/chmonitor/chmonitor/pkgs/container/chmonitor)
+[![License](https://img.shields.io/github/license/chmonitor/chmonitor)](LICENSE)
 
 A modern dashboard (TanStack Start, as of **v0.3**) that provides real-time insights into ClickHouse clusters through system tables. Every page is pre-rendered at build time with client-side data fetching for optimal performance and CDN caching.
 
@@ -12,7 +12,7 @@ A modern dashboard (TanStack Start, as of **v0.3**) that provides real-time insi
 > connection vars are unchanged; browser vars move from `NEXT_PUBLIC_*` to
 > `VITE_*` (old names still work as a fallback). See
 > **[Upgrading to v0.3](#upgrading-to-v03)** below or the full
-> [Migrate to v0.3](https://duyet.github.io/clickhouse-monitoring/migrating/v0-3) guide.
+> [Migrate to v0.3](https://docs.chmonitor.dev/migrating/v0-3) guide.
 
 <p align="center">
   <strong>Live:</strong> <a href="https://dash.chmonitor.dev/?ref=github">dash.chmonitor.dev</a> | <a href="https://chmonitor.dev/?ref=github">chmonitor.dev</a> | <a href="#screenshots">Screenshots</a>
@@ -43,7 +43,7 @@ docker run -d --name chmonitor -p 3000:3000 \
   -e CLICKHOUSE_HOST=https://clickhouse.example.com:8443 \
   -e CLICKHOUSE_USER=default \
   -e CLICKHOUSE_PASSWORD=change-me \
-  ghcr.io/duyet/chmonitor:latest
+  ghcr.io/chmonitor/chmonitor:latest
 ```
 
 Open **<http://localhost:3000>**. Pin a release tag instead of `latest` for production.
@@ -60,7 +60,7 @@ chmonitor is **self-hosted** — run it next to your ClickHouse with the same
 - **[Cloudflare Workers](#cloudflare-workers)** — global edge deploy (how the
   demo at [dash.chmonitor.dev](https://dash.chmonitor.dev/?ref=github) runs).
 - **[One-click templates](docs/content/deploy/one-click.mdx)** — Railway, Render, Fly.io.
-- **[Kubernetes (Helm)](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)** — for clusters.
+- **[Kubernetes (Helm)](https://docs.chmonitor.dev/deploy/k8s)** — for clusters.
 
 Prefer to look before you install? Try the live demo above — no setup required.
 
@@ -77,7 +77,7 @@ This project supports deployment to Cloudflare Workers with static site generati
 
 1. Clone and install dependencies:
 ```bash
-git clone https://github.com/duyet/clickhouse-monitoring.git
+git clone https://github.com/chmonitor/chmonitor.git
 cd clickhouse-monitoring
 bun install
 ```
@@ -162,14 +162,14 @@ docker run -d \
   -e CLICKHOUSE_HOST=https://your-clickhouse-host.com \
   -e CLICKHOUSE_USER=default \
   -e CLICKHOUSE_PASSWORD=yourpassword \
-  ghcr.io/duyet/chmonitor:latest
+  ghcr.io/chmonitor/chmonitor:latest
 ```
 
 ### Releases
 
 Tagged releases are built by GitHub Actions from tags matching `v*`. The release page includes:
 
-- Docker images published to `ghcr.io/duyet/chmonitor` with the release version tag
+- Docker images published to `ghcr.io/chmonitor/chmonitor` with the release version tag
 - a Node.js standalone archive (`*-standalone.tar.gz`, the Nitro node-server output) for self-hosted Node deployments
 - a Cloudflare Workers archive (`*-cloudflare.tar.gz`) for manual inspection or deployment
 - generated release notes with CLI command usage, Docker tags, deployment steps, and checksums
@@ -193,7 +193,7 @@ variable prefix, and the old names keep working:
 
 `VITE_*` vars are **build-time inlined** — set them when building the image/Worker,
 not only at runtime. Full per-platform steps:
-[Migrate to v0.3](https://duyet.github.io/clickhouse-monitoring/migrating/v0-3).
+[Migrate to v0.3](https://docs.chmonitor.dev/migrating/v0-3).
 
 ### Migrate your config with an AI assistant
 
@@ -233,21 +233,21 @@ plus a short list of what you changed:
 
 - **[/docs](/docs)** - Full documentation site (local/docs)
 - **llms.txt** - AI agent discovery file for automated code understanding
-- https://zread.ai/duyet/clickhouse-monitoring _(AI Generated)_
-- https://duyet.github.io/clickhouse-monitoring
-  - [Getting Started](https://duyet.github.io/clickhouse-monitoring/getting-started)
-    - [Local Development](https://duyet.github.io/clickhouse-monitoring/getting-started/local)
-    - [User Role and Profile](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-requirements)
-    - [Enable System Tables](https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables)
-  - [Deployments](https://duyet.github.io/clickhouse-monitoring/deploy)
-    - [Vercel](https://duyet.github.io/clickhouse-monitoring/deploy/vercel)
-    - [Docker](https://duyet.github.io/clickhouse-monitoring/deploy/docker)
-    - [Kubernetes Helm Chart](https://duyet.github.io/clickhouse-monitoring/deploy/k8s)
+- https://zread.ai/chmonitor/chmonitor _(AI Generated)_
+- https://docs.chmonitor.dev
+  - [Getting Started](https://docs.chmonitor.dev/getting-started)
+    - [Local Development](https://docs.chmonitor.dev/getting-started/local)
+    - [User Role and Profile](https://docs.chmonitor.dev/getting-started/clickhouse-requirements)
+    - [Enable System Tables](https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables)
+  - [Deployments](https://docs.chmonitor.dev/deploy)
+    - [Vercel](https://docs.chmonitor.dev/deploy/vercel)
+    - [Docker](https://docs.chmonitor.dev/deploy/docker)
+    - [Kubernetes Helm Chart](https://docs.chmonitor.dev/deploy/k8s)
     - [One-Click Deploy](docs/content/deploy/one-click.mdx) — Railway / Render / Fly.io community templates
-  - [Advanced](https://duyet.github.io/clickhouse-monitoring/advanced)
+  - [Advanced](https://docs.chmonitor.dev/advanced)
     - [Telemetry](docs/content/advanced/telemetry.mdx) — opt-in, privacy-first usage metrics (off by default)
     - [Editions](docs/content/advanced/editions.mdx) — open-core model: GPL-3.0 community is free forever; enterprise features gated by `CHM_EDITION`
-  - [Reference](https://duyet.github.io/clickhouse-monitoring/reference)
+  - [Reference](https://docs.chmonitor.dev/reference)
     - [Platform Support Matrix](docs/content/reference/support-matrix.mdx) — ClickHouse versions and distributions (supported / best-effort / untested)
     - [Connection Presets](docs/content/reference/connection-presets.mdx) — least-privilege read-only user setup for ClickHouse OSS, Altinity, and Cloud
     - [Contributing a config / check](docs/content/reference/catalog-contributing.mdx) — how to add a declarative monitoring check to the catalog

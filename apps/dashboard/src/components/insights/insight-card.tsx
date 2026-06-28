@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn } from '@/lib/utils'
+import { formatRelativeTime } from '@/lib/utils/format-relative-time'
 
 interface SeverityStyle {
   icon: LucideIcon
@@ -64,6 +65,11 @@ export function InsightCard({
   const style = SEVERITY[insight.severity]
   const Icon = style.icon
 
+  const generatedMs = insight.generatedAt
+    ? new Date(insight.generatedAt).getTime()
+    : Number.NaN
+  const hasGeneratedAt = Number.isFinite(generatedMs)
+
   const action = insight.action
   const actionHref = action?.href
     ? buildUrl(action.href, { host: hostId })
@@ -102,12 +108,23 @@ export function InsightCard({
       </p>
 
       <div className="mt-3 flex items-center justify-between gap-2">
-        <Badge
-          variant="outline"
-          className={cn('text-[10px] font-medium', style.badge)}
-        >
-          {style.badgeLabel}
-        </Badge>
+        <div className="flex min-w-0 items-center gap-2">
+          <Badge
+            variant="outline"
+            className={cn('text-[10px] font-medium', style.badge)}
+          >
+            {style.badgeLabel}
+          </Badge>
+          {hasGeneratedAt ? (
+            <time
+              dateTime={insight.generatedAt}
+              title={new Date(generatedMs).toLocaleString()}
+              className="truncate text-[10px] text-muted-foreground/70"
+            >
+              {formatRelativeTime(generatedMs)}
+            </time>
+          ) : null}
+        </div>
         {action && actionHref ? (
           <Button
             asChild

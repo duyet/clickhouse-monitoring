@@ -38,7 +38,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Community starter dashboard for ClickHouse monitoring via system tables. Queries are derived from the chmonitor open-source project (https://github.com/duyet/clickhouse-monitoring). Not an official Grafana or ClickHouse release.",
+  "description": "Community starter dashboard for ClickHouse monitoring via system tables. Queries are derived from the chmonitor open-source project (https://github.com/chmonitor/chmonitor). Not an official Grafana or ClickHouse release.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -54,7 +54,7 @@
       "title": "chmonitor on GitHub",
       "tooltip": "Open-source ClickHouse monitoring dashboard",
       "type": "link",
-      "url": "https://github.com/duyet/clickhouse-monitoring"
+      "url": "https://github.com/chmonitor/chmonitor"
     }
   ],
   "panels": [
