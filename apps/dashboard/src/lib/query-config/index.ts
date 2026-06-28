@@ -22,7 +22,9 @@ import {
   explorerProjectionsConfig,
   explorerSkipIndexesConfig,
   explorerTableDependenciesConfig,
+  explorerTableOverviewConfig,
   explorerTablesConfig,
+  explorerTableUsageConfig,
 } from './explorer'
 import {
   keeperConnectionLogConfig,
@@ -131,6 +133,8 @@ export const queries: Array<QueryConfig> = [
   explorerIndexesConfig,
   explorerSkipIndexesConfig,
   explorerProjectionsConfig,
+  explorerTableOverviewConfig,
+  explorerTableUsageConfig,
   explorerAllDependenciesConfig,
   explorerDatabaseDependenciesConfig,
   explorerDependenciesDownstreamConfig,

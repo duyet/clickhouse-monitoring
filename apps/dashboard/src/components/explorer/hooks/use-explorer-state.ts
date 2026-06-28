@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 
 export type ExplorerTab =
+  | 'overview'
   | 'data'
   | 'structure'
   | 'ddl'
@@ -66,7 +67,7 @@ export function useExplorerState(): ExplorerState & {
       database: searchParams.get('database'),
       table: searchParams.get('table'),
       engine: searchParams.get('engine'),
-      tab: (searchParams.get('tab') as ExplorerTab) || 'data',
+      tab: (searchParams.get('tab') as ExplorerTab) || 'overview',
       customQuery,
     }
   }, [searchParams])
