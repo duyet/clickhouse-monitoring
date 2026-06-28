@@ -6,10 +6,12 @@
 // telemetry is disabled, when no endpoint resolves, or when fetch is
 // unavailable (SSR / prerender / non-browser).
 
+import type { TelemetryPayload } from './events'
+
 import { isTelemetryEnabled } from './config'
 import { getDeployTarget } from './environment'
 import { getPingEndpoint } from './instance-ping'
-import { registerTelemetrySink, type TelemetryPayload } from './track'
+import { registerTelemetrySink } from './track'
 
 const PING_PATH = '/v1/ping'
 const EVENT_PATH = '/v1/event'
