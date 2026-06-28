@@ -255,6 +255,27 @@ jobs:
         run: |
           npx --yes --package=wrangler@4 wrangler deploy --minify
 
+      # Telemetry collector (apps/telemetry) — standalone, no deps, no secrets.
+      # Public write-only ingest → Analytics Engine (+ optional D1). The
+      # destination for the dashboard's anonymous instance ping.
+      - name: Deploy telemetry collector preview
+        if: github.event_name == 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/telemetry
+        run: |
+          npx --yes --package=wrangler@4 wrangler deploy --env preview --minify
+
+      - name: Deploy telemetry collector
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/telemetry
+        run: |
+          npx --yes --package=wrangler@4 wrangler deploy --minify
+
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v9

@@ -58,6 +58,30 @@ bun run deploy:preview    # preview    → preview.telemetry.chmonitor.dev
 ```
 
 No secrets required. The Analytics Engine dataset is created on first write.
+CI deploys this automatically on push to `main` (see `.github/workflows/cloudflare.yml`).
+
+### Optional: forever retention with D1
+
+Analytics Engine keeps data for only **3 months**, then auto-deletes. To keep
+metrics indefinitely (CF-native, free tier, no cron, no API token), attach D1 —
+the worker then also writes one deduped row per install per UTC day, which D1
+keeps forever:
+
+```bash
+cd apps/telemetry
+wrangler d1 create chm_telemetry             # copy the database_id
+# paste it into the commented [[d1_databases]] block in wrangler.toml, then:
+wrangler d1 migrations apply chm_telemetry   # applies migrations/0001_init.sql
+bun run deploy
+```
+
+The D1 write is a no-op until the binding exists, so deploying without D1 is safe
+(AE-only). Query forever-retained installs:
+
+```sql
+SELECT day, deploy_target, ch_version, COUNT(*) AS installs
+FROM ping_daily GROUP BY day, deploy_target, ch_version ORDER BY day DESC;
+```
 
 ## Querying (active installs, by version / deploy target)
 
@@ -100,33 +124,27 @@ GROUP BY event ORDER BY n DESC
 > counts via `count(DISTINCT index1)` remain accurate because `index1` is the
 > sampling key.
 
-## Turning it on
+## On by default; how to opt out
 
-Telemetry stays **off by default**. To collect from a deployment, set both:
+Telemetry is **on by default**. The endpoint defaults to this collector
+(`https://telemetry.chmonitor.dev/v1/ping`) and is overridable via env. Users opt
+out with any of:
 
 ```bash
-CHM_TELEMETRY=on
-CHM_TELEMETRY_ENDPOINT=https://telemetry.chmonitor.dev/v1/ping
+CHM_TELEMETRY=off              # also 0 / false / no
+DO_NOT_TRACK=1                 # cross-tool opt-out standard
+CHM_TELEMETRY_ENDPOINT=""      # hard kill-switch: no endpoint, no network call
 ```
 
-### Decision for the maintainer: default endpoint
-
-For the project to receive adoption data, the **official** builds (the hosted
-`dash.chmonitor.dev` and the published Docker/Helm images) would need to ship
-with the endpoint pre-set. That is a deliberate posture change from today's
-"opt-in + no endpoint" to "endpoint baked into official builds, **opt-out** via
-`CHM_TELEMETRY=off` / `DO_NOT_TRACK`". This collector does not make that choice;
-it only provides the destination. Decide and wire the default separately.
+The client also makes zero calls in SSR/prerender/non-browser contexts. See
+[`config.ts`](../dashboard/src/lib/telemetry/config.ts) and
+[`instance-ping.ts`](../dashboard/src/lib/telemetry/instance-ping.ts).
 
 ## Follow-ups (not in this collector)
 
-1. **Default endpoint** for official builds (above) — the only step needed to
-   make the instance ping actually flow.
-2. **Event sink** — register a `TelemetrySink` in the dashboard that POSTs to
+1. **Event sink** — register a `TelemetrySink` in the dashboard that POSTs to
    `/v1/event`, so the five `track()` events reach the collector. The collector
    already accepts them.
-3. **Send `ch_version` in the ping** — `maybePingInstance()` currently passes
+2. **Send `ch_version` in the ping** — `maybePingInstance()` currently passes
    `version: undefined`; thread the connected cluster's version through for a
    per-version install breakdown.
-4. **Honor `DO_NOT_TRACK`** in `config.ts` alongside `CHM_TELEMETRY` if the
-   default-on posture is adopted.

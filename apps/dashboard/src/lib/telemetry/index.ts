@@ -9,7 +9,12 @@ export {
   ACTIVATION_REQUIRED,
   isActivated,
 } from './activation'
-export { isTelemetryEnabled, parseTelemetryFlag } from './config'
+export {
+  isDoNotTrack,
+  isTelemetryEnabled,
+  isTelemetryFlagDisabled,
+  parseTelemetryFlag,
+} from './config'
 export {
   type ChFlavor,
   type DeployTarget,
@@ -27,6 +32,7 @@ export {
 } from './events'
 export {
   buildPingPayload,
+  DEFAULT_TELEMETRY_ENDPOINT,
   getPingEndpoint,
   maybePingInstance,
   PING_INTERVAL_MS,

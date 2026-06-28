@@ -18,6 +18,11 @@
 
 export interface Env {
   TELEMETRY: AnalyticsEngineDataset
+  // Optional forever-retention store. Analytics Engine keeps data for only 3
+  // months; when a D1 binding is present we ALSO record one deduped row per
+  // install per UTC day, which D1 keeps indefinitely (CF-native, free tier).
+  // Deploy works without it (AE-only) until the binding is configured.
+  DB?: D1Database
 }
 
 const MAX_BODY_BYTES = 2048
@@ -69,7 +74,11 @@ async function readBody(req: Request): Promise<unknown | null> {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(
+    req: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     const { pathname } = new URL(req.url)
 
     if (req.method === 'OPTIONS') return noContent()
@@ -104,6 +113,23 @@ export default {
         blobs: ['ping', deployTarget, chVersion],
         doubles: [1],
       })
+
+      // Forever retention (optional): AE keeps only 3 months, so when a D1
+      // binding is present also record one deduped row per install per UTC day.
+      // INSERT OR IGNORE on (day, instance_hash) keeps storage to one row per
+      // install per day; D1 retains it indefinitely. Runs after the response.
+      if (env.DB) {
+        const day = new Date().toISOString().slice(0, 10) // YYYY-MM-DD (UTC)
+        ctx.waitUntil(
+          env.DB.prepare(
+            'INSERT OR IGNORE INTO ping_daily (day, instance_hash, deploy_target, ch_version) VALUES (?, ?, ?, ?)'
+          )
+            .bind(day, instanceHash, deployTarget, chVersion || null)
+            .run()
+            .then(() => undefined)
+            .catch(() => undefined)
+        )
+      }
       return noContent()
     }
 

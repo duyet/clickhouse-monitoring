@@ -1,5 +1,6 @@
 import {
   buildPingPayload,
+  DEFAULT_TELEMETRY_ENDPOINT,
   getPingEndpoint,
   PING_INTERVAL_MS,
   type PingDeps,
@@ -252,16 +253,27 @@ describe('runInstancePing error resilience', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// No-op safety contract: when no endpoint is configured, fetch is never called.
+// Endpoint resolution + kill-switch.
 //
-// This is the critical invariant: the default build ships VITE_TELEMETRY_ENDPOINT=''
-// (see vite.config.ts), so even if a user sets VITE_TELEMETRY_ENABLED=true they
-// still make zero network calls until they also provide a collection endpoint.
+// Telemetry is ON by default and the endpoint defaults to the project collector,
+// so getPingEndpoint({}) resolves to DEFAULT_TELEMETRY_ENDPOINT. Setting the env
+// to an explicit empty string is the hard kill-switch: '' is preserved and
+// runInstancePing makes zero network calls.
 
-describe('no-op safety contract: no endpoint configured', () => {
-  test('getPingEndpoint returns empty string when runtimeEnv has no endpoint key', () => {
-    expect(getPingEndpoint({})).toBe('')
-    expect(getPingEndpoint({ UNRELATED: 'foo' })).toBe('')
+describe('endpoint resolution and kill-switch', () => {
+  test('getPingEndpoint falls back to the default collector when unset', () => {
+    expect(getPingEndpoint({})).toBe(DEFAULT_TELEMETRY_ENDPOINT)
+    expect(getPingEndpoint({ UNRELATED: 'foo' })).toBe(DEFAULT_TELEMETRY_ENDPOINT)
+  })
+
+  test('explicit endpoint env overrides the default', () => {
+    expect(
+      getPingEndpoint({ CHM_TELEMETRY_ENDPOINT: 'https://t.example/v1/ping' })
+    ).toBe('https://t.example/v1/ping')
+  })
+
+  test('explicit empty endpoint is preserved as the hard kill-switch', () => {
+    expect(getPingEndpoint({ CHM_TELEMETRY_ENDPOINT: '' })).toBe('')
   })
 
   test('runInstancePing never calls post when endpoint is empty — even with enabled:true', async () => {
@@ -269,7 +281,7 @@ describe('no-op safety contract: no endpoint configured', () => {
     const result = await runInstancePing(
       makeDeps({
         enabled: true,
-        endpoint: getPingEndpoint({}), // '' — mirrors the default build config
+        endpoint: '', // explicit kill-switch
         post: async (url, body) => {
           posts.push({ url, body })
         },
