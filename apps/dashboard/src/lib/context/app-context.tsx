@@ -10,7 +10,12 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { getDeployTarget, maybePingInstance, track } from '@/lib/telemetry'
+import {
+  getDeployTarget,
+  installTelemetryEventSink,
+  maybePingInstance,
+  track,
+} from '@/lib/telemetry'
 
 export interface ContextValue {
   interval: ClickHouseInterval
@@ -88,9 +93,12 @@ export const AppProvider = ({
 
   // Fire-and-forget product telemetry — no-op unless enabled. Once per app load.
   useEffect(() => {
+    // Install the event transport before the first track() so app_loaded is
+    // delivered. No-op unless telemetry is enabled and an endpoint resolves.
+    installTelemetryEventSink()
     track('app_loaded', { deploy_target: getDeployTarget() })
-    // Daily anonymous instance ping — no-op unless telemetry is explicitly
-    // enabled AND CHM_TELEMETRY_ENDPOINT is configured.
+    // Daily anonymous instance ping — no-op when telemetry is disabled or the
+    // endpoint is empty.
     maybePingInstance()
   }, [])
 

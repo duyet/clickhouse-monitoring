@@ -22,6 +22,11 @@ export {
   parseMajorMinor,
 } from './environment'
 export {
+  getEventEndpoint,
+  installTelemetryEventSink,
+  uninstallTelemetryEventSink,
+} from './event-sink'
+export {
   isTelemetryEvent,
   TELEMETRY_EVENTS,
   type TelemetryEvent,

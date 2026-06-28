@@ -142,9 +142,7 @@ The client also makes zero calls in SSR/prerender/non-browser contexts. See
 
 ## Follow-ups (not in this collector)
 
-1. **Event sink** — register a `TelemetrySink` in the dashboard that POSTs to
-   `/v1/event`, so the five `track()` events reach the collector. The collector
-   already accepts them.
-2. **Send `ch_version` in the ping** — `maybePingInstance()` currently passes
+1. **Send `ch_version` in the ping** — `maybePingInstance()` currently passes
    `version: undefined`; thread the connected cluster's version through for a
-   per-version install breakdown.
+   per-version install breakdown. (The `cluster_connected` event already carries
+   `ch_version` in its props, so version data already flows via `/v1/event`.)

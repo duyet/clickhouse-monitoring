@@ -104,7 +104,7 @@ The endpoint is received by the [telemetry collector](https://github.com/chmonit
 
 > **Retention:** Analytics Engine stores data for **3 months**, then auto-deletes. For permanent retention the collector can also write to D1 (Cloudflare's SQLite), which keeps one deduped row per install per day forever. See the collector README.
 
-**Event tracking** (`track()`) is typed and redacted but has no client-side sink registered yet, so the five events are dropped until a sink is wired (a follow-up). The collector already accepts them at `/v1/event`.
+**Event tracking** (`track()`) is typed and redacted, then delivered by the event sink to the collector's `/v1/event` endpoint. The sink installs once per app load and is a hard no-op when telemetry is disabled or no endpoint resolves.
 
 ---
 
