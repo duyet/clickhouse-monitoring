@@ -66,17 +66,21 @@ const CLIENT_ENV = {
   // clean per-user workspace. Unset/junk → self-hosted (OSS) behaviour, never
   // degraded. See lib/cloud/cloud-mode.ts.
   VITE_CLOUD_MODE: e.VITE_CLOUD_MODE ?? '',
-  // Opt-in product telemetry: OFF by default — must be explicitly enabled.
+  // Anonymous product telemetry: ON by default — opt out with VITE_TELEMETRY_ENABLED=off
+  // (or 0/false/no), VITE_DO_NOT_TRACK / DO_NOT_TRACK, or an empty endpoint.
   VITE_TELEMETRY_ENABLED:
-    e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'false',
+    e.VITE_TELEMETRY_ENABLED ?? e.NEXT_PUBLIC_TELEMETRY_ENABLED ?? 'on',
+  // DO_NOT_TRACK opt-out (https://consoledonottrack.com). Hard override — any
+  // truthy value forces telemetry off. Mirrors the server DO_NOT_TRACK var.
+  VITE_DO_NOT_TRACK: e.VITE_DO_NOT_TRACK ?? e.DO_NOT_TRACK ?? '',
   // Deployment target (docker | helm | cf | dev | unknown). Set in CI build
   // steps so telemetry can distinguish deployment environments.
   VITE_DEPLOY_TARGET: e.VITE_DEPLOY_TARGET ?? 'unknown',
-  // Collection endpoint for the opt-in daily instance ping. Empty by default —
-  // the ping is a hard no-op unless BOTH this and VITE_TELEMETRY_ENABLED are
-  // explicitly set. Set to a collection URL (e.g. your own ClickHouse ingest
-  // endpoint) to enable. See docs/content/advanced/telemetry.mdx.
-  VITE_TELEMETRY_ENDPOINT: e.VITE_TELEMETRY_ENDPOINT ?? '',
+  // Collection endpoint for the daily instance ping. Defaults to the project
+  // collector (must match DEFAULT_TELEMETRY_ENDPOINT in lib/telemetry/instance-ping.ts);
+  // set to a different URL to self-host, or to '' as a hard no-network kill-switch.
+  VITE_TELEMETRY_ENDPOINT:
+    e.VITE_TELEMETRY_ENDPOINT ?? 'https://telemetry.chmonitor.dev/v1/ping',
   VITE_GIT_SHA:
     e.VITE_GIT_SHA ?? e.NEXT_PUBLIC_GIT_SHA ?? git('rev-parse HEAD'),
   VITE_GIT_REF:

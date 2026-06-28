@@ -22,6 +22,12 @@ export const PING_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
 const STORAGE_KEY_INSTANCE_ID = 'chm_telemetry_instance_id'
 const STORAGE_KEY_LAST_PING = 'chm_telemetry_last_ping_at'
 
+// Default collection endpoint (the project's hosted collector — apps/telemetry).
+// Overridable via CHM_TELEMETRY_ENDPOINT / VITE_TELEMETRY_ENDPOINT. Set the env
+// to an empty string to hard-disable the network call even with telemetry on.
+export const DEFAULT_TELEMETRY_ENDPOINT =
+  'https://telemetry.chmonitor.dev/v1/ping'
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure helpers (no globals — unit-testable in isolation)
 
@@ -65,16 +71,18 @@ export function buildPingPayload(input: {
  * Resolves the telemetry collection endpoint.
  * Server: CHM_TELEMETRY_ENDPOINT from runtimeEnv.
  * Client: VITE_TELEMETRY_ENDPOINT inlined at build time.
- * Returns '' (empty string) when unset — callers treat '' as "no endpoint".
+ * Falls back to DEFAULT_TELEMETRY_ENDPOINT when the env var is unset.
+ * An explicit empty string ('') is preserved and treated by callers as
+ * "no endpoint" — a hard kill-switch for the network call.
  */
 export function getPingEndpoint(
   runtimeEnv?: Record<string, string | undefined>
 ): string {
   if (runtimeEnv) {
-    return runtimeEnv.CHM_TELEMETRY_ENDPOINT ?? ''
+    return runtimeEnv.CHM_TELEMETRY_ENDPOINT ?? DEFAULT_TELEMETRY_ENDPOINT
   }
   // Client bundle: build-time inline
-  return import.meta.env.VITE_TELEMETRY_ENDPOINT ?? ''
+  return import.meta.env.VITE_TELEMETRY_ENDPOINT ?? DEFAULT_TELEMETRY_ENDPOINT
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

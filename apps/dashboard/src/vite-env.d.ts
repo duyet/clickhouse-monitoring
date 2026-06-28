@@ -16,6 +16,9 @@ interface ImportMetaEnv {
   readonly VITE_DEPLOY_TARGET?: string
   // Collection endpoint for the daily instance ping. Empty = no-op.
   readonly VITE_TELEMETRY_ENDPOINT?: string
+  // DO_NOT_TRACK opt-out (https://consoledonottrack.com). Any truthy value
+  // forces telemetry off regardless of VITE_TELEMETRY_ENABLED.
+  readonly VITE_DO_NOT_TRACK?: string
   // Build metadata (injected by vite.config define / CI build step)
   readonly VITE_GIT_SHA?: string
   readonly VITE_GIT_REF?: string

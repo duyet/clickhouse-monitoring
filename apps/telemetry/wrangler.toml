@@ -1,0 +1,65 @@
+# wrangler.toml — chmonitor telemetry collector
+#
+# Public, write-only ingest for the anonymous instance ping + aggregate events
+# emitted by apps/dashboard/src/lib/telemetry. Records to Cloudflare Analytics
+# Engine (no database to manage; queried via the AE SQL API from the project's
+# Cloudflare account only).
+#
+# Deploy:
+#   cd apps/telemetry && bun run deploy
+#
+# Point instances at it by setting, on the dashboard deployment:
+#   CHM_TELEMETRY=on
+#   CHM_TELEMETRY_ENDPOINT=https://telemetry.chmonitor.dev/v1/ping
+# (Both are required — telemetry is inert unless flag AND endpoint are set.)
+
+name = "chmonitor-telemetry"
+main = "src/index.ts"
+compatibility_date = "2026-05-28"
+
+minify = true
+upload_source_maps = false
+
+compatibility_flags = ["global_fetch_strictly_public"]
+
+[observability]
+enabled = true
+
+# Analytics Engine — hot store (3-month retention, ad-hoc SQL). No binding-side
+# config needed beyond the dataset name; rows go in via writeDataPoint().
+[[analytics_engine_datasets]]
+binding = "TELEMETRY"
+dataset = "chm_telemetry"
+
+# D1 — forever store (optional). AE auto-deletes after 3 months; D1 keeps one
+# deduped row per install per day indefinitely. The worker no-ops the D1 write
+# unless this binding exists, so it deploys AE-only until you create the DB:
+#
+#   wrangler d1 create chm_telemetry           # copy the printed database_id below
+#   wrangler d1 migrations apply chm_telemetry # applies migrations/0001_init.sql
+#
+# then uncomment:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "chm_telemetry"
+# database_id = "<paste id from `wrangler d1 create`>"
+# migrations_dir = "migrations"
+
+# Custom domain — auto-provisions DNS + cert on the chmonitor.dev zone.
+[[routes]]
+pattern = "telemetry.chmonitor.dev"
+custom_domain = true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview environment
+# ─────────────────────────────────────────────────────────────────────────────
+[env.preview]
+name = "preview-chmonitor-telemetry"
+
+[[env.preview.analytics_engine_datasets]]
+binding = "TELEMETRY"
+dataset = "chm_telemetry_preview"
+
+[[env.preview.routes]]
+pattern = "preview.telemetry.chmonitor.dev"
+custom_domain = true

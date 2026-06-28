@@ -9,7 +9,11 @@ export {
   ACTIVATION_REQUIRED,
   isActivated,
 } from './activation'
-export { isTelemetryEnabled, parseTelemetryFlag } from './config'
+export {
+  isDoNotTrack,
+  isTelemetryEnabled,
+  isTelemetryFlagDisabled,
+} from './config'
 export {
   type ChFlavor,
   type DeployTarget,
@@ -17,6 +21,11 @@ export {
   getDeployTarget,
   parseMajorMinor,
 } from './environment'
+export {
+  getEventEndpoint,
+  installTelemetryEventSink,
+  uninstallTelemetryEventSink,
+} from './event-sink'
 export {
   isTelemetryEvent,
   TELEMETRY_EVENTS,
@@ -27,6 +36,7 @@ export {
 } from './events'
 export {
   buildPingPayload,
+  DEFAULT_TELEMETRY_ENDPOINT,
   getPingEndpoint,
   maybePingInstance,
   PING_INTERVAL_MS,

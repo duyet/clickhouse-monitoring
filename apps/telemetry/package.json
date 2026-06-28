@@ -1,0 +1,16 @@
+{
+  "name": "telemetry",
+  "description": "Public write-only Cloudflare Worker that collects chmonitor's anonymous instance ping + aggregate events into Analytics Engine",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy --minify",
+    "deploy:preview": "wrangler deploy --minify --env preview",
+    "dev": "wrangler dev",
+    "typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260515.0",
+    "wrangler": "^4.97.0"
+  }
+}

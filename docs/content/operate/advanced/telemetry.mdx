@@ -1,26 +1,32 @@
 ---
-description: Opt-in anonymous product telemetry — off by default, no PII, no third-party trackers, and inert until both a flag and an endpoint are set.
+description: Anonymous product telemetry — on by default, opt out anytime, no PII, no third-party trackers.
 icon: Radio
 ---
 
 # Product Telemetry
 
-chmonitor includes an opt-in, anonymous telemetry system. It is **off by default** — no data leaves your instance unless you explicitly enable it.
+chmonitor includes an anonymous, privacy-first telemetry system. It is **on by default** and you can turn it off at any time — with a single environment variable. It collects lightweight, aggregate product analytics (five events, three dimensions, no PII) to help the project understand how the dashboard is used at a high level.
 
-This is separate from [Self-Tracking](/operate/advanced/self-tracking), which writes dashboard usage events to your own ClickHouse instance. Telemetry is lightweight product analytics (five events, three dimensions, no PII) intended to help the project understand how the dashboard is used at a high level.
+This is separate from [Self-Tracking](/operate/advanced/self-tracking), which writes dashboard usage events to your own ClickHouse instance.
 
 ---
 
-## Off by default
+## On by default — how to opt out
 
-Telemetry is disabled unless you set one of the following environment variables:
+Telemetry runs unless you explicitly turn it off. Any **one** of these disables it:
 
-| Variable | Where it applies | Value to enable |
+| Variable | Where it applies | Value to disable |
 |---|---|---|
-| `CHM_TELEMETRY` | Server runtime (Worker binding / `process.env`) | `on` |
-| `VITE_TELEMETRY_ENABLED` | Client build-time (inlined by Vite) | `true` |
+| `CHM_TELEMETRY` | Server runtime (Worker binding / `process.env`) | `off` (also `0`, `false`, `no`) |
+| `VITE_TELEMETRY_ENABLED` | Client build-time (inlined by Vite) | `off` |
+| `DO_NOT_TRACK` | Server runtime — the cross-tool [opt-out standard](https://consoledonottrack.com) | `1` (any truthy value) |
+| `CHM_TELEMETRY_ENDPOINT` | Server runtime — collection endpoint | `""` (empty = hard kill-switch, no network call) |
 
-`CHM_TELEMETRY=on` is the canonical form. `true`, `1`, and `yes` are also accepted. Any other value — including unset — keeps telemetry off.
+`DO_NOT_TRACK` is a **hard override**: when set, telemetry is off regardless of `CHM_TELEMETRY`. Leaving everything unset keeps telemetry **on**.
+
+### Collection endpoint
+
+Data is sent to the project's collector at `https://telemetry.chmonitor.dev/v1/ping` by default. Point it elsewhere (e.g. your own [collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry)) by setting `CHM_TELEMETRY_ENDPOINT` (server) or `VITE_TELEMETRY_ENDPOINT` (client build). Setting it to an empty string disables the network call entirely.
 
 ---
 
@@ -60,44 +66,45 @@ The ClickHouse version is always truncated to `MAJOR.MINOR` (e.g. `24.8`) — ne
 
 ---
 
-## How to enable
+## How to disable
 
-<Tabs items={['Server-side', 'Client build-time']}>
+<Tabs items={['Server-side', 'Do Not Track', 'Client build-time']}>
 <Tab value="Server-side">
 ```bash
-CHM_TELEMETRY=on
+CHM_TELEMETRY=off
 ```
 
-Applies to Cloudflare Worker, Docker, and Kubernetes deployments.
+Applies to Cloudflare Worker, Docker, and Kubernetes deployments. `0`, `false`, and `no` are also accepted.
+</Tab>
+<Tab value="Do Not Track">
+```bash
+DO_NOT_TRACK=1
+```
+
+The cross-tool [opt-out standard](https://consoledonottrack.com). A hard override — telemetry is off regardless of `CHM_TELEMETRY`.
 </Tab>
 <Tab value="Client build-time">
 ```bash
-VITE_TELEMETRY_ENABLED=true
+VITE_TELEMETRY_ENABLED=off
+# or, to remove the endpoint entirely:
+VITE_TELEMETRY_ENDPOINT=""
 ```
 
-Inlined at `bun run build` / `vite build`. Both variables are independent — you can enable server-side telemetry without a client rebuild or vice versa.
+Inlined at `bun run build` / `vite build`.
 </Tab>
 </Tabs>
 
 ---
 
-## How to disable
+## Transport and storage
 
-Telemetry is off by default — you do not need to do anything to disable it. To confirm it is off, ensure neither `CHM_TELEMETRY` nor `VITE_TELEMETRY_ENABLED` is set (or set them to any value other than the accepted ones above).
+**Instance ping** (`maybePingInstance`) runs once per day when due, sending a hashed install id + deploy target + ClickHouse `MAJOR.MINOR` to the collection endpoint. It is a hard no-op when telemetry is disabled, when the endpoint is an empty string, or in non-browser contexts (SSR/prerender).
 
----
+The endpoint is received by the [telemetry collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry) — a public, write-only Cloudflare Worker that records to **Analytics Engine** (and, when D1 is attached, keeps a deduped daily row per install indefinitely). It cannot be read back over HTTP.
 
-## Current transport status
+> **Retention:** Analytics Engine stores data for **3 months**, then auto-deletes. For permanent retention the collector can also write to D1 (Cloudflare's SQLite), which keeps one deduped row per install per day forever. See the collector README.
 
-Two separate systems exist, each with its own no-op guarantee:
-
-**Instance ping** (`maybePingInstance`) is wired to the app and runs once per day when due. It is a hard no-op unless **both** conditions hold simultaneously:
-1. Telemetry is explicitly enabled (`CHM_TELEMETRY=on` / `VITE_TELEMETRY_ENABLED=true`).
-2. A collection endpoint is explicitly configured (`CHM_TELEMETRY_ENDPOINT` / `VITE_TELEMETRY_ENDPOINT`).
-
-Neither variable is set by default. Because both are required, enabling just the flag makes zero network calls — the code short-circuits before any `fetch()` is invoked.
-
-**Event tracking** (`track()`) has no default transport sink. Events are typed and redacted internally, but with no sink registered they are silently dropped. A self-hosted sink (writing to your own ClickHouse) will be added in a later release. Enabling telemetry today produces no network traffic from event tracking.
+**Event tracking** (`track()`) is typed and redacted, then delivered by the event sink to the collector's `/v1/event` endpoint. The sink installs once per app load and is a hard no-op when telemetry is disabled or no endpoint resolves.
 
 ---
 
@@ -114,11 +121,12 @@ A session is considered activated when a cluster is connected and the user viewe
 ## Privacy stance
 
 <Callout type="info" title="Privacy by design">
-- **Opt-in only** — telemetry is off unless you set the env var.
-- **Self-hosted** — chmonitor is fully self-hostable; your ClickHouse data never leaves your network regardless of telemetry settings.
+- **One-switch opt-out** — `CHM_TELEMETRY=off` or `DO_NOT_TRACK=1` disables it completely, anytime.
+- **Self-hosted data stays put** — chmonitor is fully self-hostable; your ClickHouse data never leaves your network regardless of telemetry settings.
 - **No third-party trackers** — there are no analytics SDKs, beacon scripts, or third-party pixels in the application.
 - **No PII by design** — the event schema and redaction layer are written to make PII collection structurally impossible, not just policy-forbidden.
-- **Inert by default** — both the telemetry flag and a collection endpoint must be explicitly set for any network call to occur. Enabling just the flag (without an endpoint) still makes zero network calls.
+- **Anonymous** — only a hashed random install id is sent; it cannot be tied to an identity, and the collector never stores request IPs.
+- **Hard kill-switch** — setting the endpoint env to an empty string stops all network calls regardless of any other setting.
 </Callout>
 
 ---
