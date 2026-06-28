@@ -30,6 +30,9 @@ interface ImportMetaEnv {
   // Edition flag. 'community' (default, OSS, fail-open) | 'enterprise' (paid).
   // See lib/edition/. Unset or unrecognised → 'community'.
   readonly VITE_EDITION?: string
+  // Cloud (SaaS) mode. 'true' on dash.chmonitor.dev; unset/junk → self-hosted.
+  // See lib/cloud/cloud-mode.ts. When on, env hosts are a public read-only demo.
+  readonly VITE_CLOUD_MODE?: string
 }
 
 interface ImportMeta {

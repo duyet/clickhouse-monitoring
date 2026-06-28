@@ -61,6 +61,11 @@ const CLIENT_ENV = {
   // Edition: 'community' (default, OSS, fail-open) | 'enterprise' (paid).
   // Unset or unrecognised values always resolve to 'community' in parseEdition().
   VITE_EDITION: e.VITE_EDITION ?? 'community',
+  // Cloud (SaaS) mode: 'true' on dash.chmonitor.dev, unset everywhere else.
+  // When on, env hosts are a public read-only demo and signed-in users get a
+  // clean per-user workspace. Unset/junk → self-hosted (OSS) behaviour, never
+  // degraded. See lib/cloud/cloud-mode.ts.
+  VITE_CLOUD_MODE: e.VITE_CLOUD_MODE ?? '',
   // Anonymous product telemetry: ON by default — opt out with VITE_TELEMETRY_ENABLED=off
   // (or 0/false/no), VITE_DO_NOT_TRACK / DO_NOT_TRACK, or an empty endpoint.
   VITE_TELEMETRY_ENABLED:

@@ -94,6 +94,11 @@ jobs:
           VITE_GIT_REF: ${{ github.head_ref || github.ref_name }}
           VITE_CI: 'true'
           VITE_DEPLOY_TARGET: cf
+          # Hosted product (dash.chmonitor.dev): cloud SaaS mode + per-user
+          # connection storage. Self-hosted/OSS builds leave both unset → env
+          # hosts are the operator's real hosts, no demo, fully functional.
+          VITE_CLOUD_MODE: 'true'
+          VITE_FEATURE_USER_CONNECTIONS_DB: 'true'
         run: bun run build
 
       - name: Type-check dashboard tests

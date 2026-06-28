@@ -65,6 +65,12 @@ CHM_FEATURE_AGENT_ACCESS = "authenticated"
 # Public read-only mode: anonymous visitors can view monitoring data; writes
 # (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
 CHM_CLERK_PUBLIC_READ = "true"
+# Cloud (SaaS) mode: this is the hosted product. Env CLICKHOUSE_HOST is a PUBLIC
+# read-only DEMO; signed-in users get a clean per-user workspace and connect
+# their own host. Self-hosted/OSS deployments leave this UNSET (→ env hosts are
+# the operator's real hosts, full access). The build also needs VITE_CLOUD_MODE
+# inlined (set in the CI/deploy build step). See lib/cloud/cloud-mode.ts.
+CHM_CLOUD_MODE = "true"
 
 # AgentState conversation-store backend. The AGENTSTATE_API_KEY secret (set via
 # set-secrets.ts) alone activates it — resolveStore picks AgentState ahead of the
@@ -147,6 +153,8 @@ OPENROUTER_APP_NAME = "chmonitor"
 CHM_AUTH_PROVIDER = "clerk"
 CHM_FEATURE_AGENT_ACCESS = "authenticated"
 CHM_CLERK_PUBLIC_READ = "true"
+# Preview mirrors the hosted product: cloud (SaaS) mode on. See production note.
+CHM_CLOUD_MODE = "true"
 
 # AgentState conversation-store backend. Preview only persists to AgentState if a
 # separate AGENTSTATE_API_KEY_TEST secret is provided (see set-secrets.ts) — it
