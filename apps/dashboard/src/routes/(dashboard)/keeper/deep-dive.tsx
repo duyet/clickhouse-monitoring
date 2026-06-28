@@ -1,18 +1,18 @@
+import { InfoIcon } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Suspense } from 'react'
-import { InfoIcon } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useServerVersion } from '@/lib/hooks/use-server-version'
 import {
   keeperChangelogsConfig,
   keeperClusterConfig,
   keeperSnapshotsConfig,
 } from '@/lib/query-config/keeper'
-import { useHostId } from '@/lib/swr/use-host'
-import { useServerVersion } from '@/lib/hooks/use-server-version'
 import { compareVersions } from '@/lib/server-version'
+import { useHostId } from '@/lib/swr/use-host'
 
 const MIN_VERSION = '26.6'
 

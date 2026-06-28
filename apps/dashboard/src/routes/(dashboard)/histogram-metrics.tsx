@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageOgHead } from '@/lib/og'
 import { histogramMetricsConfig } from '@/lib/query-config/system/histogram-metrics'
 import { latencyLogConfig } from '@/lib/query-config/system/latency-log'

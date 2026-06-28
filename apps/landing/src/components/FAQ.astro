@@ -2,7 +2,7 @@
 const faqs = [
   {
     q: 'How do I deploy chmonitor?',
-    a: 'The fastest path is Docker: <code>docker run -d -p 3000:3000 -e CLICKHOUSE_HOST=... ghcr.io/duyet/chmonitor:latest</code>. It also deploys to <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Cloudflare Workers</a> and Kubernetes via the bundled Helm chart. See the <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">quickstart</a> for step-by-step instructions.',
+    a: 'The fastest path is Docker: <code>docker run -d -p 3000:3000 -e CLICKHOUSE_HOST=... ghcr.io/chmonitor/chmonitor:latest</code>. It also deploys to <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Cloudflare Workers</a> and Kubernetes via the bundled Helm chart. See the <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">quickstart</a> for step-by-step instructions.',
   },
   {
     q: 'Does it need exporters or agents installed on ClickHouse?',
@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'What license is chmonitor under?',
-    a: 'chmonitor is open source under the <a href="https://github.com/duyet/clickhouse-monitoring/blob/main/LICENSE" target="_blank" rel="noopener">GPL-3.0 license</a>. You are free to use, modify and redistribute it under those terms.',
+    a: 'chmonitor is open source under the <a href="https://github.com/chmonitor/chmonitor/blob/main/LICENSE" target="_blank" rel="noopener">GPL-3.0 license</a>. You are free to use, modify and redistribute it under those terms.',
   },
   {
     q: 'What is the difference between self-host and cloud?',
@@ -64,7 +64,7 @@ const faqJsonLd = {
     </div>
 
     <p style="margin-top:28px;font-size:14px;color:var(--muted-fg)" class="reveal">
-      More questions? <a href="https://github.com/duyet/clickhouse-monitoring/discussions" target="_blank" rel="noopener" style="color:var(--orange)">Ask on GitHub Discussions</a>.
+      More questions? <a href="https://github.com/chmonitor/chmonitor/discussions" target="_blank" rel="noopener" style="color:var(--orange)">Ask on GitHub Discussions</a>.
     </p>
   </div>
 </section>

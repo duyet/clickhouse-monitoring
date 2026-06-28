@@ -15,6 +15,8 @@ import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import {
+  type AlterUserOptions,
+  type CreateUserOptions,
   generateAlterUserDdl,
   generateCreateUserDdl,
   generateDropUserDdl,
@@ -22,8 +24,6 @@ import {
   generateGrantRoleDdl,
   generateRevokePrivilegeDdl,
   generateRevokeRoleDdl,
-  type CreateUserOptions,
-  type AlterUserOptions,
   type PrivilegeTarget,
 } from '@/lib/security/management-ddl'
 
