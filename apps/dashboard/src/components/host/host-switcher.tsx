@@ -26,7 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
-import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
+import { type MergedHostInfo, useMergedHosts } from '@/lib/swr/use-merged-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn, getHost } from '@/lib/utils'
 
@@ -48,6 +48,12 @@ export function HostSwitcher() {
   const activeHost =
     hosts.find((h) => h.id === currentHostId) ?? hosts[0] ?? null
   const showExpanded = isMobile || state === 'expanded'
+
+  // `env` and `demo` hosts are both server-backed by numeric index, so they
+  // carry a live status/version indicator. `browser`/`database` connections are
+  // client-side and get a globe icon instead.
+  const isServerHost = (source: MergedHostInfo['source']) =>
+    source === 'env' || source === 'demo'
 
   const handleHostChange = (hostId: number) => {
     const url = buildUrl(pathname, { host: hostId }, searchParams)
@@ -173,18 +179,28 @@ export function HostSwitcher() {
                 >
                   <div className="relative">
                     <ChmonitorLogo width={20} height={20} className="size-5" />
-                    {!showExpanded && activeHost.source === 'env' && (
+                    {!showExpanded && isServerHost(activeHost.source) && (
                       <LogoStatusIndicator hostId={activeHost.id} />
                     )}
                   </div>
                   {showExpanded && (
                     <>
                       <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {activeHost.name || getHost(activeHost.host)}
+                        <span className="flex items-center gap-1.5 truncate font-semibold">
+                          <span className="truncate">
+                            {activeHost.name || getHost(activeHost.host)}
+                          </span>
+                          {activeHost.source === 'demo' && (
+                            <span className="shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                              Demo
+                            </span>
+                          )}
                         </span>
-                        {activeHost.source === 'env' ? (
-                          <HostVersionWithStatus hostId={activeHost.id} />
+                        {isServerHost(activeHost.source) ? (
+                          <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                            <HostVersionWithStatus hostId={activeHost.id} />
+                            {activeHost.readOnly && <span>· read-only</span>}
+                          </span>
                         ) : (
                           <span className="truncate text-xs text-muted-foreground">
                             {activeHost.source === 'database'
@@ -215,15 +231,20 @@ export function HostSwitcher() {
                     className="gap-2 p-2"
                     data-testid={`host-option-${host.id}`}
                   >
-                    {host.source !== 'env' && (
+                    {!isServerHost(host.source) && (
                       <GlobeIcon className="size-3 shrink-0 text-muted-foreground" />
                     )}
                     <HostMenuRow
-                      hostId={host.source === 'env' ? host.id : null}
+                      hostId={isServerHost(host.source) ? host.id : null}
                       hostName={host.name || getHost(host.host)}
                       isActive={host.id === currentHostId}
-                      skipStatus={host.source !== 'env'}
+                      skipStatus={!isServerHost(host.source)}
                     />
+                    {host.source === 'demo' && (
+                      <span className="ml-auto shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Demo
+                      </span>
+                    )}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />

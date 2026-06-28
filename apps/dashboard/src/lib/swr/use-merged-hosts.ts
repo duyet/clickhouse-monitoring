@@ -1,24 +1,41 @@
 import type { HostInfo } from '@chm/types/host-info'
 
 import { useHosts } from './use-hosts'
+import { isCloudModeClient } from '@/lib/cloud/cloud-mode'
 import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'
 import { useUserConnections } from '@/lib/hooks/use-user-connections'
 
 /**
  * Extended host info that includes the connection source.
- * Env hosts come from environment variables; browser hosts are stored in localStorage.
+ *
+ * - `env`      — operator-configured hosts (CLICKHOUSE_HOST). Self-hosted: real
+ *                hosts, full access.
+ * - `demo`     — in CLOUD mode the env hosts are a PUBLIC read-only demo shown
+ *                to anonymous visitors (e.g. `duet-ubuntu`).
+ * - `browser`  — connections stored in this browser (localStorage).
+ * - `database` — per-user connections stored encrypted on the server (D1).
  */
 export interface MergedHostInfo extends HostInfo {
-  source: 'env' | 'browser' | 'database'
+  source: 'env' | 'demo' | 'browser' | 'database'
+  /** True for the public cloud demo — writes/agent are disabled on it. */
+  readOnly?: boolean
   /** Server-stored connection UUID when source is database. */
   connectionId?: string
 }
 
 /**
- * Combines env-configured hosts with browser-stored connections into a
- * unified, ordered array: env hosts first, then browser connections.
+ * Combines env-configured hosts with browser- and server-stored connections into
+ * a unified, ordered array.
  *
- * @returns {Object} hosts array, loading state, error
+ * Cloud (SaaS) mode changes how the env hosts are treated:
+ *   - Anonymous visitor → env hosts surface as a read-only `demo` so the product
+ *     is explorable without an account.
+ *   - Signed-in user → the demo is HIDDEN ("empty it"); they see only their own
+ *     browser/database connections. Zero connections drives the welcome/setup
+ *     page (FirstRunGate).
+ *
+ * Self-hosted (default, cloud mode off) is unchanged: env hosts are `env`,
+ * always shown, full access.
  *
  * @example
  * ```typescript
@@ -33,11 +50,27 @@ export function useMergedHosts() {
     connections: dbConnections,
     isLoading: dbLoading,
     featureEnabled: dbFeatureEnabled,
-    isSignedIn: dbAuthReady,
+    isSignedIn,
   } = useUserConnections()
 
+  const cloudMode = isCloudModeClient()
+
+  // In cloud mode the env hosts are a public read-only demo, and once a user
+  // signs in we hide the demo so their workspace starts empty. Self-hosted mode
+  // keeps env hosts as-is for everyone.
+  const envSource: MergedHostInfo['source'] = cloudMode ? 'demo' : 'env'
+  const showEnvHosts = !(cloudMode && isSignedIn)
+
   const mergedHosts: MergedHostInfo[] = [
-    ...envHosts.map((h): MergedHostInfo => ({ ...h, source: 'env' })),
+    ...(showEnvHosts
+      ? envHosts.map(
+          (h): MergedHostInfo => ({
+            ...h,
+            source: envSource,
+            readOnly: cloudMode,
+          })
+        )
+      : []),
     ...connections.map(
       (c): MergedHostInfo => ({
         id: c.hostId,
@@ -47,7 +80,7 @@ export function useMergedHosts() {
         source: 'browser',
       })
     ),
-    ...(dbFeatureEnabled && dbAuthReady
+    ...(dbFeatureEnabled && isSignedIn
       ? dbConnections.map(
           (c): MergedHostInfo => ({
             id: c.hostId,
@@ -67,7 +100,11 @@ export function useMergedHosts() {
     // Only the env-host fetch can be unauthorized; browser connections are local.
     isUnauthorized: Boolean(isUnauthorized),
     isLoading:
-      isLoading || !mounted || (dbFeatureEnabled && dbAuthReady && dbLoading),
+      isLoading || !mounted || (dbFeatureEnabled && isSignedIn && dbLoading),
     getConnectionByHostId,
+    /** Cloud SaaS mode is active for this deployment. */
+    cloudMode,
+    /** Whether the visitor is signed in (always false outside Clerk builds). */
+    isSignedIn,
   }
 }

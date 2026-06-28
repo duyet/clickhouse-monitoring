@@ -1,4 +1,4 @@
-import { Check, Eye, EyeOff, Globe, Loader2, X } from 'lucide-react'
+import { ArrowUpRight, Check, Eye, EyeOff, Globe, Loader2 } from 'lucide-react'
 
 import type { BrowserConnection } from '@/lib/types/browser-connection'
 import type { HostStorageMode } from '@/lib/types/host-storage'
@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import {
+  classifyConnectionError,
+  extractConnectionErrorMessage,
+} from '@/lib/connection-errors'
 import { docsSiteUrl } from '@/lib/docs-site'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import {
@@ -117,7 +121,7 @@ export function ConnectionForm({
       } else {
         setTestStatus({
           state: 'error',
-          message: json.error ?? 'Connection failed',
+          message: extractConnectionErrorMessage(json),
         })
       }
     } catch (err) {
@@ -304,13 +308,13 @@ export function ConnectionForm({
             {testStatus.message}
           </span>
         )}
-        {testStatus.state === 'error' && (
-          <span className="flex items-center gap-1.5 text-xs text-destructive">
-            <X className="size-3.5" />
-            {testStatus.message}
-          </span>
-        )}
       </div>
+
+      {/* Rich, actionable error panel — classifies the raw ClickHouse / network
+          error into a cause + fix + docs link for the specific failure kind. */}
+      {testStatus.state === 'error' && (
+        <ConnectionErrorPanel message={testStatus.message} />
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
@@ -321,6 +325,39 @@ export function ConnectionForm({
           {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Renders a classified connection error: a clear title, why it likely happened,
+ * the concrete fix, the raw technical detail, and a docs link for that exact
+ * failure kind (host not allowed, auth failed, permissions, DNS, TLS, …).
+ */
+function ConnectionErrorPanel({ message }: { message?: string }) {
+  const e = classifyConnectionError(message)
+  return (
+    <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/5 p-3">
+      <p className="text-sm font-medium text-destructive">{e.title}</p>
+      <p className="text-xs text-muted-foreground">{e.explanation}</p>
+      <p className="text-xs">
+        <span className="font-medium">What to do: </span>
+        <span className="text-muted-foreground">{e.fix}</span>
+      </p>
+      {e.kind !== 'unknown' && e.raw && (
+        <pre className="overflow-x-auto rounded bg-muted/60 p-2 text-[11px] text-muted-foreground">
+          <code>{e.raw}</code>
+        </pre>
+      )}
+      <a
+        href={docsSiteUrl(e.docsSlug)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-2 hover:underline"
+      >
+        View troubleshooting docs
+        <ArrowUpRight className="size-3" />
+      </a>
     </div>
   )
 }
