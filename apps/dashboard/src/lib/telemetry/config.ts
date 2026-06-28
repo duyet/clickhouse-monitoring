@@ -19,19 +19,12 @@
 // collection endpoint is resolved (see instance-ping.ts). Setting the endpoint
 // env to an empty string is therefore an additional hard kill-switch.
 
-const ENABLED_VALUES = new Set(['on', 'true', '1', 'yes'])
 // Values that explicitly turn telemetry OFF. Anything else (including unset or
 // an unrecognised value) leaves it ON.
 const DISABLED_VALUES = new Set(['off', '0', 'false', 'no'])
 // DO_NOT_TRACK is treated as opt-out unless explicitly disabled. Only these
 // values mean "tracking allowed"; anything else that is set opts out.
 const DNT_DISABLED_VALUES = new Set(['0', 'false', 'no', ''])
-
-/** True when the value is one of the recognised explicit enable tokens. */
-export function parseTelemetryFlag(value: string | null | undefined): boolean {
-  if (value == null) return false
-  return ENABLED_VALUES.has(value.trim().toLowerCase())
-}
 
 /** True when the value explicitly turns telemetry off (off/0/false/no). */
 export function isTelemetryFlagDisabled(

@@ -1,27 +1,25 @@
-import { isDoNotTrack, isTelemetryEnabled, parseTelemetryFlag } from './config'
+import {
+  isDoNotTrack,
+  isTelemetryEnabled,
+  isTelemetryFlagDisabled,
+} from './config'
 import { describe, expect, test } from 'bun:test'
 
-describe('parseTelemetryFlag', () => {
-  test('unset / null / empty → false', () => {
-    expect(parseTelemetryFlag(undefined)).toBe(false)
-    expect(parseTelemetryFlag(null)).toBe(false)
-    expect(parseTelemetryFlag('')).toBe(false)
-    expect(parseTelemetryFlag('   ')).toBe(false)
+describe('isTelemetryFlagDisabled', () => {
+  test('unset / null / unrecognised → not disabled (on)', () => {
+    expect(isTelemetryFlagDisabled(undefined)).toBe(false)
+    expect(isTelemetryFlagDisabled(null)).toBe(false)
+    expect(isTelemetryFlagDisabled('')).toBe(false)
+    expect(isTelemetryFlagDisabled('on')).toBe(false)
+    expect(isTelemetryFlagDisabled('enabled')).toBe(false)
   })
 
-  test('canonical "on" and convenience truthy values → true', () => {
-    expect(parseTelemetryFlag('on')).toBe(true)
-    expect(parseTelemetryFlag(' ON ')).toBe(true)
-    expect(parseTelemetryFlag('true')).toBe(true)
-    expect(parseTelemetryFlag('1')).toBe(true)
-    expect(parseTelemetryFlag('yes')).toBe(true)
-  })
-
-  test('off / false / arbitrary strings → false', () => {
-    expect(parseTelemetryFlag('off')).toBe(false)
-    expect(parseTelemetryFlag('false')).toBe(false)
-    expect(parseTelemetryFlag('0')).toBe(false)
-    expect(parseTelemetryFlag('enabled')).toBe(false)
+  test('off / 0 / false / no → disabled', () => {
+    expect(isTelemetryFlagDisabled('off')).toBe(true)
+    expect(isTelemetryFlagDisabled(' OFF ')).toBe(true)
+    expect(isTelemetryFlagDisabled('0')).toBe(true)
+    expect(isTelemetryFlagDisabled('false')).toBe(true)
+    expect(isTelemetryFlagDisabled('no')).toBe(true)
   })
 })
 

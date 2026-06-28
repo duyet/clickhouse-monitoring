@@ -27,6 +27,10 @@ export interface Env {
 
 const MAX_BODY_BYTES = 2048
 
+// These enums intentionally mirror the dashboard's canonical definitions
+// (apps/dashboard/src/lib/telemetry/environment.ts → DeployTarget/ChFlavor,
+// events.ts → TELEMETRY_EVENTS). They are duplicated rather than imported to
+// keep this worker a zero-dependency standalone deploy unit; keep them in sync.
 const DEPLOY_TARGETS = new Set(['docker', 'helm', 'cf', 'dev', 'unknown'])
 const CH_FLAVORS = new Set(['oss', 'altinity', 'cloud', 'unknown'])
 const EVENTS = new Set([

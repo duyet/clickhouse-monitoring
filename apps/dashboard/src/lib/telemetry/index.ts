@@ -13,7 +13,6 @@ export {
   isDoNotTrack,
   isTelemetryEnabled,
   isTelemetryFlagDisabled,
-  parseTelemetryFlag,
 } from './config'
 export {
   type ChFlavor,
