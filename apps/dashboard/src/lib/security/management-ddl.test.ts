@@ -1,15 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
-
 import {
-  generateCreateUserDdl,
   generateAlterUserDdl,
+  generateCreateUserDdl,
   generateDropUserDdl,
-  generateGrantRoleDdl,
-  generateRevokeRoleDdl,
   generateGrantPrivilegeDdl,
+  generateGrantRoleDdl,
   generateRevokePrivilegeDdl,
+  generateRevokeRoleDdl,
   isManagementEnabled,
 } from './management-ddl'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // generateCreateUserDdl

@@ -5,13 +5,13 @@
  * Also tests registry CRUD and classifyValue boundaries.
  */
 
-import { describe, expect, test, beforeEach } from 'bun:test'
+import { BUILTIN_RULES, registerBuiltinRules } from '../builtin-rules'
 import {
   AlertRuleRegistry,
   classifyValue,
   ruleRegistry,
 } from '../rule-registry'
-import { BUILTIN_RULES, registerBuiltinRules } from '../builtin-rules'
+import { beforeEach, describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // classifyValue (pure, no side effects)

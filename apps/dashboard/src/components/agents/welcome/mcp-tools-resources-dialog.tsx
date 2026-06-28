@@ -95,101 +95,131 @@ export function McpToolsResourcesDialog({
         {/* Body */}
         <ScrollArea className="max-h-[70dvh]">
           <div className="space-y-5 p-5">
-            {isLoading && (
-              <p className="text-muted-foreground text-[12.5px]">
-                Loading tools…
-              </p>
-            )}
-
-            {error && !isLoading && (
-              <div className="space-y-2">
-                <p className="text-destructive text-[12.5px]">
-                  Failed to load server info.
-                </p>
-                <button
-                  type="button"
-                  onClick={retry}
-                  className="border-border bg-background hover:bg-muted h-7 rounded-md border px-2.5 text-[11.5px] font-medium transition-colors"
-                >
-                  Retry
-                </button>
+            {/* Custom server: render probeTools list directly */}
+            {server.probeTools !== undefined ? (
+              <div>
+                <div className="text-muted-foreground mb-2 text-[10.5px] font-semibold tracking-wider uppercase">
+                  Tools ({server.probeTools.length})
+                </div>
+                {server.probeTools.length === 0 ? (
+                  <p className="text-muted-foreground text-[12px]">
+                    No tools exposed.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {server.probeTools.map((toolName) => (
+                      <div
+                        key={toolName}
+                        className="border-border bg-card rounded-md border px-3 py-2"
+                      >
+                        <span className="min-w-0 flex-1 truncate font-mono text-[11.5px]">
+                          {toolName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-
-            {data && (
+            ) : (
+              /* Built-in server: use live info from /api/v1/mcp/info */
               <>
-                {/* Tools section */}
-                <div>
-                  <div className="text-muted-foreground mb-2 text-[10.5px] font-semibold tracking-wider uppercase">
-                    Tools ({data.tools.length})
-                  </div>
-                  {data.tools.length === 0 ? (
-                    <p className="text-muted-foreground text-[12px]">
-                      No tools exposed.
-                    </p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {data.tools.map((tool) => (
-                        <div
-                          key={tool.name}
-                          className="border-border bg-card rounded-md border px-3 py-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate font-mono text-[11.5px]">
-                              {tool.name}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={`h-4 shrink-0 px-1.5 text-[10px] font-normal ${CATEGORY_STYLES[tool.category] ?? ''}`}
-                            >
-                              {tool.category}
-                            </Badge>
-                          </div>
-                          {tool.description && (
-                            <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
-                              {tool.description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {isLoading && (
+                  <p className="text-muted-foreground text-[12.5px]">
+                    Loading tools…
+                  </p>
+                )}
 
-                {/* Resources section */}
-                <div>
-                  <div className="text-muted-foreground mb-2 text-[10.5px] font-semibold tracking-wider uppercase">
-                    Resources ({data.resources.length})
-                  </div>
-                  {data.resources.length === 0 ? (
-                    <p className="text-muted-foreground text-[12px]">
-                      No resources exposed.
+                {error && !isLoading && (
+                  <div className="space-y-2">
+                    <p className="text-destructive text-[12.5px]">
+                      Failed to load server info.
                     </p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {data.resources.map((resource) => (
-                        <div
-                          key={resource.uri}
-                          className="border-border bg-card rounded-md border px-3 py-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate font-mono text-[11.5px]">
-                              {resource.name}
-                            </span>
-                            <span className="text-muted-foreground shrink-0 truncate font-mono text-[10px]">
-                              {resource.uri}
-                            </span>
-                          </div>
-                          {resource.description && (
-                            <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
-                              {resource.description}
-                            </p>
-                          )}
+                    <button
+                      type="button"
+                      onClick={retry}
+                      className="border-border bg-background hover:bg-muted h-7 rounded-md border px-2.5 text-[11.5px] font-medium transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
+
+                {data && (
+                  <>
+                    {/* Tools section */}
+                    <div>
+                      <div className="text-muted-foreground mb-2 text-[10.5px] font-semibold tracking-wider uppercase">
+                        Tools ({data.tools.length})
+                      </div>
+                      {data.tools.length === 0 ? (
+                        <p className="text-muted-foreground text-[12px]">
+                          No tools exposed.
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {data.tools.map((tool) => (
+                            <div
+                              key={tool.name}
+                              className="border-border bg-card rounded-md border px-3 py-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="min-w-0 flex-1 truncate font-mono text-[11.5px]">
+                                  {tool.name}
+                                </span>
+                                <Badge
+                                  variant="outline"
+                                  className={`h-4 shrink-0 px-1.5 text-[10px] font-normal ${CATEGORY_STYLES[tool.category] ?? ''}`}
+                                >
+                                  {tool.category}
+                                </Badge>
+                              </div>
+                              {tool.description && (
+                                <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
+                                  {tool.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
+
+                    {/* Resources section */}
+                    <div>
+                      <div className="text-muted-foreground mb-2 text-[10.5px] font-semibold tracking-wider uppercase">
+                        Resources ({data.resources.length})
+                      </div>
+                      {data.resources.length === 0 ? (
+                        <p className="text-muted-foreground text-[12px]">
+                          No resources exposed.
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {data.resources.map((resource) => (
+                            <div
+                              key={resource.uri}
+                              className="border-border bg-card rounded-md border px-3 py-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="min-w-0 flex-1 truncate font-mono text-[11.5px]">
+                                  {resource.name}
+                                </span>
+                                <span className="text-muted-foreground shrink-0 truncate font-mono text-[10px]">
+                                  {resource.uri}
+                                </span>
+                              </div>
+                              {resource.description && (
+                                <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
+                                  {resource.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

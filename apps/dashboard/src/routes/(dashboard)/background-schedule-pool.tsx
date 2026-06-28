@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageOgHead } from '@/lib/og'
 import { backgroundSchedulePoolConfig } from '@/lib/query-config/system/background-schedule-pool'
 import { backgroundSchedulePoolLogConfig } from '@/lib/query-config/system/background-schedule-pool-log'

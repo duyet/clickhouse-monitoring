@@ -25,6 +25,7 @@ import { DefaultChatTransport } from 'ai'
 import { type ReactNode, useMemo } from 'react'
 import { resolveThreadListAdapter } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
 import { useAgentModel } from '@/lib/hooks/use-agent-model'
+import { useMcpConfig } from '@/lib/hooks/use-mcp-config'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { useHostId } from '@/lib/swr/use-host'
@@ -38,15 +39,31 @@ function useAgentChatRuntime() {
   const { disabledTools } = useToolConfig()
   const { model } = useAgentModel()
   const sessionId = useMemo(() => crypto.randomUUID(), [])
+  const { customServers, disabledServers } = useMcpConfig()
+
+  // Only pass enabled custom servers to the agent route. Derive from the stable
+  // `customServers` + `disabledServers` arrays (not `isServerEnabled`, which is a
+  // fresh closure each render) so this memo — and the transport below — stay
+  // referentially stable across renders.
+  const mcpServers = useMemo(
+    () =>
+      customServers
+        .filter((s) => !disabledServers.includes(s.id))
+        .map((s) => ({ id: s.id, name: s.name, endpoint: s.endpoint })),
+    [customServers, disabledServers]
+  )
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/v1/agent',
         fetch: apiFetch as typeof globalThis.fetch,
-        body: { hostId, model, disabledTools, sessionId },
+        body: { hostId, model, disabledTools, sessionId, mcpServers },
       }),
-    [hostId, model, disabledTools, sessionId]
+    // mcpServers is a derived array — include it directly so the transport
+    // re-creates when the user toggles or adds custom servers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hostId, model, disabledTools, sessionId, mcpServers]
   )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
