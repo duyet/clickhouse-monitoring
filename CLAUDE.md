@@ -38,6 +38,45 @@ to skip an unaddressed finding. To avoid the gate entirely, prefer
 
 This is a monorepo ClickHouse monitoring dashboard. The primary (and only) dashboard app is `apps/dashboard` (TanStack Start, as of v0.3). The Next.js migration is complete — the TanStack Start app has replaced the legacy Next.js app and is now at `apps/dashboard`. The application connects to ClickHouse instances and provides real-time insights into clusters through system tables — metrics, query performance, table information, and cluster health.
 
+## One codebase: Self-hosted (OSS) + Cloud (SaaS)
+
+`dash.chmonitor.dev` is the **Cloud (SaaS)** product; Docker / Kubernetes / a
+self-built Cloudflare Worker are the **self-hosted (OSS)** product. They are the
+SAME codebase — the difference is purely runtime configuration. The split is the
+**cloud-mode** flag (`lib/cloud/cloud-mode.ts`).
+
+**Design invariant (fail-closed to self-hosted):** an unset/junk
+`CHM_CLOUD_MODE` / `VITE_CLOUD_MODE` resolves to NOT cloud, so the OSS build is
+never degraded. Cloud behaviour is purely additive. Mirrors `lib/edition` (which
+already lists `cloud` as an enterprise feature) and its fail-open philosophy.
+
+| Aspect | Self-hosted (default) | Cloud (`CHM_CLOUD_MODE=true`) |
+|--------|----------------------|-------------------------------|
+| `CLICKHOUSE_HOST` env hosts | The operator's real hosts, full access | A **public read-only demo** (`source: 'demo'`, e.g. `duet-ubuntu`) |
+| Anonymous visitor | Sees env hosts | Sees the read-only demo (explore without an account) |
+| Signed-in user | Sees env hosts | Demo is **hidden** ("empty it") → their own per-user (D1) connections only; zero → welcome/setup page |
+| Auth | usually `none` | Clerk, with `CHM_CLERK_PUBLIC_READ=true` (anon reads, writes need sign-in) |
+| Per-user connections | optional | on (`VITE_FEATURE_USER_CONNECTIONS_DB=true`) |
+
+**Where cloud mode is wired:**
+- `lib/cloud/cloud-mode.ts` — `isCloudModeClient()` / `isCloudModeServer()` / `parseCloudMode()`.
+- `vite.config.ts` CLIENT_ENV + `src/vite-env.d.ts` — inline `VITE_CLOUD_MODE` (build).
+- `wrangler.toml` (`[vars]` + `[env.preview.vars]`) — `CHM_CLOUD_MODE` (runtime).
+- `.github/workflows/cloudflare.yml` build step — sets `VITE_CLOUD_MODE=true` + `VITE_FEATURE_USER_CONNECTIONS_DB=true` for the hosted deploy ONLY.
+- `lib/swr/use-merged-hosts.ts` — demo tagging + hide-when-signed-in; returns `cloudMode` / `isSignedIn`.
+- `components/host/host-switcher.tsx` — "Demo / read-only" badges; treats `demo` like `env` for live status.
+- `components/host/first-run-empty-state.tsx` — the redesigned welcome/setup page (3 modes: cloud signed-in, cloud anon, self-hosted).
+
+**Connection-error help:** `lib/connection-errors.ts` classifies "Test connection"
+failures (host_not_allowed/SSRF, invalid_url, auth_failed, access_denied,
+dns/refused/tls/timeout) into title + cause + fix + docs slug. Rendered by
+`ConnectionErrorPanel` in `connection-form.tsx`. Docs page:
+`docs/content/guide/guides/connection-errors.mdx` (slug `guides/connection-errors`).
+
+**Self-hosted stays whole:** never gate a core monitoring feature behind cloud
+mode. Cloud-only behaviour = demo hosts + welcome framing + per-user storage,
+nothing that removes functionality from OSS.
+
 ## Claude Skills
 
 ### chmonitor Agent Skill
@@ -76,6 +115,35 @@ round(rows * 100.0 / nullIf(max(rows) OVER (), 0), 2) AS pct_rows       -- perce
 
 See `.claude/skills/clickhouse-query-config.md` for full patterns.
 
+## Project skills (Claude Code) & auto-improvement
+
+Project-local Claude Code skills live in `.claude/skills/` as real `SKILL.md`
+dirs (NOT `.agents/skills/`, which the `build:skills` registry scans for
+end-user AI-agent skills — keep dev/product skills out of there so they never
+leak into the agent bundle). Current dev skills:
+
+- **`product-design`** — design system + UX conventions; read it before building
+  or reviewing ANY UI so new features stay consistent. Backed by
+  `docs/knowledge/product-design.md`.
+- **`cloud-saas-mode`** — Cloud (SaaS) vs self-hosted behaviour, demo hosts,
+  welcome/setup, per-user connections, connection-error classifier. Backed by
+  `docs/knowledge/cloud-saas-mode.md`.
+
+**Auto-improve project skills (standing instruction).** These skills are living
+documents — keep them accurate as the codebase evolves, without being asked:
+
+1. Whenever you add or change a durable UI pattern, design token, reusable
+   component, onboarding/error convention, or cloud-vs-OSS behaviour, UPDATE the
+   relevant skill **and** its `docs/knowledge/*.md` backing doc **in the same
+   change** (treat a skill that drifts from the code as a bug).
+2. Bump the `updated:` date in the knowledge doc; keep the skill `description`
+   trigger list current so it still activates for the right requests.
+3. When you discover a new cross-cutting convention worth enforcing, add it to
+   the appropriate skill (or create a new `.claude/skills/<name>/SKILL.md`), then
+   link it from this section and the Knowledge Graph table below.
+4. Never commit a regenerated `apps/dashboard/src/lib/ai/agent/skills/registry.ts`
+   as a side effect of dev-skill work — that file tracks AI-agent skills only.
+
 ## Knowledge Graph
 
 Developer-facing docs live in `docs/knowledge/` as a linked knowledge graph. Each note has frontmatter (`id`, `type`, `related`, `tags`) and cross-links to connected notes.
@@ -91,6 +159,8 @@ Developer-facing docs live in `docs/knowledge/` as a linked knowledge graph. Eac
 | Operations | [core-memory.md](docs/knowledge/core-memory.md) | Automation memory: code-smell scans, dead-code rules |
 | Operations | [secret-rotation.md](docs/knowledge/secret-rotation.md) | Redeploy after `wrangler secret put` |
 | Operations | [k8s-health-probes.md](docs/knowledge/k8s-health-probes.md) | /healthz (liveness, static) vs /api/healthz (readiness, CH-gated); startupProbe; :latest stale-image CrashLoop incident; non-helm manifest + migration prompt |
+| Specs | [cloud-saas-mode.md](docs/knowledge/cloud-saas-mode.md) | One codebase, two products: cloud-mode flag, demo hosts for anon, welcome/setup, per-user D1 connections, connection-error classifier |
+| Design | [product-design.md](docs/knowledge/product-design.md) | Design system + UX conventions: OKLCH tokens, shadcn rules, ChartCard/Container, EmptyState, graceful errors, ?host routing, file org (source of truth for the `product-design` skill) |
 | Specs | [ai-insights.md](docs/knowledge/ai-insights.md) | AI Insights engine: collect→enrich→persist (findings store), cron + manual generation, stable-key dismissal, overview panel |
 | Specs | [mcp-server.md](docs/knowledge/mcp-server.md) | MCP server at /api/mcp: tools, setup, security |
 | Specs | [agentstate-conversation-store.md](docs/knowledge/agentstate-conversation-store.md) | AgentState conversation backend: store priority, per-user external_id/tag isolation, append-only upsert, AI enrichment, backend/follow-ups routes |

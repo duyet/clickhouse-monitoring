@@ -1,0 +1,122 @@
+---
+description: Fix "Test connection" failures in ClickHouse Monitor — host not allowed, authentication failed, missing permissions, DNS, TLS, refused, and timeout errors.
+icon: PlugZap
+---
+
+# Connection errors
+
+When you add a ClickHouse host and click **Test connection**, the dashboard
+classifies any failure into one of the kinds below and links you straight here.
+Find your error and follow the fix.
+
+## Host not allowed
+
+> _Connections to internal addresses are not allowed._
+
+The hosted service at **dash.chmonitor.dev** blocks connections to private,
+internal, or loopback addresses (SSRF protection). The Cloud build can only
+reach **publicly routable** ClickHouse endpoints.
+
+**Fix**
+
+- Use a public HTTPS endpoint — for example ClickHouse Cloud, or your own server
+  exposed on a public host and port.
+- To monitor a **private** cluster (VPC, homelab, `localhost`, `10.x`, `192.168.x`),
+  **self-host** ClickHouse Monitor inside your network instead. The self-hosted
+  build has no address restriction. See [Deploy](/operate/deploy/self-host).
+
+## Invalid host URL
+
+> _Must be a full URL (e.g. https://my.clickhouse.cloud:8443)_
+
+The host must be a complete HTTP(S) URL including the scheme and port — not a
+bare hostname.
+
+**Fix** — enter `https://host:8443` (secure, default HTTPS port) or
+`http://host:8123` (plain HTTP port). See [Connection presets](/reference/connection-presets).
+
+## Authentication failed
+
+> _Code: 516. Authentication failed_ · HTTP 403
+
+The endpoint was reachable but ClickHouse rejected the **username or password**.
+
+**Fix**
+
+- Re-check the username and password. ClickHouse usernames are **case-sensitive**.
+- If the user is restricted by source IP (`HOST IP` in its definition), allow the
+  dashboard's egress address.
+
+## Not enough permissions
+
+> _Code: 497. Not enough privileges_
+
+The credentials are valid, but the user is missing the `SELECT` grants the
+dashboard needs on ClickHouse **system tables**.
+
+**Fix** — grant a read-only monitoring user access to the system database:
+
+```sql
+CREATE USER monitoring IDENTIFIED BY 'strong-password';
+GRANT SELECT ON system.* TO monitoring;
+-- optional: let the agent read your data schema
+GRANT SHOW TABLES, SHOW COLUMNS ON *.* TO monitoring;
+```
+
+See [ClickHouse requirements](/getting-started/clickhouse-requirements).
+
+## Host not found (DNS)
+
+> _getaddrinfo ENOTFOUND_ · _could not resolve host_
+
+The hostname could not be resolved. It is likely misspelled or only resolvable
+on a private/VPN network.
+
+**Fix** — verify the spelling and that the name resolves on the **public**
+internet. Internal-only DNS names are not reachable from Cloud — self-host to use
+them.
+
+## Connection refused
+
+> _connect ECONNREFUSED_
+
+The host resolved but actively refused the connection — ClickHouse is not
+listening on that port, or a firewall is blocking it.
+
+**Fix**
+
+- Confirm the port: `8443` (HTTPS) or `8123` (HTTP).
+- Ensure ClickHouse accepts external connections (`<listen_host>0.0.0.0</listen_host>`).
+- Open the firewall / security group for the dashboard.
+
+## TLS / certificate error
+
+> _self signed certificate_ · _unable to verify the first certificate_
+
+The TLS handshake failed — usually a self-signed or untrusted certificate, or an
+HTTPS request sent to an HTTP-only port.
+
+**Fix**
+
+- Use a publicly trusted certificate on the ClickHouse HTTPS port.
+- If the server is HTTP-only, use an `http://` URL with the HTTP port (`8123`).
+
+## Connection timed out
+
+> _connect ETIMEDOUT_
+
+The host did not respond in time — commonly unreachable from the public
+internet, or a firewall silently dropping packets.
+
+**Fix** — confirm the endpoint is publicly reachable and inbound traffic from the
+dashboard is allowed on the ClickHouse port.
+
+## Still stuck?
+
+- Test the same URL and credentials with `curl`:
+  ```bash
+  echo 'SELECT version()' | curl "https://host:8443/?user=monitoring&password=…" --data-binary @-
+  ```
+- See the general [Troubleshooting guide](/guides/troubleshooting).
+- For private clusters, [self-host ClickHouse Monitor](/operate/deploy/self-host)
+  — the same dashboard, no public-network requirement.
