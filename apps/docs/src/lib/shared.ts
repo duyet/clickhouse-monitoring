@@ -28,7 +28,7 @@ export const dashboardUrl = 'https://dash.chmonitor.dev'
 
 // GitHub repository info — used for "Edit on GitHub" links.
 export const gitConfig = {
-  user: 'duyet',
-  repo: 'clickhouse-monitoring',
+  user: 'chmonitor',
+  repo: 'chmonitor',
   branch: 'main',
 }

@@ -266,7 +266,7 @@ export function renderToolOutput(output: unknown) {
             <p className="mt-1">
               Charts are disabled in this deployment to avoid resource limits.{' '}
               <a
-                href="https://github.com/duyet/clickhouse-monitoring/blob/main/docs/deployment.md"
+                href="https://github.com/chmonitor/chmonitor/blob/main/docs/deployment.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline"

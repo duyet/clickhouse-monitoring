@@ -40,7 +40,7 @@ from conventional commits on `main` — no manual version bumps or tagging.
    explicit dispatch the versioned Docker images + release assets are silently
    never built (this bit v0.2.7, recovered with a manual `workflow_dispatch`).
    It builds multi-arch Docker images
-   (`ghcr.io/duyet/clickhouse-monitoring` + `ghcr.io/duyet/chmonitor`), packages
+   (`ghcr.io/chmonitor/chmonitor` + `ghcr.io/chmonitor/chmonitor`), packages
    standalone + Cloudflare archives + `SHA256SUMS`, then delegates **all
    release-notes generation + publishing** to the shared
    [`duyet/llm-release-action@v1`](https://github.com/duyet/llm-release-action)

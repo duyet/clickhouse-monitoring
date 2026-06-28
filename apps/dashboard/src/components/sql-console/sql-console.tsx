@@ -14,10 +14,6 @@ import type { StatementOutcome } from './hooks/use-sql-runner'
 
 import { DatabaseCombobox } from './database-combobox'
 import { useQueryHistory } from './hooks/use-query-history'
-import {
-  QueryFavoritesPanel,
-  SaveFavoriteButton,
-} from '@/components/query-favorites'
 import { useSqlRunner } from './hooks/use-sql-runner'
 import { QueryHistoryPanel } from './query-history-panel'
 import { AnalysisTab } from './tabs/analysis-tab'
@@ -26,6 +22,10 @@ import { QueryLogTab } from './tabs/query-log-tab'
 import { ResultsTab } from './tabs/results-tab'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ClientOnly } from '@/components/client-only'
+import {
+  QueryFavoritesPanel,
+  SaveFavoriteButton,
+} from '@/components/query-favorites'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'

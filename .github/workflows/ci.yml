@@ -195,17 +195,15 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          # Publish the multi-arch manifest under BOTH the legacy image name and
-          # the new chmonitor brand (matches release.yml). Deployments (kustomize
-          # base, Helm chart, Dockerfile, docs) pull ghcr.io/duyet/chmonitor, but
-          # IMAGE_NAME (github.repository) is the legacy "clickhouse-monitoring".
-          # base.yml already dual-publishes the per-arch images; this mirrors the
-          # multi-arch manifest so chmonitor:latest/main/edge/sha move on each
-          # push to main. Without it, chmonitor:latest is frozen and the k8s
-          # liveness probe (/healthz) 404s on a stale image -> CrashLoopBackOff.
+          # IMAGE_NAME (github.repository) is ghcr.io/chmonitor/chmonitor — the
+          # canonical brand that deployments (kustomize base, Helm chart,
+          # Dockerfile, docs) pull. base.yml already publishes the per-arch
+          # images; this mirrors the multi-arch manifest so
+          # chmonitor:latest/main/edge/sha move on each push to main. Without it,
+          # chmonitor:latest is frozen and the k8s liveness probe (/healthz) 404s
+          # on a stale image -> CrashLoopBackOff.
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
           tags: |
             type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}

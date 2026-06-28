@@ -16,8 +16,8 @@ resources:
 
 # Pin the image in one place. Override the tag per-environment with an overlay:
 #   images:
-#     - name: ghcr.io/duyet/chmonitor
+#     - name: ghcr.io/chmonitor/chmonitor
 #       newTag: v1.2.3
 images:
-  - name: ghcr.io/duyet/chmonitor
+  - name: ghcr.io/chmonitor/chmonitor
     newTag: "0.2.0"

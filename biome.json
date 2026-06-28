@@ -126,7 +126,9 @@
       "**/*.jsx",
       "**/*.json",
       "!packages/clickhouse-client/src/wasm/generated",
-      "!**/*.generated.ts"
+      "!**/*.generated.ts",
+      "!.agents",
+      "!.claude"
     ]
   }
 }

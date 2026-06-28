@@ -8,6 +8,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "build:og": "bun run scripts/build-og.ts",
     "cf:deploy": "wrangler deploy"
   },
   "dependencies": {

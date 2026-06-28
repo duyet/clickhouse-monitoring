@@ -18,7 +18,7 @@ request.
 ## Setup
 
 ```bash
-git clone https://github.com/duyet/clickhouse-monitoring
+git clone https://github.com/chmonitor/chmonitor
 cd clickhouse-monitoring
 bun install
 ```

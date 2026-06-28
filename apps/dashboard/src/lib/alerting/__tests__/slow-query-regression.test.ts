@@ -2,12 +2,12 @@
  * Slow Query Regression Tests
  */
 
-import { describe, expect, test } from 'bun:test'
 import {
   normalizeQueryFingerprint,
-  summarizeRegressions,
   type SlowQueryRegression,
+  summarizeRegressions,
 } from '../slow-query-regression'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // normalizeQueryFingerprint

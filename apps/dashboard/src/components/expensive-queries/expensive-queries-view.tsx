@@ -10,9 +10,9 @@ import type { ExpensiveQueryRow } from '@/components/expensive-queries/expensive
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useMemo, useState } from 'react'
-import { BulkExplainDialog } from '@/components/explain/bulk-explain-dialog'
 import { ExpensiveQueriesTable } from '@/components/expensive-queries/expensive-queries-table'
 import { LoadSummary } from '@/components/expensive-queries/load-summary'
+import { BulkExplainDialog } from '@/components/explain/bulk-explain-dialog'
 import { PageHeader } from '@/components/layout'
 import { CollapsedChartsRow } from '@/components/layout/query-page/collapsed-charts-row'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
@@ -28,10 +28,10 @@ import {
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { useTimeRange } from '@/lib/context/time-range-context'
+import { truncateSql } from '@/lib/explain-heuristics'
 import { useTableData } from '@/lib/query/use-table-data'
 import { expensiveQueriesConfig } from '@/lib/query-config/queries/expensive-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { truncateSql } from '@/lib/explain-heuristics'
 import { cn } from '@/lib/utils'
 
 // LoadingState is replaced by QueryPageSkeleton from @/components/query-tables/query-page-skeleton

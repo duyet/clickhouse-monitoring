@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { getLLMText, source } from '@/lib/source'
 
 // /llms-full.txt — full content of all documentation pages concatenated for

@@ -26,7 +26,7 @@ describe('formatErrorMessage', () => {
     const result = formatErrorMessage(err)
     expect(result).toContain('Required tables not found.')
     expect(result).toContain(
-      'https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
+      'https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables'
     )
     // must NOT contain the "Required tables not found: X" variant
     expect(result).not.toMatch(/Required tables not found: \w/)
@@ -45,7 +45,7 @@ describe('formatErrorMessage', () => {
     })
     const result = formatErrorMessage(err)
     expect(result).toBe(
-      'Required tables not found: system.backup_log. Checkout https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
+      'Required tables not found: system.backup_log. Checkout https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables'
     )
   })
 
@@ -202,7 +202,7 @@ describe('getErrorDocumentation', () => {
       'This feature requires specific ClickHouse configuration'
     )
     expect(doc).toContain(
-      'https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
+      'https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables'
     )
   })
 

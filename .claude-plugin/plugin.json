@@ -11,10 +11,10 @@
     "database",
     "observability"
   ],
-  "homepage": "https://github.com/duyet/clickhouse-monitor",
+  "homepage": "https://github.com/chmonitor/chmonitor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/duyet/clickhouse-monitoring.git"
+    "url": "https://github.com/chmonitor/chmonitor.git"
   },
   "skills": ["."]
 }

@@ -5,9 +5,18 @@
 /**
  * assistant-ui Thread for the ClickHouse agent.
  *
- * Composes the assistant-ui primitives (Thread / Message / Composer / ActionBar
- * / BranchPicker) and wires in the project's custom pieces, which live in
- * co-located `./-thread/*` modules:
+ * Composes the assistant-ui *runtime* primitives (Thread / Message / Composer /
+ * ActionBar / BranchPicker — which own message data + streaming) with the
+ * shadcn **Base UI** chat presentation layer:
+ *  - `components/ui/message`         – Message / MessageContent layout + align
+ *  - `components/ui/bubble`          – Bubble / BubbleContent surfaces
+ *  - `components/ui/message-scroller`– scroll container that owns stick-to-bottom,
+ *    turn anchoring, and the scroll-to-bottom button (replaces assistant-ui's
+ *    Viewport + ScrollToBottom). assistant-ui still provides the message list via
+ *    `ThreadPrimitive.Messages`; each rendered message wraps itself in a
+ *    `MessageScrollerItem` keyed by its runtime id so the scroller can anchor it.
+ *
+ * Project-specific pieces live in co-located `./-thread/*` modules:
  *  - `composer.tsx`        – welcome + in-thread mention composers
  *  - `chain-of-thought.tsx`– GroupedParts reasoning/tool render pipeline
  *  - `message-stats.tsx`   – per-message stats footer + details dialog
@@ -24,7 +33,6 @@
  */
 
 import {
-  ArrowDownIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -56,6 +64,16 @@ import { AgentWelcomeScreen } from '@/components/agents/welcome/agent-welcome-sc
 import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message'
 import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
+import { Bubble, BubbleContent } from '@/components/ui/bubble'
+import { Message, MessageContent } from '@/components/ui/message'
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from '@/components/ui/message-scroller'
 import { resolveConversationBackend } from '@/lib/conversation-store/adapter/resolve-thread-list-adapter'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
 import { track } from '@/lib/telemetry'
@@ -82,10 +100,9 @@ export function Thread({
         ['--assistant-max-width' as string]: '100%',
       }}
     >
-      {/* Empty (welcome) state lives OUTSIDE the auto-scrolling Viewport.
-          assistant-ui's Viewport pins toward the bottom as content grows, so
-          the tall welcome screen (composer + suggested questions) scrolled
-          itself down on open. A plain overflow container starts at the top. */}
+      {/* Empty (welcome) state lives OUTSIDE the scroll container. The tall
+          welcome screen (composer + suggested questions) should start at the
+          top, not be pinned to the bottom by the scroller. */}
       <ThreadPrimitive.If empty>
         <div className="flex flex-1 flex-col overflow-y-auto px-4 pt-14">
           <ThreadWelcome
@@ -97,50 +114,46 @@ export function Thread({
       </ThreadPrimitive.If>
 
       <ThreadPrimitive.If empty={false}>
-        <ThreadPrimitive.Viewport
-          scrollToBottomOnInitialize={false}
-          className="relative flex flex-1 flex-col overflow-y-auto scroll-smooth px-4 pt-14"
-        >
-          <ThreadPrimitive.Messages
-            components={{
-              UserMessage,
-              EditComposer,
-              AssistantMessage,
-            }}
-          />
+        {/* MessageScroller owns scroll: stick-to-bottom while streaming, turn
+            anchoring, and the floating scroll-to-bottom button. */}
+        <MessageScrollerProvider autoScroll>
+          <div className="relative flex flex-1 flex-col overflow-hidden">
+            <MessageScroller className="flex flex-1 flex-col overflow-hidden">
+              <MessageScrollerViewport className="px-4 pt-14">
+                <MessageScrollerContent className="mx-auto w-full gap-1">
+                  <ThreadPrimitive.Messages
+                    components={{
+                      UserMessage,
+                      EditComposer,
+                      AssistantMessage,
+                    }}
+                  />
+                </MessageScrollerContent>
 
-          <div className="min-h-6 grow" />
+                <MessageScrollerButton
+                  direction="end"
+                  className="left-1/2 -translate-x-1/2 rounded-full"
+                />
+              </MessageScrollerViewport>
+            </MessageScroller>
 
-          <div className="sticky bottom-0 z-10 mx-auto flex w-full flex-col items-start gap-2 bg-background pb-3 px-4">
-            <ThreadScrollToBottom />
-            <FollowUpSuggestions />
-            <ThreadComposer />
-            <p className="text-muted-foreground text-[11px] leading-4">
-              The agent runs read-only ClickHouse queries. Conversations are
-              saved{' '}
-              {resolveConversationBackend() === 'd1'
-                ? 'to your account'
-                : 'in this browser'}
-              .
-            </p>
+            {/* Composer + disclaimer pinned below the scroll area. */}
+            <div className="mx-auto flex w-full flex-col items-start gap-2 bg-background px-4 pb-3">
+              <FollowUpSuggestions />
+              <ThreadComposer />
+              <p className="text-muted-foreground text-[11px] leading-4">
+                The agent runs read-only ClickHouse queries. Conversations are
+                saved{' '}
+                {resolveConversationBackend() === 'd1'
+                  ? 'to your account'
+                  : 'in this browser'}
+                .
+              </p>
+            </div>
           </div>
-        </ThreadPrimitive.Viewport>
+        </MessageScrollerProvider>
       </ThreadPrimitive.If>
     </ThreadPrimitive.Root>
-  )
-}
-
-function ThreadScrollToBottom() {
-  return (
-    <ThreadPrimitive.ScrollToBottom asChild>
-      <TooltipIconButton
-        tooltip="Scroll to bottom"
-        variant="outline"
-        className="absolute -top-10 z-10 size-8 rounded-full p-1 disabled:invisible"
-      >
-        <ArrowDownIcon className="size-4" />
-      </TooltipIconButton>
-    </ThreadPrimitive.ScrollToBottom>
   )
 }
 
@@ -188,16 +201,25 @@ function ThreadWelcome({
 }
 
 const UserMessage: FC = () => {
+  const messageId = useMessage((m) => m.id)
   return (
-    <MessagePrimitive.Root className="ml-auto w-full py-3">
-      <div className="flex flex-col items-end gap-1">
-        <UserActionBar />
-        <div className="bg-muted text-foreground break-words rounded-2xl rounded-br-sm px-4 py-2 text-sm">
-          <MessagePrimitive.Parts />
-        </div>
-        <BranchPicker />
-      </div>
-    </MessagePrimitive.Root>
+    // scrollAnchor: a new user turn settles near the top of the viewport
+    // (rather than the thread snapping to the document bottom).
+    <MessageScrollerItem messageId={messageId} scrollAnchor className="w-full">
+      <MessagePrimitive.Root className="w-full py-3">
+        <Message align="end">
+          <MessageContent className="items-end">
+            <UserActionBar />
+            <Bubble variant="secondary" align="end">
+              <BubbleContent className="break-words text-sm">
+                <MessagePrimitive.Parts />
+              </BubbleContent>
+            </Bubble>
+            <BranchPicker />
+          </MessageContent>
+        </Message>
+      </MessagePrimitive.Root>
+    </MessageScrollerItem>
   )
 }
 
@@ -310,42 +332,48 @@ function MessageError() {
 
 /**
  * Assistant message body. Renders streaming parts (text · reasoning · tool
- * calls) without an "Agent" avatar header — the message column already aligns
- * left while user messages align right, so the chrome stays minimal.
+ * calls) full-width without an "Agent" avatar — the column already aligns left
+ * while user messages align right, so the chrome stays minimal.
  */
 const AssistantMessage: FC = () => {
+  const messageId = useMessage((m) => m.id)
   return (
-    <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--assistant-max-width)] py-3">
-      <div className="text-foreground flex flex-col gap-1.5">
-        {/* Task #1: loading dots while no parts exist yet */}
-        <LoadingIndicator />
+    <MessageScrollerItem messageId={messageId} className="w-full">
+      <MessagePrimitive.Root className="mx-auto w-full max-w-[var(--assistant-max-width)] py-3">
+        <Message align="start">
+          <MessageContent className="text-foreground w-full max-w-full gap-1.5">
+            {/* Task #1: loading dots while no parts exist yet */}
+            <LoadingIndicator />
 
-        {/* Tasks #4, #8, #11: chain-of-thought with reasoning + tool groups */}
-        <MessagePrimitive.GroupedParts groupBy={groupByChainOfThought}>
-          {
-            // The local GroupedRenderInfo is a structural approximation of the
-            // library's RenderInfo<ChainOfThoughtKey>; cast to the exact children
-            // signature the component expects (same code path as the Next app).
-            renderGroupedPart as ComponentProps<
-              typeof MessagePrimitive.GroupedParts
-            >['children']
-          }
-        </MessagePrimitive.GroupedParts>
+            {/* Tasks #4, #8, #11: chain-of-thought with reasoning + tool groups */}
+            <MessagePrimitive.GroupedParts groupBy={groupByChainOfThought}>
+              {
+                // The local GroupedRenderInfo is a structural approximation of
+                // the library's RenderInfo<ChainOfThoughtKey>; cast to the exact
+                // children signature the component expects (same code path as
+                // the Next app).
+                renderGroupedPart as ComponentProps<
+                  typeof MessagePrimitive.GroupedParts
+                >['children']
+              }
+            </MessagePrimitive.GroupedParts>
 
-        <JsonRenderMessage />
+            <JsonRenderMessage />
 
-        {/* Task #5: error display */}
-        <MessageError />
+            {/* Task #5: error display */}
+            <MessageError />
 
-        <div className="flex items-center gap-1">
-          <BranchPicker />
-          <AssistantActionBar />
-        </div>
+            <div className="flex items-center gap-1">
+              <BranchPicker />
+              <AssistantActionBar />
+            </div>
 
-        {/* Tasks #3 + #12: per-message stats + timestamp */}
-        <MessageStatsFooter />
-      </div>
-    </MessagePrimitive.Root>
+            {/* Tasks #3 + #12: per-message stats + timestamp */}
+            <MessageStatsFooter />
+          </MessageContent>
+        </Message>
+      </MessagePrimitive.Root>
+    </MessageScrollerItem>
   )
 }
 

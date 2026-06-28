@@ -7,10 +7,10 @@ icon: Container
 
 Run chmonitor as a Docker container. The image is published to GitHub Container Registry.
 
-**Image:** `ghcr.io/duyet/chmonitor:vX.Y.Z` — replace `vX.Y.Z` with a real release tag.  
-All releases: https://github.com/duyet/clickhouse-monitoring/pkgs/container/chmonitor
+**Image:** `ghcr.io/chmonitor/chmonitor:vX.Y.Z` — replace `vX.Y.Z` with a real release tag.  
+All releases: https://github.com/chmonitor/chmonitor/pkgs/container/chmonitor
 
-The legacy name `ghcr.io/duyet/clickhouse-monitoring` also works and points at the same build.
+The legacy name `ghcr.io/chmonitor/chmonitor` also works and points at the same build.
 
 ## Quick start
 
@@ -24,7 +24,7 @@ docker run -d --name chmonitor -p 3000:3000 \
   -e CLICKHOUSE_HOST='http://host.docker.internal:8123' \
   -e CLICKHOUSE_USER='monitoring' \
   -e CLICKHOUSE_PASSWORD='change-me' \
-  ghcr.io/duyet/chmonitor:vX.Y.Z
+  ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
 Open `http://localhost:3000`.
@@ -48,7 +48,7 @@ curl -sf http://localhost:3000/api/healthz && echo OK
 ```yaml
 services:
   chmonitor:
-    image: ghcr.io/duyet/chmonitor:vX.Y.Z
+    image: ghcr.io/chmonitor/chmonitor:vX.Y.Z
     ports:
       - '3000:3000'
     environment:
@@ -77,7 +77,7 @@ docker run -d --name chmonitor -p 3000:3000 \
   -e CLICKHOUSE_USER='monitoring' \
   -e CLICKHOUSE_PASSWORD='change-me' \
   -e CLICKHOUSE_NAME='prod' \
-  ghcr.io/duyet/chmonitor:vX.Y.Z
+  ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
 | Variable | Default | Description |
@@ -145,7 +145,7 @@ docker run -d --name chmonitor -p 3000:3000 \
   -e CLICKHOUSE_PASSWORD='change-me' \
   -e CHM_CONFIG_FILE='/config/chmonitor.toml' \
   -v /path/to/chmonitor.toml:/config/chmonitor.toml:ro \
-  ghcr.io/duyet/chmonitor:vX.Y.Z
+  ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
 Example `chmonitor.toml`:
@@ -281,7 +281,7 @@ These are inlined at build time — pass them as `-e` flags when building a cust
 ### Pull the new tag
 
 ```bash
-docker pull ghcr.io/duyet/chmonitor:vX.Y.Z
+docker pull ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 </Step>
 
@@ -300,7 +300,7 @@ docker rm -f chmonitor
 docker run -d --name chmonitor -p 3000:3000 \
   -e CLICKHOUSE_HOST='...' \
   ... \
-  ghcr.io/duyet/chmonitor:vX.Y.Z
+  ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
 Or with Compose: update the `image:` tag, then `docker compose up -d --force-recreate`.

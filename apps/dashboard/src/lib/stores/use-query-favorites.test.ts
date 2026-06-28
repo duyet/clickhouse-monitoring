@@ -1,5 +1,5 @@
 import { LocalFavoritesBackend } from './use-query-favorites'
-import { describe, expect, test, beforeEach } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 
 // Mock localStorage — shared mutable store reset in beforeEach.
 let storage: Record<string, string> = {}

@@ -1,56 +1,25 @@
----
-let stars = '—'
-let forks = '—'
-try {
-  const res = await fetch('https://api.github.com/repos/duyet/clickhouse-monitoring', {
-    headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
-  })
-  if (res.ok) {
-    const data = await res.json()
-    const fmt = (n: number) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
-    stars = fmt(data.stargazers_count ?? 0)
-    forks = fmt(data.forks_count ?? 0)
-  }
-} catch (_) { /* build-time fetch unavailable — show placeholders */ }
----
 <section class="band band-soft">
   <div class="wrap">
     <div class="sec-head reveal" style="text-align:center">
       <span class="eyebrow">Community</span>
       <h2>Open source, built in public</h2>
-      <p>chmonitor is developed openly on GitHub. Bug reports, feature requests and pull requests are all welcome.</p>
-    </div>
-
-    <div class="stat-grid reveal">
-      <div class="stat">
-        <div class="snum">{stars}</div>
-        <div class="slabel">GitHub stars</div>
-      </div>
-      <div class="stat">
-        <div class="snum">{forks}</div>
-        <div class="slabel">Forks</div>
-      </div>
-      <div class="stat">
-        <div class="snum">GPL-3.0</div>
-        <div class="slabel">Open source license</div>
-      </div>
     </div>
 
     <div class="stat-badges reveal">
       <img
-        src="https://img.shields.io/github/stars/duyet/clickhouse-monitoring?style=social"
+        src="https://img.shields.io/github/stars/chmonitor/chmonitor?style=social"
         alt="GitHub stars"
         width="120" height="20"
         loading="lazy"
       />
       <img
-        src="https://img.shields.io/github/forks/duyet/clickhouse-monitoring?style=social"
+        src="https://img.shields.io/github/forks/chmonitor/chmonitor?style=social"
         alt="GitHub forks"
         width="100" height="20"
         loading="lazy"
       />
       <img
-        src="https://img.shields.io/github/last-commit/duyet/clickhouse-monitoring?color=orange"
+        src="https://img.shields.io/github/last-commit/chmonitor/chmonitor?color=orange"
         alt="Last commit"
         width="160" height="20"
         loading="lazy"
@@ -58,11 +27,11 @@ try {
     </div>
 
     <div style="text-align:center;margin-top:28px" class="reveal">
-      <a class="btn btn-ghost" href="https://github.com/duyet/clickhouse-monitoring" target="_blank" rel="noopener">
+      <a class="btn btn-ghost" href="https://github.com/chmonitor/chmonitor" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.35 4.8-4.58 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
         View on GitHub
       </a>
-      <a class="btn btn-ghost" href="https://github.com/duyet/clickhouse-monitoring/discussions" target="_blank" rel="noopener" style="margin-left:10px">
+      <a class="btn btn-ghost" href="https://github.com/chmonitor/chmonitor/discussions" target="_blank" rel="noopener" style="margin-left:10px">
         Join the discussion
       </a>
     </div>
