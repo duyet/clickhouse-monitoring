@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+
 import { getLLMText, markdownPathToSlugs, source } from '@/lib/source'
 
 // Raw markdown endpoint: /{slug}.md

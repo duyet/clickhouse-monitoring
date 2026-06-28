@@ -2,13 +2,13 @@
  * MV Refresh Staleness Tests
  */
 
-import { describe, expect, test } from 'bun:test'
 import {
   classifyMvRefresh,
   countMvIssues,
   formatMvStaleness,
   type MvRefreshRow,
 } from '../mv-refresh-staleness'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // classifyMvRefresh

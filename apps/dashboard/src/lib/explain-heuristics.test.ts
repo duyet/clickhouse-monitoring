@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'bun:test'
-
 import {
   analyzeExplain,
   checkFullScanWithoutPrewhere,
@@ -9,6 +7,7 @@ import {
   checkNoIndexUsed,
   truncateSql,
 } from './explain-heuristics'
+import { describe, expect, test } from 'bun:test'
 
 describe('truncateSql', () => {
   test('collapses internal whitespace', () => {

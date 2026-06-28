@@ -11,7 +11,7 @@ export function formatErrorMessage(error: FetchDataError): string {
   switch (error.type) {
     case 'table_not_found': {
       const docs =
-        'Checkout https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
+        'Checkout https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables'
       if (
         error.details?.missingTables &&
         error.details.missingTables.length > 0
@@ -96,7 +96,7 @@ export function getErrorDocumentation(error: FetchDataError): string | null {
       ) {
         return 'ZooKeeper is not configured. This feature requires ZooKeeper for replication. More details: https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replication'
       }
-      return 'This feature requires specific ClickHouse configuration or system tables. More details: https://duyet.github.io/clickhouse-monitoring/getting-started/clickhouse-enable-system-tables'
+      return 'This feature requires specific ClickHouse configuration or system tables. More details: https://docs.chmonitor.dev/getting-started/clickhouse-enable-system-tables'
 
     case 'permission_error':
       return 'Grant required permissions to your ClickHouse user account.'

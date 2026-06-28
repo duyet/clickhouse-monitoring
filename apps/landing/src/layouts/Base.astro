@@ -39,7 +39,7 @@ const ogImage = new URL(image, Astro.site).toString()
         "name": "chmonitor",
         "url": "https://chmonitor.dev",
         "logo": { "@type": "ImageObject", "url": "https://chmonitor.dev/brand/logo-mark.svg" },
-        "sameAs": ["https://github.com/duyet/clickhouse-monitoring"]
+        "sameAs": ["https://github.com/chmonitor/chmonitor"]
       },
       {
         "@type": "SoftwareApplication",
@@ -47,10 +47,10 @@ const ogImage = new URL(image, Astro.site).toString()
         "name": "chmonitor",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Linux, macOS, Windows",
-        "license": "https://github.com/duyet/clickhouse-monitoring/blob/main/LICENSE",
+        "license": "https://github.com/chmonitor/chmonitor/blob/main/LICENSE",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "url": "https://chmonitor.dev",
-        "downloadUrl": "https://github.com/duyet/clickhouse-monitoring",
+        "downloadUrl": "https://github.com/chmonitor/chmonitor",
         "description": "An open-source dashboard to monitor ClickHouse clusters. Reads system tables directly — queries, merges, parts, replication, health and an AI agent.",
         "screenshot": "https://chmonitor.dev/og/og.png"
       }
@@ -119,12 +119,12 @@ const ogImage = new URL(image, Astro.site).toString()
     /* ── nav ── */
     header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.78);
       backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--border-soft)}
-    .nav-row{display:flex;align-items:center;justify-content:space-between;height:64px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:650;font-weight:600;font-size:16px;letter-spacing:-.01em}
-    .nav-links{display:flex;align-items:center;gap:30px}
-    .nav-links a{font-size:14px;color:var(--muted-fg);font-weight:500;transition:color .15s}
+    .nav-row{display:flex;align-items:center;justify-content:space-between;gap:28px;height:64px}
+    .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;font-weight:650;font-weight:600;font-size:16px;letter-spacing:-.01em}
+    .nav-links{display:flex;align-items:center;gap:22px}
+    .nav-links a{font-size:14px;color:var(--muted-fg);font-weight:500;white-space:nowrap;transition:color .15s}
     .nav-links a:hover{color:var(--fg)}
-    .nav-cta{display:flex;align-items:center;gap:10px}
+    .nav-cta{display:flex;align-items:center;gap:10px;flex:0 0 auto}
     .nav-toggle{display:none}
 
     /* ── hero ── */
@@ -339,8 +339,10 @@ const ogImage = new URL(image, Astro.site).toString()
     @media (prefers-reduced-motion:reduce){html.js .reveal{opacity:1;transform:none;transition:none}}
 
     /* ── responsive ── */
-    @media (max-width:880px){
+    @media (max-width:1024px){
       .nav-links{display:none}
+    }
+    @media (max-width:880px){
       .feature,.os{grid-template-columns:1fr;gap:34px}
       .feature.flip .feat-text{order:0}
       .feature + .feature{margin-top:72px}
@@ -356,17 +358,11 @@ const ogImage = new URL(image, Astro.site).toString()
     }
 
     /* ── social proof ── */
-    .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
-    .stat{padding:28px 24px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;text-align:center;box-shadow:var(--shadow-card)}
-    .stat .snum{font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1}
-    .stat .slabel{font-size:13.5px;color:var(--muted-fg);margin-top:8px}
-    .stat-badges{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
-    @media (max-width:640px){.stat-grid{grid-template-columns:1fr 1fr}}
-    @media (max-width:400px){.stat-grid{grid-template-columns:1fr}}
+    .stat-badges{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:40px;flex-wrap:wrap}
 
     /* ── pricing ── */
-    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:start}
-    .price-card{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
+    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:stretch}
+    .price-card{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
     .price-card-highlight{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),var(--shadow-card)}
     .price-hd{padding:28px 28px 20px;border-bottom:1px solid var(--border-soft)}
     .price-hd .pname{font-size:20px;font-weight:700;letter-spacing:-.015em}
@@ -376,11 +372,11 @@ const ogImage = new URL(image, Astro.site).toString()
     .price-hd .pamount{font-size:36px;font-weight:700;letter-spacing:-.03em;margin-top:16px;line-height:1}
     .price-hd .pamount small{font-size:15px;font-weight:500;color:var(--muted-fg);letter-spacing:0}
     .price-hd .pdesc{font-size:14px;color:var(--muted-fg);margin-top:10px;text-wrap:pretty}
-    .price-body{padding:22px 28px 28px}
+    .price-body{display:flex;flex-direction:column;flex:1;padding:22px 28px 28px}
     .price-rows{display:flex;flex-direction:column;gap:13px}
     .price-row{display:flex;gap:10px;font-size:14px;color:var(--fg-soft);list-style:none}
     .price-row svg{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
-    .price-cta{margin-top:24px}
+    .price-cta{margin-top:auto;padding-top:24px}
     @media (max-width:640px){.pricing-grid{grid-template-columns:1fr}}
 
     /* ── comparison ── */

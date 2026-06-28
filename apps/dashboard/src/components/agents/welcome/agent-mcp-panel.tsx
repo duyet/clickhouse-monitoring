@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { toMcpServers, useMcpConfig } from '@/lib/hooks/use-mcp-config'
+import { useMcpProbe } from '@/lib/swr/use-mcp-probe'
 import { useMcpServerInfo } from '@/lib/swr/use-mcp-server-info'
 import { cn } from '@/lib/utils'
 
@@ -237,6 +238,47 @@ function AddServerForm({ onCancel, onAdd }: AddServerFormProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Custom server row — probes the endpoint to get live status + tool list
+// ---------------------------------------------------------------------------
+
+interface CustomMcpServerRowProps {
+  server: McpServer
+  onToggle: (id: string, next: boolean) => void
+  onViewDetails: (server: McpServer) => void
+  onRemove: (id: string) => void
+}
+
+function CustomMcpServerRow({
+  server,
+  onToggle,
+  onViewDetails,
+  onRemove,
+}: CustomMcpServerRowProps) {
+  const probe = useMcpProbe({
+    endpoint: server.endpoint,
+    name: server.name,
+    enabled: server.enabled,
+  })
+
+  // Merge live probe results into the server shape for the row + dialog.
+  const liveServer: McpServer = {
+    ...server,
+    status: server.enabled ? probe.status : 'unconfigured',
+    toolCount: server.enabled ? probe.toolCount : 0,
+    probeTools: server.enabled ? probe.tools : undefined,
+  }
+
+  return (
+    <McpServerRow
+      server={liveServer}
+      onToggle={onToggle}
+      onViewDetails={onViewDetails}
+      onRemove={onRemove}
+    />
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Panel root
 // ---------------------------------------------------------------------------
 
@@ -322,15 +364,24 @@ export function AgentMcpPanel() {
 
       {/* Server list */}
       <div className="border-border divide-border divide-y rounded-md border">
-        {servers.map((server) => (
-          <McpServerRow
-            key={server.id}
-            server={server}
-            onToggle={handleToggle}
-            onViewDetails={setSelectedServer}
-            onRemove={removeServer}
-          />
-        ))}
+        {servers.map((server) =>
+          server.builtin ? (
+            <McpServerRow
+              key={server.id}
+              server={server}
+              onToggle={handleToggle}
+              onViewDetails={setSelectedServer}
+            />
+          ) : (
+            <CustomMcpServerRow
+              key={server.id}
+              server={server}
+              onToggle={handleToggle}
+              onViewDetails={setSelectedServer}
+              onRemove={removeServer}
+            />
+          )
+        )}
       </div>
 
       {/* Add server form / button */}

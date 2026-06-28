@@ -205,7 +205,22 @@ The dashboard exposes an MCP (Model Context Protocol) endpoint at `/api/mcp`. Th
 
 ### Agent settings sidebar
 
-The **MCP Servers** section of the agent settings sidebar shows the built-in `clickhouse-monitor` server with its live connection status, tool count, resource count, and version — fetched from `GET /api/v1/mcp/info`. Click a server row to see the full tool and resource list. The built-in server is always enabled and cannot be toggled off. Custom server registration ("Connect new server") is not yet available.
+The **MCP Servers** section of the agent settings sidebar shows the built-in `clickhouse-monitor` server with its live connection status, tool count, resource count, and version — fetched from `GET /api/v1/mcp/info`. Click a server row to see the full tool and resource list. The built-in server is always enabled and cannot be toggled off.
+
+### Custom MCP servers
+
+You can connect additional MCP servers from the agent settings sidebar. Click **Connect new server**, enter a name and endpoint URL, and save. Enabled custom servers are connected at the start of each agent request — their tools become available to the model for that conversation.
+
+**How tools are named.** Each tool from a custom server is prefixed `mcp_<server-name>_<tool-name>` (server name is lowercased and non-alphanumeric characters replaced with `_`, truncated to 20 chars). This keeps custom tools distinct from built-in ones.
+
+**Requirements and limits:**
+
+- Endpoint URL must use `https:`. `http:` is allowed only for `localhost` / `127.0.0.1` / `[::1]` (local development).
+- Private IP ranges are blocked (10.x, 172.16–31.x, 192.168.x, 127.x, 169.254.x). This includes the AWS/GCP instance metadata endpoint (`169.254.169.254`).
+- At most 5 custom servers are connected per request. Extras are skipped.
+- Each server has an 8-second connect timeout. A failing server does not affect other servers or the built-in tools.
+
+The panel probes each enabled server on load (`POST /api/v1/mcp/probe`) to show live connection status and tool count. Click a row to see the full tool list.
 
 ### MCP tools
 

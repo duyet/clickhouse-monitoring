@@ -25,7 +25,7 @@ The fastest path: run chmonitor against an existing ClickHouse instance. You nee
 
 ### Pull and run
 
-Replace `vX.Y.Z` with a real release tag from [GitHub releases](https://github.com/duyet/clickhouse-monitoring/releases):
+Replace `vX.Y.Z` with a real release tag from [GitHub releases](https://github.com/chmonitor/chmonitor/releases):
 
 ```bash
 docker run -d \
@@ -34,7 +34,7 @@ docker run -d \
   -e CLICKHOUSE_HOST=http://your-clickhouse-host:8123 \
   -e CLICKHOUSE_USER=monitoring \
   -e CLICKHOUSE_PASSWORD=your-password \
-  ghcr.io/duyet/chmonitor:vX.Y.Z
+  ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
 <Callout type="info" title="Docker host networking">
@@ -76,7 +76,7 @@ If pages are empty or show errors:
 ### Clone and install
 
 ```bash
-git clone https://github.com/duyet/clickhouse-monitoring
+git clone https://github.com/chmonitor/chmonitor
 cd clickhouse-monitoring
 bun install
 ```
