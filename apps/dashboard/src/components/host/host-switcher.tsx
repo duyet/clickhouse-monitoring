@@ -26,7 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useHostId } from '@/lib/swr'
-import { type MergedHostInfo, useMergedHosts } from '@/lib/swr/use-merged-hosts'
+import { isServerHost, useMergedHosts } from '@/lib/swr/use-merged-hosts'
 import { buildUrl } from '@/lib/url/url-builder'
 import { cn, getHost } from '@/lib/utils'
 
@@ -48,12 +48,6 @@ export function HostSwitcher() {
   const activeHost =
     hosts.find((h) => h.id === currentHostId) ?? hosts[0] ?? null
   const showExpanded = isMobile || state === 'expanded'
-
-  // `env` and `demo` hosts are both server-backed by numeric index, so they
-  // carry a live status/version indicator. `browser`/`database` connections are
-  // client-side and get a globe icon instead.
-  const isServerHost = (source: MergedHostInfo['source']) =>
-    source === 'env' || source === 'demo'
 
   const handleHostChange = (hostId: number) => {
     const url = buildUrl(pathname, { host: hostId }, searchParams)
@@ -190,11 +184,7 @@ export function HostSwitcher() {
                           <span className="truncate">
                             {activeHost.name || getHost(activeHost.host)}
                           </span>
-                          {activeHost.source === 'demo' && (
-                            <span className="shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                              Demo
-                            </span>
-                          )}
+                          {activeHost.source === 'demo' && <DemoBadge />}
                         </span>
                         {isServerHost(activeHost.source) ? (
                           <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
@@ -241,9 +231,7 @@ export function HostSwitcher() {
                       skipStatus={!isServerHost(host.source)}
                     />
                     {host.source === 'demo' && (
-                      <span className="ml-auto shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Demo
-                      </span>
+                      <DemoBadge className="ml-auto" />
                     )}
                   </DropdownMenuItem>
                 ))}
@@ -287,5 +275,19 @@ export function HostSwitcher() {
       </SidebarMenu>
       <AddHostDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
     </>
+  )
+}
+
+/** Small "Demo" pill marking the public read-only cloud demo host. */
+function DemoBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground',
+        className
+      )}
+    >
+      Demo
+    </span>
   )
 }

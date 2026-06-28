@@ -4,6 +4,7 @@ import type { BrowserConnection } from '@/lib/types/browser-connection'
 import { getBrowserConnectionSessionToken } from '@/lib/connection-sessions/session-manager'
 import { apiFetch } from '@/lib/swr/api-fetch'
 import { throwIfNotOk } from '@/lib/swr/fetch-error'
+import { isServerHost } from '@/lib/swr/use-merged-hosts'
 
 interface ApiEnvelope<T> {
   success: boolean
@@ -44,7 +45,7 @@ export async function fetchChartForHost<T>({
 }): Promise<{ data: T; metadata?: Record<string, unknown> }> {
   const host = findMergedHost(hosts, hostId)
 
-  if (!host || host.source === 'env') {
+  if (!host || isServerHost(host.source)) {
     const searchParams = new URLSearchParams()
     if (hostId !== undefined) searchParams.append('hostId', String(hostId))
     if (interval) searchParams.append('interval', interval)
@@ -125,7 +126,7 @@ export async function fetchTableForHost<T>({
 }): Promise<{ data: T[]; metadata?: Record<string, unknown> }> {
   const host = findMergedHost(hosts, hostId)
 
-  if (!host || host.source === 'env') {
+  if (!host || isServerHost(host.source)) {
     const params = new URLSearchParams()
     if (hostId !== undefined) params.append('hostId', String(hostId))
     if (searchParams) {

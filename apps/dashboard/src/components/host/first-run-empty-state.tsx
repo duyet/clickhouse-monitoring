@@ -110,16 +110,21 @@ function SetupStep({
   )
 }
 
-function DocLink({ slug, children }: { slug: string; children: ReactNode }) {
+function DocsFooter({ links }: { links: { slug: string; label: string }[] }) {
   return (
-    <a
-      href={docsSiteUrl(slug)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] font-medium hover:bg-muted"
-    >
-      {children}
-    </a>
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {links.map(({ slug, label }) => (
+        <a
+          key={slug}
+          href={docsSiteUrl(slug)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] font-medium hover:bg-muted"
+        >
+          {label}
+        </a>
+      ))}
+    </div>
   )
 }
 
@@ -177,15 +182,19 @@ function ConnectYourHost({ onAddHost }: { onAddHost: () => void }) {
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <DocLink slug="getting-started">Getting started</DocLink>
-        <DocLink slug="getting-started/clickhouse-requirements">
-          Create a monitoring user
-        </DocLink>
-        <DocLink slug="guides/connection-errors">
-          Connection troubleshooting
-        </DocLink>
-      </div>
+      <DocsFooter
+        links={[
+          { slug: 'getting-started', label: 'Getting started' },
+          {
+            slug: 'getting-started/clickhouse-requirements',
+            label: 'Create a monitoring user',
+          },
+          {
+            slug: 'guides/connection-errors',
+            label: 'Connection troubleshooting',
+          },
+        ]}
+      />
     </div>
   )
 }
@@ -221,10 +230,12 @@ function SignInToConnect() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <DocLink slug="getting-started">Getting started</DocLink>
-        <DocLink slug="features/overview">What you get</DocLink>
-      </div>
+      <DocsFooter
+        links={[
+          { slug: 'getting-started', label: 'Getting started' },
+          { slug: 'features/overview', label: 'What you get' },
+        ]}
+      />
     </div>
   )
 }
@@ -272,15 +283,19 @@ CLICKHOUSE_PASSWORD=••••••••`}</code>
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <DocLink slug="getting-started">Getting started</DocLink>
-        <DocLink slug="reference/environment-variables">
-          Environment variables
-        </DocLink>
-        <DocLink slug="guides/connection-errors">
-          Connection troubleshooting
-        </DocLink>
-      </div>
+      <DocsFooter
+        links={[
+          { slug: 'getting-started', label: 'Getting started' },
+          {
+            slug: 'reference/environment-variables',
+            label: 'Environment variables',
+          },
+          {
+            slug: 'guides/connection-errors',
+            label: 'Connection troubleshooting',
+          },
+        ]}
+      />
     </div>
   )
 }

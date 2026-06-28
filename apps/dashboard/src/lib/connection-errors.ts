@@ -22,7 +22,6 @@ export type ConnectionErrorKind =
   | 'connection_refused'
   | 'tls_error'
   | 'timeout'
-  | 'mixed_content'
   | 'unknown'
 
 export interface ClassifiedConnectionError {
@@ -160,15 +159,6 @@ const RULES: Rule[] = [
     explanation:
       'The host did not respond in time. It may be unreachable from the public internet, or a firewall is silently dropping packets.',
     fix: 'Confirm the endpoint is publicly reachable and the firewall/security group allows inbound traffic from the dashboard on the ClickHouse port.',
-    docsSlug: 'guides/connection-errors',
-  },
-  {
-    kind: 'mixed_content',
-    match: ['mixed content', 'blocked:mixed', 'insecure'],
-    title: 'Blocked insecure request',
-    explanation:
-      'The browser blocked an HTTP request made from an HTTPS page (mixed content).',
-    fix: 'Use an HTTPS endpoint for the ClickHouse host so the request is secure end to end.',
     docsSlug: 'guides/connection-errors',
   },
 ]
