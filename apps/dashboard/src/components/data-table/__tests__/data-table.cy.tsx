@@ -22,15 +22,15 @@
  *    control over pagination state without requiring a real data source.
  */
 
-import React, { useState } from 'react'
 import {
   getCoreRowModel,
   getPaginationRowModel,
-  useReactTable,
   type PaginationState,
+  useReactTable,
 } from '@tanstack/react-table'
 
 import { DataTablePagination } from '../pagination'
+import React, { useState } from 'react'
 
 // ---------------------------------------------------------------------------
 // Test wrappers (no router context required for these sub-components)

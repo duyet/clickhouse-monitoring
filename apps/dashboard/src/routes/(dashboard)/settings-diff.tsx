@@ -6,16 +6,17 @@
  * Highlights rows where values differ across hosts (hasDiff=true).
  */
 
+import { DownloadIcon } from '@radix-ui/react-icons'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { DownloadIcon } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -24,7 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Switch } from '@/components/ui/switch'
 import { pageOgHead } from '@/lib/og'
 import { apiFetch } from '@/lib/swr/api-fetch'
 

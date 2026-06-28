@@ -19,4 +19,9 @@ export interface McpServer {
   enabled: boolean
   /** Connection status */
   status: 'connected' | 'connecting' | 'error' | 'unconfigured'
+  /**
+   * Tool names from a live probe (custom servers only).
+   * Absent for the built-in server, which uses useMcpServerInfo instead.
+   */
+  probeTools?: string[]
 }

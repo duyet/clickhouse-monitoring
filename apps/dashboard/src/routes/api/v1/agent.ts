@@ -44,6 +44,10 @@ import { aggregateUsageWithCost } from '@/lib/ai/agent/analytics'
 import { classifyError } from '@/lib/ai/agent/errors'
 import { AGENT_JSON_RENDER_INLINE_PROMPT } from '@/lib/ai/agent/json-render-inline-prompt'
 import { createJsonRenderPatchGuardStream } from '@/lib/ai/agent/json-render-patch-guard'
+import {
+  type CustomMcpServerInput,
+  connectCustomMcpServers,
+} from '@/lib/ai/agent/mcp/connect-custom-servers'
 import { resolveDefaultAgentModel } from '@/lib/ai/agent-model-registry'
 import {
   getProviderName,
@@ -88,6 +92,7 @@ type AgentRequestBody = {
   model?: string
   disabledTools?: string[]
   sessionId?: string
+  mcpServers?: Array<{ id?: unknown; name?: unknown; endpoint?: unknown }>
 }
 
 type SanitizeIncomingMessagesResult =
@@ -484,6 +489,42 @@ async function handlePost(request: Request): Promise<Response> {
     : null
   const includeControlTools = controlToolsEnabled && !actionsPermissionResponse
 
+  // Parse and validate custom MCP servers from the request body.
+  const rawMcpServers = Array.isArray(body.mcpServers)
+    ? body.mcpServers.slice(0, 5)
+    : []
+  const validMcpServers: CustomMcpServerInput[] = rawMcpServers
+    .filter(
+      (s): s is { id: string; name: string; endpoint: string } =>
+        isObject(s) &&
+        typeof s.id === 'string' &&
+        typeof s.name === 'string' &&
+        typeof s.endpoint === 'string'
+    )
+    .map((s) => ({ id: s.id, name: s.name, endpoint: s.endpoint }))
+
+  // Connect custom MCP servers (if any) before creating the agent.
+  // closeAll() is called in onEnd so connections are freed after streaming.
+  let mcpCloseAll: (() => Promise<void>) | null = null
+  let extraTools: Record<string, unknown> | undefined
+
+  if (validMcpServers.length > 0) {
+    const mcpResult = await connectCustomMcpServers(validMcpServers)
+    mcpCloseAll = mcpResult.closeAll
+    extraTools =
+      Object.keys(mcpResult.tools).length > 0 ? mcpResult.tools : undefined
+
+    const connected = mcpResult.statuses.filter(
+      (s) => s.status === 'connected'
+    ).length
+    const errored = mcpResult.statuses.filter(
+      (s) => s.status === 'error'
+    ).length
+    console.log(
+      `[Agent API] Custom MCP servers: ${connected} connected, ${errored} failed`
+    )
+  }
+
   const requestOrigin = request.headers.get('origin') ?? undefined
   const agent = createClickHouseAgent({
     hostId,
@@ -494,6 +535,7 @@ async function handlePost(request: Request): Promise<Response> {
     referer: requestOrigin,
     includeControlTools,
     sessionId,
+    extraTools,
   })
 
   const uiMessages: Array<{
@@ -684,6 +726,13 @@ async function handlePost(request: Request): Promise<Response> {
       return JSON.stringify(classified)
     },
     onEnd: () => {
+      // Close any connected custom MCP servers now that the stream is done.
+      if (mcpCloseAll) {
+        mcpCloseAll().catch((e) => {
+          console.error('[Agent API] MCP closeAll error:', e)
+        })
+      }
+
       if (AGENT_DEBUG_LOGS && usageSteps.length > 0) {
         const stats = {
           ...aggregateUsageWithCost(usageSteps, model),

@@ -110,10 +110,14 @@ function Page() {
     <DocsLayout
       {...baseOptions()}
       tree={pageTree}
-      // Root folders (meta.json `root: true`) render as a sidebar dropdown
-      // (Fumadocs Layout Tabs); only the active tab's pages show in the tree.
-      tabMode="auto"
-      sidebar={{ footer: <SidebarFooter /> }}
+      // Sections are switched with Fumadocs' built-in sidebar tabs dropdown,
+      // auto-generated from the `root: true` folders — the single section
+      // switcher. tabMode stays default ('auto') so it renders inside the
+      // sidebar and keeps the tree scoped to the active section. Version lives
+      // once in the footer; no custom banner so the sidebar stays compact.
+      sidebar={{
+        footer: <SidebarFooter />,
+      }}
     >
       <Suspense>
         {clientLoader.useContent(path, { markdownUrl, path })}

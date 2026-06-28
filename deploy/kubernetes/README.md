@@ -1,6 +1,6 @@
 # Kubernetes manifests (kustomize base)
 
-Raw Kubernetes manifests for the [chmonitor](https://github.com/duyet/clickhouse-monitoring)
+Raw Kubernetes manifests for the [chmonitor](https://github.com/chmonitor/chmonitor)
 dashboard. This is the no-Helm `kubectl apply -k` path — it ships the same
 image, ports, probes, security context, and environment as the
 [Helm chart](../helm/chmonitor) but with plain YAML you can read,
@@ -80,7 +80,7 @@ namespace: monitoring
 resources:
   - ../../base
 images:
-  - name: ghcr.io/duyet/chmonitor
+  - name: ghcr.io/chmonitor/chmonitor
     newTag: v1.2.3
 replicas:
   - name: chmonitor

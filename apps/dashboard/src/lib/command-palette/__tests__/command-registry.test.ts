@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
 import { CommandRegistry } from '../command-registry'
+import { beforeEach, describe, expect, it } from 'bun:test'
 
 describe('CommandRegistry', () => {
   let registry: CommandRegistry

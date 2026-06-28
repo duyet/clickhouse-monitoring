@@ -1,11 +1,12 @@
+import { redirect } from '@tanstack/react-router'
 import {
-  createMiddleware,
   createCsrfMiddleware,
+  createMiddleware,
   createStart,
 } from '@tanstack/react-start'
-import { isMarkdownPreferred } from 'fumadocs-core/negotiation'
-import { redirect } from '@tanstack/react-router'
+
 import { slugsToMarkdownPath } from './lib/source'
+import { isMarkdownPreferred } from 'fumadocs-core/negotiation'
 
 const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === 'serverFn',

@@ -1,7 +1,7 @@
+import { docsRoute } from './shared'
+import { docs } from 'collections/server'
 import { loader } from 'fumadocs-core/source'
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons'
-import { docs } from 'collections/server'
-import { docsRoute } from './shared'
 
 // Primary documentation source — wraps the fumadocs-mdx generated collection.
 // Base URL is the site root (docsRoute = '') so pages resolve at /getting-started etc.

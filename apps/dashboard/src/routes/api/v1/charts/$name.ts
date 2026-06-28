@@ -9,12 +9,12 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
 import { error } from '@chm/logger'
+import { validateChartParams } from '@/lib/api/chart-param-validator'
 import {
   getAvailableCharts,
   getChartQuery,
   hasChart,
 } from '@/lib/api/chart-registry'
-import { validateChartParams } from '@/lib/api/chart-param-validator'
 import {
   classifyError,
   getStatusCodeForErrorType,

@@ -5,8 +5,8 @@ import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
 import { pageOgHead } from '@/lib/og'
 import {
-  storagePoliciesConfig,
   storageCompressionConfig,
+  storagePoliciesConfig,
   ttlStorageMovesConfig,
 } from '@/lib/query-config/system/storage-economics'
 

@@ -4,8 +4,8 @@ import type { SlowQueryRow } from '@/components/slow-queries/slow-queries-table'
 import type { CardError } from '@/lib/card-error-utils'
 
 import { useMemo, useState } from 'react'
-import { BulkExplainDialog } from '@/components/explain/bulk-explain-dialog'
 import { RegressionPanel } from '@/components/alerting/regression-panel'
+import { BulkExplainDialog } from '@/components/explain/bulk-explain-dialog'
 import { PageHeader } from '@/components/layout'
 import { RelatedCharts } from '@/components/layout/query-page/related-charts'
 import { QueryPageSkeleton } from '@/components/query-tables/query-page-skeleton'
@@ -21,11 +21,11 @@ import {
   toEmptyStateVariant,
 } from '@/lib/card-error-utils'
 import { useTimeRange } from '@/lib/context/time-range-context'
+import { truncateSql } from '@/lib/explain-heuristics'
 import { usePathname, useRouter, useSearchParams } from '@/lib/next-compat'
 import { useTableData } from '@/lib/query/use-table-data'
 import { slowQueriesConfig } from '@/lib/query-config/queries/slow-queries'
 import { useHostId } from '@/lib/swr/use-host'
-import { truncateSql } from '@/lib/explain-heuristics'
 import { cn } from '@/lib/utils'
 
 /** Refresh the slow-queries list every 60s — `query_log` is append-only. */
