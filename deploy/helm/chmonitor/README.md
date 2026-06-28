@@ -1,6 +1,6 @@
 # chmonitor Helm chart
 
-Production Helm chart for the [chmonitor](https://github.com/duyet/clickhouse-monitoring)
+Production Helm chart for the [chmonitor](https://github.com/chmonitor/chmonitor)
 dashboard. Vendored in-repo so the chart tracks the app it ships.
 
 ## Install
@@ -29,7 +29,7 @@ helm uninstall my-chm
 | Key | Default | Description |
 |---|---|---|
 | `replicaCount` | `1` | Number of pod replicas (ignored when autoscaling is on). |
-| `image.repository` | `ghcr.io/duyet/chmonitor` | Container image. |
+| `image.repository` | `ghcr.io/chmonitor/chmonitor` | Container image. |
 | `image.tag` | `""` | Image tag; falls back to the chart `appVersion`. |
 | `image.pullPolicy` | `IfNotPresent` | Image pull policy. |
 | `service.type` | `ClusterIP` | Kubernetes Service type. |
@@ -75,7 +75,7 @@ The `trusted` auth provider lets a reverse proxy (e.g. Traefik + oauth2-proxy +
 Dex) authenticate users and forward their identity as HTTP headers. chmonitor
 reads those headers and trusts them — no Clerk account or API key needed.
 
-> **Note on build-time vs runtime:** The published `ghcr.io/duyet/chmonitor`
+> **Note on build-time vs runtime:** The published `ghcr.io/chmonitor/chmonitor`
 > image is built with all auth providers compiled in. `auth.provider` (which sets
 > `CHM_AUTH_PROVIDER` at runtime) is enough to switch providers — no rebuild
 > required. The `VITE_AUTH_PROVIDER` build-time variable is baked into the

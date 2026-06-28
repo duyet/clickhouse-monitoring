@@ -1,7 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
 
 import { appName, gitConfig } from './shared'
-import { VersionSwitcher } from '@/components/version-switcher'
 
 // Shared nav/layout options used by both the home (HomeLayout) and docs
 // (DocsLayout) pages so the top bar stays consistent across the site.
@@ -42,12 +41,6 @@ export function baseOptions(): BaseLayoutProps {
         text: 'Releases',
         url: '/reference/releases',
         active: 'nested-url',
-      },
-      // Version pill, pinned to the right of the nav (next to GitHub/search).
-      {
-        type: 'custom',
-        children: <VersionSwitcher />,
-        secondary: true,
       },
     ],
   }

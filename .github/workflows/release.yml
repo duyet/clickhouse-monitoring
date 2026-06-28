@@ -209,12 +209,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@85e876bd3a78bcc6b9925c818c482e365cf13b71
         with:
-          # Publish the multi-arch manifest under BOTH the legacy image name and the new
-          # chmonitor brand. The legacy clickhouse-monitoring image is kept forever for
-          # backward compatibility; the loop below creates manifests for every generated tag.
+          # IMAGE_NAME (github.repository) is ghcr.io/chmonitor/chmonitor — the
+          # canonical brand. The loop below creates manifests for every generated tag.
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/chmonitor
           tags: |
             type=raw,value=${{ steps.release_meta.outputs.version }}
             type=raw,value=${{ steps.release_meta.outputs.minor }},enable=${{ steps.release_meta.outputs.stable == 'true' }}
@@ -273,8 +271,8 @@ jobs:
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push to OCI registry: oci://ghcr.io/duyet/chmonitor
-      # Pull with: helm install my-chm oci://ghcr.io/duyet/chmonitor --version X.Y.Z
+      # Push to OCI registry: oci://ghcr.io/chmonitor/chmonitor
+      # Pull with: helm install my-chm oci://ghcr.io/chmonitor/chmonitor --version X.Y.Z
       - name: Push chart to OCI (GHCR)
         run: |
           VERSION="${{ steps.ver.outputs.version }}"

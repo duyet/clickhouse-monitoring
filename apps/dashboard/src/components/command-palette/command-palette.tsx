@@ -18,8 +18,12 @@
  * ```
  */
 
-import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+
+import type { PaletteCommand } from '@/lib/command-palette/command-registry'
+
+import { useCommandPalette } from './use-command-palette'
+import { useEffect, useState } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -29,9 +33,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import type { PaletteCommand } from '@/lib/command-palette/command-registry'
 import { commandRegistry } from '@/lib/command-palette/command-registry'
-import { useCommandPalette } from './use-command-palette'
 
 interface RegistryCommandPaletteProps {
   /** Override open state for controlled usage. */

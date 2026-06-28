@@ -7,7 +7,7 @@ the official dashboard (it replaced the legacy Next.js app in v0.3, #1392). Live
 
 ## Deploy your own
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/duyet/clickhouse-monitoring/tree/main/apps/dashboard)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/chmonitor/chmonitor/tree/main/apps/dashboard)
 
 Click the button above to deploy your own instance to Cloudflare Workers. You will be prompted to connect your Cloudflare account and set the required environment variables.
 

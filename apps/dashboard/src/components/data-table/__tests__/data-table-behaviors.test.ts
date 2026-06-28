@@ -17,8 +17,8 @@
  * no local reimplementation.
  */
 
-import { describe, expect, test } from 'bun:test'
-
+import { EXPAND_COLUMN_ID } from '../column-defs'
+import { isColumnFilterable, normalizeColumnName } from '../column-defs/utils'
 // ---------------------------------------------------------------------------
 // Production imports — no local copies, no reimplementation
 // ---------------------------------------------------------------------------
@@ -28,9 +28,8 @@ import {
   applyGlobalSearch,
 } from '../hooks/use-filtered-data'
 import { getCustomSortingFns } from '../sorting-fns'
-import { isColumnFilterable, normalizeColumnName } from '../column-defs/utils'
 import { resolveTableBehavior } from '../utils/resolve-table-behavior'
-import { EXPAND_COLUMN_ID } from '../column-defs'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Minimal QueryConfig builder (typing subset used by resolveTableBehavior)

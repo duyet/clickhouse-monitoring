@@ -5,7 +5,7 @@ icon: Hexagon
 
 # Kubernetes
 
-Run chmonitor on Kubernetes with the vendored Helm chart or raw kustomize manifests. Both use the same image (`ghcr.io/duyet/chmonitor:vX.Y.Z`), expose port `3000`, run as the non-root `app` user (uid/gid `1001`), and wire the same health probes.
+Run chmonitor on Kubernetes with the vendored Helm chart or raw kustomize manifests. Both use the same image (`ghcr.io/chmonitor/chmonitor:vX.Y.Z`), expose port `3000`, run as the non-root `app` user (uid/gid `1001`), and wire the same health probes.
 
 <Mermaid chart={`flowchart LR
   I[Ingress / IngressRoute] --> S[Service :3000]
@@ -21,7 +21,7 @@ The chart is published in two registries:
 | Registry | Install command |
 |----------|----------------|
 | **Helm repo** (Cloudflare Pages) | `helm repo add chmonitor https://charts.chmonitor.dev` |
-| **OCI** (GHCR) | `helm install my-chm oci://ghcr.io/duyet/chmonitor --version X.Y.Z` |
+| **OCI** (GHCR) | `helm install my-chm oci://ghcr.io/chmonitor/chmonitor --version X.Y.Z` |
 
 ### From the Helm repository
 
@@ -59,10 +59,10 @@ helm uninstall my-chm
 
 ### From the OCI registry (GHCR)
 
-Replace `vX.Y.Z` with the latest release tag from [GitHub Releases](https://github.com/duyet/clickhouse-monitoring/releases).
+Replace `vX.Y.Z` with the latest release tag from [GitHub Releases](https://github.com/chmonitor/chmonitor/releases).
 
 ```bash
-helm install my-chm oci://ghcr.io/duyet/chmonitor --version vX.Y.Z \
+helm install my-chm oci://ghcr.io/chmonitor/chmonitor --version vX.Y.Z \
   --set clickhouse.host="https://clickhouse.example.com:8443" \
   --set clickhouse.user="monitoring" \
   --set clickhouse.password="change-me"
@@ -71,7 +71,7 @@ helm install my-chm oci://ghcr.io/duyet/chmonitor --version vX.Y.Z \
 Pull and inspect the chart before installing:
 
 ```bash
-helm pull oci://ghcr.io/duyet/chmonitor --version vX.Y.Z --untar
+helm pull oci://ghcr.io/chmonitor/chmonitor --version vX.Y.Z --untar
 helm show values ./chmonitor
 ```
 
@@ -80,7 +80,7 @@ helm show values ./chmonitor
 Alternatively, clone the repo and install the chart directly — useful when you want to patch the chart before installing:
 
 ```bash
-git clone https://github.com/duyet/clickhouse-monitoring.git
+git clone https://github.com/chmonitor/chmonitor.git
 cd clickhouse-monitoring
 
 helm install my-chm ./deploy/helm/chmonitor \
@@ -99,7 +99,7 @@ Example `values.yaml`:
 
 ```yaml
 image:
-  tag: "vX.Y.Z"   # use the latest release tag from https://github.com/duyet/clickhouse-monitoring/releases
+  tag: "vX.Y.Z"   # use the latest release tag from https://github.com/chmonitor/chmonitor/releases
 
 clickhouse:
   host: "https://clickhouse.example.com:8443"
@@ -146,7 +146,7 @@ namespace: monitoring
 resources:
   - ../../base
 images:
-  - name: ghcr.io/duyet/chmonitor
+  - name: ghcr.io/chmonitor/chmonitor
     newTag: vX.Y.Z
 replicas:
   - name: chmonitor
@@ -187,7 +187,7 @@ spec:
     spec:
       containers:
         - name: chmonitor
-          image: ghcr.io/duyet/chmonitor:vX.Y.Z
+          image: ghcr.io/chmonitor/chmonitor:vX.Y.Z
           ports:
             - containerPort: 3000
           envFrom:
@@ -287,7 +287,7 @@ Mount it and point `CHM_CONFIG_FILE` at it:
 ```yaml
 containers:
   - name: chmonitor
-    image: ghcr.io/duyet/chmonitor:vX.Y.Z
+    image: ghcr.io/chmonitor/chmonitor:vX.Y.Z
     env:
       - name: CHM_CONFIG_FILE
         value: /config/chmonitor.toml

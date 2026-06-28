@@ -57,7 +57,7 @@ Override with the `CHM_HEALTHZ_TIMEOUT_MS` env var. **Constraint:**
 
 ## The `:latest` gotcha (real incident, 2026-06-18)
 
-The homelab deployed `image: ghcr.io/duyet/chmonitor:latest` with
+The homelab deployed `image: ghcr.io/chmonitor/chmonitor:latest` with
 `imagePullPolicy: Always`. CI (`ci.yml`) rebuilds `:latest` on every `push:main`,
 but the image-build job had been **red for ~4 days** during a release-pipeline
 breakage. `:latest` still resolved to a 4-day-old image that **predated the
@@ -82,7 +82,7 @@ all three probes against the right paths. Minimal correct block:
 ```yaml
 containers:
   - name: chmonitor
-    image: ghcr.io/duyet/chmonitor:0.2.10   # PIN a version, do not use :latest
+    image: ghcr.io/chmonitor/chmonitor:0.2.10   # PIN a version, do not use :latest
     imagePullPolicy: IfNotPresent
     ports:
       - containerPort: 3000

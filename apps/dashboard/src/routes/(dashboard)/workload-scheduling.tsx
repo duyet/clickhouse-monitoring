@@ -1,11 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLayout } from '@/components/layout/query-page'
 import { PageSkeleton } from '@/components/skeletons'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pageOgHead } from '@/lib/og'
-import { workloadsConfig } from '@/lib/query-config/system/workloads'
 import { schedulerConfig } from '@/lib/query-config/system/scheduler'
+import { workloadsConfig } from '@/lib/query-config/system/workloads'
 
 function WorkloadSchedulingPageContent() {
   return (

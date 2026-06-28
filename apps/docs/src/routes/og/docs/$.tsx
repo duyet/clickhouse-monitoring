@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+
 import { source } from '@/lib/source'
 
 // OG image route: /og/docs/{...slugs}/image.webp
