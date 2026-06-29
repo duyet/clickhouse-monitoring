@@ -67,6 +67,28 @@ const fileVars = isPreview
     }
   : parseDotenv(join(ROOT, '.env.production'))
 
+// Resolve CHM_DEPLOYMENT_MODE into CONCRETE worker [vars] at deploy time, so the
+// worker never depends on per-request runtime derivation (a missing/mismatched
+// runtime read would silently drop the cloud public-read posture → anon 401).
+// The .env file's explicit values still win over these mode defaults.
+// ►► Keep in sync with MODE_DEFAULTS in src/lib/config/deployment-mode.ts ◄◄
+// (this build script can't import the @/-aliased module).
+const deploymentMode =
+  (fileVars.CHM_DEPLOYMENT_MODE ?? '').trim().toLowerCase() === 'cloud'
+    ? 'cloud'
+    : 'oss'
+const MODE_DEFAULT_VARS: Record<'cloud' | 'oss', Record<string, string>> = {
+  cloud: {
+    CHM_CLOUD_MODE: 'true',
+    CHM_AUTH_PROVIDER: 'clerk',
+    CHM_CLERK_PUBLIC_READ: 'true',
+    CHM_FEATURE_USER_CONNECTIONS_DB: 'true',
+    CHM_FEATURE_CONVERSATION_DB: 'true',
+  },
+  oss: {},
+}
+const resolvedVars = { ...MODE_DEFAULT_VARS[deploymentMode], ...fileVars }
+
 // Worker [vars] = every non-VITE_ key from the cloud env file. Only the private
 // deployment topology is allowed to be overridden from process.env (CI injects
 // the real homelab values from repo secrets in the "Patch wrangler config" step;
@@ -81,7 +103,7 @@ const DEPLOY_OVERRIDE_KEYS = new Set([
   'CLICKHOUSE_NAME',
 ])
 const vars: Record<string, string> = {}
-for (const [k, v] of Object.entries(fileVars)) {
+for (const [k, v] of Object.entries(resolvedVars)) {
   if (k.startsWith('VITE_')) continue
   const override = DEPLOY_OVERRIDE_KEYS.has(k) ? process.env[k] : undefined
   vars[k] = override && override !== '' ? override : v
