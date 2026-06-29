@@ -29,6 +29,7 @@
     "test:component:headless": "cypress run --component",
     "test:e2e": "cypress open --e2e",
     "test:e2e:headless": "cypress run --e2e",
+    "test:e2e:billing": "cypress run --spec 'cypress/e2e/billing-org-flow.cy.ts'",
     "smoke-test": "bun ../../scripts/smoke-test.ts --base-url https://dash.chmonitor.dev",
     "verify-deploy": "bun scripts/verify-deploy.ts"
   },
@@ -114,6 +115,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.1.7",
     "@clickhouse/client": "^1.18.5",
     "@cloudflare/vite-plugin": "^1.39.2",
     "@cloudflare/workers-types": "^4.20260603.1",
