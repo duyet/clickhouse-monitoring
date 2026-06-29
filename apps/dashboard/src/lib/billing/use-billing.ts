@@ -15,6 +15,8 @@ export interface BillingSubscription {
   status: string
   billingPeriod: 'monthly' | 'yearly' | null
   currentPeriodEnd: number | null
+  /** True when cancelled but still within the paid period (grace). */
+  cancelAtPeriodEnd?: boolean
 }
 
 interface Envelope<T> {
@@ -45,6 +47,15 @@ export function useBillingSubscription() {
       return readEnvelope<BillingSubscription>(res)
     },
     staleTime: 60_000,
+    // The Clerk __session cookie is short-lived and is refreshed a few seconds
+    // after a cold load; a billing query that fires before the refresh 401s and
+    // would otherwise cache "free" for the whole session. Always refetch on
+    // mount and keep retrying (capped ~4s delay, ~15s total) so the request
+    // lands once the fresh cookie is in place and the real plan replaces the
+    // stale value.
+    refetchOnMount: 'always',
+    retry: 5,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
   })
 }
 

@@ -13,8 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { resolveBillingOwner } from '@/lib/billing/billing-owner'
-import { getSubscription } from '@/lib/billing/subscription-store'
-import { getPlanIdForOwner } from '@/lib/billing/user-subscription'
+import { resolveOwnerSubscription } from '@/lib/billing/user-subscription'
 import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
 
 const ROUTE = { route: '/api/v1/billing/subscription', method: 'GET' }
@@ -22,15 +21,14 @@ const ROUTE = { route: '/api/v1/billing/subscription', method: 'GET' }
 async function handleGet(): Promise<Response> {
   try {
     const owner = await resolveBillingOwner()
-    const [planId, sub] = await Promise.all([
-      getPlanIdForOwner(owner.id),
-      getSubscription(owner.id),
-    ])
+    // Source of truth is Polar (with a D1 cache) — see resolveOwnerSubscription.
+    const sub = await resolveOwnerSubscription(owner.id)
     return createSuccessResponse({
-      planId,
+      planId: sub?.planId ?? 'free',
       status: sub?.status ?? 'none',
       billingPeriod: sub?.billingPeriod ?? null,
       currentPeriodEnd: sub?.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: sub?.cancelAtPeriodEnd ?? false,
       owner: { type: owner.type, id: owner.id },
     })
   } catch (error) {

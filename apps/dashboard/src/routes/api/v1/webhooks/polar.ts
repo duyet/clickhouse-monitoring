@@ -137,16 +137,29 @@ async function applySubscription(data: PolarSubscriptionData): Promise<void> {
     // Billing is preserved under userId; org creation can be retried manually.
   }
 
-  await upsertSubscription({
-    userId: ownerId,
-    ownerType,
-    planId: mapped.planId,
-    billingPeriod: mapped.period,
-    status: data.status,
-    polarSubscriptionId: data.id,
-    polarCustomerId: data.customerId,
-    currentPeriodEnd: toUnixSeconds(data.currentPeriodEnd),
-  })
+  // Best-effort cache write. The dashboard reconciles entitlement from Polar
+  // (resolveOwnerSubscription), so a missing/cold D1 must NOT fail the webhook —
+  // otherwise Polar retries the event forever on a 500 even though the truth is
+  // already in Polar. Log and acknowledge.
+  try {
+    await upsertSubscription({
+      userId: ownerId,
+      ownerType,
+      planId: mapped.planId,
+      billingPeriod: mapped.period,
+      status: data.status,
+      polarSubscriptionId: data.id,
+      polarCustomerId: data.customerId,
+      currentPeriodEnd: toUnixSeconds(data.currentPeriodEnd),
+    })
+  } catch (err) {
+    logError('[polar-webhook] D1 cache write failed (non-fatal)', {
+      ownerId,
+      ownerType,
+      planId: mapped.planId,
+      err,
+    })
+  }
 
   logInfo('[polar-webhook] applied subscription', {
     externalId,
