@@ -15,6 +15,8 @@ export interface BillingSubscription {
   status: string
   billingPeriod: 'monthly' | 'yearly' | null
   currentPeriodEnd: number | null
+  /** True when cancelled but still within the paid period (grace). */
+  cancelAtPeriodEnd?: boolean
 }
 
 interface Envelope<T> {

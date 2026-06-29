@@ -14,10 +14,12 @@
  */
 
 import type { Plan, PlanId } from './plans'
-import type { UserSubscription } from './subscription-store'
+import type { OwnerSubscription } from './polar-subscription'
+import type { OwnerType, UserSubscription } from './subscription-store'
 
 import { BILLING_PLANS, getPlan } from './plans'
-import { getSubscription } from './subscription-store'
+import { pullOwnerSubscriptionFromPolar } from './polar-subscription'
+import { getSubscription, upsertSubscription } from './subscription-store'
 
 /** Polar statuses that still grant the paid plan. */
 const LIVE_STATUSES = new Set(['active', 'trialing'])
@@ -33,14 +35,63 @@ export function isSubscriptionLive(
   return true
 }
 
+function validPlanId(id: PlanId): PlanId {
+  return BILLING_PLANS[id] ? id : 'free'
+}
+
+/**
+ * Resolve the live subscription for a billing owner, or null for free.
+ *
+ * D1 cache first (fast path once the webhook has synced), then reconcile against
+ * Polar as the source of truth — this catches missed/failed webhook deliveries
+ * and an empty/cold D1, and surfaces cancel-grace (Polar keeps a cancelled-at-
+ * period-end subscription "active" until the period ends). A Polar hit is
+ * written through to D1 best-effort so the next read takes the fast path.
+ */
+export async function resolveOwnerSubscription(
+  ownerId: string
+): Promise<OwnerSubscription | null> {
+  const cached = await getSubscription(ownerId)
+  if (cached && isSubscriptionLive(cached)) {
+    return {
+      planId: validPlanId(cached.planId),
+      billingPeriod: cached.billingPeriod,
+      status: cached.status,
+      currentPeriodEnd: cached.currentPeriodEnd,
+      cancelAtPeriodEnd: false,
+    }
+  }
+
+  const polar = await pullOwnerSubscriptionFromPolar(ownerId)
+  if (polar) {
+    // Write-through cache so the next read is a fast D1 hit. Best-effort: a
+    // missing/cold D1 must never break the (already-correct) Polar read.
+    const ownerType: OwnerType = ownerId.startsWith('org_') ? 'org' : 'user'
+    try {
+      await upsertSubscription({
+        userId: ownerId,
+        ownerType,
+        planId: polar.planId,
+        billingPeriod: polar.billingPeriod,
+        status: polar.status,
+        currentPeriodEnd: polar.currentPeriodEnd,
+      })
+    } catch {
+      // ignore — Polar already gave us the authoritative answer
+    }
+    return polar
+  }
+
+  return null
+}
+
 /**
  * Resolve the plan id for a billing owner (user or org), defaulting to free.
  * Pass the id from resolveBillingOwner() — either a Clerk user id or org id.
  */
 export async function getPlanIdForOwner(ownerId: string): Promise<PlanId> {
-  const sub = await getSubscription(ownerId)
-  if (!sub || !isSubscriptionLive(sub)) return 'free'
-  return BILLING_PLANS[sub.planId] ? sub.planId : 'free'
+  const sub = await resolveOwnerSubscription(ownerId)
+  return sub ? validPlanId(sub.planId) : 'free'
 }
 
 /**
