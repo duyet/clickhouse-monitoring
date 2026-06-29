@@ -106,8 +106,9 @@ LLM_MODEL=openrouter/free
 **Conversation persistence** (build-time flag + runtime backend)
 
 ```bash
-# Set at build time (before bun run build):
-VITE_FEATURE_CONVERSATION_DB=true
+# Set the canonical name at build time (before bun run build);
+# the client VITE_FEATURE_CONVERSATION_DB is derived from it:
+CHM_FEATURE_CONVERSATION_DB=true
 
 # Set at runtime:
 CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory

@@ -49,8 +49,8 @@ const MCP_WRANGLER_CONFIG = join(
   'mcp',
   'wrangler.toml'
 )
-// Dashboard worker secrets (excludes NEXT_PUBLIC_* build-time vars and the
-// CLICKHOUSE_HOST/USER non-secrets that live in wrangler.toml [vars]).
+// Dashboard worker secrets (excludes VITE_*/NEXT_PUBLIC_* build-time vars and the
+// non-secret runtime vars that live in .env.cloud / .env.preview).
 const DASHBOARD_SECRET_KEYS = [
   'CLICKHOUSE_PASSWORD',
   // LLM API keys for the AI Agent
@@ -68,7 +68,7 @@ const DASHBOARD_SECRET_KEYS = [
   // AgentState project key (as_live_...). Presence activates the AgentState
   // conversation-store backend (resolveStore picks it ahead of D1). Non-secret
   // AgentState knobs (base URL, AI-enrich, force-backend) live in
-  // wrangler.toml [vars]; only the key is a secret.
+  // .env.cloud / .env.preview; only the key is a secret.
   'AGENTSTATE_API_KEY',
   // HMAC secret for issuing/verifying MCP API keys. Needed on the dashboard
   // (/api/v1/auth/api-key mints keys via issueApiKey) AND the MCP worker.

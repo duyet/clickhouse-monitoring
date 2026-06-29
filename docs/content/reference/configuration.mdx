@@ -28,18 +28,23 @@ built-in defaults
 
 ---
 
-## Client variable prefixes
+## One canonical name per setting
 
-Browser-exposed variables are **inlined at build time**. The prefix depends on which app you run:
+Settings the browser needs (auth provider, cloud mode, feature flags) are inlined
+into the client bundle at build time as `VITE_*` vars. You set each **once**: use
+the canonical `CHM_*` name and `vite.config.ts` derives the matching `VITE_*` for
+the client. For example, set `CHM_AUTH_PROVIDER` — not also `VITE_AUTH_PROVIDER`.
 
-| App | Client prefix | Example |
-|---|---|---|
-| `apps/dashboard` (TanStack Start, current) | `VITE_*` | `VITE_AUTH_PROVIDER` |
-| Legacy Next.js (v0.2 and earlier) | `NEXT_PUBLIC_*` | `NEXT_PUBLIC_AUTH_PROVIDER` |
+Precedence per var: explicit `VITE_*` → canonical `CHM_*` → legacy
+`NEXT_PUBLIC_*` → built-in default. See [Environment Variables — One canonical
+name per setting](/reference/environment-variables#one-canonical-name-per-setting).
 
-The variable names and values are identical — only the prefix differs. This page and the [Environment Variables](/reference/environment-variables) reference use the `VITE_*` form. If you are migrating from a v0.2 Next.js deployment, substitute `NEXT_PUBLIC_` wherever you see `VITE_`.
+A dual-surface setting is still needed at both build time (so vite inlines its
+`VITE_*`) and runtime (so the server reads it), and changing it requires a
+**rebuild and redeploy** — it is not a runtime-only change.
 
-Changing a `VITE_*` variable requires a **rebuild and redeploy** — it is not a runtime change.
+If you are migrating from a v0.2 Next.js deployment, the legacy `NEXT_PUBLIC_*`
+prefix still works as a fallback.
 
 ---
 
@@ -127,8 +132,9 @@ Full reference: [AI Agent — Configuration](/guide/ai-agent/configuration).
 Agent conversations default to browser localStorage. Enable server persistence:
 
 ```bash
-# Build time (before bun run build); also requires VITE_AUTH_PROVIDER=clerk:
-VITE_FEATURE_CONVERSATION_DB=true
+# Set the canonical name (VITE_FEATURE_CONVERSATION_DB is derived at build time);
+# also requires Clerk auth (CHM_AUTH_PROVIDER=clerk):
+CHM_FEATURE_CONVERSATION_DB=true
 
 # Runtime — force a backend (optional; auto-selects when unset):
 CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory
@@ -177,11 +183,15 @@ Full reference: [Environment Variables — Analytics and Branding](/reference/en
 
 | Platform | How |
 |---|---|
-| Docker | `-e VAR=value` flags on `docker run`, or `environment:` in `docker-compose.yml` |
-| Kubernetes / Helm | `env:` in `values.yaml` or a `Secret` mounted as env |
-| Cloudflare Workers | `[vars]` in `wrangler.toml`; secrets via `wrangler secret put` |
+| Docker | `-e VAR=value` flags on `docker run`, or `environment:` / an optional `env_file: .env` in `docker-compose.yml` |
+| Kubernetes / Helm | `values.yaml` → ConfigMap (non-secret) + `Secret` (secrets), mounted via `envFrom` |
+| Cloudflare Workers (your own) | Non-secret vars via `wrangler.toml [vars]`; secrets via `wrangler secret put` |
 | Vercel | Project → Settings → Environment Variables |
-| Self-hosted Node | `.env` file or shell export |
+| Self-hosted Node | `.env` / `.env.local` file or shell export (template: `apps/dashboard/.env.example`) |
+
+<Callout type="info" title="The hosted product uses .env.cloud">
+On the hosted `dash.chmonitor.dev`, `wrangler.toml` declares **no** `[vars]` — the non-secret config lives in committed `apps/dashboard/.env.cloud` (+ `.env.preview`), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts` at deploy). When working in this repo, edit `.env.cloud` rather than re-adding a `[vars]` block.
+</Callout>
 
 See the per-platform install guides for copy-paste examples.
 

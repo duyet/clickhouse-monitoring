@@ -95,3 +95,28 @@ when auth.trusted.existingSecret is provided, otherwise the chart-managed one
 {{- include "chmonitor.fullname" . }}
 {{- end }}
 {{- end }}
+
+{{/*
+The name of the Secret holding CLERK_SECRET_KEY. Uses an existing Secret when
+auth.clerk.existingSecret is provided, otherwise the chart-managed one.
+*/}}
+{{- define "chmonitor.clerkSecretName" -}}
+{{- if .Values.auth.clerk.existingSecret }}
+{{- .Values.auth.clerk.existingSecret }}
+{{- else }}
+{{- include "chmonitor.fullname" . }}
+{{- end }}
+{{- end }}
+
+{{/*
+The name of the Secret holding the app secrets (CHM_CONNECTIONS_ENCRYPTION_KEY,
+CHM_API_KEY_SECRET). Uses an existing Secret when secrets.existingSecret is
+provided, otherwise the chart-managed one.
+*/}}
+{{- define "chmonitor.appSecretName" -}}
+{{- if .Values.secrets.existingSecret }}
+{{- .Values.secrets.existingSecret }}
+{{- else }}
+{{- include "chmonitor.fullname" . }}
+{{- end }}
+{{- end }}

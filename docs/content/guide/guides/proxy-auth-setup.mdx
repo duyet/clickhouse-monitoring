@@ -78,7 +78,6 @@ cloudflared tunnel run chmonitor
 
 ```bash
 CHM_AUTH_PROVIDER=proxy
-VITE_AUTH_PROVIDER=proxy
 
 CHM_CF_ACCESS_TEAM_DOMAIN=yourteam.cloudflareaccess.com
 CHM_CF_ACCESS_AUD=<64-char-aud-tag>
@@ -180,7 +179,6 @@ server {
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
-VITE_AUTH_PROVIDER=trusted
 
 # Shared secret — must match the value in nginx
 CHM_TRUSTED_AUTH_SECRET=your-shared-secret-here
@@ -271,7 +269,6 @@ Authelia sets `Remote-User`, `Remote-Name`, `Remote-Groups`, `Remote-Email`. Tel
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
-VITE_AUTH_PROVIDER=trusted
 
 # Authelia headers differ from chmonitor's defaults — override them
 CHM_TRUSTED_USER_HEADER=Remote-User

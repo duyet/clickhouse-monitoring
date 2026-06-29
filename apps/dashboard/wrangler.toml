@@ -48,39 +48,21 @@ deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
 pattern = "dash.chmonitor.dev"
 custom_domain = true
 
-[vars]
-CLICKHOUSE_HOST = "http://localhost:8123"
-CLICKHOUSE_USER = "default"
-CLICKHOUSE_NAME = "localhost"
-CLICKHOUSE_MAX_EXECUTION_TIME = "60"
-CLOUDFLARE_WORKERS = "1"
-LLM_MODEL = "anyrouter:@preset/chmonitor"
-OPENROUTER_REFERER = "https://chmonitor.dev"
-OPENROUTER_APP_NAME = "chmonitor"
-# Server-side auth provider (runtime). The CLIENT auth provider + Clerk
-# publishable key are NOT runtime vars — they are build-time inlined via
-# import.meta.env.VITE_* (see vite.config.ts CLIENT_ENV).
-CHM_AUTH_PROVIDER = "clerk"
-CHM_FEATURE_AGENT_ACCESS = "authenticated"
-# Public read-only mode: anonymous visitors can view monitoring data; writes
-# (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
-CHM_CLERK_PUBLIC_READ = "true"
-# Cloud (SaaS) mode: this is the hosted product. Env CLICKHOUSE_HOST is a PUBLIC
-# read-only DEMO; signed-in users get a clean per-user workspace and connect
-# their own host. Self-hosted/OSS deployments leave this UNSET (→ env hosts are
-# the operator's real hosts, full access). The build also needs VITE_CLOUD_MODE
-# inlined (set in the CI/deploy build step). See lib/cloud/cloud-mode.ts.
-CHM_CLOUD_MODE = "true"
-
-# AgentState conversation-store backend. The AGENTSTATE_API_KEY secret (set via
-# set-secrets.ts) alone activates it — resolveStore picks AgentState ahead of the
-# D1 binding on key presence, so no force var is set (forcing would make
-# resolveStore throw in keyless envs). AGENTSTATE_AI_ENRICH turns on auto-titles +
-# follow-up suggestions. Base URL defaults to agentstate.app/api.
-AGENTSTATE_AI_ENRICH = "true"
+# ─────────────────────────────────────────────────────────────────────────────
+# Worker runtime [vars] are intentionally NOT declared here.
+#
+# Single source of truth = the committed `.env.cloud` (+ `.env.preview` overlay).
+# `scripts/patch-wrangler-env.ts` reads those files at deploy and injects the
+# non-VITE_ keys as worker vars into the generated `dist/server/wrangler.json`
+# (the @cloudflare/vite-plugin strips [vars] from it anyway). The same files feed
+# the vite client build, so each value (CHM_CLOUD_MODE, CHM_AUTH_PROVIDER,
+# CHM_FEATURE_USER_CONNECTIONS_DB, …) is defined exactly ONCE and stays identical
+# across Wrangler and Docker/K8s. Secrets are set separately via set-secrets.ts.
+# Edit env in `.env.cloud` / `.env.preview` — never re-add a [vars] block here.
+# ─────────────────────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Reverse-proxy auth (EXAMPLE — not active; the dashboard uses `clerk` above).
+# Reverse-proxy auth (EXAMPLE — not active; the dashboard uses `clerk`).
 # Set CHM_AUTH_PROVIDER = "proxy" to authenticate requests via a trusted proxy.
 # Two mechanisms; either success authenticates a request:
 #
@@ -136,28 +118,6 @@ new_sqlite_classes = ["AgentConversationDurableObject"]
 tag = "v3-drop-legacy-next-dos"
 deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
 
-# Vars must be explicitly set per environment (not inherited from top-level)
-[env.preview.vars]
-CLICKHOUSE_HOST = "http://localhost:8123"
-CLICKHOUSE_USER = "default"
-CLICKHOUSE_NAME = "localhost"
-CLICKHOUSE_MAX_EXECUTION_TIME = "60"
-CLOUDFLARE_WORKERS = "1"
-LLM_MODEL = "anyrouter:z-ai/glm-4.7-flash"
-OPENROUTER_REFERER = "https://chmonitor.dev"
-OPENROUTER_APP_NAME = "chmonitor"
-
-# Server-side auth provider for preview (runtime). Client auth provider + the
-# Clerk publishable key are build-time inlined (import.meta.env.VITE_*); the CI
-# build step sets the pk_test key for preview deploys.
-CHM_AUTH_PROVIDER = "clerk"
-CHM_FEATURE_AGENT_ACCESS = "authenticated"
-CHM_CLERK_PUBLIC_READ = "true"
-# Preview mirrors the hosted product: cloud (SaaS) mode on. See production note.
-CHM_CLOUD_MODE = "true"
-
-# AgentState conversation-store backend. Preview only persists to AgentState if a
-# separate AGENTSTATE_API_KEY_TEST secret is provided (see set-secrets.ts) — it
-# does NOT reuse the prod key, keeping preview conversations out of the prod
-# project. Without a test key, preview gracefully falls back (no force var).
-AGENTSTATE_AI_ENRICH = "true"
+# Preview worker [vars] also come from .env.cloud + .env.preview via
+# `scripts/patch-wrangler-env.ts --env preview` (see the top-level note above) —
+# never re-declare [env.preview.vars] here.

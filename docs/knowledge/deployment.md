@@ -3,7 +3,7 @@ id: deployment
 title: Deployment Guide
 type: reference
 status: active
-updated: 2026-05-13
+updated: 2026-06-29
 tags:
   - deployment
   - docker
@@ -22,6 +22,61 @@ Dual deployment support: Docker and Cloudflare Workers from the same codebase.
 > below is authoritative. The Next.js / OpenNext content further down (`.next`,
 > `next build`, KV/R2/D1 cache populate) is **historical** and no longer applies
 > — the app now builds via Vite + Nitro. See `apps/dashboard/vite.config.ts`.
+
+## Environment configuration (single source of truth)
+
+All env config flows from `.env*` files with **one canonical name per setting**.
+There is no longer a parallel `wrangler.toml [vars]` block, a hardcoded CI build
+env, and a `patch-wrangler-env.ts` table to keep in sync — that drift once
+silently broke production (`CHM_FEATURE_USER_CONNECTIONS_DB` was set at client
+build time but never as a Worker runtime var, so per-user connection storage
+returned *"User connections database storage is not enabled"*).
+
+### Canonical `CHM_*`, auto-derived `VITE_*`
+
+A setting the **browser** needs is inlined into the client bundle at build time
+as a `VITE_*` var (Worker runtime `[vars]` never reach the browser). You do NOT
+set it twice. Set the canonical `CHM_*` name once and
+`apps/dashboard/vite.config.ts` (the `CLIENT_ENV` block) derives the matching
+`VITE_*` for the client:
+
+```
+set CHM_AUTH_PROVIDER  → vite derives VITE_AUTH_PROVIDER
+set CHM_CLOUD_MODE     → vite derives VITE_CLOUD_MODE
+set CHM_FEATURE_USER_CONNECTIONS_DB → vite derives VITE_FEATURE_USER_CONNECTIONS_DB
+set CHM_CLERK_PUBLISHABLE_KEY → vite derives VITE_CLERK_PUBLISHABLE_KEY
+```
+
+Precedence per var (see `CLIENT_ENV` in `vite.config.ts`): explicit `VITE_*` →
+canonical `CHM_*` → legacy `NEXT_PUBLIC_*` → committed default. The explicit
+`VITE_*` / `NEXT_PUBLIC_*` forms still work as back-compat overrides.
+
+### Where each target reads its env
+
+| Target | Non-secret config | Secrets | Mechanism |
+|--------|-------------------|---------|-----------|
+| **Cloudflare (hosted)** | `apps/dashboard/.env.cloud` (+ `.env.preview` overlay for PR previews) | `scripts/set-secrets.ts` (from CI secrets) | `scripts/patch-wrangler-env.ts` injects every non-`VITE_` key as a Worker runtime `[var]` at deploy; the same files feed the vite client build via `CHM_BUILD_ENV=cloud\|preview` (npm `build:cloud` / `build:preview`) |
+| **Docker** | `.env` (optional, `env_file` with `required: false` in `docker-compose.yml`) or `-e` flags; template is `.env.example` | `.env.local` / `-e` / orchestrator secret | plain `process.env`; client `VITE_*` is baked into the image at build time |
+| **Kubernetes / Helm** | `values.yaml` → ConfigMap | Kubernetes `Secret` | `envFrom` ConfigMap + Secret; client `VITE_*` is baked into the image at build time |
+
+`apps/dashboard/.env.example` is the self-hosted template (canonical names,
+secret vs non-secret split). The **same names** work on every target — switching
+from Docker to Wrangler is a config swap, not a re-learn.
+
+### Rules
+
+- **Never re-add a `[vars]` block to `wrangler.toml`.** The hosted product's
+  non-secret config lives ONLY in `apps/dashboard/.env.cloud` (+ `.env.preview`).
+  To change a hosted Worker runtime var, edit `.env.cloud` — `patch-wrangler-env.ts`
+  reads it at deploy.
+- **Secrets never live in committed `.env*`.** They go through
+  `scripts/set-secrets.ts` (Cloudflare), a Kubernetes `Secret`, or local
+  `.env.local`. The committed `.env.cloud` keeps `localhost` placeholders for
+  private topology (`CLICKHOUSE_HOST/USER/NAME`), overridden at deploy from CI
+  secrets via the strict allowlist in `patch-wrangler-env.ts`.
+- A dual-surface setting (e.g. `CHM_AUTH_PROVIDER`) is still needed at **both**
+  build time (so vite inlines its `VITE_*`) and runtime (so the server reads it)
+  — but it is the same single canonical name in both places, not two names.
 
 ## Dual-runtime compatibility (Node Docker + Cloudflare Workers)
 

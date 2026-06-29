@@ -123,7 +123,7 @@ Check that `LLM_API_KEY` is set and that `LLM_API_BASE` points at a reachable Op
 
 By default, history lives in browser `localStorage`. To persist it server-side:
 
-1. Set `VITE_FEATURE_CONVERSATION_DB=true` at build time (before `bun run build`). Also requires Clerk auth.
+1. Set `CHM_FEATURE_CONVERSATION_DB=true` at build time (before `bun run build`; the client `VITE_FEATURE_CONVERSATION_DB` is derived from it). Also requires Clerk auth.
 2. Set `CONVERSATION_STORE_BACKEND` at runtime to `agentstate`, `d1`, `postgres`, or `memory`.
 
 See [Conversation History](/guide/ai-agent/conversation-history) and [Store Backends](/guide/ai-agent/conversation-history/backends).
