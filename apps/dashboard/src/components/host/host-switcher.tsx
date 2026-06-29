@@ -112,16 +112,11 @@ export function HostSwitcher() {
               <SidebarMenuButton
                 size="lg"
                 onClick={() => setAddDialogOpen(true)}
-                className={cn(
-                  'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
-                  !showExpanded && 'justify-center'
-                )}
+                className={cn(!showExpanded && 'justify-center')}
                 data-testid="host-switcher-empty"
                 aria-label={showExpanded ? undefined : 'Add host'}
               >
-                <div className="relative">
-                  <PlusIcon className="size-5" />
-                </div>
+                <PlusIcon className="size-5" />
                 {showExpanded && (
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">Add Host</span>
