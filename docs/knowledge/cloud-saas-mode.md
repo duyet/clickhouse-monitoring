@@ -43,6 +43,18 @@ Read-only on the demo is *enforced* by the existing public-read gate: anonymous
 principals can only read, and signed-in users never see the demo. The `readOnly`
 flag on `MergedHostInfo` is the UI cue.
 
+**Public-demo allowlist.** A deploy may bind more env hosts than it wants to
+show publicly. `CHM_CLOUD_DEMO_HOSTS` (comma list of `CLICKHOUSE_NAME` entries)
+narrows the demo to a named subset — e.g. `CHM_CLOUD_DEMO_HOSTS=duet-ubuntu`
+exposes only that host to anonymous visitors; any other bound host stays
+private. Cloud-mode only; unset = all env hosts are the demo. Filter is
+fail-open: a zero-match allowlist (typo) passes through ALL hosts rather than
+black out the demo (empty host list = 503). The host `id` (index into
+`CLICKHOUSE_HOST`) is preserved so `?host=<id>` routing keeps resolving.
+Implemented in `lib/cloud/demo-hosts.ts` (`filterToDemoHosts`), applied at
+`api/v1/hosts.ts` (the shown list) and `lib/api/clickhouse-config.ts`
+(`getClickHouseConfigsFromEnv` → live status / health / notifications).
+
 ## Files
 
 - `apps/dashboard/src/lib/cloud/cloud-mode.ts` — resolvers + `parseCloudMode`. Tested.
