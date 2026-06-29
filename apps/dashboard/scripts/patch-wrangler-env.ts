@@ -125,32 +125,30 @@ generated.vars = vars
 
 // --- Patch D1 databases ---
 const conversationsDbId = (
-  process.env.CONVERSATIONS_D1_DATABASE_ID ||
-  process.env.AGENT_CONVERSATIONS_D1_DATABASE_ID ||
+  process.env.CHM_CLOUD_D1_DATABASE_ID ||
+  process.env.AGENT_CHM_CLOUD_D1_DATABASE_ID ||
   ''
 ).trim()
 
 if (conversationsDbId) {
   generated.d1_databases = (generated.d1_databases ?? []).map((db: any) => {
-    if (db.binding === 'CONVERSATIONS_D1') {
+    if (db.binding === 'CHM_CLOUD_D1') {
       return { ...db, database_id: conversationsDbId }
     }
     return db
   })
   console.log(
-    `   d1_databases: injected database_id for CONVERSATIONS_D1 (${conversationsDbId})`
+    `   d1_databases: injected database_id for CHM_CLOUD_D1 (${conversationsDbId})`
   )
 } else {
-  // Strip CONVERSATIONS_D1 binding if database_id is not provided
+  // Strip CHM_CLOUD_D1 binding if database_id is not provided
   const beforeCount = (generated.d1_databases ?? []).length
   generated.d1_databases = (generated.d1_databases ?? []).filter(
-    (db: any) => db.binding !== 'CONVERSATIONS_D1'
+    (db: any) => db.binding !== 'CHM_CLOUD_D1'
   )
   const afterCount = (generated.d1_databases ?? []).length
   if (beforeCount !== afterCount) {
-    console.log(
-      '   d1_databases: removed unprovisioned CONVERSATIONS_D1 binding'
-    )
+    console.log('   d1_databases: removed unprovisioned CHM_CLOUD_D1 binding')
   }
 }
 

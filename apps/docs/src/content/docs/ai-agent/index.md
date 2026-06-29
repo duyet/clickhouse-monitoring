@@ -148,7 +148,7 @@ INSIGHTS_STORE_BACKEND=auto   # auto | clickhouse | d1 | postgres | agentstate |
 |---|---|---|
 | `auto` (default) | ClickHouse `monitoring_findings` table | writable monitoring connection |
 | `clickhouse` | same as `auto` | writable monitoring connection |
-| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CONVERSATIONS_D1` |
+| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CHM_CLOUD_D1` |
 | `postgres` | Postgres `insights_findings` table | `DATABASE_URL` |
 | `agentstate` | AgentState State store | `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`) |
 | `memory` | in-process (ephemeral) | — |

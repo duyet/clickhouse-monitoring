@@ -6,7 +6,7 @@ import { isEncryptionConfigured } from './crypto'
 import { getPlatformBindings } from '@chm/platform'
 import { parseDeploymentMode } from '@/lib/config/deployment-mode'
 
-const D1_BINDING_NAME = 'CONVERSATIONS_D1'
+const D1_BINDING_NAME = 'CHM_CLOUD_D1'
 const DATABASE_URL = 'DATABASE_URL'
 
 function readEnv(key: string): string | undefined {

@@ -51,11 +51,11 @@ interface D1ConversationRow {
  */
 export class D1Store implements ConversationStore {
   private getDb(): D1Database {
-    const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
+    const db = getPlatformBindings().getD1Database('CHM_CLOUD_D1')
 
     if (!db) {
       throw new ConversationStoreError(
-        'CONVERSATIONS_D1 binding not found. Ensure D1 database is configured in wrangler.toml',
+        'CHM_CLOUD_D1 binding not found. Ensure D1 database is configured in wrangler.toml',
         'STORAGE_ERROR'
       )
     }

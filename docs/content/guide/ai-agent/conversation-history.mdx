@@ -51,7 +51,7 @@ When `CONVERSATION_STORE_BACKEND` is not set, the server auto-selects the first 
 When `CONVERSATION_STORE_BACKEND` is not set (or set to an unrecognized value), the server picks the first available backend in this order:
 
 1. **AgentState** — when `AGENTSTATE_API_KEY` is set and `CONVERSATION_STORE_BACKEND` is not `d1`, `postgres`, or `memory`.
-2. **Cloudflare D1** — when the `CONVERSATIONS_D1` binding is present (Cloudflare Workers only).
+2. **Cloudflare D1** — when the `CHM_CLOUD_D1` binding is present (Cloudflare Workers only).
 3. **Postgres** — when `DATABASE_URL` is set.
 4. **Memory** — fallback in development/CI. Conversations are lost on process restart.
 

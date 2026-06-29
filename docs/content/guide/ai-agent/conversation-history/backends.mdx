@@ -24,7 +24,7 @@ All server-side backends require `CHM_FEATURE_CONVERSATION_DB=true` set **before
 When `CONVERSATION_STORE_BACKEND` is not set, the server picks the first available backend:
 
 1. **AgentState** — when `AGENTSTATE_API_KEY` is set and `CONVERSATION_STORE_BACKEND` is not explicitly `d1`, `postgres`, or `memory`.
-2. **Cloudflare D1** — when the `CONVERSATIONS_D1` binding is present (Cloudflare Workers only).
+2. **Cloudflare D1** — when the `CHM_CLOUD_D1` binding is present (Cloudflare Workers only).
 3. **Postgres** — when `DATABASE_URL` is set.
 4. **Memory** — fallback in development/CI.
 
@@ -45,7 +45,7 @@ Cloudflare-only. Requires a provisioned D1 database and a Worker binding.
 
 ```bash
 CONVERSATION_STORE_BACKEND=d1
-CONVERSATIONS_D1_DATABASE_ID=<uuid>
+CHM_CLOUD_D1_DATABASE_ID=<uuid>
 ```
 
 Provision and migrate:
@@ -55,9 +55,9 @@ bun run cf:setup-conversations
 bun run cf:migrate-conversations
 ```
 
-The setup script creates the D1 database, stores the UUID in `wrangler.toml`, and adds the `CONVERSATIONS_D1` binding. The migration script applies the schema. During CI deploys, set `CONVERSATIONS_D1_DATABASE_ID` as a secret so `wrangler deploy` includes the binding. Without it, the binding is excluded from the deploy.
+The setup script creates the D1 database, stores the UUID in `wrangler.toml`, and adds the `CHM_CLOUD_D1` binding. The migration script applies the schema. During CI deploys, set `CHM_CLOUD_D1_DATABASE_ID` as a secret so `wrangler deploy` includes the binding. Without it, the binding is excluded from the deploy.
 
-Also accepts `AGENT_CONVERSATIONS_D1_DATABASE_ID` as an alias for `CONVERSATIONS_D1_DATABASE_ID`.
+Also accepts `AGENT_CHM_CLOUD_D1_DATABASE_ID` as an alias for `CHM_CLOUD_D1_DATABASE_ID`.
 
 **When to use:** standard Cloudflare deployments that want queryable, exportable conversation history.
 

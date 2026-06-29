@@ -11,6 +11,7 @@ import type { CreateUserConnectionInput } from '@/lib/connection-store/types'
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
+import { getUserPlan } from '@/lib/billing/user-subscription'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
 import { queryConnection } from '@/lib/connection-query/connection-client'
 import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
@@ -104,15 +105,6 @@ async function handlePost(request: Request): Promise<Response> {
     )
   }
 
-  const ssrfError = await validateHostUrl(host.trim())
-  if (ssrfError) {
-    return createApiErrorResponse(
-      { type: ApiErrorType.ValidationError, message: ssrfError },
-      400,
-      ROUTE_POST
-    )
-  }
-
   const credentials = {
     host: host.trim(),
     user: user.trim(),
@@ -120,21 +112,56 @@ async function handlePost(request: Request): Promise<Response> {
   }
 
   try {
-    await queryConnection(credentials, 'SELECT 1')
-  } catch (err) {
-    return createApiErrorResponse(
-      {
-        type: ApiErrorType.QueryError,
-        message: err instanceof Error ? err.message : 'Connection test failed',
-      },
-      400,
-      ROUTE_POST
-    )
-  }
-
-  try {
     const userId = await resolveConnectionUserId()
     const store = await resolveConnectionStore()
+
+    // Host-limit enforcement FIRST: paid plans cap how many connections a user
+    // keeps. plan.hosts === null means unlimited (Enterprise). Checking before
+    // the SSRF check + outbound connection test fails fast and avoids opening a
+    // network connection to an attacker-supplied host for a request we'll reject.
+    const plan = await getUserPlan(userId)
+    if (plan.hosts != null) {
+      const existing = await store.list(userId)
+      if (existing.length >= plan.hosts) {
+        return createApiErrorResponse(
+          {
+            type: ApiErrorType.PermissionError,
+            message: `Your ${plan.name} plan includes ${plan.hosts} host${plan.hosts === 1 ? '' : 's'}. Upgrade your plan to connect more.`,
+            details: {
+              planId: plan.id,
+              limit: plan.hosts,
+              reason: 'host_limit',
+            },
+          },
+          402,
+          ROUTE_POST
+        )
+      }
+    }
+
+    const ssrfError = await validateHostUrl(credentials.host)
+    if (ssrfError) {
+      return createApiErrorResponse(
+        { type: ApiErrorType.ValidationError, message: ssrfError },
+        400,
+        ROUTE_POST
+      )
+    }
+
+    try {
+      await queryConnection(credentials, 'SELECT 1')
+    } catch (err) {
+      return createApiErrorResponse(
+        {
+          type: ApiErrorType.QueryError,
+          message:
+            err instanceof Error ? err.message : 'Connection test failed',
+        },
+        400,
+        ROUTE_POST
+      )
+    }
+
     const input: CreateUserConnectionInput = {
       name: name.trim(),
       hostUrl: credentials.host,

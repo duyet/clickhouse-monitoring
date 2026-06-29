@@ -22,7 +22,7 @@ Browser-only storage remains available when server storage is disabled or the us
 
 1. Set auth to Clerk (`CHM_AUTH_PROVIDER=clerk`, `VITE_AUTH_PROVIDER=clerk`).
 2. Configure a database backend:
-   - **Cloudflare Workers**: `CONVERSATIONS_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
+   - **Cloudflare Workers**: `CHM_CLOUD_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
    - **Node / K8s**: `DATABASE_URL` or `POSTGRES_URL`.
 3. Set feature flags:
    ```bash

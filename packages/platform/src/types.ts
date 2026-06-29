@@ -19,7 +19,7 @@ export interface PlatformBindings {
   /**
    * Get a D1 database binding by name.
    *
-   * @param bindingName - The binding name (e.g. 'CONVERSATIONS_D1')
+   * @param bindingName - The binding name (e.g. 'CHM_CLOUD_D1')
    * @returns The D1Database instance, or null if not available
    */
   getD1Database(bindingName: string): D1Database | null

@@ -5,9 +5,9 @@
  *
  * Conversation D1 storage is optional and disabled by default. Wrangler D1
  * bindings still need a concrete database_id at deploy time, so an active
- * CONVERSATIONS_D1 block without a UUID makes preview/prod deploys hit the D1
+ * CHM_CLOUD_D1 block without a UUID makes preview/prod deploys hit the D1
  * control plane even when the feature is off. This writes a deploy-only config
- * that either injects CONVERSATIONS_D1_DATABASE_ID or drops the unprovisioned
+ * that either injects CHM_CLOUD_D1_DATABASE_ID or drops the unprovisioned
  * optional binding.
  */
 
@@ -52,15 +52,15 @@ function parseArgs(argv: string[]): Args {
 
 function conversationD1DatabaseId(): string | null {
   const value =
-    process.env.CONVERSATIONS_D1_DATABASE_ID ??
-    process.env.AGENT_CONVERSATIONS_D1_DATABASE_ID ??
+    process.env.CHM_CLOUD_D1_DATABASE_ID ??
+    process.env.AGENT_CHM_CLOUD_D1_DATABASE_ID ??
     ''
   const trimmed = value.trim()
   if (!trimmed) return null
 
   if (!UUID_RE.test(trimmed)) {
     throw new Error(
-      'CONVERSATIONS_D1_DATABASE_ID must be a Cloudflare D1 database UUID.'
+      'CHM_CLOUD_D1_DATABASE_ID must be a Cloudflare D1 database UUID.'
     )
   }
 
@@ -137,7 +137,7 @@ function prepareWranglerConfig(
 
     const block = lines.slice(index, end)
     const isConversationD1 = block.some((blockLine) =>
-      /^\s*binding\s*=\s*"CONVERSATIONS_D1"\s*$/.test(blockLine)
+      /^\s*binding\s*=\s*"CHM_CLOUD_D1"\s*$/.test(blockLine)
     )
 
     if (!isConversationD1) {
@@ -184,7 +184,7 @@ function main(): void {
 
   if (!databaseId && hasExplicitD1Store()) {
     throw new Error(
-      'AGENT_CONVERSATION_STORE=d1 requires CONVERSATIONS_D1_DATABASE_ID before deploying.'
+      'AGENT_CONVERSATION_STORE=d1 requires CHM_CLOUD_D1_DATABASE_ID before deploying.'
     )
   }
 
@@ -194,27 +194,27 @@ function main(): void {
 
   if (databaseId) {
     console.log(
-      `Prepared ${args.output} with CONVERSATIONS_D1 database_id (${result.injected} block${result.injected === 1 ? '' : 's'}).`
+      `Prepared ${args.output} with CHM_CLOUD_D1 database_id (${result.injected} block${result.injected === 1 ? '' : 's'}).`
     )
     return
   }
 
   if (result.removed > 0) {
     console.log(
-      `Prepared ${args.output} without unprovisioned CONVERSATIONS_D1 (${result.removed} block${result.removed === 1 ? '' : 's'} removed).`
+      `Prepared ${args.output} without unprovisioned CHM_CLOUD_D1 (${result.removed} block${result.removed === 1 ? '' : 's'} removed).`
     )
     console.log(
-      'Set CONVERSATIONS_D1_DATABASE_ID to include the D1 conversation binding during deploy.'
+      'Set CHM_CLOUD_D1_DATABASE_ID to include the D1 conversation binding during deploy.'
     )
     return
   }
 
   if (result.foundConversationD1) {
     console.log(
-      `Prepared ${args.output}; CONVERSATIONS_D1 already has database_id.`
+      `Prepared ${args.output}; CHM_CLOUD_D1 already has database_id.`
     )
   } else {
-    console.log(`Prepared ${args.output}; no CONVERSATIONS_D1 block found.`)
+    console.log(`Prepared ${args.output}; no CHM_CLOUD_D1 block found.`)
   }
 }
 

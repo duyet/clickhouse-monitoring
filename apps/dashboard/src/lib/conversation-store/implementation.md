@@ -9,7 +9,7 @@ D1-based conversation storage for AI agent chat history in Cloudflare Workers en
 ### 1. `/lib/conversation-store/d1-store.ts`
 - Implements `ConversationStore` interface
 - Uses `getCloudflareContext()` from `@opennextjs/cloudflare`
-- D1 binding name: `CONVERSATIONS_D1`
+- D1 binding name: `CHM_CLOUD_D1`
 
 ### 2. `/src/db/migrations/conversations/0001_conversations.sql`
 - Creates `conversations` table with indexes
@@ -23,14 +23,14 @@ Added D1 binding configuration:
 ```toml
 # D1 database for AI agent conversations
 [[d1_databases]]
-binding = "CONVERSATIONS_D1"
+binding = "CHM_CLOUD_D1"
 database_name = "clickhouse-monitor-conversations"
 ```
 
 Also added to `[env.preview]` section for PR deployments.
 
 ### 2. `cloudflare-env.d.ts`
-Added `CONVERSATIONS_D1: D1Database` to `Cloudflare.Env` interface.
+Added `CHM_CLOUD_D1: D1Database` to `Cloudflare.Env` interface.
 
 ## Database Schema
 

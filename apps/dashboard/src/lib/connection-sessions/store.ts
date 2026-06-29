@@ -35,7 +35,7 @@ function pruneMemorySessions(): void {
 
 function getD1(): D1Database | null {
   try {
-    return getPlatformBindings().getD1Database('CONVERSATIONS_D1') ?? null
+    return getPlatformBindings().getD1Database('CHM_CLOUD_D1') ?? null
   } catch {
     return null
   }
