@@ -87,15 +87,19 @@ const e: Record<string, string | undefined> = {
   ...process.env,
 }
 // Deployment profile drives the client defaults below, mirroring the server
-// (lib/config/profile.ts). `CHM_PROFILE=cloud` alone flips cloud mode, clerk
+// (lib/config/deployment-mode.ts). `CHM_DEPLOYMENT_MODE=cloud` alone flips cloud mode, clerk
 // auth, public-read, and per-user storage on — each still overridable by its
 // explicit VITE_*/CHM_* var. Fail-closed: anything but cloud/saas → self-hosted.
-const _profile = (e.CHM_PROFILE ?? e.VITE_PROFILE ?? '').trim().toLowerCase()
+const _profile = (e.CHM_DEPLOYMENT_MODE ?? e.VITE_DEPLOYMENT_MODE ?? '')
+  .trim()
+  .toLowerCase()
 const isCloud = _profile === 'cloud' || _profile === 'saas'
 const CLIENT_ENV = {
   // Expose the resolved profile so client code can read it directly.
-  VITE_PROFILE:
-    e.VITE_PROFILE ?? e.CHM_PROFILE ?? (isCloud ? 'cloud' : 'self-hosted'),
+  VITE_DEPLOYMENT_MODE:
+    e.VITE_DEPLOYMENT_MODE ??
+    e.CHM_DEPLOYMENT_MODE ??
+    (isCloud ? 'cloud' : 'oss'),
   VITE_AUTH_PROVIDER:
     e.VITE_AUTH_PROVIDER ??
     e.CHM_AUTH_PROVIDER ??

@@ -48,8 +48,8 @@ export function parseAuthProvider(
 export function getAuthProvider(): AuthProvider {
   // Precedence: runtime CHM_AUTH_PROVIDER → build-time VITE_AUTH_PROVIDER →
   // legacy NEXT_PUBLIC_AUTH_PROVIDER. When none is set, the default comes from
-  // the deployment profile: `CHM_PROFILE=cloud` → clerk, otherwise none. (The
-  // profile check is inlined here, not imported from lib/config/profile, to keep
+  // the deployment profile: `CHM_DEPLOYMENT_MODE=cloud` → clerk, otherwise none. (The
+  // profile check is inlined here, not imported from lib/config/deployment-mode, to keep
   // this module import-cycle-free — profile.ts depends on parseAuthProvider.)
   const explicit =
     process.env.CHM_AUTH_PROVIDER ??
@@ -57,8 +57,8 @@ export function getAuthProvider(): AuthProvider {
     process.env.NEXT_PUBLIC_AUTH_PROVIDER
   if (explicit) return parseAuthProvider(explicit)
   const profile = (
-    process.env.CHM_PROFILE ??
-    import.meta.env.VITE_PROFILE ??
+    process.env.CHM_DEPLOYMENT_MODE ??
+    import.meta.env.VITE_DEPLOYMENT_MODE ??
     ''
   )
     .trim()

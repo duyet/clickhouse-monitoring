@@ -33,7 +33,7 @@ import {
 import { env } from 'cloudflare:workers'
 import { isValidAgentApiBearerToken } from '@/lib/auth/agent-api-token'
 import { parseAuthProvider } from '@/lib/auth/provider'
-import { parseProfile } from '@/lib/config/profile'
+import { parseDeploymentMode } from '@/lib/config/deployment-mode'
 
 // ---------------------------------------------------------------------------
 // Env access: Cloudflare binding first, then process.env.
@@ -138,7 +138,7 @@ function getAppConfig(): AppConfig {
 
 /**
  * Anonymous read under clerk. Explicit `CHM_CLERK_PUBLIC_READ` wins; otherwise
- * it defaults from the deployment profile — `CHM_PROFILE=cloud` turns it ON so
+ * it defaults from the deployment profile — `CHM_DEPLOYMENT_MODE=cloud` turns it ON so
  * the cloud instance serves its public read-only demo without an extra flag.
  * See api-guard.ts.
  */
@@ -148,7 +148,7 @@ export function publicReadEnabled(): boolean {
     'CHM_CLERK_PUBLIC_READ'
   )
   if (explicit !== undefined) return explicit
-  return parseProfile(readEnv('CHM_PROFILE')) === 'cloud'
+  return parseDeploymentMode(readEnv('CHM_DEPLOYMENT_MODE')) === 'cloud'
 }
 
 // ---------------------------------------------------------------------------

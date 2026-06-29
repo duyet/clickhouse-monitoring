@@ -72,17 +72,17 @@ Secrets NEVER live in committed `.env*` — only in `scripts/set-secrets.ts` / a
 K8s Secret / `.env.local`. **Never re-add a `[vars]` block to `wrangler.toml` —
 edit `.env.production`.**
 
-**Deployment profile (the ONE high-level switch):** `CHM_PROFILE=self-hosted`
+**Deployment mode (the ONE high-level switch):** `CHM_DEPLOYMENT_MODE=oss`
 (default) `| cloud` resolves good defaults for cloud mode, auth provider,
-public-read, and per-user storage — so a cloud deploy is just `CHM_PROFILE=cloud`
+public-read, and per-user storage — so a cloud deploy is just `CHM_DEPLOYMENT_MODE=cloud`
 and an OSS deploy is the default (set `CHM_AUTH_PROVIDER=clerk|trusted` to add
-auth). Each individual `CHM_*` flag still overrides its profile default.
-Source: `lib/config/profile.ts` (`parseProfile` / `profileDefaults` /
-`resolveConfig`). Fail-closed to self-hosted, like `lib/cloud` / `lib/edition`.
+auth). Each individual `CHM_*` flag still overrides its mode default.
+Source: `lib/config/deployment-mode.ts` (`parseDeploymentMode` / `modeDefaults` /
+`resolveConfig`). Fail-closed to oss, like `lib/cloud` / `lib/edition`.
 
 **Where cloud mode is wired:**
-- `lib/config/profile.ts` — `CHM_PROFILE` → resolved defaults; consulted by the readers below when an explicit flag is unset.
-- `lib/cloud/cloud-mode.ts` — `isCloudModeClient()` / `isCloudModeServer()` / `parseCloudMode()` (server derives from `CHM_PROFILE` when `CHM_CLOUD_MODE` unset).
+- `lib/config/deployment-mode.ts` — `CHM_DEPLOYMENT_MODE` → resolved defaults; consulted by the readers below when an explicit flag is unset.
+- `lib/cloud/cloud-mode.ts` — `isCloudModeClient()` / `isCloudModeServer()` / `parseCloudMode()` (server derives from `CHM_DEPLOYMENT_MODE` when `CHM_CLOUD_MODE` unset).
 - `apps/dashboard/.env.production` (+ `.env.preview`) — single source: `CHM_CLOUD_MODE=true`, `CHM_FEATURE_USER_CONNECTIONS_DB=true`, etc.
 - `vite.config.ts` `loadDeployEnv` + CLIENT_ENV + `src/vite-env.d.ts` — derive/inline `VITE_CLOUD_MODE` (build) from the canonical `CHM_*`.
 - `scripts/patch-wrangler-env.ts` — reads `.env.production`/`.env.preview` → Worker runtime `[vars]` (the @cloudflare/vite-plugin strips `[vars]` from the generated config).

@@ -1,4 +1,4 @@
-import { resolveConfig } from '../config/profile'
+import { resolveConfig } from '../config/deployment-mode'
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -44,11 +44,11 @@ describe('.env.production (single source of truth for the hosted product)', () =
     expect(Object.keys(cloud).length).toBeGreaterThan(0)
   })
 
-  test('selects the cloud posture via the single CHM_PROFILE switch', () => {
+  test('selects the cloud posture via the single CHM_DEPLOYMENT_MODE switch', () => {
     // The hosted product is configured by ONE var; the individual mode/auth/
-    // feature flags are derived from it (lib/config/profile.ts). Setting the old
+    // feature flags are derived from it (lib/config/deployment-mode.ts). Setting the old
     // flags individually is no longer required (or committed).
-    expect(cloud.CHM_PROFILE).toBe('cloud')
+    expect(cloud.CHM_DEPLOYMENT_MODE).toBe('cloud')
     const resolved = resolveConfig((k) => cloud[k])
     expect(resolved.cloudMode).toBe(true)
     expect(resolved.authProvider).toBe('clerk')

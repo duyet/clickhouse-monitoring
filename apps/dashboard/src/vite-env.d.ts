@@ -33,10 +33,10 @@ interface ImportMetaEnv {
   // Cloud (SaaS) mode. 'true' on dash.chmonitor.dev; unset/junk → self-hosted.
   // See lib/cloud/cloud-mode.ts. When on, env hosts are a public read-only demo.
   readonly VITE_CLOUD_MODE?: string
-  // Deployment profile — the single high-level switch. 'cloud' | 'self-hosted'.
-  // See lib/config/profile.ts. Drives the defaults for cloud mode, auth provider,
+  // Deployment profile — the single high-level switch. 'cloud' | 'oss'.
+  // See lib/config/deployment-mode.ts. Drives the defaults for cloud mode, auth provider,
   // public-read, and per-user storage. The VITE_*/CHM_* vars above override it.
-  readonly VITE_PROFILE?: string
+  readonly VITE_DEPLOYMENT_MODE?: string
 }
 
 interface ImportMeta {

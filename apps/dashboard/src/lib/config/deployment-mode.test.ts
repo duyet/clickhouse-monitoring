@@ -1,22 +1,26 @@
-import { parseProfile, profileDefaults, resolveConfig } from './profile'
+import {
+  modeDefaults,
+  parseDeploymentMode,
+  resolveConfig,
+} from './deployment-mode'
 import { describe, expect, test } from 'bun:test'
 
-describe('parseProfile — fail-closed to self-hosted', () => {
+describe('parseDeploymentMode — fail-closed to self-hosted', () => {
   test('cloud / saas → cloud', () => {
-    expect(parseProfile('cloud')).toBe('cloud')
-    expect(parseProfile('  Cloud ')).toBe('cloud')
-    expect(parseProfile('saas')).toBe('cloud')
+    expect(parseDeploymentMode('cloud')).toBe('cloud')
+    expect(parseDeploymentMode('  Cloud ')).toBe('cloud')
+    expect(parseDeploymentMode('saas')).toBe('cloud')
   })
   test('unset / empty / junk → self-hosted', () => {
     for (const v of [undefined, null, '', '  ', 'selfhosted', 'oss', 'xyz']) {
-      expect(parseProfile(v)).toBe('self-hosted')
+      expect(parseDeploymentMode(v)).toBe('oss')
     }
   })
 })
 
-describe('profileDefaults — good defaults from the beginning', () => {
+describe('modeDefaults — good defaults from the beginning', () => {
   test('self-hosted: full access, no cloud, no per-user storage', () => {
-    expect(profileDefaults('self-hosted')).toEqual({
+    expect(modeDefaults('oss')).toEqual({
       cloudMode: false,
       authProvider: 'none',
       clerkPublicRead: false,
@@ -25,7 +29,7 @@ describe('profileDefaults — good defaults from the beginning', () => {
     })
   })
   test('cloud: clerk + anon read-only demo + per-user storage', () => {
-    expect(profileDefaults('cloud')).toEqual({
+    expect(modeDefaults('cloud')).toEqual({
       cloudMode: true,
       authProvider: 'clerk',
       clerkPublicRead: true,
@@ -38,10 +42,10 @@ describe('profileDefaults — good defaults from the beginning', () => {
 describe('resolveConfig — profile default, explicit var overrides', () => {
   const mock = (vars: Record<string, string>) => (k: string) => vars[k]
 
-  test('CHM_PROFILE=cloud yields the full cloud posture from ONE var', () => {
-    const c = resolveConfig(mock({ CHM_PROFILE: 'cloud' }))
+  test('CHM_DEPLOYMENT_MODE=cloud yields the full cloud posture from ONE var', () => {
+    const c = resolveConfig(mock({ CHM_DEPLOYMENT_MODE: 'cloud' }))
     expect(c).toEqual({
-      profile: 'cloud',
+      mode: 'cloud',
       cloudMode: true,
       authProvider: 'clerk',
       clerkPublicRead: true,
@@ -50,9 +54,9 @@ describe('resolveConfig — profile default, explicit var overrides', () => {
     })
   })
 
-  test('default (no vars) is a clean self-hosted deployment', () => {
+  test('default (no vars) is a clean oss deployment', () => {
     const c = resolveConfig(mock({}))
-    expect(c.profile).toBe('self-hosted')
+    expect(c.mode).toBe('oss')
     expect(c.cloudMode).toBe(false)
     expect(c.authProvider).toBe('none')
   })
@@ -69,7 +73,10 @@ describe('resolveConfig — profile default, explicit var overrides', () => {
   test('explicit var overrides the profile default', () => {
     // Cloud profile but operator forces per-user storage off.
     const c = resolveConfig(
-      mock({ CHM_PROFILE: 'cloud', CHM_FEATURE_USER_CONNECTIONS_DB: 'false' })
+      mock({
+        CHM_DEPLOYMENT_MODE: 'cloud',
+        CHM_FEATURE_USER_CONNECTIONS_DB: 'false',
+      })
     )
     expect(c.cloudMode).toBe(true)
     expect(c.userConnectionsDb).toBe(false)
