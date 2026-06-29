@@ -6,7 +6,7 @@ import {
   LogoStatusIndicator,
   LogoStatusIndicatorSkeleton,
 } from './logo-status-indicator'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AddHostDialog } from '@/components/connections'
 import { ChmonitorLogo } from '@/components/icons/chmonitor-logo'
 import {
@@ -49,13 +49,29 @@ export function HostSwitcher() {
     hosts.find((h) => h.id === currentHostId) ?? hosts[0] ?? null
   const showExpanded = isMobile || state === 'expanded'
 
+  // Guard against a hung load (e.g. a signed-in user whose server-stored
+  // connections request never resolves) trapping the switcher on the skeleton
+  // forever. After a short grace period we fall through to the resolved state —
+  // which, for a user with no host yet, is the "Add Host" CTA below.
+  const [loadTimedOut, setLoadTimedOut] = useState(false)
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadTimedOut(false)
+      return
+    }
+    const timer = setTimeout(() => setLoadTimedOut(true), 6000)
+    return () => clearTimeout(timer)
+  }, [isLoading])
+
   const handleHostChange = (hostId: number) => {
     const url = buildUrl(pathname, { host: hostId }, searchParams)
     router.push(url)
   }
 
-  // Show skeleton while loading hosts
-  if (isLoading) {
+  // Show the skeleton only while we still have nothing to render and the load
+  // hasn't timed out. If hosts already resolved from a faster source, render
+  // them instead of flashing a skeleton over a slow secondary fetch.
+  if (isLoading && hosts.length === 0 && !loadTimedOut) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -85,11 +101,42 @@ export function HostSwitcher() {
 
   // No active host: keep switcher shape and surface why
   if (!activeHost) {
+    // Genuine empty state — signed in, no host configured yet, and neither an
+    // auth nor a fetch error. Show a one-click "Add Host" CTA (opens the dialog
+    // directly) rather than a subtle dropdown, so getting started is obvious.
+    if (!isUnauthorized && !error) {
+      return (
+        <>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                onClick={() => setAddDialogOpen(true)}
+                className={cn(!showExpanded && 'justify-center')}
+                data-testid="host-switcher-empty"
+                aria-label={showExpanded ? undefined : 'Add host'}
+              >
+                <PlusIcon className="size-5" />
+                {showExpanded && (
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">Add Host</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      Connect a ClickHouse host
+                    </span>
+                  </div>
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <AddHostDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
+        </>
+      )
+    }
+
+    // Auth or fetch error: keep the informative dropdown shape.
     const { label, hint } = isUnauthorized
       ? { label: 'Sign in to load hosts', hint: 'Authentication required' }
-      : error
-        ? { label: "Couldn't load hosts", hint: 'Tap to retry from a page' }
-        : { label: 'No host', hint: 'Add a host to get started' }
+      : { label: "Couldn't load hosts", hint: 'Tap to retry from a page' }
 
     return (
       <>

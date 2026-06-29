@@ -81,6 +81,24 @@ export function ClerkNavWrapper() {
   return (
     <>
       <SidebarMenu>
+        {/* Not signed in - surface plans + a Sign In / Sign Up entry point.
+            The plans link sits above the account slot so Sign In stays the
+            bottom anchor (matching the signed-in user button position). */}
+        {!isSignedIn && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              size="sm"
+              tooltip="View plans"
+              data-testid="nav-user-plans"
+            >
+              <a href="/billing">
+                <CreditCard />
+                <span>View plans</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
         <SidebarMenuItem>
           {/* Not signed in - show Sign In button */}
           {!isSignedIn && (
@@ -98,7 +116,7 @@ export function ClerkNavWrapper() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Sign In</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    to access features
+                    or sign up to start
                   </span>
                 </div>
               </SidebarMenuButton>
