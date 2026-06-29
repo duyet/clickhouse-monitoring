@@ -11,7 +11,8 @@ import type { CreateUserConnectionInput } from '@/lib/connection-store/types'
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
-import { getUserPlan } from '@/lib/billing/user-subscription'
+import { resolveBillingOwner } from '@/lib/billing/billing-owner'
+import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
 import { queryConnection } from '@/lib/connection-query/connection-client'
 import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
@@ -119,7 +120,13 @@ async function handlePost(request: Request): Promise<Response> {
     // keeps. plan.hosts === null means unlimited (Enterprise). Checking before
     // the SSRF check + outbound connection test fails fast and avoids opening a
     // network connection to an attacker-supplied host for a request we'll reject.
-    const plan = await getUserPlan(userId)
+    //
+    // Enforce against the BILLING OWNER's plan (org or user): if the user has an
+    // active Clerk org in their session the org's plan determines the limit.
+    // TODO: org-wide pooling (count connections across all org members vs the
+    // per-org host limit) is a follow-up. For now, count this user's connections.
+    const owner = await resolveBillingOwner()
+    const plan = await getPlanForOwner(owner.id)
     if (plan.hosts != null) {
       const existing = await store.list(userId)
       if (existing.length >= plan.hosts) {
