@@ -59,6 +59,18 @@ const ogImage = new URL(image, Astro.site).toString()
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script is:inline>
+    // Resolve theme before paint (no flash): saved choice wins, else OS pref.
+    (function () {
+      try {
+        var saved = localStorage.getItem('chm-theme')
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        document.documentElement.setAttribute('data-theme', theme)
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light')
+      }
+    })()
+  </script>
   <style is:global>
     :root{
       --bg:#ffffff;
@@ -89,28 +101,28 @@ const ogImage = new URL(image, Astro.site).toString()
       --shadow-float:0 24px 60px -28px rgba(9,9,11,.30), 0 8px 24px -16px rgba(9,9,11,.18);
       --shadow-glow:0 0 120px -20px rgba(249,115,22,.35);
     }
-    /* ── dark mode: respect the OS preference; tokens flip, layout unchanged.
-       Off-black surfaces (no pure #000), cool-gray family to match the brand. ── */
-    @media (prefers-color-scheme:dark){
-      :root{
-        --bg:#0b0b0e;
-        --bg-soft:#101014;
-        --fg:#f4f4f5;
-        --fg-soft:#c4c4cb;
-        --muted-fg:#8a8a93;
-        --border:#26262c;
-        --border-soft:#1c1c21;
-        --border-hover:#34343c;
-        --muted:#1a1a1f;
-        --card:#141418;
-        --nav-bg:rgba(11,11,14,.72);
-        --browser-bar:#17171c;
-        --btn-primary-bg:#fafafa;
-        --btn-primary-bg-hover:#e4e4e7;
-        --btn-primary-fg:#09090b;
-        --shadow-card:0 1px 2px rgba(0,0,0,.4), 0 1px 0 rgba(0,0,0,.3);
-        --shadow-float:0 24px 60px -28px rgba(0,0,0,.7), 0 8px 24px -16px rgba(0,0,0,.5);
-      }
+    /* ── dark mode: tokens flip, layout unchanged. Applied when
+       html[data-theme="dark"]. The head script resolves the saved choice / OS
+       preference to a concrete data-theme before paint; the nav toggle flips it.
+       Single token block — no duplication. Off-black (no pure #000), cool-gray. ── */
+    :root[data-theme="dark"]{
+      --bg:#0b0b0e;
+      --bg-soft:#101014;
+      --fg:#f4f4f5;
+      --fg-soft:#c4c4cb;
+      --muted-fg:#8a8a93;
+      --border:#26262c;
+      --border-soft:#1c1c21;
+      --border-hover:#34343c;
+      --muted:#1a1a1f;
+      --card:#141418;
+      --nav-bg:rgba(11,11,14,.72);
+      --browser-bar:#17171c;
+      --btn-primary-bg:#fafafa;
+      --btn-primary-bg-hover:#e4e4e7;
+      --btn-primary-fg:#09090b;
+      --shadow-card:0 1px 2px rgba(0,0,0,.4), 0 1px 0 rgba(0,0,0,.3);
+      --shadow-float:0 24px 60px -28px rgba(0,0,0,.7), 0 8px 24px -16px rgba(0,0,0,.5);
     }
     *{margin:0;padding:0;box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -179,6 +191,16 @@ const ogImage = new URL(image, Astro.site).toString()
     .nav-menu a:hover{background:var(--muted);color:var(--fg)}
     .nav-menu a small{font-size:12px;font-weight:400;color:var(--muted-fg)}
     @media (prefers-reduced-motion:reduce){.nav-trigger svg,.nav-menu{transition:none}}
+
+    /* ── theme toggle ── */
+    .theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;
+      border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--fg-soft);
+      cursor:pointer;transition:.16s ease;flex:0 0 auto;padding:0}
+    .theme-toggle:hover{color:var(--fg);border-color:var(--border-hover);background:var(--muted)}
+    .theme-toggle svg{width:16px;height:16px}
+    .theme-toggle .i-sun{display:none}
+    :root[data-theme="dark"] .theme-toggle .i-sun{display:block}
+    :root[data-theme="dark"] .theme-toggle .i-moon{display:none}
 
     /* ── hero ── */
     .hero{padding:52px 0 72px;text-align:center;position:relative;overflow:hidden}
