@@ -35,7 +35,7 @@ async function handlePost(request: Request): Promise<Response> {
         error: {
           type: 'configuration',
           message:
-            'CHM_CONNECTIONS_ENCRYPTION_KEY must be configured for connection sessions',
+            'CHM_USER_CONNECTIONS_ENCRYPTION_KEY must be configured for connection sessions',
         },
       },
       { status: 503 }

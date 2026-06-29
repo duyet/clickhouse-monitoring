@@ -55,7 +55,7 @@ Flags: `--base-url <url>` (default `https://dash-tsr.chmonitor.dev`),
 - `/api/v1/data` rejects arbitrary SQL by design (`permission_error`); only the
   registry endpoints (`/api/v1/charts/[name]`, `/api/v1/tables/[name]`,
   `menu-counts`, …) run queries. Use those to prove connectivity.
-- The ClickHouse hosts are **Tailscale Funnel** URLs (`*.dingo-mora.ts.net`):
-  from on the tailnet MagicDNS gives `100.x` (private), but public DNS resolves
-  the funnel ingress and `https://<host>/ping` → 200 — reachable from the CF edge.
+- The ClickHouse hosts may be **Tailscale Funnel** URLs (`*.ts.net`): from on the
+  tailnet MagicDNS gives `100.x` (private), but public DNS resolves the funnel
+  ingress and `https://<host>/ping` → 200 — reachable from the CF edge.
 - The data API param is `hostId`, not `host`.

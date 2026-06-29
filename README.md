@@ -131,7 +131,7 @@ without auth.
 
 3. Deploy to Cloudflare Workers:
 ```bash
-# Set CLOUDFLARE_API_TOKEN in .env.prod or export it
+# Set CLOUDFLARE_API_TOKEN in .env.production.local or export it
 # OR use OAuth: npx wrangler login
 
 # Unified deploy (config, build, deploy, cache — same as CI)
@@ -141,7 +141,7 @@ bun run cf:deploy
 **Manual Deployment Steps:**
 ```bash
 # Step by step (same as CI)
-bun run cf:config        # Set secrets from .env.prod
+bun run cf:config        # Set secrets from .env.production.local
 cd apps/dashboard
 bun run build            # Vite build → native Workers bundle (+ tsc --noEmit)
 wrangler deploy --minify

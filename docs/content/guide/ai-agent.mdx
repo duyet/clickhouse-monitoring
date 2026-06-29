@@ -90,7 +90,7 @@ Agent chat history is persisted by a server-side `ConversationStore` chosen at *
 
 Selection priority when persistence is enabled: **AgentState** (if `AGENTSTATE_API_KEY`) → **D1** (Cloudflare binding) → **Postgres** (`DATABASE_URL`) → **Memory** (last-resort, non-persistent). With the feature flag off, history stays in the **Browser**.
 
-Server persistence requires `VITE_FEATURE_CONVERSATION_DB=true` and an authenticated user — configure Clerk (`VITE_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`) so history can be scoped per user. Unauthenticated sessions always fall back to browser history. See [Authentication](/operate/authentication).
+Server persistence requires `CHM_FEATURE_CONVERSATION_DB=true` and an authenticated user — configure Clerk (`CHM_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`) so history can be scoped per user. Unauthenticated sessions always fall back to browser history. See [Authentication](/operate/authentication).
 
 ### AgentState
 
@@ -107,7 +107,7 @@ Per-user isolation is built in: each thread is namespaced by AgentState `externa
 | `AGENTSTATE_AI_ENRICH` | no | `false` | enable auto-title + follow-up suggestions |
 | `CONVERSATION_STORE_BACKEND` | no | `auto` | force `agentstate` when a Cloudflare D1 binding is also present |
 
-Still requires `VITE_FEATURE_CONVERSATION_DB=true` and a Clerk auth provider (`VITE_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`).
+Still requires `CHM_FEATURE_CONVERSATION_DB=true` and a Clerk auth provider (`CHM_AUTH_PROVIDER=clerk` + `CLERK_SECRET_KEY`).
 
 #### Setup (hosted)
 
@@ -116,7 +116,7 @@ Still requires `VITE_FEATURE_CONVERSATION_DB=true` and a Clerk auth provider (`V
 3. Set it server-side:
 
 ```bash
-VITE_FEATURE_CONVERSATION_DB=true
+CHM_FEATURE_CONVERSATION_DB=true
 AGENTSTATE_API_KEY=as_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # Optional: turn on auto-titles + follow-up suggestions
 AGENTSTATE_AI_ENRICH=true
@@ -127,7 +127,7 @@ AGENTSTATE_AI_ENRICH=true
 Run your own AgentState Worker per [duyet/agentstate](https://github.com/duyet/agentstate), then point the dashboard at it:
 
 ```bash
-VITE_FEATURE_CONVERSATION_DB=true
+CHM_FEATURE_CONVERSATION_DB=true
 AGENTSTATE_API_KEY=as_live_your_self_hosted_key
 AGENTSTATE_BASE_URL=https://your-agentstate-host/api
 ```
@@ -137,7 +137,7 @@ AGENTSTATE_BASE_URL=https://your-agentstate-host/api
 Against a locally running AgentState instance, use the seed test key:
 
 ```bash
-VITE_FEATURE_CONVERSATION_DB=true
+CHM_FEATURE_CONVERSATION_DB=true
 AGENTSTATE_BASE_URL=http://localhost:8787
 AGENTSTATE_API_KEY=as_live_TEST_KEY_FOR_LOCAL_DEV_ONLY_1234567890ab
 ```

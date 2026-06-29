@@ -8,3 +8,11 @@ data:
   CLICKHOUSE_HOST: {{ .Values.clickhouse.host | quote }}
   CLICKHOUSE_USER: {{ .Values.clickhouse.user | quote }}
   CLICKHOUSE_MAX_EXECUTION_TIME: {{ .Values.clickhouse.maxExecutionTime | quote }}
+  {{- range $key, $val := .Values.features }}
+  {{- if $val }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.auth.clerk.publishableKey }}
+  CHM_CLERK_PUBLISHABLE_KEY: {{ .Values.auth.clerk.publishableKey | quote }}
+  {{- end }}

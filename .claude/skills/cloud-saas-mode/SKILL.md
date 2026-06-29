@@ -34,10 +34,15 @@ monitoring feature behind cloud mode. (Mirrors `lib/edition` fail-open design.)
   - `isCloudModeClient()` — build-time, React/hooks (reads `VITE_CLOUD_MODE`).
   - `isCloudModeServer(env)` — runtime `CHM_CLOUD_MODE` wins over build-time.
   - `parseCloudMode(v)` — only `'true'|'1'|'cloud'` (trim/case-insensitive) → true.
-- Build inline: `vite.config.ts` CLIENT_ENV + `src/vite-env.d.ts`.
-- Runtime: `wrangler.toml` `[vars]` and `[env.preview.vars]`.
-- Hosted deploy sets both `VITE_CLOUD_MODE=true` and
-  `VITE_FEATURE_USER_CONNECTIONS_DB=true` in `.github/workflows/cloudflare.yml`.
+- Build inline: `vite.config.ts` CLIENT_ENV + `src/vite-env.d.ts`. Each client
+  `VITE_*` DERIVES from the canonical `CHM_*` (set the value once).
+- Single source of truth: `apps/dashboard/.env.production` (+ `.env.preview` overlay).
+  It feeds BOTH the vite client build (`CHM_BUILD_ENV=production|preview` →
+  `build:production`/`build:preview`) AND the Worker runtime `[vars]`
+  (`scripts/patch-wrangler-env.ts` injects the non-`VITE_` keys).
+  `wrangler.toml` declares NO `[vars]` — never re-add one; edit `.env.production`.
+- Self-hosted uses the same names from `apps/dashboard/.env.example` (Docker
+  `env_file`, Helm `values.yaml`). Secrets only via `set-secrets.ts` / K8s Secret.
 
 ## Behaviour
 

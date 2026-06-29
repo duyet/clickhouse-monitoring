@@ -70,8 +70,8 @@ kubectl create secret generic chm-trusted-secret \
 
 | Variable | Default | Description |
 |---|---|---|
-| `CHM_AUTH_PROVIDER` | `none` | Set to `trusted`. Server-side. |
-| `VITE_AUTH_PROVIDER` | `none` | Set to `trusted`. Build-time client mirror. Must match `CHM_AUTH_PROVIDER`. |
+| `CHM_AUTH_PROVIDER` | `none` | Set to `trusted`. Canonical name (server + build). |
+| `VITE_AUTH_PROVIDER` | `none` | Auto-derived from `CHM_AUTH_PROVIDER` at build time; only set explicitly to override. |
 
 ### Trust gate
 
@@ -185,7 +185,6 @@ spec:
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
-VITE_AUTH_PROVIDER=trusted
 
 # oauth2-proxy sends X-Auth-Request-* headers, not X-Forwarded-*
 CHM_TRUSTED_USER_HEADER=X-Auth-Request-User

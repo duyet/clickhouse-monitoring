@@ -26,14 +26,15 @@ Use Clerk when you want browser-based sign-in with user accounts. The browser au
 ## Configuration
 
 ```bash
-# Server-side (runtime)
+# Canonical names — needed at both build time and runtime
 CHM_AUTH_PROVIDER=clerk
-CLERK_SECRET_KEY=sk_live_...
+CHM_CLERK_PUBLISHABLE_KEY=pk_live_...
 
-# Client-side (build-time inlined — TanStack app)
-VITE_AUTH_PROVIDER=clerk
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+# Runtime secret (server only)
+CLERK_SECRET_KEY=sk_live_...
 ```
+
+The client `VITE_AUTH_PROVIDER` / `VITE_CLERK_PUBLISHABLE_KEY` values are derived from these canonical `CHM_*` names at build time, so set them before `bun run build`. `CLERK_SECRET_KEY` (the `sk_...` key) is the runtime secret and stays server-side.
 
 > If migrating from the legacy Next.js app, see [Migrate to v0.3](/reference/migrating/v0-3) for the `NEXT_PUBLIC_*` → `VITE_*` rename.
 
@@ -53,11 +54,11 @@ Copy the **Publishable key** (`pk_live_...`) and **Secret key** (`sk_live_...`) 
 <Step>
 ### Set build-time env vars
 
-Set these before building the client:
+Set these before building the client (the client `VITE_*` values are derived from them):
 
 ```bash
-VITE_AUTH_PROVIDER=clerk
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+CHM_AUTH_PROVIDER=clerk
+CHM_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 </Step>
 <Step>

@@ -16,21 +16,32 @@ icon: Users
 
 ## What it does
 
-When enabled, users can choose **Save to server** in the Add Host dialog. Credentials are encrypted at rest with `CHM_CONNECTIONS_ENCRYPTION_KEY` and never returned to the client after save.
+When enabled, users can choose **Save to server** in the Add Host dialog. Credentials are encrypted at rest with `CHM_USER_CONNECTIONS_ENCRYPTION_KEY` and never returned to the client after save.
 
 Browser-only storage remains available when server storage is disabled or the user prefers a local connection.
 
 ## Enable server storage
 
+Server storage needs **four** things present together. If any one is missing the
+server returns *"User connections database storage is not enabled"* and the
+**Save to server** toggle stays hidden.
+
+1. **`CHM_FEATURE_USER_CONNECTIONS_DB=true`** — the feature flag.
+2. **Clerk auth** (`CHM_AUTH_PROVIDER=clerk`) — connections are keyed by the signed-in Clerk `userId`.
+3. **`CHM_USER_CONNECTIONS_ENCRYPTION_KEY`** — a 32-byte base64 key used to encrypt credentials at rest (AES-256-GCM).
+4. **A database backend** — `CONVERSATIONS_D1` on Cloudflare, or `DATABASE_URL` / `POSTGRES_URL` on Docker / Kubernetes.
+
+<Callout type="info" title="One canonical name">
+Set the canonical `CHM_*` name once. The browser-side `VITE_FEATURE_USER_CONNECTIONS_DB` / `VITE_AUTH_PROVIDER` are **derived** from `CHM_FEATURE_USER_CONNECTIONS_DB` / `CHM_AUTH_PROVIDER` at build time (see `vite.config.ts`) — you don't set them separately. Because the client value is inlined at build time, set these before `bun run build` (or build a custom image), then keep them in the runtime env too.
+</Callout>
+
 <Steps>
 <Step>
-### Configure Clerk auth
-
-Set auth to Clerk:
+### Enable the feature and Clerk auth
 
 ```bash
+CHM_FEATURE_USER_CONNECTIONS_DB=true
 CHM_AUTH_PROVIDER=clerk
-VITE_AUTH_PROVIDER=clerk
 ```
 </Step>
 <Step>
@@ -46,26 +57,20 @@ Set `DATABASE_URL` or `POSTGRES_URL`.
 </Tabs>
 </Step>
 <Step>
-### Set feature flags
-
-```bash
-VITE_FEATURE_USER_CONNECTIONS_DB=true
-CHM_FEATURE_USER_CONNECTIONS_DB=true
-```
-</Step>
-<Step>
 ### Set the encryption key
 
-32-byte key, base64-encoded:
+32-byte key, base64-encoded (a secret — never commit it):
 
 ```bash
-wrangler secret put CHM_CONNECTIONS_ENCRYPTION_KEY
+# Cloudflare
+wrangler secret put CHM_USER_CONNECTIONS_ENCRYPTION_KEY
+# Docker / Kubernetes: pass CHM_USER_CONNECTIONS_ENCRYPTION_KEY via -e or a Secret
 ```
 </Step>
 <Step>
 ### Redeploy the dashboard
 
-The Add Host dialog shows an enabled **Save to server** toggle when all requirements are met. Otherwise it displays a note with a link to this page.
+The Add Host dialog shows an enabled **Save to server** toggle when all four requirements are met. Otherwise it displays a note with a link to this page.
 </Step>
 </Steps>
 

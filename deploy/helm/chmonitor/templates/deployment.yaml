@@ -117,6 +117,47 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- range $key, $val := .Values.features }}
+            {{- if $val }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chmonitor.fullname" $ }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.auth.clerk.publishableKey }}
+            - name: CHM_CLERK_PUBLISHABLE_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chmonitor.fullname" . }}
+                  key: CHM_CLERK_PUBLISHABLE_KEY
+            {{- end }}
+            {{- if or .Values.auth.clerk.secretKey .Values.auth.clerk.existingSecret }}
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chmonitor.clerkSecretName" . }}
+                  key: CLERK_SECRET_KEY
+            {{- end }}
+            {{- if or .Values.secrets.connectionsEncryptionKey .Values.secrets.existingSecret }}
+            - name: CHM_USER_CONNECTIONS_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chmonitor.appSecretName" . }}
+                  key: CHM_USER_CONNECTIONS_ENCRYPTION_KEY
+                  # optional so a partially-populated existingSecret (e.g. only the
+                  # API key) doesn't crash the pod — the feature stays off instead.
+                  optional: true
+            {{- end }}
+            {{- if or .Values.secrets.apiKeySecret .Values.secrets.existingSecret }}
+            - name: CHM_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chmonitor.appSecretName" . }}
+                  key: CHM_API_KEY_SECRET
+                  optional: true
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

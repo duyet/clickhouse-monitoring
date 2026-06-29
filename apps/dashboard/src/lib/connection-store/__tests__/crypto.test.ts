@@ -2,19 +2,19 @@ import { decryptCredentials, encryptCredentials } from '../crypto'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 describe('connection-store crypto', () => {
-  const originalKey = process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
+  const originalKey = process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY
 
   beforeEach(() => {
     // 32 zero bytes, base64
-    process.env.CHM_CONNECTIONS_ENCRYPTION_KEY =
+    process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY =
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   })
 
   afterEach(() => {
     if (originalKey === undefined) {
-      delete process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
+      delete process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY
     } else {
-      process.env.CHM_CONNECTIONS_ENCRYPTION_KEY = originalKey
+      process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY = originalKey
     }
   })
 

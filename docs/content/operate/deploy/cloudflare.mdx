@@ -68,10 +68,14 @@ There are two kinds of variables — mixing them up is the most common source of
 
 | Kind | Where to set | Who reads it | Example |
 |---|---|---|---|
-| **Build-time client vars** | CI env / shell before `bun run build` | Browser JS (VITE-inlined) | `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` |
+| **Build-time client vars** | CI env / shell before `bun run build` | Browser JS (VITE-inlined) | `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY` (derived from `CHM_AUTH_PROVIDER` / `CHM_CLERK_PUBLISHABLE_KEY`) |
 | **Runtime Worker vars** | `wrangler.toml` `[vars]` or `wrangler secret put` | Worker process only | `CLICKHOUSE_HOST`, `LLM_API_KEY`, `CLERK_SECRET_KEY` |
 
 `VITE_*` vars are baked into the JS bundle at build time. Setting them in `wrangler.toml [vars]` has no effect — they must be in the environment when `bun run build` runs (e.g. CI secrets).
+
+<Callout type="info" title="One canonical name">
+You usually don't set `VITE_*` directly. Set the canonical `CHM_*` name (e.g. `CHM_AUTH_PROVIDER`) in the build environment and `vite.config.ts` derives the matching `VITE_*`. A dual-surface setting must be present at build time (so the `VITE_*` inlines) **and** as a runtime `[var]` (so the server reads `CHM_*`) — same name, both places. See [One canonical name per setting](/reference/environment-variables#one-canonical-name-per-setting).
+</Callout>
 
 Runtime Worker vars (`wrangler.toml [vars]` and secrets) are never visible in the browser.
 
@@ -195,15 +199,15 @@ wrangler secret put CHM_API_KEY_SECRET
 
 **Clerk:**
 
-Set at build time in CI (these are `VITE_*` client vars):
+Set the canonical names at build time in CI (the client `VITE_AUTH_PROVIDER` / `VITE_CLERK_PUBLISHABLE_KEY` derive from them):
 
 ```bash
-# In your CI environment / GitHub Actions secrets:
-VITE_AUTH_PROVIDER=clerk
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+# In your CI environment / GitHub Actions secrets, before `bun run build`:
+CHM_AUTH_PROVIDER=clerk
+CHM_CLERK_PUBLISHABLE_KEY=pk_live_...   # public publishable key
 ```
 
-Set the server secret at runtime:
+Set the server secret at runtime, plus `CHM_AUTH_PROVIDER` as a runtime `[var]` so the Worker reads it too:
 
 ```bash
 wrangler secret put CLERK_SECRET_KEY   # sk_live_...
@@ -260,7 +264,7 @@ Never put `LLM_API_KEY` in a `VITE_*` var or `[vars]` — use `wrangler secret p
 
 ### Conversation store
 
-Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` set **at build time** (in CI before `bun run build`), plus Clerk auth. The backend is then selected at runtime.
+Server-side persistence requires `CHM_FEATURE_CONVERSATION_DB=true` set **at build time** (in CI before `bun run build`; the client `VITE_FEATURE_CONVERSATION_DB` derives from it), plus Clerk auth. The backend is then selected at runtime.
 
 **D1 (Cloudflare-native, recommended):**
 
@@ -285,11 +289,11 @@ CONVERSATION_STORE_BACKEND = "d1"
 CONVERSATIONS_D1_DATABASE_ID = "<database-id>"
 ```
 
-In CI, also set `VITE_FEATURE_CONVERSATION_DB=true` before the build step:
+In CI, also set `CHM_FEATURE_CONVERSATION_DB=true` before the build step (the client `VITE_FEATURE_CONVERSATION_DB` derives from it):
 
 ```bash
 # In your CI environment or GitHub Actions secrets:
-VITE_FEATURE_CONVERSATION_DB=true
+CHM_FEATURE_CONVERSATION_DB=true
 ```
 
 Run migrations:
@@ -352,7 +356,11 @@ bun run cf:deploy
 
 This runs: `vite build` (produces the Cloudflare Workers bundle) → `wrangler deploy`.
 
-**CI (GitHub Actions):** push to `main` triggers `.github/workflows/cloudflare.yml`. Set `CLOUDFLARE_API_TOKEN` as a repository secret, plus `CLICKHOUSE_*`, and any build-time `VITE_*` vars (e.g. `VITE_AUTH_PROVIDER`, `VITE_CLERK_PUBLISHABLE_KEY`).
+**CI (GitHub Actions):** push to `main` triggers `.github/workflows/cloudflare.yml`. Set `CLOUDFLARE_API_TOKEN` as a repository secret, plus `CLICKHOUSE_*`, and any canonical build-time vars (e.g. `CHM_AUTH_PROVIDER`, `CHM_CLERK_PUBLISHABLE_KEY` — the client `VITE_*` derive from them).
+
+<Callout type="info" title="This repo's hosted deploy uses .env.production">
+The chmonitor monorepo's own `wrangler.toml` declares **no** `[vars]`. Its non-secret hosted config lives in committed `apps/dashboard/.env.production` (+ `.env.preview` for PR previews), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts`). If you fork this repo, edit `.env.production` rather than re-adding a `[vars]` block. When deploying your own standalone Worker from scratch, the `[vars]` examples above are the simplest path.
+</Callout>
 
 ## Preview locally
 

@@ -181,6 +181,21 @@ auth:
   # Auth provider: "" | none | clerk | proxy | trusted
   provider: ""
 
+  # Clerk settings (used when provider=clerk).
+  clerk:
+    # publishableKey: Clerk PUBLISHABLE key (pk_..., PUBLIC/non-secret).
+    # Sets CHM_CLERK_PUBLISHABLE_KEY (drives the client VITE_CLERK_PUBLISHABLE_KEY).
+    # Rendered into the ConfigMap when non-empty.
+    publishableKey: ""
+
+    # secretKey: Clerk server SECRET (sk_...). Sets CLERK_SECRET_KEY; rendered into
+    # the chart Secret when non-empty and existingSecret is not set.
+    secretKey: ""
+
+    # existingSecret: name of a pre-existing Secret with key CLERK_SECRET_KEY.
+    # When set, `secretKey` above is ignored and the chart Secret is not created for it.
+    existingSecret: ""
+
   trusted:
     # allowInsecure: trust forwarded identity headers with NO shared secret.
     # Safe ONLY when the pod is ClusterIP-isolated and reachable exclusively
@@ -224,6 +239,50 @@ auth:
     # If set, the user's forwarded groups must intersect (case-insensitive) or the
     # request is denied. Works alongside CHM_FEATURE_<ID>_ACCESS and CHM_API_KEY_SECRET.
     allowedGroups: ""
+
+# Product mode & feature flags (non-secret, canonical CHM_* / LLM_MODEL). Keys
+# are the exact env var names. Each renders into the ConfigMap ONLY when non-empty
+# (all empty by default), so unset values fall through to the app's built-in
+# self-hosted defaults — fail-closed: cloud mode OFF, features off, agent access
+# public. Note: CHM_AUTH_PROVIDER is set via `auth.provider` (do not duplicate it
+# here) and CHM_CLERK_PUBLISHABLE_KEY via `auth.clerk.publishableKey`.
+features:
+  # "true" turns env hosts into a public read-only demo + gives signed-in users a
+  # per-user workspace (hosted SaaS). Empty = self-hosted/OSS (your env hosts are
+  # real hosts, full access). App default: not cloud.
+  CHM_CLOUD_MODE: ""
+  # community (OSS) | enterprise (paid). App default: community.
+  CHM_EDITION: ""
+  # public | authenticated — AI agent access level. App default: public.
+  CHM_FEATURE_AGENT_ACCESS: ""
+  # "true" persists agent conversations in a DB instead of localStorage. Default: false.
+  CHM_FEATURE_CONVERSATION_DB: ""
+  # "true" persists per-user ClickHouse connections. Requires Clerk auth +
+  # secrets.connectionsEncryptionKey + a DB backend (DATABASE_URL/POSTGRES_URL via
+  # extraEnv). App default: false.
+  CHM_FEATURE_USER_CONNECTIONS_DB: ""
+  # "true" relaxes Clerk so anonymous GET /api/v1/* is allowed (writes still need
+  # sign-in). App default: false.
+  CHM_CLERK_PUBLIC_READ: ""
+  # Default AI model (provider:model or anyrouter/...). Empty = app default.
+  LLM_MODEL: ""
+
+# Application secrets (canonical CHM_* / CLERK_*). Empty by default. Each is
+# rendered into the chart Secret when non-empty and existingSecret is not set;
+# mirrors the clickhouse.existingSecret pattern. Needed for the self-hosted
+# per-user connection store on K8s.
+secrets:
+  # CHM_USER_CONNECTIONS_ENCRYPTION_KEY: AES-256 key (32-byte base64) encrypting
+  # per-user connection credentials at rest. Required when
+  # features.userConnectionsDb is "true".
+  connectionsEncryptionKey: ""
+  # CHM_API_KEY_SECRET: HMAC secret gating /api/v1/* behind chm_ Bearer tokens.
+  apiKeySecret: ""
+  # existingSecret: name of a pre-existing Secret. When set, the two values above
+  # are ignored and no chart Secret is created for them; the referenced Secret
+  # must contain BOTH keys CHM_USER_CONNECTIONS_ENCRYPTION_KEY and CHM_API_KEY_SECRET
+  # (both env vars are mounted from it).
+  existingSecret: ""
 
 # Extra environment variables injected into the container, e.g.
 # extraEnv:

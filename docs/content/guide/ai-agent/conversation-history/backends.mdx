@@ -6,7 +6,7 @@ icon: Database
 # Conversation store backends
 
 <Callout type="info" title="Build-time flag required">
-All server-side backends require `VITE_FEATURE_CONVERSATION_DB=true` set **before** `bun run build`. This is a `VITE_*` variable — it is baked into the bundle at build time and cannot be changed without a rebuild. `CONVERSATION_STORE_BACKEND` is a runtime variable and can be set or changed without rebuilding.
+All server-side backends require `CHM_FEATURE_CONVERSATION_DB=true` set **before** `bun run build`. Its client `VITE_FEATURE_CONVERSATION_DB` is derived from it at build time and baked into the bundle, so it cannot be changed without a rebuild. `CONVERSATION_STORE_BACKEND` is a runtime variable and can be set or changed without rebuilding.
 </Callout>
 
 ## Platform recommendation

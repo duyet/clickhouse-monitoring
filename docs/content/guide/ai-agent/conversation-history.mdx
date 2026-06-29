@@ -10,7 +10,7 @@ Agent chat history is stored in **browser localStorage** by default. No server s
 ## How persistence works
 
 <Mermaid chart={`flowchart TD
-    A[User sends message] --> B{VITE_FEATURE_CONVERSATION_DB=true?}
+    A[User sends message] --> B{CHM_FEATURE_CONVERSATION_DB=true?}
     B -- No --> C[Browser localStorage]
     B -- Yes --> D{Authenticated?}
     D -- No --> C
@@ -28,14 +28,14 @@ Agent chat history is stored in **browser localStorage** by default. No server s
 
 Server-side persistence requires two things:
 
-1. `VITE_FEATURE_CONVERSATION_DB=true` must be set **at build time** (before `bun run build`). This is a `VITE_*` variable — it is baked into the bundle and cannot be changed at runtime. It also requires Clerk auth to be active (`VITE_AUTH_PROVIDER=clerk`).
+1. `CHM_FEATURE_CONVERSATION_DB=true` must be set **at build time** (before `bun run build`). The client `VITE_FEATURE_CONVERSATION_DB` value is derived from it and baked into the bundle, so it cannot be changed at runtime. It also requires Clerk auth to be active (`CHM_AUTH_PROVIDER=clerk`).
 2. A backend must be reachable at runtime.
 
 ```bash
 # In CI / build environment (before bun run build):
-VITE_FEATURE_CONVERSATION_DB=true
-VITE_AUTH_PROVIDER=clerk
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+CHM_FEATURE_CONVERSATION_DB=true
+CHM_AUTH_PROVIDER=clerk
+CHM_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 
 ```bash
@@ -63,12 +63,12 @@ AgentState is a cloud-hosted conversation store. It works on any deployment targ
 
 1. Get an API key at [agentstate.app](https://agentstate.app).
 
-2. Set at build time:
+2. Set at build time (the client `VITE_*` values are derived from these):
 
 ```bash
-VITE_FEATURE_CONVERSATION_DB=true
-VITE_AUTH_PROVIDER=clerk
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+CHM_FEATURE_CONVERSATION_DB=true
+CHM_AUTH_PROVIDER=clerk
+CHM_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 
 3. Set at runtime:

@@ -15,8 +15,8 @@
  * Env vars required at deploy time (set via CI secrets or .env.prod/local):
  *   CLICKHOUSE_PASSWORD, CLERK_SECRET_KEY, etc.
  *
- * Env vars at build time (set in wrangler.toml [vars] or CI):
- *   CLICKHOUSE_HOST, CLICKHOUSE_USER, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, etc.
+ * Non-secret runtime/build vars come from .env.production / .env.preview (the single
+ * source of truth); CI overrides only the private CLICKHOUSE_HOST/USER/NAME.
  */
 
 import { spawnSync } from 'node:child_process'

@@ -88,14 +88,14 @@ curl -H "Authorization: Bearer $AGENT_API_TOKEN" \
 
 | Variable | Type | Default | Purpose |
 |---|---|---|---|
-| `VITE_FEATURE_CONVERSATION_DB` | Build-time | `false` | Enable server-side conversation storage. Must be set before `bun run build`. Requires Clerk. |
+| `VITE_FEATURE_CONVERSATION_DB` | Build-time | `false` | Enable server-side conversation storage. Derived from canonical `CHM_FEATURE_CONVERSATION_DB` — set that one before `bun run build`. Requires Clerk. |
 | `CONVERSATION_STORE_BACKEND` | Runtime | (auto) | Backend: `agentstate`, `d1`, `postgres`, or `memory`. Auto-selects when unset. |
 
 See [Conversation History](/guide/ai-agent/conversation-history) and [Store Backends](/guide/ai-agent/conversation-history/backends) for per-backend env vars and setup.
 
 ## Where to set these
 
-- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values. See [Deploy to Cloudflare](/operate/deploy/cloudflare).
+- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values in your own worker. (In this repo's hosted deploy, non-secret config lives in `apps/dashboard/.env.production` and there is no `[vars]` block.) See [Deploy to Cloudflare](/operate/deploy/cloudflare).
 - **Docker** — `environment:` block in `docker-compose.yml` or `--env-file .env`. See [Deploy with Docker](/operate/deploy/docker).
 - **Kubernetes** — `Secret` for keys, `ConfigMap` for non-secret values. See [Deploy to Kubernetes](/operate/deploy/k8s).
 - **Vercel / self-hosted** — environment variables in the project dashboard or `.env.local`.
