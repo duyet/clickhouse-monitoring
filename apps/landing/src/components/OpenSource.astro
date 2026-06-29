@@ -4,7 +4,7 @@
         <div class="sec-head">
           <span class="eyebrow">Open source</span>
           <h2>Self-host it, or use the cloud</h2>
-          <p>chmonitor is open source. Deploy it to Cloudflare Workers, run it as a Docker container, or install the Helm chart on Kubernetes — or skip setup entirely and connect through the hosted cloud. Same UI, your choice.</p>
+          <p>chmonitor is open source. Deploy it to Cloudflare Workers, run it as a Docker container, or install the Helm chart on Kubernetes, or skip setup entirely and connect through the hosted cloud. Same UI, your choice.</p>
         </div>
         <ul class="os-points">
           <li>
@@ -13,7 +13,7 @@
           </li>
           <li>
             <span class="pico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/></svg></span>
-            <div><b>Read-only by design</b><span>Connect with a least-privilege user — chmonitor only reads system tables.</span></div>
+            <div><b>Read-only by design</b><span>Connect with a least-privilege user, chmonitor only reads system tables.</span></div>
           </li>
           <li>
             <span class="pico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 13.5 9.5 21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5z"/></svg></span>
@@ -47,7 +47,7 @@
 
         <!-- Cloudflare Workers -->
         <div class="deploy-pane" data-pane="cf" data-on="true">
-          <p class="deploy-note">Edge hosting as a native Cloudflare Workers bundle — no servers to run.</p>
+          <p class="deploy-note">Edge hosting as a native Cloudflare Workers bundle, no servers to run.</p>
           <div class="terminal">
             <div class="term-bar"><span class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span><span class="ttl">bash</span><button class="copy">Copy</button></div>
             <div class="term-body">
@@ -92,12 +92,12 @@
               <div><span class="p">$</span> docker compose up <span class="s">-d</span></div>
             </div>
           </div>
-          <div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div>ClickHouse running on the Docker host? <code>localhost</code> points at the container — use <code>host.docker.internal</code> (<code>--add-host=host.docker.internal:host-gateway</code> on Linux).</div></div>
+          <div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div>ClickHouse running on the Docker host? <code>localhost</code> points at the container, use <code>host.docker.internal</code> (<code>--add-host=host.docker.internal:host-gateway</code> on Linux).</div></div>
         </div>
 
         <!-- Kubernetes / Helm -->
         <div class="deploy-pane" data-pane="helm" data-on="false">
-          <p class="deploy-note">Chart vendored at <code>deploy/helm/chmonitor</code> — Secret-backed password, non-root uid 1001, health probes.</p>
+          <p class="deploy-note">Chart vendored at <code>deploy/helm/chmonitor</code>, Secret-backed password, non-root uid 1001, health probes.</p>
           <div class="terminal">
             <div class="term-bar"><span class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span><span class="ttl">bash</span><button class="copy">Copy</button></div>
             <div class="term-body">
