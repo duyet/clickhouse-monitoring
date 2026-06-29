@@ -1,0 +1,45 @@
+---
+import { getCollection, render } from 'astro:content'
+import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft)
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }))
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+---
+<Base
+  title={`${post.data.title} — chmonitor blog`}
+  description={post.data.description}
+  image={post.data.cover ?? '/brand/og-brand.png'}
+>
+  <Nav />
+  <main>
+    <div class="article-wrap">
+      <header class="article-head">
+        <a class="back-link" href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          All posts
+        </a>
+        <h1>{post.data.title}</h1>
+        <p class="lede">{post.data.description}</p>
+        <div class="article-byline">
+          <span class="post-tag">{post.data.version ?? post.data.tag}</span>
+          <span>{fmtDate(post.data.date)}</span>
+        </div>
+      </header>
+    </div>
+    <article class="prose">
+      <Content />
+    </article>
+  </main>
+  <Footer />
+</Base>
