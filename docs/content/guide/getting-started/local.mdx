@@ -57,7 +57,7 @@ CLICKHOUSE_TZ=UTC
 EVENTS_TABLE_NAME=system.monitoring_events
 ```
 
-Client-side variables in the TanStack app use `VITE_*` prefix. The Next.js app uses `NEXT_PUBLIC_*` for the same variables. For example:
+For dual-surface settings you normally set the canonical `CHM_*` name once and the `VITE_*` is derived at build time (e.g. set `CHM_AUTH_PROVIDER`, not `VITE_AUTH_PROVIDER`). Client-side variables in the TanStack app use the `VITE_*` prefix. The Next.js app uses `NEXT_PUBLIC_*` for the same variables. For example:
 
 | TanStack (`VITE_*`) | Next.js (`NEXT_PUBLIC_*`) |
 |---|---|

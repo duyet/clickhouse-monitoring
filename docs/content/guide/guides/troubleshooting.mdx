@@ -73,7 +73,7 @@ For heavy queries (full query-log scans), the dashboard also respects ClickHouse
 
 `CHM_AUTH_PROVIDER` is set to something other than `none` but is not configured properly:
 
-- `clerk` — check `CLERK_SECRET_KEY` and `VITE_AUTH_PROVIDER=clerk` (build-time).
+- `clerk` — check `CLERK_SECRET_KEY` and `CHM_AUTH_PROVIDER=clerk` (its client value is build-time inlined).
 - `proxy` — check `CHM_CF_ACCESS_TEAM_DOMAIN` (Cloudflare Access) or `CHM_PROXY_AUTH_SECRET` (shared secret).
 - `trusted` — check `CHM_TRUSTED_AUTH_SECRET` or `CHM_TRUSTED_ALLOW_INSECURE`.
 
@@ -87,7 +87,7 @@ curl -s https://your-dashboard/api/v1/auth/me | jq .
 
 ### White screen after login (Clerk)
 
-Clerk is a build-time client variable. If `VITE_AUTH_PROVIDER` was not set at build time, the client JS doesn't know about Clerk and may loop or blank out.
+The client auth value is derived from `CHM_AUTH_PROVIDER` and inlined at build time. If `CHM_AUTH_PROVIDER` was not set at build time, the client JS doesn't know about Clerk and may loop or blank out.
 
 Confirm the build included Clerk:
 
@@ -98,7 +98,7 @@ curl https://your-dashboard/ | grep pk_live
 
 If it is missing, rebuild with:
 ```bash
-VITE_AUTH_PROVIDER=clerk NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_... bun run build
+CHM_AUTH_PROVIDER=clerk CHM_CLERK_PUBLISHABLE_KEY=pk_live_... bun run build
 ```
 
 ### API key returns 401

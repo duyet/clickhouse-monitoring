@@ -67,7 +67,7 @@ If ClickHouse runs in the same Compose project, use the service name as the host
 
 ## Configure
 
-All configuration is via environment variables passed as `-e KEY=VALUE` or in a Compose `environment:` block. You can also mount a config file (see [Feature permissions](#feature-permissions) below).
+All configuration is via environment variables passed as `-e KEY=VALUE`, a Compose `environment:` block, or an optional `env_file: .env` (the Compose file declares it with `required: false`). Use the canonical `CHM_*` names from [`apps/dashboard/.env.example`](https://github.com/chmonitor/chmonitor/blob/main/apps/dashboard/.env.example) — the same names work on every target. You can also mount a config file (see [Feature permissions](#feature-permissions) below).
 
 ### ClickHouse connection
 
@@ -183,13 +183,14 @@ Issue tokens at `POST /api/v1/auth/api-key`. Use `Authorization: Bearer chm_...`
 
 ```bash
 -e CHM_AUTH_PROVIDER='clerk' \
--e VITE_AUTH_PROVIDER='clerk' \
--e VITE_CLERK_PUBLISHABLE_KEY='pk_live_...' \
+-e CHM_CLERK_PUBLISHABLE_KEY='pk_live_...' \
 -e CLERK_SECRET_KEY='sk_live_...'
 ```
 
-<Callout type="warn" title="Build-time VITE_* vars">
-`VITE_*` vars are inlined at build time. If you run the pre-built image, these must match what the image was built with. For a custom build, set them at build time. See [Authentication](/operate/authentication).
+Set the canonical `CHM_*` names once — the client `VITE_AUTH_PROVIDER` / `VITE_CLERK_PUBLISHABLE_KEY` derive from them at build time.
+
+<Callout type="warn" title="Clerk needs a custom build on Docker">
+The client half of these (`CHM_AUTH_PROVIDER`, `CHM_CLERK_PUBLISHABLE_KEY`) is inlined at build time. The pre-built GHCR image is built with auth `none`, so enabling Clerk requires building a custom image with these set at build time, then passing them (plus `CLERK_SECRET_KEY`) at runtime. See [Authentication](/operate/authentication).
 </Callout>
 
 **Proxy — Cloudflare Access:**
@@ -228,7 +229,7 @@ Set `CHM_FEATURE_AGENT_ACCESS=authenticated` to require login before using the a
 
 ### Conversation store
 
-Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` to be baked into the image at build time (it is a `VITE_*` build-time variable). The pre-built image from GHCR has this disabled by default. Build a custom image with this flag set if you need server-side persistence on Docker.
+Server-side persistence requires `CHM_FEATURE_CONVERSATION_DB=true` baked into the image at build time (its client `VITE_FEATURE_CONVERSATION_DB` is derived at build). The pre-built image from GHCR has this disabled by default. Build a custom image with this flag set if you need server-side persistence on Docker.
 
 At runtime, set the backend via `CONVERSATION_STORE_BACKEND`. Available backends on Docker: `postgres`, `agentstate`, `memory`.
 

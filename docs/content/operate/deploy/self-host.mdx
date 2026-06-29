@@ -140,11 +140,13 @@ export CHM_API_KEY_SECRET='a-long-random-secret'
 **Clerk:**
 
 ```bash
-export CHM_AUTH_PROVIDER='clerk'
+# Build with the canonical names (the client VITE_* derive from them):
+# CHM_AUTH_PROVIDER=clerk CHM_CLERK_PUBLISHABLE_KEY=pk_live_... bun run build
+export CHM_AUTH_PROVIDER='clerk'   # also needed at runtime
 export CLERK_SECRET_KEY='sk_live_...'
-# VITE_* vars must be set at build time, not runtime:
-# VITE_AUTH_PROVIDER=clerk VITE_CLERK_PUBLISHABLE_KEY=pk_live_... bun run build
 ```
+
+Set `CHM_AUTH_PROVIDER` / `CHM_CLERK_PUBLISHABLE_KEY` before `bun run build` (the client values are inlined at build time), then keep `CHM_AUTH_PROVIDER` and the `CLERK_SECRET_KEY` secret in the runtime env.
 
 **Proxy — Cloudflare Access:**
 
@@ -205,7 +207,7 @@ Keep `LLM_API_KEY` server-side — never set it as a `VITE_*` variable.
 
 **Default:** browser localStorage. No server config needed.
 
-Server-side persistence requires `VITE_FEATURE_CONVERSATION_DB=true` set at build time (a `VITE_*` build-time variable). Build a custom image or binary with this flag set. At runtime, select the backend:
+Server-side persistence requires `CHM_FEATURE_CONVERSATION_DB=true` set at build time (its client `VITE_FEATURE_CONVERSATION_DB` is derived at build). Build with this flag set. At runtime, select the backend:
 
 **Postgres store (recommended for self-host):**
 

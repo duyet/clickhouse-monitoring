@@ -56,13 +56,28 @@ already lists `cloud` as an enterprise feature) and its fail-open philosophy.
 | Anonymous visitor | Sees env hosts | Sees the read-only demo (explore without an account) |
 | Signed-in user | Sees env hosts | Demo is **hidden** ("empty it") → their own per-user (D1) connections only; zero → welcome/setup page |
 | Auth | usually `none` | Clerk, with `CHM_CLERK_PUBLIC_READ=true` (anon reads, writes need sign-in) |
-| Per-user connections | optional | on (`VITE_FEATURE_USER_CONNECTIONS_DB=true`) |
+| Per-user connections | optional | on (`CHM_FEATURE_USER_CONNECTIONS_DB=true`) |
+
+**Environment is centralized — one canonical name, one source of truth.** Each
+dual-surface setting (browser + server) has ONE canonical `CHM_*` name; the
+client `VITE_*` is DERIVED from it in `vite.config.ts`, so you set each value
+ONCE (e.g. set `CHM_AUTH_PROVIDER`, never also `VITE_AUTH_PROVIDER`). The hosted
+product's non-secret config lives in committed `apps/dashboard/.env.cloud`
+(+ `.env.preview` overlay) — the SINGLE source for both the vite client build
+(`CHM_BUILD_ENV=cloud|preview`, npm `build:cloud`/`build:preview`) and the Worker
+runtime vars. `wrangler.toml` declares NO `[vars]`; `scripts/patch-wrangler-env.ts`
+injects them from `.env.cloud` at deploy. Self-hosters use `apps/dashboard/.env.example`
+(same names) on Docker (`docker-compose.yml` `env_file`) / K8s (Helm `values.yaml`).
+Secrets NEVER live in committed `.env*` — only in `scripts/set-secrets.ts` / a
+K8s Secret / `.env.local`. **Never re-add a `[vars]` block to `wrangler.toml` —
+edit `.env.cloud`.**
 
 **Where cloud mode is wired:**
 - `lib/cloud/cloud-mode.ts` — `isCloudModeClient()` / `isCloudModeServer()` / `parseCloudMode()`.
-- `vite.config.ts` CLIENT_ENV + `src/vite-env.d.ts` — inline `VITE_CLOUD_MODE` (build).
-- `wrangler.toml` (`[vars]` + `[env.preview.vars]`) — `CHM_CLOUD_MODE` (runtime).
-- `.github/workflows/cloudflare.yml` build step — sets `VITE_CLOUD_MODE=true` + `VITE_FEATURE_USER_CONNECTIONS_DB=true` for the hosted deploy ONLY.
+- `apps/dashboard/.env.cloud` (+ `.env.preview`) — single source: `CHM_CLOUD_MODE=true`, `CHM_FEATURE_USER_CONNECTIONS_DB=true`, etc.
+- `vite.config.ts` `loadDeployEnv` + CLIENT_ENV + `src/vite-env.d.ts` — derive/inline `VITE_CLOUD_MODE` (build) from the canonical `CHM_*`.
+- `scripts/patch-wrangler-env.ts` — reads `.env.cloud`/`.env.preview` → Worker runtime `[vars]` (the @cloudflare/vite-plugin strips `[vars]` from the generated config).
+- `.github/workflows/cloudflare.yml` build step — runs `build:preview` (PRs) / `build:cloud` (main); values come from the `.env*` files, not hardcoded.
 - `lib/swr/use-merged-hosts.ts` — demo tagging + hide-when-signed-in; returns `cloudMode` / `isSignedIn`.
 - `components/host/host-switcher.tsx` — "Demo / read-only" badges; treats `demo` like `env` for live status.
 - `components/host/first-run-empty-state.tsx` — the redesigned welcome/setup page (3 modes: cloud signed-in, cloud anon, self-hosted).

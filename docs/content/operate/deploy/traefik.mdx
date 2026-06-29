@@ -96,7 +96,6 @@ Attach the middleware to the route (`middlewares: [{ name: oauth2-proxy-auth }]`
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
-VITE_AUTH_PROVIDER=trusted
 # oauth2-proxy forwards X-Auth-Request-* (not X-Forwarded-*) through ForwardAuth
 CHM_TRUSTED_USER_HEADER=X-Auth-Request-User
 CHM_TRUSTED_EMAIL_HEADER=X-Auth-Request-Email

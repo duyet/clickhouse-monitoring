@@ -51,7 +51,7 @@ Set environment variables in Vercel dashboard → Project → Settings → Envir
 
 ### Client vs server vars on Vercel
 
-On Vercel (Next.js), client-side vars use `NEXT_PUBLIC_*`. These are inlined at build time. Server-side vars are plain names. This differs from the TanStack app which uses `VITE_*`.
+On Vercel (Next.js), client-side vars use `NEXT_PUBLIC_*`. These are inlined at build time. Server-side vars are plain names. This differs from the TanStack app which uses `VITE_*`. For dual-surface settings you set the canonical `CHM_*` name once and the client var is derived from it at build time.
 
 | TanStack (current app) | Next.js / Vercel | Purpose |
 |---|---|---|

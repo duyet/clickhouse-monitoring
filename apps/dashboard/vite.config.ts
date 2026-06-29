@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { cloudflare } from '@cloudflare/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
@@ -30,26 +31,72 @@ function git(cmd: string): string {
   }
 }
 
-// Back-compat: each client var also accepts its legacy Next `NEXT_PUBLIC_*`
-// build-env name as a fallback, so configs from before the VITE_ rename keep
-// working. Precedence: VITE_* (new) → NEXT_PUBLIC_* (legacy) → committed default.
+// Single source of truth for the hosted (cloud) build's non-secret config:
+// the committed `.env.cloud` (+ `.env.preview` overlay). The CF deploy sets
+// CHM_BUILD_ENV=cloud|preview (see package.json build:cloud / build:preview);
+// Docker / self-host / dev builds set neither → no cloud file is folded in, so
+// CLIENT_ENV falls back to the self-hosted-safe defaults below (cloud OFF).
+// process.env (CI overrides, shell exports) always wins over the file.
+function parseDotenv(path: string): Record<string, string> {
+  if (!existsSync(path)) return {}
+  const out: Record<string, string> = {}
+  for (const raw of readFileSync(path, 'utf-8').split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq === -1) continue
+    out[line.slice(0, eq).trim()] = line
+      .slice(eq + 1)
+      .trim()
+      .replace(/^["']|["']$/g, '')
+  }
+  return out
+}
+function loadDeployEnv(): Record<string, string> {
+  const mode = process.env.CHM_BUILD_ENV
+  if (mode === 'cloud') return parseDotenv(r('./.env.cloud'))
+  if (mode === 'preview') {
+    return {
+      ...parseDotenv(r('./.env.cloud')),
+      ...parseDotenv(r('./.env.preview')),
+    }
+  }
+  return {}
+}
+
+// Unified env lookup. Each dual-surface setting has ONE canonical name (CHM_*);
+// the client VITE_* below derives from it, so `CHM_AUTH_PROVIDER` /
+// `CHM_CLOUD_MODE` / `CHM_FEATURE_*` are set ONCE and reach both the server
+// (process.env) and the browser bundle. Precedence per var:
+//   explicit VITE_* → canonical CHM_* → legacy NEXT_PUBLIC_* → committed default.
 // Only PUBLIC vars live here — never a runtime secret (security boundary).
-const e = process.env
+const e: Record<string, string | undefined> = {
+  ...loadDeployEnv(),
+  ...process.env,
+}
 const CLIENT_ENV = {
   VITE_AUTH_PROVIDER:
-    e.VITE_AUTH_PROVIDER ?? e.NEXT_PUBLIC_AUTH_PROVIDER ?? 'clerk',
+    e.VITE_AUTH_PROVIDER ??
+    e.CHM_AUTH_PROVIDER ??
+    e.NEXT_PUBLIC_AUTH_PROVIDER ??
+    'clerk',
   // No committed default: the publishable key comes ONLY from the build env
   // (CI sets VITE_CLERK_PUBLISHABLE_KEY — pk_test for previews, pk_live for prod;
   // see .github/workflows/cloudflare.yml). With no key, isClerkEnabled() returns
   // false and Clerk cleanly disables — the app runs unauthenticated, no crash.
   VITE_CLERK_PUBLISHABLE_KEY:
-    e.VITE_CLERK_PUBLISHABLE_KEY ?? e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '',
+    e.VITE_CLERK_PUBLISHABLE_KEY ??
+    e.CHM_CLERK_PUBLISHABLE_KEY ??
+    e.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+    '',
   VITE_FEATURE_CONVERSATION_DB:
     e.VITE_FEATURE_CONVERSATION_DB ??
+    e.CHM_FEATURE_CONVERSATION_DB ??
     e.NEXT_PUBLIC_FEATURE_CONVERSATION_DB ??
     'true',
   VITE_FEATURE_USER_CONNECTIONS_DB:
     e.VITE_FEATURE_USER_CONNECTIONS_DB ??
+    e.CHM_FEATURE_USER_CONNECTIONS_DB ??
     e.NEXT_PUBLIC_FEATURE_USER_CONNECTIONS_DB ??
     'false',
   VITE_AUTOCOMPLETE_LIMIT:
@@ -60,12 +107,12 @@ const CLIENT_ENV = {
     '',
   // Edition: 'community' (default, OSS, fail-open) | 'enterprise' (paid).
   // Unset or unrecognised values always resolve to 'community' in parseEdition().
-  VITE_EDITION: e.VITE_EDITION ?? 'community',
+  VITE_EDITION: e.VITE_EDITION ?? e.CHM_EDITION ?? 'community',
   // Cloud (SaaS) mode: 'true' on dash.chmonitor.dev, unset everywhere else.
   // When on, env hosts are a public read-only demo and signed-in users get a
   // clean per-user workspace. Unset/junk → self-hosted (OSS) behaviour, never
   // degraded. See lib/cloud/cloud-mode.ts.
-  VITE_CLOUD_MODE: e.VITE_CLOUD_MODE ?? '',
+  VITE_CLOUD_MODE: e.VITE_CLOUD_MODE ?? e.CHM_CLOUD_MODE ?? '',
   // Anonymous product telemetry: ON by default — opt out with VITE_TELEMETRY_ENABLED=off
   // (or 0/false/no), VITE_DO_NOT_TRACK / DO_NOT_TRACK, or an empty endpoint.
   VITE_TELEMETRY_ENABLED:

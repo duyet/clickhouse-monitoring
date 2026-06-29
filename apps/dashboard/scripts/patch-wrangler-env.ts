@@ -35,68 +35,71 @@ if (!existsSync(JSON_PATH)) {
 
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 
-// --- Shared vars (keep in sync with wrangler.toml) ---
-// Private homelab topology (ClickHouse host/user/name) is read from the
-// environment at deploy time and falls back to public localhost defaults. CI
-// injects the real values from repo secrets (see the "Patch wrangler config"
-// step in .github/workflows/cloudflare.yml); the committed defaults keep the
-// public repo free of any private homelab info.
-// OPENROUTER_REFERER is the OpenRouter/AnyRouter attribution header (HTTP-Referer
-// for app-ranking on their leaderboards) — not sensitive. It defaults to the
-// deployment's canonical URL.
-const SHARED_VARS = {
-  CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || 'http://localhost:8123',
-  CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || 'default',
-  CLICKHOUSE_NAME: process.env.CLICKHOUSE_NAME || 'localhost',
-  CLICKHOUSE_MAX_EXECUTION_TIME: '60',
-  CLOUDFLARE_WORKERS: '1',
-  OPENROUTER_REFERER: process.env.OPENROUTER_REFERER || 'https://chmonitor.dev',
-  OPENROUTER_APP_NAME: 'chmonitor',
-  CHM_AUTH_PROVIDER: 'clerk',
-  CHM_FEATURE_AGENT_ACCESS: 'authenticated',
-  // Public read-only mode: anonymous visitors can view monitoring data; writes
-  // (AI agent, KILL QUERY / OPTIMIZE TABLE, arbitrary SQL) still require sign-in.
-  CHM_CLERK_PUBLIC_READ: 'true',
-  // AgentState conversation-store backend. The AGENTSTATE_API_KEY secret alone
-  // activates it — resolveStore picks AgentState (priority 2) ahead of the D1
-  // binding (priority 3) on key presence, so NO explicit force var is needed.
-  // We deliberately do NOT set CONVERSATION_STORE_BACKEND=agentstate: that would
-  // make resolveStore THROW in any keyless env (local `wrangler dev`, forks),
-  // whereas key-presence auto-selection degrades gracefully. AGENTSTATE_AI_ENRICH
-  // is harmless without a key (only read once AgentState is active). Keep in
-  // sync with wrangler.toml.
-  AGENTSTATE_AI_ENRICH: 'true',
-}
-// NOTE: client auth config (auth provider + Clerk publishable key) is NOT a
-// runtime worker var — it is build-time inlined via import.meta.env.VITE_* (see
-// vite.config.ts CLIENT_ENV). Only the SERVER-side CHM_AUTH_PROVIDER lives here.
-
-// --- Production config (keep in sync with wrangler.toml top-level) ---
-const PROD_CONFIG = {
-  name: 'chmonitor-dash',
-  routes: [{ pattern: 'dash.chmonitor.dev', custom_domain: true }],
-  vars: {
-    ...SHARED_VARS,
-    LLM_MODEL: 'anyrouter:@preset/chmonitor',
-  },
+// --- Worker runtime vars: single source of truth = .env.cloud (+ .env.preview) ---
+// wrangler.toml no longer declares [vars]. The committed cloud env files are the
+// ONLY place worker runtime config lives, shared with the vite client build
+// (vite.config.ts loadDeployEnv) so each value is set exactly once. Secrets are
+// NOT here — scripts/set-secrets.ts handles those. Deployment-specific values
+// (private homelab CLICKHOUSE_HOST/USER/NAME, OPENROUTER_REFERER) are injected
+// from CI process.env, overriding the committed localhost placeholders so the
+// public repo never carries private topology.
+function parseDotenv(path: string): Record<string, string> {
+  if (!existsSync(path)) return {}
+  const out: Record<string, string> = {}
+  for (const raw of readFileSync(path, 'utf-8').split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq === -1) continue
+    out[line.slice(0, eq).trim()] = line
+      .slice(eq + 1)
+      .trim()
+      .replace(/^["']|["']$/g, '')
+  }
+  return out
 }
 
-// --- Preview config (keep in sync with wrangler.toml [env.preview]) ---
-const PREVIEW_CONFIG = {
-  name: 'preview-chmonitor-dash',
-  routes: [{ pattern: 'preview.dash.chmonitor.dev', custom_domain: true }],
-  vars: {
-    ...SHARED_VARS,
-    LLM_MODEL: 'anyrouter:z-ai/glm-4.7-flash',
-  },
+const isPreview = envName === 'preview'
+const fileVars = isPreview
+  ? {
+      ...parseDotenv(join(ROOT, '.env.cloud')),
+      ...parseDotenv(join(ROOT, '.env.preview')),
+    }
+  : parseDotenv(join(ROOT, '.env.cloud'))
+
+// Worker [vars] = every non-VITE_ key from the cloud env file. Only the private
+// deployment topology is allowed to be overridden from process.env (CI injects
+// the real homelab values from repo secrets in the "Patch wrangler config" step;
+// the committed file keeps localhost placeholders). The override is a strict
+// ALLOWLIST so a stray local env var — e.g. a bun-auto-loaded .env.local — can
+// never leak into or corrupt the deployed worker config.
+// OPENROUTER_REFERER is intentionally NOT here — it keeps its committed public
+// default (https://chmonitor.dev) from .env.cloud, never overridden at deploy.
+const DEPLOY_OVERRIDE_KEYS = new Set([
+  'CLICKHOUSE_HOST',
+  'CLICKHOUSE_USER',
+  'CLICKHOUSE_NAME',
+])
+const vars: Record<string, string> = {}
+for (const [k, v] of Object.entries(fileVars)) {
+  if (k.startsWith('VITE_')) continue
+  const override = DEPLOY_OVERRIDE_KEYS.has(k) ? process.env[k] : undefined
+  vars[k] = override && override !== '' ? override : v
 }
 
-// --- Apply patches ---
-const config = envName === 'preview' ? PREVIEW_CONFIG : PROD_CONFIG
+const config = isPreview
+  ? {
+      name: 'preview-chmonitor-dash',
+      routes: [{ pattern: 'preview.dash.chmonitor.dev', custom_domain: true }],
+    }
+  : {
+      name: 'chmonitor-dash',
+      routes: [{ pattern: 'dash.chmonitor.dev', custom_domain: true }],
+    }
 
 generated.name = config.name
 generated.routes = config.routes
-generated.vars = config.vars
+generated.vars = vars
 
 // --- Patch D1 databases ---
 const conversationsDbId = (
@@ -148,4 +151,6 @@ writeFileSync(JSON_PATH, JSON.stringify(generated, null, 2))
 console.log(`✅ Patched wrangler.json for ${envName || 'production'}`)
 console.log(`   name: ${config.name}`)
 console.log(`   routes: ${config.routes.map((r) => r.pattern).join(', ')}`)
-console.log(`   vars: ${Object.keys(config.vars).length} keys`)
+console.log(
+  `   vars: ${Object.keys(vars).length} keys (from .env.cloud${isPreview ? ' + .env.preview' : ''})`
+)
