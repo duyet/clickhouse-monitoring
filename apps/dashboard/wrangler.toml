@@ -18,8 +18,8 @@ enabled = true
 # subscriptions (subscription-store / user-connections / conversation-store).
 [[d1_databases]]
 binding = "CHM_CLOUD_D1"
-database_name = "clickhouse-monitor-conversations"
-database_id = "971fc256-8c2e-4080-b162-3c30b7c56d89"
+database_name = "chm-cloud"
+database_id = "cca247b6-9b25-41bd-b9ca-727b35bc6039"
 migrations_dir = "./src/db/conversations-migrations"
 
 # Durable Object migrations.
@@ -103,8 +103,8 @@ custom_domain = true
 # Reuse the same conversation D1 database (shared preview/prod for now).
 [[env.preview.d1_databases]]
 binding = "CHM_CLOUD_D1"
-database_name = "clickhouse-monitor-conversations"
-database_id = "971fc256-8c2e-4080-b162-3c30b7c56d89"
+database_name = "chm-cloud"
+database_id = "cca247b6-9b25-41bd-b9ca-727b35bc6039"
 migrations_dir = "./src/db/conversations-migrations"
 
 # DO migrations are not inherited by named environments — repeat the chain that

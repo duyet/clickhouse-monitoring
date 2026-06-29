@@ -18,7 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const DATABASE_NAME = 'clickhouse-monitor-conversations'
+const DATABASE_NAME = 'chm-cloud'
 const WRANGLER_TOML_PATH = join(process.cwd(), 'wrangler.toml')
 
 interface WranglerD1CreateOutput {
@@ -79,7 +79,7 @@ function updateWranglerToml(databaseId: string): boolean {
 
     // Update the main D1 database binding
     const updatedMain = content.replace(
-      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "chm-cloud"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
       (block) => {
         matchedMain = true
         return withDatabaseId(block)
@@ -88,7 +88,7 @@ function updateWranglerToml(databaseId: string): boolean {
 
     // Update the preview environment binding
     const updatedPreview = updatedMain.replace(
-      /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "chm-cloud"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
       (block) => {
         matchedPreview = true
         return withDatabaseId(block)
