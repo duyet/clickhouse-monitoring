@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 /**
  * Drift guard for the centralized cloud env config.
@@ -17,7 +18,7 @@ import { join } from 'node:path'
  */
 
 // src/lib/cloud → apps/dashboard
-const APP_ROOT = join(import.meta.dir, '..', '..', '..')
+const APP_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
 function parseDotenv(path: string): Record<string, string> {
   if (!existsSync(path)) return {}
