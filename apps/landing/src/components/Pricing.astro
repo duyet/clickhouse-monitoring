@@ -135,12 +135,14 @@ const tiers: Tier[] = [
                 </>
               )}
             </div>
-            {(t.monthly ?? 0) > 0 && (
-              <div class="pbilled">
-                <span class="bill-monthly">billed monthly</span>
-                <span class="bill-yearly">${t.yearlyTotal}/yr · save 2 months</span>
-              </div>
-            )}
+            <div class="pbilled">
+              {(t.monthly ?? 0) > 0 && (
+                <>
+                  <span class="bill-monthly">billed monthly</span>
+                  <span class="bill-yearly">${t.yearlyTotal}/yr · save 2 months</span>
+                </>
+              )}
+            </div>
             <div class="pdesc">{t.tagline}</div>
           </div>
           <div class="price-body">
