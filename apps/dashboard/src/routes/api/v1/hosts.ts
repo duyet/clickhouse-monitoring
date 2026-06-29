@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { env } from 'cloudflare:workers'
+import { filterToDemoHosts } from '@/lib/cloud/demo-hosts'
 
 interface HostInfo {
   id: number
@@ -53,9 +54,13 @@ export const Route = createFileRoute('/api/v1/hosts')({
     handlers: {
       GET: () => {
         const bindings = env as Record<string, string | undefined>
-        const hosts = parseHosts(
-          bindings.CLICKHOUSE_HOST,
-          bindings.CLICKHOUSE_NAME
+        // In cloud mode, narrow the env hosts to the public-demo allowlist
+        // (CHM_CLOUD_DEMO_HOSTS) so anonymous visitors see only the intended
+        // demo host(s). No-op in self-hosted mode or when the var is unset.
+        const hosts = filterToDemoHosts(
+          parseHosts(bindings.CLICKHOUSE_HOST, bindings.CLICKHOUSE_NAME),
+          bindings,
+          { name: (h) => h.name, host: (h) => h.host }
         )
 
         if (hosts.length === 0) {

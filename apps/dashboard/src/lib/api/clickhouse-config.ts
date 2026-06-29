@@ -1,5 +1,7 @@
 import type { ClickHouseConfig } from '@chm/clickhouse-client'
 
+import { filterToDemoHosts } from '@/lib/cloud/demo-hosts'
+
 // Shared ClickHouse host-config resolver for server routes. Builds
 // ClickHouseConfig[] from the comma-separated env lists (the Cloudflare binding
 // or process.env), mirroring @chm/clickhouse-client getClickHouseConfigs() but
@@ -20,7 +22,7 @@ export function getClickHouseConfigsFromEnv(
   const passwords = splitByComma(bindings.CLICKHOUSE_PASSWORD)
   const customLabels = splitByComma(bindings.CLICKHOUSE_NAME)
 
-  return hosts.map((host, index) => {
+  const configs = hosts.map((host, index) => {
     // A single credential pair serves many hosts; otherwise index by position.
     let user: string
     let password: string
@@ -32,5 +34,14 @@ export function getClickHouseConfigsFromEnv(
       password = passwords[index] || ''
     }
     return { id: index, host, user, password, customName: customLabels[index] }
+  })
+
+  // In cloud mode, restrict to the public-demo allowlist (CHM_CLOUD_DEMO_HOSTS)
+  // so env-host surfaces (live status, health, notifications) reflect only the
+  // demo host. `id` is the original index, so per-host routing stays correct.
+  // No-op in self-hosted mode or when the var is unset.
+  return filterToDemoHosts(configs, bindings, {
+    name: (c) => c.customName,
+    host: (c) => c.host,
   })
 }
