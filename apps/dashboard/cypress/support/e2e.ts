@@ -5,6 +5,10 @@
 // sweep spec collects errors per-route and reports them in bulk; other specs
 // use individual `cy.on('uncaught:exception')` handlers as needed.
 
+import { addClerkCommands } from '@clerk/testing/cypress'
+
+addClerkCommands({ Cypress, cy })
+
 Cypress.on('uncaught:exception', (err) => {
   const msg = err.message || ''
 
@@ -28,5 +32,3 @@ Cypress.on('uncaught:exception', (err) => {
   // Let other errors surface.
   return true
 })
-
-export {}

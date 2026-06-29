@@ -68,6 +68,18 @@ const SECRET_KEYS = [
   // here the MCP worker boots with an empty secret and 503s every /api/mcp
   // request ("MCP API key auth is not configured"). Must match across workers.
   'CHM_API_KEY_SECRET',
+  // Symmetric key for encrypting per-user connection credentials at rest in D1.
+  // When unset it is derived from CLERK_SECRET_KEY (lib/connection-store).
+  'CHM_USER_CONNECTIONS_ENCRYPTION_KEY',
+  // Polar billing (cloud SaaS). Access token authorizes checkout/portal/product
+  // API calls; webhook secret verifies inbound subscription events. Production
+  // uses the base names; preview/PR builds resolve the _TEST (sandbox) variants
+  // (see set-secrets.ts resolveValue + cloudflare.yml). Non-secret Polar config
+  // (CHM_POLAR_SERVER, CHM_POLAR_PRODUCT_*) lives in .env.production/.env.preview.
+  'POLAR_ACCESS_TOKEN',
+  'POLAR_ACCESS_TOKEN_TEST',
+  'POLAR_WEBHOOK_SECRET',
+  'POLAR_WEBHOOK_SECRET_TEST',
   // Misc runtime
   'NEXT_QUERY_CACHE_TTL',
 ] as const
