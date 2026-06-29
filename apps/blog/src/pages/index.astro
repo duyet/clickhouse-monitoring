@@ -25,7 +25,7 @@ function fmtDate(d: Date) {
     <section class="wrap">
       <div class="post-list">
         {posts.map((post) => (
-          <a class="post-card" href={`/${post.id}`}>
+          <a class="post-card" href={`/${post.id}/`}>
             <div class="post-meta">
               <span class="post-tag">{post.data.version ?? post.data.tag}</span>
               <span class="post-date">{fmtDate(post.data.date)}</span>
