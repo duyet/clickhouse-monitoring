@@ -1,0 +1,27 @@
+# wrangler.toml for the chmonitor blog worker.
+#
+# Static-assets-only Worker: Astro builds to ./dist, served directly by Workers
+# Assets (no `main` script).
+#
+# Deploy: cd apps/blog && bun run build && wrangler deploy
+
+name = "chmonitor-blog"
+compatibility_date = "2026-05-28"
+
+[assets]
+directory = "./dist"
+
+[[routes]]
+pattern = "blog.chmonitor.dev"
+custom_domain = true
+
+# Preview environment for PR deployments.
+[env.preview]
+name = "preview-chmonitor-blog"
+
+[env.preview.assets]
+directory = "./dist"
+
+[[env.preview.routes]]
+pattern = "preview.blog.chmonitor.dev"
+custom_domain = true

@@ -1,0 +1,20 @@
+{
+  "name": "blog",
+  "description": "chmonitor blog (blog.chmonitor.dev) — release notes and product updates",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "cf:deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.3.0",
+    "astro": "^7.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.65.0"
+  }
+}

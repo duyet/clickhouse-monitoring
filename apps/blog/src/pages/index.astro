@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content'
+import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+)
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+---
+<Base title="chmonitor blog — release notes & product updates">
+  <Nav />
+  <main>
+    <section class="blog-hero">
+      <div class="wrap">
+        <span class="eyebrow sec-eyebrow">Blog</span>
+        <h1>What's new in chmonitor</h1>
+        <p>Release notes, product updates and engineering notes from the team building the open-source ClickHouse monitoring dashboard.</p>
+      </div>
+    </section>
+    <section class="wrap">
+      <div class="post-list">
+        {posts.map((post) => (
+          <a class="post-card" href={`/${post.id}`}>
+            <div class="post-meta">
+              <span class="post-tag">{post.data.version ?? post.data.tag}</span>
+              <span class="post-date">{fmtDate(post.data.date)}</span>
+            </div>
+            <div class="post-body">
+              <h2>{post.data.title}</h2>
+              <p>{post.data.description}</p>
+              <span class="post-more">
+                Read more
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
