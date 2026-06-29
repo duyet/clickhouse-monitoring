@@ -7,15 +7,31 @@
         chmonitor
       </a>
       <nav class="nav-links">
-        <a href="/#features">Features</a>
-        <a href="/#data-explorer">Data Explorer</a>
-        <a href="/#health">Health</a>
-        <a href="/#capabilities">Capabilities</a>
+        <div class="nav-group">
+          <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
+            Product
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-menu">
+            <a href="/#features">Features<small>System tables, read-only, AI agent</small></a>
+            <a href="/#data-explorer">Data Explorer<small>Browse databases, deps and SQL</small></a>
+            <a href="/#health">Health<small>Live cluster health indicators</small></a>
+            <a href="/#capabilities">Capabilities<small>Every system table, one place</small></a>
+          </div>
+        </div>
         <a href="/#open-source">Open source</a>
         <a href="/#pricing">Pricing</a>
-        <a href="/changelog">Changelog</a>
-        <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Docs</a>
-        <a href="https://github.com/chmonitor/chmonitor" target="_blank" rel="noopener">GitHub</a>
+        <div class="nav-group">
+          <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
+            Resources
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-menu">
+            <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Docs<small>Setup, deploy and API guides</small></a>
+            <a href="/changelog">Changelog<small>What's new in chmonitor</small></a>
+            <a href="/brand">Brand<small>Logos and brand assets</small></a>
+          </div>
+        </div>
       </nav>
       <div class="nav-cta">
         <a class="btn btn-ghost btn-sm" href="https://github.com/chmonitor/chmonitor" target="_blank" rel="noopener">
@@ -29,3 +45,18 @@
       </div>
     </div>
   </header>
+  <script is:inline>
+    // Reflect dropdown open/close state in aria-expanded (CSS handles the
+    // hover/focus-within reveal; this keeps screen readers in sync).
+    document.querySelectorAll('.nav-group').forEach(function (group) {
+      var trigger = group.querySelector('.nav-trigger')
+      if (!trigger) return
+      var set = function (open) { trigger.setAttribute('aria-expanded', open ? 'true' : 'false') }
+      group.addEventListener('mouseenter', function () { set(true) })
+      group.addEventListener('mouseleave', function () { set(false) })
+      group.addEventListener('focusin', function () { set(true) })
+      group.addEventListener('focusout', function (e) {
+        if (!group.contains(e.relatedTarget)) set(false)
+      })
+    })
+  </script>

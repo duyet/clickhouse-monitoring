@@ -159,6 +159,27 @@ const ogImage = new URL(image, Astro.site).toString()
     .nav-cta{display:flex;align-items:center;gap:10px;flex:0 0 auto}
     .nav-toggle{display:none}
 
+    /* ── nav dropdowns (group child items: Product / Resources) ── */
+    .nav-group{position:relative}
+    .nav-trigger{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:14px;
+      font-weight:500;color:var(--muted-fg);background:none;border:none;cursor:pointer;padding:0;
+      white-space:nowrap;transition:color .15s}
+    .nav-trigger svg{width:13px;height:13px;transition:transform .2s ease;opacity:.7}
+    .nav-group:hover .nav-trigger,.nav-group:focus-within .nav-trigger{color:var(--fg)}
+    .nav-group:hover .nav-trigger svg,.nav-group:focus-within .nav-trigger svg{transform:rotate(180deg)}
+    .nav-menu{position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%) translateY(6px);
+      min-width:208px;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:12px;
+      box-shadow:var(--shadow-float);display:flex;flex-direction:column;gap:1px;
+      opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:60}
+    /* hover bridge so the cursor can cross the gap to the menu */
+    .nav-group::after{content:"";position:absolute;top:100%;left:0;right:0;height:14px}
+    .nav-group:hover .nav-menu,.nav-group:focus-within .nav-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+    .nav-menu a{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:8px;
+      font-size:14px;font-weight:500;color:var(--fg-soft);transition:background .14s,color .14s}
+    .nav-menu a:hover{background:var(--muted);color:var(--fg)}
+    .nav-menu a small{font-size:12px;font-weight:400;color:var(--muted-fg)}
+    @media (prefers-reduced-motion:reduce){.nav-trigger svg,.nav-menu{transition:none}}
+
     /* ── hero ── */
     .hero{padding:52px 0 72px;text-align:center;position:relative;overflow:hidden}
     .hero::before{content:"";position:absolute;inset:0;z-index:-1;
