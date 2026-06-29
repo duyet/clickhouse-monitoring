@@ -74,6 +74,11 @@ const DASHBOARD_SECRET_KEYS = [
   // (/api/v1/auth/api-key mints keys via issueApiKey) AND the MCP worker.
   'CHM_API_KEY_SECRET',
   'CHM_USER_CONNECTIONS_ENCRYPTION_KEY',
+  // Polar billing (cloud SaaS). Access token authorizes checkout/portal/product
+  // API calls; webhook secret verifies inbound subscription events. Non-secret
+  // Polar config (CHM_POLAR_SERVER, CHM_POLAR_PRODUCT_*) lives in .env.production.
+  'POLAR_ACCESS_TOKEN',
+  'POLAR_WEBHOOK_SECRET',
   'CLICKHOUSE_TZ',
   'CLICKHOUSE_EXCLUDE_USER_DEFAULT',
   'NEXT_QUERY_CACHE_TTL',
@@ -189,6 +194,15 @@ function resolveValue(
   // secret is skipped, so preview falls back to a non-AgentState backend.
   if (key === 'AGENTSTATE_API_KEY' && isPreview) {
     return src.AGENTSTATE_API_KEY_TEST ?? ''
+  }
+  // Polar billing: preview uses the SANDBOX token/secret (…_TEST) so PR previews
+  // never touch the production Polar org. Production uses the base name; while
+  // unset, billing is inert (checkout 501s) — safe until real prod creds exist.
+  if (key === 'POLAR_ACCESS_TOKEN' && isPreview) {
+    return src.POLAR_ACCESS_TOKEN_TEST ?? ''
+  }
+  if (key === 'POLAR_WEBHOOK_SECRET' && isPreview) {
+    return src.POLAR_WEBHOOK_SECRET_TEST ?? ''
   }
   return src[key] ?? DEFAULTS[key] ?? ''
 }

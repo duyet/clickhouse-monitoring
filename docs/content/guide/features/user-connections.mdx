@@ -29,7 +29,7 @@ server returns *"User connections database storage is not enabled"* and the
 1. **`CHM_FEATURE_USER_CONNECTIONS_DB=true`** — the feature flag.
 2. **Clerk auth** (`CHM_AUTH_PROVIDER=clerk`) — connections are keyed by the signed-in Clerk `userId`.
 3. **`CHM_USER_CONNECTIONS_ENCRYPTION_KEY`** — a 32-byte base64 key used to encrypt credentials at rest (AES-256-GCM).
-4. **A database backend** — `CONVERSATIONS_D1` on Cloudflare, or `DATABASE_URL` / `POSTGRES_URL` on Docker / Kubernetes.
+4. **A database backend** — `CHM_CLOUD_D1` on Cloudflare, or `DATABASE_URL` / `POSTGRES_URL` on Docker / Kubernetes.
 
 <Callout type="info" title="One canonical name">
 Set the canonical `CHM_*` name once. The browser-side `VITE_FEATURE_USER_CONNECTIONS_DB` / `VITE_AUTH_PROVIDER` are **derived** from `CHM_FEATURE_USER_CONNECTIONS_DB` / `CHM_AUTH_PROVIDER` at build time (see `vite.config.ts`) — you don't set them separately. Because the client value is inlined at build time, set these before `bun run build` (or build a custom image), then keep them in the runtime env too.
@@ -49,7 +49,7 @@ CHM_AUTH_PROVIDER=clerk
 
 <Tabs items={['Cloudflare Workers (D1)', 'Node / Kubernetes (Postgres)']}>
 <Tab value="Cloudflare Workers (D1)">
-Use the `CONVERSATIONS_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
+Use the `CHM_CLOUD_D1` binding (shared D1 database; migration `0002_user_connections.sql`).
 </Tab>
 <Tab value="Node / Kubernetes (Postgres)">
 Set `DATABASE_URL` or `POSTGRES_URL`.

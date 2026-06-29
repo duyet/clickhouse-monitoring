@@ -235,8 +235,8 @@ Agent conversations default to browser localStorage. Enable server-side persiste
 
 | Variable | Default | Description |
 |---|---|---|
-| `CONVERSATIONS_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the `CONVERSATIONS_D1` binding. |
-| `AGENT_CONVERSATIONS_D1_DATABASE_ID` | — | Alias for `CONVERSATIONS_D1_DATABASE_ID`. |
+| `CHM_CLOUD_D1_DATABASE_ID` | — | Cloudflare D1 database UUID for the `CHM_CLOUD_D1` binding. |
+| `AGENT_CHM_CLOUD_D1_DATABASE_ID` | — | Alias for `CHM_CLOUD_D1_DATABASE_ID`. |
 
 **Cloudflare Durable Object backend:**
 
@@ -270,7 +270,7 @@ The AI Insights panel on `/overview` persists its findings through a pluggable s
 | Variable | Default | Description |
 |---|---|---|
 | `INSIGHTS_STORE_BACKEND` | `auto` | Backend: `auto`, `clickhouse`, `d1`, `postgres`, `agentstate`, or `memory`. `auto` and `clickhouse` both use the ClickHouse `monitoring_findings` table. `auto` never silently follows other env; a selected backend missing its prerequisite falls back to ClickHouse. |
-| `INSIGHTS_D1` | — | Optional dedicated D1 binding for the `d1` backend. Falls back to `CONVERSATIONS_D1` when unset. |
+| `INSIGHTS_D1` | — | Optional dedicated D1 binding for the `d1` backend. Falls back to `CHM_CLOUD_D1` when unset. |
 
 `postgres` reuses `DATABASE_URL`; `agentstate` reuses `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`).
 

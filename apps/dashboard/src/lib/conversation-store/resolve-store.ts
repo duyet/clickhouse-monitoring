@@ -23,7 +23,7 @@ import { featureFlags } from '@/lib/feature-flags'
 /**
  * Environment variable names for database configuration.
  */
-const D1_BINDING_NAME = 'CONVERSATIONS_D1'
+const D1_BINDING_NAME = 'CHM_CLOUD_D1'
 const DATABASE_URL = 'DATABASE_URL'
 const AGENTSTATE_API_KEY = 'AGENTSTATE_API_KEY'
 const AGENTSTATE_BASE_URL = 'AGENTSTATE_BASE_URL'

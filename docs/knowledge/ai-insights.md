@@ -81,7 +81,7 @@ nothing keeps the original ClickHouse behavior. Backends:
 |---|---|---|
 | `auto` (default) | ClickHouse | — (original behavior) |
 | `clickhouse` | ClickHouse `monitoring_findings` table on the monitored cluster | writable monitoring connection |
-| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CONVERSATIONS_D1` |
+| `d1` | Cloudflare D1 `insights_findings` table | `INSIGHTS_D1` binding, else `CHM_CLOUD_D1` |
 | `postgres` | Postgres `insights_findings` table | `DATABASE_URL` |
 | `agentstate` | AgentState generic State store | `AGENTSTATE_API_KEY` (+ optional `AGENTSTATE_BASE_URL`) |
 | `memory` | in-process map (ephemeral) | — |
@@ -106,7 +106,7 @@ Files: `clickhouse-store.ts`, `d1-store.ts`, `postgres-store.ts`,
 
 - **D1 / Postgres** lazily create a dedicated `insights_findings` table on first
   use (event_time as unix ms, scalar finding columns). D1 reuses the
-  conversation D1 binding (`INSIGHTS_D1` first, then `CONVERSATIONS_D1`); Postgres
+  conversation D1 binding (`INSIGHTS_D1` first, then `CHM_CLOUD_D1`); Postgres
   reuses `DATABASE_URL`.
 - **ClickHouse** uses the existing `monitoring_findings` table with
   `source = 'ai-insight'`.
@@ -136,7 +136,7 @@ Files: `clickhouse-store.ts`, `d1-store.ts`, `postgres-store.ts`,
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `INSIGHTS_STORE_BACKEND` | no | `auto` | `auto` \| `clickhouse` \| `d1` \| `postgres` \| `agentstate` \| `memory`. `auto`/`clickhouse` = ClickHouse findings store |
-| `INSIGHTS_D1` | no | — | optional dedicated D1 binding for the `d1` backend; falls back to `CONVERSATIONS_D1` |
+| `INSIGHTS_D1` | no | — | optional dedicated D1 binding for the `d1` backend; falls back to `CHM_CLOUD_D1` |
 | `DATABASE_URL` | for `postgres` | — | reused from the conversation Postgres store |
 | `AGENTSTATE_API_KEY` | for `agentstate` | — | reused from the AgentState conversation store |
 | `AGENTSTATE_BASE_URL` | no | SDK default | self-host endpoint for `agentstate` |

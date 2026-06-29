@@ -37,10 +37,10 @@ function rowToMeta(row: D1UserConnectionRow): UserConnectionMeta {
 
 export class D1ConnectionStore implements ConnectionStore {
   private getDb(): D1Database {
-    const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
+    const db = getPlatformBindings().getD1Database('CHM_CLOUD_D1')
     if (!db) {
       throw new ConnectionStoreError(
-        'CONVERSATIONS_D1 binding not found',
+        'CHM_CLOUD_D1 binding not found',
         'STORAGE_ERROR'
       )
     }

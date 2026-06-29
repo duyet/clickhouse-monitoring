@@ -14,13 +14,20 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { GUEST_USER } from '@/lib/clerk/guest-user'
+import { isCloudModeClient } from '@/lib/cloud/cloud-mode'
 import { DOCS_SITE_URL } from '@/lib/docs-site'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 
 export function AppSidebar() {
   const { config } = useFeaturePermissions()
-  const menuItems = filterMenuItemsByPermissions(menuItemsConfig, config)
+  const cloudMode = isCloudModeClient()
+  // Billing is a cloud-only surface — self-hosting is free forever, so the
+  // paid-plan page would only confuse self-hosters.
+  const menuItems = filterMenuItemsByPermissions(
+    menuItemsConfig,
+    config
+  ).filter((item) => cloudMode || item.href !== '/billing')
 
   return (
     <Sidebar collapsible="icon" variant="inset">

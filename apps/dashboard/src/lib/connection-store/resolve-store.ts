@@ -5,7 +5,7 @@ import { getUserConnectionsServerConfig } from './server-feature'
 import { ConnectionStoreError } from './types'
 import { getPlatformBindings } from '@chm/platform'
 
-const D1_BINDING_NAME = 'CONVERSATIONS_D1'
+const D1_BINDING_NAME = 'CHM_CLOUD_D1'
 const DATABASE_URL = 'DATABASE_URL'
 
 export async function resolveConnectionStore(): Promise<ConnectionStore> {

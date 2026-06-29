@@ -14,6 +14,7 @@ export const FEATURE_IDS = [
   'security',
   'logs',
   'settings',
+  'billing',
   'cluster',
   'operations',
   'actions',

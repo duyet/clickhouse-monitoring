@@ -160,6 +160,13 @@ jobs:
           # store/crypto.ts), so user-connections works with no extra secret. Set
           # this only to use/rotate a data key independent of the Clerk secret.
           CHM_USER_CONNECTIONS_ENCRYPTION_KEY: ${{ secrets.CHM_USER_CONNECTIONS_ENCRYPTION_KEY }}
+          # Polar billing. Preview resolves the SANDBOX *_TEST variants
+          # (set-secrets.ts resolveValue); production uses the base names and stays
+          # inert (checkout 501s) until prod creds are set. Unset ⇒ skipped.
+          POLAR_ACCESS_TOKEN: ${{ secrets.POLAR_ACCESS_TOKEN }}
+          POLAR_ACCESS_TOKEN_TEST: ${{ secrets.POLAR_ACCESS_TOKEN_TEST }}
+          POLAR_WEBHOOK_SECRET: ${{ secrets.POLAR_WEBHOOK_SECRET }}
+          POLAR_WEBHOOK_SECRET_TEST: ${{ secrets.POLAR_WEBHOOK_SECRET_TEST }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}

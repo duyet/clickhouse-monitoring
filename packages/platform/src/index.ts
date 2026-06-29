@@ -10,7 +10,7 @@
  * ```typescript
  * import { getPlatformBindings } from '@chm/platform'
  *
- * const db = getPlatformBindings().getD1Database('CONVERSATIONS_D1')
+ * const db = getPlatformBindings().getD1Database('CHM_CLOUD_D1')
  * ```
  */
 

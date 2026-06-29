@@ -253,7 +253,7 @@ Add the binding to `wrangler.toml`:
 
 ```toml
 [[d1_databases]]
-binding = "CONVERSATIONS_D1"
+binding = "CHM_CLOUD_D1"
 database_name = "chmonitor-conversations"
 database_id = "<database-id-from-above>"
 ```
@@ -262,7 +262,7 @@ database_id = "<database-id-from-above>"
 [vars]
 AGENT_CONVERSATION_PERSISTENCE = "true"
 AGENT_CONVERSATION_STORE = "d1"
-CONVERSATIONS_D1_DATABASE_ID = "<database-id>"
+CHM_CLOUD_D1_DATABASE_ID = "<database-id>"
 ```
 
 Run migrations:
@@ -336,7 +336,7 @@ The app uses these Cloudflare resources (configured in `wrangler.toml`):
 
 | Binding | Type | Purpose |
 |---|---|---|
-| `CONVERSATIONS_D1` | D1 Database | Conversation history (optional) |
+| `CHM_CLOUD_D1` | D1 Database | Conversation history (optional) |
 | `AGENT_CONVERSATIONS_DO` | Durable Object | Conversation history via Durable Objects (optional) |
 
 The TanStack Start build via `@cloudflare/vite-plugin` does not require KV, R2, or cache-tag bindings. Only conversation-store bindings need to be added if you enable server-side persistence.

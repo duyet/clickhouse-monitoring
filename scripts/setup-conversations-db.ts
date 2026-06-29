@@ -44,7 +44,7 @@ function parseDatabaseId(output: string): string | null {
 }
 
 /**
- * Update wrangler.toml with the database_id for CONVERSATIONS_D1
+ * Update wrangler.toml with the database_id for CHM_CLOUD_D1
  */
 function updateWranglerToml(databaseId: string): boolean {
   try {
@@ -79,7 +79,7 @@ function updateWranglerToml(databaseId: string): boolean {
 
     // Update the main D1 database binding
     const updatedMain = content.replace(
-      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      /(# D1 database for AI agent conversations\s+\[\[d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
       (block) => {
         matchedMain = true
         return withDatabaseId(block)
@@ -88,7 +88,7 @@ function updateWranglerToml(databaseId: string): boolean {
 
     // Update the preview environment binding
     const updatedPreview = updatedMain.replace(
-      /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CONVERSATIONS_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
+      /(# Reuse the same conversation D1 database once database_id is provisioned\s+\[\[env\.preview\.d1_databases\]\]\s+binding = "CHM_CLOUD_D1"\s+database_name = "clickhouse-monitor-conversations"(?:\s+database_id = "[^"]*")?(?:\s+migrations_dir = "[^"]*")?)/g,
       (block) => {
         matchedPreview = true
         return withDatabaseId(block)
@@ -97,7 +97,7 @@ function updateWranglerToml(databaseId: string): boolean {
 
     if (!matchedMain || !matchedPreview) {
       console.error(
-        `❌ Expected CONVERSATIONS_D1 blocks were not matched in wrangler.toml for database_id ${databaseId}`
+        `❌ Expected CHM_CLOUD_D1 blocks were not matched in wrangler.toml for database_id ${databaseId}`
       )
       return false
     }
@@ -252,7 +252,7 @@ async function main() {
     console.error(`  1. Run: wrangler d1 create ${DATABASE_NAME}`)
     console.error(`  2. Copy the database_id from the output`)
     console.error(
-      `  3. Add to wrangler.toml under [[d1_databases]] for CONVERSATIONS_D1:`
+      `  3. Add to wrangler.toml under [[d1_databases]] for CHM_CLOUD_D1:`
     )
     console.error(`     database_id = "<your-database-id>"`)
     process.exit(1)
@@ -265,7 +265,7 @@ async function main() {
       `\n❌ Failed to update wrangler.toml. Please update manually:`
     )
     console.error(
-      `   Add database_id = "${createResult.databaseId}" to the CONVERSATIONS_D1 section`
+      `   Add database_id = "${createResult.databaseId}" to the CHM_CLOUD_D1 section`
     )
     process.exit(1)
   }

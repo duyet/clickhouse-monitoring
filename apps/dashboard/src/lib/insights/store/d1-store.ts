@@ -3,7 +3,7 @@
  *
  * Persists findings in a dedicated `insights_findings` table on a D1 database.
  * By default it reuses the same D1 binding as the agent's conversation store
- * (`CONVERSATIONS_D1`) so operators who already provisioned D1 get insight
+ * (`CHM_CLOUD_D1`) so operators who already provisioned D1 get insight
  * persistence for free; an optional dedicated `INSIGHTS_D1` binding takes
  * precedence when present.
  *
@@ -30,7 +30,7 @@ const warn = (msg: string) =>
   ErrorLogger.logWarning(`[insights-d1-store] ${msg}`, { component: COMPONENT })
 
 /** Preferred dedicated binding, then the shared conversation binding. */
-const D1_BINDING_NAMES = ['INSIGHTS_D1', 'CONVERSATIONS_D1'] as const
+const D1_BINDING_NAMES = ['INSIGHTS_D1', 'CHM_CLOUD_D1'] as const
 
 const TABLE = 'insights_findings'
 
@@ -99,7 +99,7 @@ export class D1InsightsStore implements InsightsStore {
     try {
       const db = this.getDb()
       if (!db) {
-        warn('no D1 binding (INSIGHTS_D1 / CONVERSATIONS_D1) found')
+        warn('no D1 binding (INSIGHTS_D1 / CHM_CLOUD_D1) found')
         return false
       }
       await this.ensureMigrated(db)

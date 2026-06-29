@@ -78,6 +78,34 @@ validation builder). Rendered by `ConnectionErrorPanel` in `connection-form.tsx`
 Docs: `docs/content/guide/guides/connection-errors.mdx` (slug
 `guides/connection-errors`). Tested in `lib/connection-errors.test.ts`.
 
+## Billing (Polar) — cloud SaaS only
+
+M3 wires paid plans via [Polar](https://polar.sh). Cloud-only; OSS/self-host is
+free forever (auth `none` ⇒ unlimited, plans inert).
+
+- **Plans**: `lib/billing/plans.ts` (`BILLING_PLANS`) is the price/capability
+  source of truth; `apps/landing/Pricing.astro` mirrors the numbers.
+- **Config**: `lib/billing/polar-config.ts` — `getPolarClient()` (server
+  `sandbox|production` from `CHM_POLAR_SERVER`) + product↔plan mapping from
+  `CHM_POLAR_PRODUCT_<PLAN>_<PERIOD>` env vars. Product ids live in env (sandbox
+  vs production differ), NOT in `plans.ts`. `POLAR_ACCESS_TOKEN` is a secret.
+- **Storage**: one row per user in `user_subscriptions` (migration
+  `0003_user_subscriptions.sql`) in the shared `CHM_CLOUD_D1` database.
+  `subscription-store.ts` (D1 CRUD; degrades to null without D1),
+  `user-subscription.ts` `getUserPlan()` (defaults free; downgrades when status
+  not live or the period ended — no cron needed).
+- **Routes**: `api/v1/billing/checkout` (hosted checkout, `externalCustomerId =
+  Clerk userId` ⇒ no customer map), `…/portal`, `…/subscription` (GET),
+  `api/v1/webhooks/polar` (verifies via `validateEvent` over the RAW body).
+- **Enforcement**: `api/v1/user-connections` POST returns 402 at `plan.hosts`
+  (null = unlimited).
+- **UI**: `routes/(dashboard)/billing.tsx`, gated to cloud mode in
+  `app-sidebar.tsx`; `feature: 'billing'`.
+- **Setup**: `apps/dashboard/scripts/polar-setup.ts` creates Pro/Max
+  monthly+yearly products from `BILLING_PLANS` and prints the
+  `CHM_POLAR_PRODUCT_*` env lines. Sandbox/production tokens are distinct — a
+  production token 401s against `sandbox-api.polar.sh`.
+
 ## Gotchas
 
 - `apps/dashboard` is NOT a root bun workspace — run `bun install` *inside*

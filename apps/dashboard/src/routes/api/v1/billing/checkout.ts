@@ -1,0 +1,107 @@
+/**
+ * POST /api/v1/billing/checkout — start a Polar checkout for a paid plan.
+ *
+ * Body: { planId: 'pro' | 'max', period: 'monthly' | 'yearly' }
+ * Returns: { url } — the Polar-hosted checkout URL to redirect the customer to.
+ *
+ * The Clerk userId is passed as `externalCustomerId`, so Polar stamps every
+ * resulting webhook with `customer.externalId` and we never keep a customer map.
+ */
+import { createFileRoute } from '@tanstack/react-router'
+
+import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
+import { createSuccessResponse } from '@/lib/api/shared/response-builder'
+import { ApiErrorType } from '@/lib/api/types'
+import {
+  getPolarClient,
+  isBillingConfigured,
+  isPaidPlanId,
+  productIdFor,
+} from '@/lib/billing/polar-config'
+import { mapConnectionApiError } from '@/lib/connection-store/api-errors'
+import { resolveConnectionUserId } from '@/lib/connection-store/auth'
+
+const ROUTE = { route: '/api/v1/billing/checkout', method: 'POST' }
+
+async function handlePost(request: Request): Promise<Response> {
+  if (!isBillingConfigured()) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.PermissionError,
+        message: 'Billing is not enabled.',
+      },
+      501,
+      ROUTE
+    )
+  }
+
+  let body: { planId?: string; period?: string }
+  try {
+    body = (await request.json()) as { planId?: string; period?: string }
+  } catch {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message: 'Body must be valid JSON',
+      },
+      400,
+      ROUTE
+    )
+  }
+
+  const { planId, period } = body
+  if (!planId || !isPaidPlanId(planId)) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message: 'planId must be one of: pro, max',
+      },
+      400,
+      ROUTE
+    )
+  }
+  if (period !== 'monthly' && period !== 'yearly') {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.ValidationError,
+        message: 'period must be monthly or yearly',
+      },
+      400,
+      ROUTE
+    )
+  }
+
+  const productId = productIdFor(planId, period)
+  if (!productId) {
+    return createApiErrorResponse(
+      {
+        type: ApiErrorType.PermissionError,
+        message: `No Polar product configured for ${planId}/${period}.`,
+      },
+      501,
+      ROUTE
+    )
+  }
+
+  try {
+    const userId = await resolveConnectionUserId()
+    const origin = new URL(request.url).origin
+    const checkout = await getPolarClient().checkouts.create({
+      products: [productId],
+      externalCustomerId: userId,
+      successUrl: `${origin}/billing?status=success`,
+      metadata: { userId, planId, period },
+    })
+    return createSuccessResponse({ url: checkout.url })
+  } catch (error) {
+    return mapConnectionApiError(error, ROUTE)
+  }
+}
+
+export const Route = createFileRoute('/api/v1/billing/checkout')({
+  server: {
+    handlers: {
+      POST: async ({ request }) => handlePost(request),
+    },
+  },
+})

@@ -698,6 +698,15 @@ export const menuItemsConfig: MenuItem[] = [
     ],
   },
   {
+    // Cloud (SaaS) plan + host limits. Hidden in self-host (filtered by cloud
+    // mode in app-sidebar.tsx) since self-hosting is free forever.
+    title: 'Billing',
+    href: '/billing',
+    icon: CircleDollarSignIcon,
+    section: 'others',
+    permission: { feature: 'billing' },
+  },
+  {
     title: 'System',
     href: '',
     icon: GearIcon,

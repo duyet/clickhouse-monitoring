@@ -211,7 +211,7 @@ data-dashboard pages** (render-delay collapses), but it's not universal.
   - **`--destructive-foreground` is mapped but undefined** in both apps'
     `globals.css` (`text-destructive-foreground` resolves to nothing; currently
     unused). Add the token to both files together if a consumer ever needs it.
-- Conversation **server-persistence** needs a provisioned `CONVERSATIONS_D1`
+- Conversation **server-persistence** needs a provisioned `CHM_CLOUD_D1`
   (`wrangler d1 create`) + binding in `wrangler.toml` + `patch-wrangler-env.ts`. Agent chat
   works via the client thread store until then.
 - Copied agent-subsystem **test files** are excluded from the production typecheck

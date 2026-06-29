@@ -1,7 +1,7 @@
 /**
  * Conversation-store auto-migration — TanStack Start / Cloudflare no-op.
  *
- * The Next/OpenNext app migrated the CONVERSATIONS_D1 schema programmatically at
+ * The Next/OpenNext app migrated the CHM_CLOUD_D1 schema programmatically at
  * request time (`@chm/platform` + a migration runner). On the TanStack Start worker
  * the D1 schema is instead applied out-of-band at deploy time via
  * `wrangler d1 migrations apply` (the `migrations_dir` declared on the binding), so

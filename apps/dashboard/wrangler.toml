@@ -16,7 +16,7 @@ enabled = true
 
 # D1 database for AI agent conversations
 [[d1_databases]]
-binding = "CONVERSATIONS_D1"
+binding = "CHM_CLOUD_D1"
 database_name = "clickhouse-monitor-conversations"
 migrations_dir = "./src/db/conversations-migrations"
 
@@ -24,7 +24,7 @@ migrations_dir = "./src/db/conversations-migrations"
 # The legacy Next.js worker (same name, chmonitor-dash) registered two SQLite
 # Durable Objects: DOQueueHandler (OpenNext queue) and AgentConversationDurableObject
 # (agent chat history). The TanStack Start app uses neither — conversations now
-# live in CONVERSATIONS_D1 — so deploying over the existing worker requires an
+# live in CHM_CLOUD_D1 — so deploying over the existing worker requires an
 # explicit delete-class migration (Cloudflare refuses to silently drop a DO).
 # v1/v2 are the legacy worker's already-applied history (kept so wrangler can
 # sequence v3 after them); v3 removes both classes.
@@ -100,7 +100,7 @@ custom_domain = true
 
 # Reuse the same conversation D1 database once database_id is provisioned
 [[env.preview.d1_databases]]
-binding = "CONVERSATIONS_D1"
+binding = "CHM_CLOUD_D1"
 database_name = "clickhouse-monitor-conversations"
 migrations_dir = "./src/db/conversations-migrations"
 
