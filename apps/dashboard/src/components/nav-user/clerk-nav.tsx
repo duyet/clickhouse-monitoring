@@ -62,8 +62,12 @@ export function ClerkNavWrapper() {
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
   const cloudMode = isCloudModeClient()
   // Billing is cloud-only; gate the query so self-host / OSS never calls it.
-  const { data: subscription } = useBillingSubscription()
-  const planLabel = cloudMode ? (subscription?.planId ?? 'free') : null
+  const { data: subscription, isLoading: billingLoading } =
+    useBillingSubscription()
+  // Null while loading (avoid briefly flashing "free" before the real plan loads)
+  // and when not in cloud mode (self-host has no billing).
+  const planLabel =
+    cloudMode && !billingLoading ? (subscription?.planId ?? 'free') : null
   const openSettings = () => {
     if (canUseSettings) setSettingsOpen(true)
   }
@@ -132,6 +136,29 @@ export function ClerkNavWrapper() {
                     >
                       {user?.primaryEmailAddress?.emailAddress}
                     </span>
+                    {planLabel && (
+                      <span
+                        className="mt-0.5 inline-flex cursor-pointer items-center"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.location.href = '/billing'
+                        }}
+                        data-testid="nav-user-plan-badge"
+                      >
+                        {planLabel === 'free' ? (
+                          <span className="text-[10px] text-muted-foreground hover:text-foreground">
+                            Upgrade →
+                          </span>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="pointer-events-none h-4 px-1.5 text-[10px] capitalize"
+                          >
+                            {planLabel}
+                          </Badge>
+                        )}
+                      </span>
+                    )}
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>

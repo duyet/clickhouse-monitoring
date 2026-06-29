@@ -14,6 +14,7 @@
 
 import type { PlanId } from './plans'
 
+import { error as logError } from '@chm/logger'
 import { getPlatformBindings } from '@chm/platform'
 
 export type OwnerType = 'user' | 'org'
@@ -82,22 +83,36 @@ function getDb() {
 /**
  * Read a subscription by billing-owner id (user id or org id), or null when
  * none exists / no D1 binding.
+ *
+ * Degrades gracefully (returns null) on ANY D1 error — most importantly a
+ * missing `user_subscriptions` table when the binding is provisioned but
+ * migrations have not been applied yet. Without this, the raw SELECT throws
+ * "no such table" and 500s every billing read; the caller reconciles from
+ * Polar / falls back to free instead.
  */
 export async function getSubscription(
   ownerId: string
 ): Promise<UserSubscription | null> {
   const db = getDb()
   if (!db) return null
-  const row = await db
-    .prepare(
-      `SELECT user_id, owner_type, plan_id, billing_period, status,
-              polar_subscription_id, polar_customer_id, current_period_end,
-              created_at, updated_at
-       FROM user_subscriptions WHERE user_id = ?1`
-    )
-    .bind(ownerId)
-    .first<D1SubscriptionRow>()
-  return row ? rowToSubscription(row) : null
+  try {
+    const row = await db
+      .prepare(
+        `SELECT user_id, owner_type, plan_id, billing_period, status,
+                polar_subscription_id, polar_customer_id, current_period_end,
+                created_at, updated_at
+         FROM user_subscriptions WHERE user_id = ?1`
+      )
+      .bind(ownerId)
+      .first<D1SubscriptionRow>()
+    return row ? rowToSubscription(row) : null
+  } catch (err) {
+    logError('[subscription-store] read failed; treating as no subscription', {
+      ownerId,
+      err,
+    })
+    return null
+  }
 }
 
 /**

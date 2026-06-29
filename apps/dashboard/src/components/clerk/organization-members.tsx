@@ -1,9 +1,10 @@
-import { Building2, Sparkles } from 'lucide-react'
+import { Building2, CreditCard, Sparkles } from 'lucide-react'
 
 import {
   OrganizationProfile,
   useOrganization,
 } from '@clerk/tanstack-react-start'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -12,6 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { getPlan } from '@/lib/billing/plans'
+import { useBillingSubscription } from '@/lib/billing/use-billing'
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 import { isCloudModeClient } from '@/lib/cloud/cloud-mode'
 
@@ -28,28 +32,87 @@ export function OrganizationMembers() {
   if (!isClerkEnabled() || !isCloudModeClient()) {
     return <NoOrgState selfHosted />
   }
-  return <OrgProfileGate />
+  return (
+    <div className="mx-auto max-w-4xl space-y-6 py-8">
+      <PlanSection />
+      <OrgProfileGate />
+    </div>
+  )
 }
 
 function OrgProfileGate() {
   const { organization, isLoaded } = useOrganization()
 
   if (!isLoaded) {
-    return (
-      <div className="mx-auto max-w-4xl py-8">
-        <div className="bg-muted h-96 animate-pulse rounded-xl" />
-      </div>
-    )
+    return <div className="bg-muted h-96 animate-pulse rounded-xl" />
   }
 
   if (!organization) {
     return <NoOrgState />
   }
 
+  return <OrganizationProfile routing="hash" />
+}
+
+/**
+ * Shows the user's current plan, renewal date (or cancellation warning), and a
+ * link to manage billing. Fetches subscription at this component (deepest consumer).
+ */
+function PlanSection() {
+  const { data: subscription, isLoading } = useBillingSubscription()
+
+  if (isLoading) {
+    return <Skeleton className="h-[72px] w-full rounded-xl" />
+  }
+
+  const planId = subscription?.planId ?? 'free'
+  const plan = getPlan(planId)
+  const currentPeriodEnd = subscription?.currentPeriodEnd
+  const cancelAtPeriodEnd = subscription?.cancelAtPeriodEnd
+  const status = subscription?.status
+  const isFree = planId === 'free'
+
+  const endDate = currentPeriodEnd
+    ? new Date(currentPeriodEnd * 1000).toLocaleDateString()
+    : null
+
   return (
-    <div className="mx-auto max-w-4xl py-8">
-      <OrganizationProfile routing="hash" />
-    </div>
+    <Card>
+      <CardContent className="flex items-center justify-between gap-4 p-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <CreditCard className="text-muted-foreground size-4 shrink-0" />
+            <span className="text-sm font-medium">{plan.name} plan</span>
+            {!isFree && status && (
+              <Badge variant="secondary" className="text-[11px] capitalize">
+                {status}
+              </Badge>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {isFree ? (
+              'Upgrade to unlock teams, more hosts, and scheduled AI Insights.'
+            ) : endDate ? (
+              cancelAtPeriodEnd ? (
+                <span className="text-amber-600 dark:text-amber-400">
+                  Cancels on {endDate}
+                </span>
+              ) : (
+                <>Renews {endDate}</>
+              )
+            ) : null}
+          </p>
+        </div>
+        <Button
+          asChild
+          size="sm"
+          variant={isFree ? 'default' : 'outline'}
+          className="shrink-0"
+        >
+          <a href="/billing">{isFree ? 'Upgrade' : 'Manage billing'}</a>
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
 
