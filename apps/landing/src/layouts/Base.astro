@@ -68,7 +68,16 @@ const ogImage = new URL(image, Astro.site).toString()
       --muted-fg:#71717a;
       --border:#e7e7ea;
       --border-soft:#f1f1f3;
+      --border-hover:#dcdce0;
       --muted:#f4f4f5;
+      /* card/elevated surface — flips dark in the dark-mode block below */
+      --card:#ffffff;
+      --nav-bg:rgba(255,255,255,.78);
+      --browser-bar:#fbfbfc;
+      /* primary button is a token PAIR so it never inverts to light-on-light */
+      --btn-primary-bg:#09090b;
+      --btn-primary-bg-hover:#26262b;
+      --btn-primary-fg:#ffffff;
       --amber:#f59e0b;
       --orange:#f97316;
       --emerald:#10b981;
@@ -79,6 +88,29 @@ const ogImage = new URL(image, Astro.site).toString()
       --shadow-card:0 1px 2px rgba(9,9,11,.04), 0 1px 0 rgba(9,9,11,.02);
       --shadow-float:0 24px 60px -28px rgba(9,9,11,.30), 0 8px 24px -16px rgba(9,9,11,.18);
       --shadow-glow:0 0 120px -20px rgba(249,115,22,.35);
+    }
+    /* ── dark mode: respect the OS preference; tokens flip, layout unchanged.
+       Off-black surfaces (no pure #000), cool-gray family to match the brand. ── */
+    @media (prefers-color-scheme:dark){
+      :root{
+        --bg:#0b0b0e;
+        --bg-soft:#101014;
+        --fg:#f4f4f5;
+        --fg-soft:#c4c4cb;
+        --muted-fg:#8a8a93;
+        --border:#26262c;
+        --border-soft:#1c1c21;
+        --border-hover:#34343c;
+        --muted:#1a1a1f;
+        --card:#141418;
+        --nav-bg:rgba(11,11,14,.72);
+        --browser-bar:#17171c;
+        --btn-primary-bg:#fafafa;
+        --btn-primary-bg-hover:#e4e4e7;
+        --btn-primary-fg:#09090b;
+        --shadow-card:0 1px 2px rgba(0,0,0,.4), 0 1px 0 rgba(0,0,0,.3);
+        --shadow-float:0 24px 60px -28px rgba(0,0,0,.7), 0 8px 24px -16px rgba(0,0,0,.5);
+      }
     }
     *{margin:0;padding:0;box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -100,10 +132,10 @@ const ogImage = new URL(image, Astro.site).toString()
     .btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:10px;
       font-size:14.5px;font-weight:560;font-weight:600;white-space:nowrap;transition:.16s ease;border:1px solid transparent;cursor:pointer}
     .btn svg{width:16px;height:16px}
-    .btn-primary{background:var(--fg);color:#fff}
-    .btn-primary:hover{background:#26262b;transform:translateY(-1px)}
-    .btn-ghost{background:#fff;color:var(--fg);border-color:var(--border)}
-    .btn-ghost:hover{background:var(--muted);border-color:#dcdce0}
+    .btn-primary{background:var(--btn-primary-bg);color:var(--btn-primary-fg)}
+    .btn-primary:hover{background:var(--btn-primary-bg-hover);transform:translateY(-1px)}
+    .btn-ghost{background:var(--card);color:var(--fg);border-color:var(--border)}
+    .btn-ghost:hover{background:var(--muted);border-color:var(--border-hover)}
     .btn-sm{height:36px;padding:0 14px;font-size:13.5px;border-radius:9px}
 
     /* ── logo mark ── */
@@ -117,7 +149,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .mark-lg svg{width:22px;height:22px}
 
     /* ── nav ── */
-    header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.78);
+    header.nav{position:sticky;top:0;z-index:50;background:var(--nav-bg);
       backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--border-soft)}
     .nav-row{display:flex;align-items:center;justify-content:space-between;gap:28px;height:64px}
     .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;font-weight:650;font-weight:600;font-size:16px;letter-spacing:-.01em}
@@ -135,7 +167,7 @@ const ogImage = new URL(image, Astro.site).toString()
         radial-gradient(ellipse 60% 40% at 80% 10%, rgba(245,158,11,.08), transparent 55%),
         radial-gradient(ellipse 50% 35% at 15% 20%, rgba(16,185,129,.05), transparent 50%);}
     .pill{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 14px 0 11px;border:1px solid var(--border);
-      border-radius:999px;font-size:12.5px;font-weight:500;color:var(--fg-soft);background:#fff;box-shadow:var(--shadow-card);white-space:nowrap}
+      border-radius:999px;font-size:12.5px;font-weight:500;color:var(--fg-soft);background:var(--card);box-shadow:var(--shadow-card);white-space:nowrap}
     .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,.16)}
     .pill .tag{font-weight:600;color:var(--muted-fg)}
     h1.hero-title{font-size:clamp(38px,5.6vw,64px);line-height:1.04;letter-spacing:-.03em;font-weight:700;
@@ -150,7 +182,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .hero-meta svg{width:14px;height:14px;color:var(--emerald)}
 
     /* ── browser frame ── */
-    .browser-bar{display:flex;align-items:center;gap:14px;height:42px;padding:0 14px;background:#fbfbfc;border-bottom:1px solid var(--border-soft)}
+    .browser-bar{display:flex;align-items:center;gap:14px;height:42px;padding:0 14px;background:var(--browser-bar);border-bottom:1px solid var(--border-soft)}
     .lights{display:flex;gap:7px}
     .lights i{width:11px;height:11px;border-radius:50%;display:block}
     .lights i:nth-child(1){background:#ff5f57}
@@ -182,7 +214,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .gallery-strip.dragging{cursor:grabbing}
     .gallery-strip.dragging .gcard{pointer-events:none}
     .marquee{display:flex;gap:24px;width:max-content;padding:4px 0}
-    .gcard{flex:0 0 auto;width:600px;border:1px solid var(--border);border-radius:13px;overflow:hidden;background:#fff;box-shadow:var(--shadow-card);user-select:none}
+    .gcard{flex:0 0 auto;width:600px;border:1px solid var(--border);border-radius:13px;overflow:hidden;background:var(--card);box-shadow:var(--shadow-card);user-select:none}
     .gcard .browser-bar{height:34px;gap:10px;justify-content:flex-start}
     .gcard .lights i{width:8px;height:8px}
     .gcard .gtab{font-size:12px;font-weight:500;color:var(--muted-fg)}
@@ -204,14 +236,14 @@ const ogImage = new URL(image, Astro.site).toString()
     .feature + .feature{margin-top:104px}
     .feature.flip .feat-text{order:2}
     .feat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-      border:1px solid var(--border);background:#fff;box-shadow:var(--shadow-card)}
+      border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow-card)}
     .feat-ico svg{width:19px;height:19px}
     .feat-text h3{font-size:25px;letter-spacing:-.02em;font-weight:700;margin-top:18px;line-height:1.15}
     .feat-text p{margin-top:13px;font-size:16px;color:var(--muted-fg);max-width:46ch;text-wrap:pretty}
     .feat-list{margin-top:20px;display:flex;flex-direction:column;gap:11px}
     .feat-list li{display:flex;gap:11px;font-size:14.5px;color:var(--fg-soft);list-style:none}
     .feat-list svg{width:17px;height:17px;color:var(--emerald);flex:0 0 auto;margin-top:2px}
-    .feat-shot{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff;box-shadow:var(--shadow-float)}
+    .feat-shot{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:var(--shadow-float)}
     .feat-shot .browser-bar{height:20px}
     .feat-shot .lights i{width:9px;height:9px}
     .feat-shot img{display:block;width:100%}
@@ -228,8 +260,8 @@ const ogImage = new URL(image, Astro.site).toString()
 
     /* ── capability grid ── */
     .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
-    .cap{padding:24px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;transition:.18s ease}
-    .cap:hover{border-color:#dcdce0;box-shadow:var(--shadow-card);transform:translateY(-2px)}
+    .cap{padding:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);transition:.18s ease}
+    .cap:hover{border-color:var(--border-hover);box-shadow:var(--shadow-card);transform:translateY(-2px)}
     .cap-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--muted)}
     .cap-ico svg{width:17px;height:17px;color:var(--fg-soft)}
     .cap h4{font-size:15.5px;font-weight:620;font-weight:600;margin-top:16px;letter-spacing:-.01em}
@@ -241,7 +273,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .os .sec-head h2{margin-top:14px}
     .os-points{margin-top:26px;display:flex;flex-direction:column;gap:16px}
     .os-points li{display:flex;gap:13px;list-style:none}
-    .os-points .pico{width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--border);
+    .os-points .pico{width:30px;height:30px;border-radius:8px;background:var(--card);border:1px solid var(--border);
       display:flex;align-items:center;justify-content:center;flex:0 0 auto}
     .os-points .pico svg{width:15px;height:15px;color:var(--amber)}
     .os-points b{font-size:15px;font-weight:600;letter-spacing:-.01em}
@@ -249,7 +281,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .os-actions{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap}
 
     /* config / env table */
-    .cfg-card{border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
+    .cfg-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden;box-shadow:var(--shadow-card)}
     .cfg-card .hd{display:flex;align-items:center;gap:9px;padding:13px 18px;border-bottom:1px solid var(--border-soft);font-size:13.5px;font-weight:600}
     .cfg-card .hd svg{width:16px;height:16px;color:var(--muted-fg)}
     table.envt{width:100%;border-collapse:collapse;font-size:13px}
@@ -282,7 +314,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .deploy-sub{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);margin:24px 0 11px}
     .deploy .terminal + .terminal{margin-top:14px}
     .callout{display:flex;gap:12px;padding:14px 16px;border:1px solid var(--border);border-left:3px solid var(--amber);
-      border-radius:10px;background:#fff;font-size:13.5px;color:var(--fg-soft);margin-top:18px;text-wrap:pretty;line-height:1.6}
+      border-radius:10px;background:var(--card);font-size:13.5px;color:var(--fg-soft);margin-top:18px;text-wrap:pretty;line-height:1.6}
     .callout svg{width:17px;height:17px;color:var(--amber);flex:0 0 auto;margin-top:2px}
     .callout code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--muted);padding:1px 5px;border-radius:4px;color:var(--fg)}
 
@@ -313,7 +345,7 @@ const ogImage = new URL(image, Astro.site).toString()
     .copy:hover{color:#fff;border-color:#3a3a40}
 
     /* ── final CTA ── */
-    .cta{text-align:center;border:1px solid var(--border);border-radius:22px;padding:64px 32px;position:relative;overflow:hidden;background:#fff}
+    .cta{text-align:center;border:1px solid var(--border);border-radius:22px;padding:64px 32px;position:relative;overflow:hidden;background:var(--card)}
     .cta::before{content:"";position:absolute;inset:0;z-index:0;
       background:radial-gradient(620px 280px at 50% -40px, rgba(249,115,22,.12), transparent 70%)}
     .cta > *{position:relative;z-index:1}
@@ -362,7 +394,7 @@ const ogImage = new URL(image, Astro.site).toString()
 
     /* ── pricing ── */
     .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px;align-items:stretch}
-    .price-card{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow-card)}
+    .price-card{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden;box-shadow:var(--shadow-card)}
     .price-card-highlight{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),var(--shadow-card)}
     .price-hd{padding:28px 28px 20px;border-bottom:1px solid var(--border-soft)}
     .price-hd .pname{font-size:20px;font-weight:700;letter-spacing:-.015em}
