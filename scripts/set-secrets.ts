@@ -7,7 +7,7 @@
  * per-step `wrangler secret put` lists that used to be hand-duplicated across
  * four jobs in .github/workflows/cloudflare.yml (and drifted: CHM_API_KEY_SECRET
  * was missing from the dashboard there). CI calls this with --from-env; local
- * `cf:config` reads .env.prod / .env.local.
+ * `cf:config` reads .env.production.local / .env.local.
  *
  * Usage:
  *   bun run cf:config                                  # local: both workers, prod, from .env
@@ -29,8 +29,8 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-// Priority: .env.prod > .env.local (local mode only)
-const ENV_FILE_PROD = join(process.cwd(), '.env.prod')
+// Priority: .env.production.local > .env.local (local mode only)
+const ENV_FILE_PROD = join(process.cwd(), '.env.production.local')
 const ENV_FILE_LOCAL = join(process.cwd(), '.env.local')
 
 // Anchor both wrangler configs to this script so resolution is cwd-independent
@@ -50,7 +50,7 @@ const MCP_WRANGLER_CONFIG = join(
   'wrangler.toml'
 )
 // Dashboard worker secrets (excludes VITE_*/NEXT_PUBLIC_* build-time vars and the
-// non-secret runtime vars that live in .env.cloud / .env.preview).
+// non-secret runtime vars that live in .env.production / .env.preview).
 const DASHBOARD_SECRET_KEYS = [
   'CLICKHOUSE_PASSWORD',
   // LLM API keys for the AI Agent
@@ -68,7 +68,7 @@ const DASHBOARD_SECRET_KEYS = [
   // AgentState project key (as_live_...). Presence activates the AgentState
   // conversation-store backend (resolveStore picks it ahead of D1). Non-secret
   // AgentState knobs (base URL, AI-enrich, force-backend) live in
-  // .env.cloud / .env.preview; only the key is a secret.
+  // .env.production / .env.preview; only the key is a secret.
   'AGENTSTATE_API_KEY',
   // HMAC secret for issuing/verifying MCP API keys. Needed on the dashboard
   // (/api/v1/auth/api-key mints keys via issueApiKey) AND the MCP worker.
@@ -168,7 +168,7 @@ function loadSource(fromEnv: boolean): Record<string, string> {
     process.exit(1)
   }
   console.log(
-    `📋 Reading from ${file.endsWith('.env.prod') ? '.env.prod' : '.env.local'}\n`
+    `📋 Reading from ${file.endsWith('.env.production.local') ? '.env.production.local' : '.env.local'}\n`
   )
   return parseEnvFile(readFileSync(file, 'utf-8'))
 }

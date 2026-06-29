@@ -4,6 +4,7 @@
 
 import { isEncryptionConfigured } from './crypto'
 import { getPlatformBindings } from '@chm/platform'
+import { parseProfile } from '@/lib/config/profile'
 
 const D1_BINDING_NAME = 'CONVERSATIONS_D1'
 const DATABASE_URL = 'DATABASE_URL'
@@ -19,7 +20,11 @@ function isFeatureFlagEnabled(): boolean {
   const value =
     readEnv('CHM_FEATURE_USER_CONNECTIONS_DB') ??
     readEnv('VITE_FEATURE_USER_CONNECTIONS_DB')
-  return value === 'true' || value === '1'
+  // Explicit flag wins; otherwise default from the deployment profile so
+  // `CHM_PROFILE=cloud` enables per-user connections without an extra flag.
+  if (value !== undefined && value !== '')
+    return value === 'true' || value === '1'
+  return parseProfile(readEnv('CHM_PROFILE')) === 'cloud'
 }
 
 function isClerkAuth(): boolean {

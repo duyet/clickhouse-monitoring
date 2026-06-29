@@ -35,7 +35,7 @@ if (!existsSync(JSON_PATH)) {
 
 const generated = JSON.parse(readFileSync(JSON_PATH, 'utf-8'))
 
-// --- Worker runtime vars: single source of truth = .env.cloud (+ .env.preview) ---
+// --- Worker runtime vars: single source of truth = .env.production (+ .env.preview) ---
 // wrangler.toml no longer declares [vars]. The committed cloud env files are the
 // ONLY place worker runtime config lives, shared with the vite client build
 // (vite.config.ts loadDeployEnv) so each value is set exactly once. Secrets are
@@ -62,10 +62,10 @@ function parseDotenv(path: string): Record<string, string> {
 const isPreview = envName === 'preview'
 const fileVars = isPreview
   ? {
-      ...parseDotenv(join(ROOT, '.env.cloud')),
+      ...parseDotenv(join(ROOT, '.env.production')),
       ...parseDotenv(join(ROOT, '.env.preview')),
     }
-  : parseDotenv(join(ROOT, '.env.cloud'))
+  : parseDotenv(join(ROOT, '.env.production'))
 
 // Worker [vars] = every non-VITE_ key from the cloud env file. Only the private
 // deployment topology is allowed to be overridden from process.env (CI injects
@@ -74,7 +74,7 @@ const fileVars = isPreview
 // ALLOWLIST so a stray local env var — e.g. a bun-auto-loaded .env.local — can
 // never leak into or corrupt the deployed worker config.
 // OPENROUTER_REFERER is intentionally NOT here — it keeps its committed public
-// default (https://chmonitor.dev) from .env.cloud, never overridden at deploy.
+// default (https://chmonitor.dev) from .env.production, never overridden at deploy.
 const DEPLOY_OVERRIDE_KEYS = new Set([
   'CLICKHOUSE_HOST',
   'CLICKHOUSE_USER',
@@ -152,5 +152,5 @@ console.log(`✅ Patched wrangler.json for ${envName || 'production'}`)
 console.log(`   name: ${config.name}`)
 console.log(`   routes: ${config.routes.map((r) => r.pattern).join(', ')}`)
 console.log(
-  `   vars: ${Object.keys(vars).length} keys (from .env.cloud${isPreview ? ' + .env.preview' : ''})`
+  `   vars: ${Object.keys(vars).length} keys (from .env.production${isPreview ? ' + .env.preview' : ''})`
 )

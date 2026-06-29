@@ -358,8 +358,8 @@ This runs: `vite build` (produces the Cloudflare Workers bundle) → `wrangler d
 
 **CI (GitHub Actions):** push to `main` triggers `.github/workflows/cloudflare.yml`. Set `CLOUDFLARE_API_TOKEN` as a repository secret, plus `CLICKHOUSE_*`, and any canonical build-time vars (e.g. `CHM_AUTH_PROVIDER`, `CHM_CLERK_PUBLISHABLE_KEY` — the client `VITE_*` derive from them).
 
-<Callout type="info" title="This repo's hosted deploy uses .env.cloud">
-The chmonitor monorepo's own `wrangler.toml` declares **no** `[vars]`. Its non-secret hosted config lives in committed `apps/dashboard/.env.cloud` (+ `.env.preview` for PR previews), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts`). If you fork this repo, edit `.env.cloud` rather than re-adding a `[vars]` block. When deploying your own standalone Worker from scratch, the `[vars]` examples above are the simplest path.
+<Callout type="info" title="This repo's hosted deploy uses .env.production">
+The chmonitor monorepo's own `wrangler.toml` declares **no** `[vars]`. Its non-secret hosted config lives in committed `apps/dashboard/.env.production` (+ `.env.preview` for PR previews), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts`). If you fork this repo, edit `.env.production` rather than re-adding a `[vars]` block. When deploying your own standalone Worker from scratch, the `[vars]` examples above are the simplest path.
 </Callout>
 
 ## Preview locally

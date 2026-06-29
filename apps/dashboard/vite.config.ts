@@ -32,8 +32,8 @@ function git(cmd: string): string {
 }
 
 // Single source of truth for the hosted (cloud) build's non-secret config:
-// the committed `.env.cloud` (+ `.env.preview` overlay). The CF deploy sets
-// CHM_BUILD_ENV=cloud|preview (see package.json build:cloud / build:preview);
+// the committed `.env.production` (+ `.env.preview` overlay). The CF deploy sets
+// CHM_BUILD_ENV=production|preview (see package.json build:production / build:preview);
 // Docker / self-host / dev builds set neither → no cloud file is folded in, so
 // CLIENT_ENV falls back to the self-hosted-safe defaults below (cloud OFF).
 // process.env (CI overrides, shell exports) always wins over the file.
@@ -54,11 +54,23 @@ function parseDotenv(path: string): Record<string, string> {
 }
 function loadDeployEnv(): Record<string, string> {
   const mode = process.env.CHM_BUILD_ENV
-  if (mode === 'cloud') return parseDotenv(r('./.env.cloud'))
+  // `.env.<mode>.local` (gitignored) overlays the committed `.env.<mode>` — it
+  // carries the de-committed platform values (e.g. CHM_CLERK_PUBLISHABLE_KEY) for
+  // LOCAL builds. SAFE: only the allowlisted VITE_* in CLIENT_ENV reach the
+  // bundle, so any secret in the .local file is read but never inlined. In CI the
+  // values come from process.env (GitHub vars) instead, which wins below.
+  if (mode === 'production') {
+    return {
+      ...parseDotenv(r('./.env.production')),
+      ...parseDotenv(r('./.env.production.local')),
+    }
+  }
   if (mode === 'preview') {
     return {
-      ...parseDotenv(r('./.env.cloud')),
+      ...parseDotenv(r('./.env.production')),
+      ...parseDotenv(r('./.env.production.local')),
       ...parseDotenv(r('./.env.preview')),
+      ...parseDotenv(r('./.env.preview.local')),
     }
   }
   return {}
@@ -74,12 +86,21 @@ const e: Record<string, string | undefined> = {
   ...loadDeployEnv(),
   ...process.env,
 }
+// Deployment profile drives the client defaults below, mirroring the server
+// (lib/config/profile.ts). `CHM_PROFILE=cloud` alone flips cloud mode, clerk
+// auth, public-read, and per-user storage on — each still overridable by its
+// explicit VITE_*/CHM_* var. Fail-closed: anything but cloud/saas → self-hosted.
+const _profile = (e.CHM_PROFILE ?? e.VITE_PROFILE ?? '').trim().toLowerCase()
+const isCloud = _profile === 'cloud' || _profile === 'saas'
 const CLIENT_ENV = {
+  // Expose the resolved profile so client code can read it directly.
+  VITE_PROFILE:
+    e.VITE_PROFILE ?? e.CHM_PROFILE ?? (isCloud ? 'cloud' : 'self-hosted'),
   VITE_AUTH_PROVIDER:
     e.VITE_AUTH_PROVIDER ??
     e.CHM_AUTH_PROVIDER ??
     e.NEXT_PUBLIC_AUTH_PROVIDER ??
-    'clerk',
+    (isCloud ? 'clerk' : 'none'),
   // No committed default: the publishable key comes ONLY from the build env
   // (CI sets VITE_CLERK_PUBLISHABLE_KEY — pk_test for previews, pk_live for prod;
   // see .github/workflows/cloudflare.yml). With no key, isClerkEnabled() returns
@@ -93,12 +114,12 @@ const CLIENT_ENV = {
     e.VITE_FEATURE_CONVERSATION_DB ??
     e.CHM_FEATURE_CONVERSATION_DB ??
     e.NEXT_PUBLIC_FEATURE_CONVERSATION_DB ??
-    'true',
+    (isCloud ? 'true' : 'false'),
   VITE_FEATURE_USER_CONNECTIONS_DB:
     e.VITE_FEATURE_USER_CONNECTIONS_DB ??
     e.CHM_FEATURE_USER_CONNECTIONS_DB ??
     e.NEXT_PUBLIC_FEATURE_USER_CONNECTIONS_DB ??
-    'false',
+    (isCloud ? 'true' : 'false'),
   VITE_AUTOCOMPLETE_LIMIT:
     e.VITE_AUTOCOMPLETE_LIMIT ?? e.NEXT_PUBLIC_AUTOCOMPLETE_LIMIT ?? '',
   VITE_RUNNING_QUERIES_REFRESH_MS:
@@ -112,7 +133,8 @@ const CLIENT_ENV = {
   // When on, env hosts are a public read-only demo and signed-in users get a
   // clean per-user workspace. Unset/junk → self-hosted (OSS) behaviour, never
   // degraded. See lib/cloud/cloud-mode.ts.
-  VITE_CLOUD_MODE: e.VITE_CLOUD_MODE ?? e.CHM_CLOUD_MODE ?? '',
+  VITE_CLOUD_MODE:
+    e.VITE_CLOUD_MODE ?? e.CHM_CLOUD_MODE ?? (isCloud ? 'true' : ''),
   // Anonymous product telemetry: ON by default — opt out with VITE_TELEMETRY_ENABLED=off
   // (or 0/false/no), VITE_DO_NOT_TRACK / DO_NOT_TRACK, or an empty endpoint.
   VITE_TELEMETRY_ENABLED:

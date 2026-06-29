@@ -36,11 +36,11 @@ monitoring feature behind cloud mode. (Mirrors `lib/edition` fail-open design.)
   - `parseCloudMode(v)` — only `'true'|'1'|'cloud'` (trim/case-insensitive) → true.
 - Build inline: `vite.config.ts` CLIENT_ENV + `src/vite-env.d.ts`. Each client
   `VITE_*` DERIVES from the canonical `CHM_*` (set the value once).
-- Single source of truth: `apps/dashboard/.env.cloud` (+ `.env.preview` overlay).
-  It feeds BOTH the vite client build (`CHM_BUILD_ENV=cloud|preview` →
-  `build:cloud`/`build:preview`) AND the Worker runtime `[vars]`
+- Single source of truth: `apps/dashboard/.env.production` (+ `.env.preview` overlay).
+  It feeds BOTH the vite client build (`CHM_BUILD_ENV=production|preview` →
+  `build:production`/`build:preview`) AND the Worker runtime `[vars]`
   (`scripts/patch-wrangler-env.ts` injects the non-`VITE_` keys).
-  `wrangler.toml` declares NO `[vars]` — never re-add one; edit `.env.cloud`.
+  `wrangler.toml` declares NO `[vars]` — never re-add one; edit `.env.production`.
 - Self-hosted uses the same names from `apps/dashboard/.env.example` (Docker
   `env_file`, Helm `values.yaml`). Secrets only via `set-secrets.ts` / K8s Secret.
 

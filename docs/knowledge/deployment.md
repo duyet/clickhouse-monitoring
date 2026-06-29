@@ -55,7 +55,7 @@ canonical `CHM_*` → legacy `NEXT_PUBLIC_*` → committed default. The explicit
 
 | Target | Non-secret config | Secrets | Mechanism |
 |--------|-------------------|---------|-----------|
-| **Cloudflare (hosted)** | `apps/dashboard/.env.cloud` (+ `.env.preview` overlay for PR previews) | `scripts/set-secrets.ts` (from CI secrets) | `scripts/patch-wrangler-env.ts` injects every non-`VITE_` key as a Worker runtime `[var]` at deploy; the same files feed the vite client build via `CHM_BUILD_ENV=cloud\|preview` (npm `build:cloud` / `build:preview`) |
+| **Cloudflare (hosted)** | `apps/dashboard/.env.production` (+ `.env.preview` overlay for PR previews) | `scripts/set-secrets.ts` (from CI secrets) | `scripts/patch-wrangler-env.ts` injects every non-`VITE_` key as a Worker runtime `[var]` at deploy; the same files feed the vite client build via `CHM_BUILD_ENV=production\|preview` (npm `build:production` / `build:preview`) |
 | **Docker** | `.env` (optional, `env_file` with `required: false` in `docker-compose.yml`) or `-e` flags; template is `.env.example` | `.env.local` / `-e` / orchestrator secret | plain `process.env`; client `VITE_*` is baked into the image at build time |
 | **Kubernetes / Helm** | `values.yaml` → ConfigMap | Kubernetes `Secret` | `envFrom` ConfigMap + Secret; client `VITE_*` is baked into the image at build time |
 
@@ -66,12 +66,12 @@ from Docker to Wrangler is a config swap, not a re-learn.
 ### Rules
 
 - **Never re-add a `[vars]` block to `wrangler.toml`.** The hosted product's
-  non-secret config lives ONLY in `apps/dashboard/.env.cloud` (+ `.env.preview`).
-  To change a hosted Worker runtime var, edit `.env.cloud` — `patch-wrangler-env.ts`
+  non-secret config lives ONLY in `apps/dashboard/.env.production` (+ `.env.preview`).
+  To change a hosted Worker runtime var, edit `.env.production` — `patch-wrangler-env.ts`
   reads it at deploy.
 - **Secrets never live in committed `.env*`.** They go through
   `scripts/set-secrets.ts` (Cloudflare), a Kubernetes `Secret`, or local
-  `.env.local`. The committed `.env.cloud` keeps `localhost` placeholders for
+  `.env.local`. The committed `.env.production` keeps `localhost` placeholders for
   private topology (`CLICKHOUSE_HOST/USER/NAME`), overridden at deploy from CI
   secrets via the strict allowlist in `patch-wrangler-env.ts`.
 - A dual-surface setting (e.g. `CHM_AUTH_PROVIDER`) is still needed at **both**
@@ -149,13 +149,13 @@ This runs `scripts/cloudflare-deploy.ts` which executes:
 3. `opennextjs-cloudflare populateCache remote` — Populate KV cache
 
 **Auth priority**:
-1. `CLOUDFLARE_API_TOKEN` env var (set in `.env.prod` or CI secrets)
+1. `CLOUDFLARE_API_TOKEN` env var (set in `.env.production.local` or CI secrets)
 2. `wrangler login` OAuth (localhost fallback)
 
 ### Step-by-step (equivalent to CI)
 
 ```bash
-bun run cf:config    # Set secrets from .env.prod
+bun run cf:config    # Set secrets from .env.production.local
 bun run cf:build     # Build + OpenNext transform
 wrangler deploy --minify
 opennextjs-cloudflare populateCache remote

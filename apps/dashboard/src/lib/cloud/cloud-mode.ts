@@ -1,4 +1,5 @@
-// Cloud (SaaS) deployment mode.
+// Cloud (SaaS) deployment mode. Now derived from the deployment profile
+// (lib/config/profile.ts) when `CHM_CLOUD_MODE` is not set explicitly.
 //
 // ONE codebase serves two products:
 //   - Self-hosted / OSS (Docker, Kubernetes, Cloudflare Workers): the operator's
@@ -13,6 +14,8 @@
 // empty, or unrecognised CHM_CLOUD_MODE / VITE_CLOUD_MODE resolves to NOT cloud,
 // so the open-source build behaves exactly as before. Cloud behaviour is purely
 // additive and only switches on when a deployment explicitly opts in.
+
+import { parseProfile } from '@/lib/config/profile'
 
 /**
  * Parse a raw env string into a cloud-mode boolean.
@@ -44,7 +47,11 @@ export function isCloudModeServer(
 ): boolean {
   const source =
     runtimeEnv ?? (typeof process !== 'undefined' ? process.env : {})
-  return parseCloudMode(
-    source.CHM_CLOUD_MODE ?? import.meta.env.VITE_CLOUD_MODE
+  const explicit = source.CHM_CLOUD_MODE ?? import.meta.env.VITE_CLOUD_MODE
+  if (explicit !== undefined && explicit !== '') return parseCloudMode(explicit)
+  // Derived from the deployment profile: CHM_PROFILE=cloud → cloud mode, so the
+  // single profile var is enough (no need to also set CHM_CLOUD_MODE).
+  return (
+    parseProfile(source.CHM_PROFILE ?? import.meta.env.VITE_PROFILE) === 'cloud'
   )
 }
