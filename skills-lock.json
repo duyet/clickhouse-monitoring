@@ -85,6 +85,24 @@
       "skillPath": "skills/music-to-video/SKILL.md",
       "computedHash": "fe4a2619bfeb8302e008e0fec0285656f6f2be3d00f69847e3d1a94bab079081"
     },
+    "polar-integration": {
+      "source": "polarsource/skills",
+      "sourceType": "github",
+      "skillPath": "skills/polar-integration/SKILL.md",
+      "computedHash": "fe8f63acfb963229ea806c07c0f22c7cd8ab61a944f3a00841d8022c18dd0190"
+    },
+    "polar-migration": {
+      "source": "polarsource/skills",
+      "sourceType": "github",
+      "skillPath": "skills/polar-migration/SKILL.md",
+      "computedHash": "b237ecd5865f59a722aac42bed5e1385d962e44eab910d994fba3078a2a62b29"
+    },
+    "polar-testing": {
+      "source": "polarsource/skills",
+      "sourceType": "github",
+      "skillPath": "skills/polar-testing/SKILL.md",
+      "computedHash": "0dfd63b62cff3fbd1091ebb0bfb853f2cf9a14f86888b6a31e557a59ac620ede"
+    },
     "pr-to-video": {
       "source": "heygen-com/hyperframes",
       "sourceType": "github",
@@ -108,6 +126,12 @@
       "sourceType": "github",
       "skillPath": "skills/seo-audit/SKILL.md",
       "computedHash": "f2dc52130189068981f21e1c0bdc4471ac7cd9b08d8a1320604411aa0f950385"
+    },
+    "setup-polar": {
+      "source": "polarsource/skills",
+      "sourceType": "github",
+      "skillPath": "skills/setup-polar/SKILL.md",
+      "computedHash": "01b8e785b33d34a70e3c17fcaa094dd4ea16f0834140b1b518685d570fbca655"
     },
     "slideshow": {
       "source": "heygen-com/hyperframes",
