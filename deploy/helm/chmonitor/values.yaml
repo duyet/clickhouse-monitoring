@@ -272,7 +272,7 @@ features:
 # mirrors the clickhouse.existingSecret pattern. Needed for the self-hosted
 # per-user connection store on K8s.
 secrets:
-  # CHM_CONNECTIONS_ENCRYPTION_KEY: AES-256 key (32-byte base64) encrypting
+  # CHM_USER_CONNECTIONS_ENCRYPTION_KEY: AES-256 key (32-byte base64) encrypting
   # per-user connection credentials at rest. Required when
   # features.userConnectionsDb is "true".
   connectionsEncryptionKey: ""
@@ -280,7 +280,7 @@ secrets:
   apiKeySecret: ""
   # existingSecret: name of a pre-existing Secret. When set, the two values above
   # are ignored and no chart Secret is created for them; the referenced Secret
-  # must contain BOTH keys CHM_CONNECTIONS_ENCRYPTION_KEY and CHM_API_KEY_SECRET
+  # must contain BOTH keys CHM_USER_CONNECTIONS_ENCRYPTION_KEY and CHM_API_KEY_SECRET
   # (both env vars are mounted from it).
   existingSecret: ""
 

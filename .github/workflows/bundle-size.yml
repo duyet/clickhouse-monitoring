@@ -64,12 +64,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build for Cloudflare
-        # Use the Clerk test key so the bundle is representative of production
-        # (Clerk auth code is included in the prod build). The pk_test_* key is
-        # a public constant already committed in cloudflare.yml — safe to hardcode.
+        # Use a GENERIC placeholder Clerk test key so the bundle includes Clerk
+        # auth code (representative of prod) without committing chmonitor's own
+        # instance key. The value only needs valid pk_test_ format for sizing;
+        # it base64-encodes the dummy host "example.clerk.accounts.dev$".
         env:
           VITE_AUTH_PROVIDER: clerk
-          VITE_CLERK_PUBLISHABLE_KEY: pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ
+          VITE_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
           VITE_GIT_SHA: ${{ github.sha }}
           VITE_GIT_REF: ${{ github.head_ref || github.ref_name }}
           VITE_CI: 'true'

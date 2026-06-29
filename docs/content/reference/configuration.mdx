@@ -189,8 +189,8 @@ Full reference: [Environment Variables — Analytics and Branding](/reference/en
 | Vercel | Project → Settings → Environment Variables |
 | Self-hosted Node | `.env` / `.env.local` file or shell export (template: `apps/dashboard/.env.example`) |
 
-<Callout type="info" title="The hosted product uses .env.cloud">
-On the hosted `dash.chmonitor.dev`, `wrangler.toml` declares **no** `[vars]` — the non-secret config lives in committed `apps/dashboard/.env.cloud` (+ `.env.preview`), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts` at deploy). When working in this repo, edit `.env.cloud` rather than re-adding a `[vars]` block.
+<Callout type="info" title="The hosted product uses .env.production">
+On the hosted `dash.chmonitor.dev`, `wrangler.toml` declares **no** `[vars]` — the non-secret config lives in committed `apps/dashboard/.env.production` (+ `.env.preview`), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts` at deploy). When working in this repo, edit `.env.production` rather than re-adding a `[vars]` block.
 </Callout>
 
 See the per-platform install guides for copy-paste examples.

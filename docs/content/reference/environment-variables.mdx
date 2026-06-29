@@ -313,7 +313,7 @@ storage is not enabled"*.
 | `CHM_FEATURE_USER_CONNECTIONS_DB` | `false` | **Canonical.** Set `true` to enable. Drives the build-time `VITE_FEATURE_USER_CONNECTIONS_DB`. |
 | `VITE_FEATURE_USER_CONNECTIONS_DB` | (from `CHM_FEATURE_USER_CONNECTIONS_DB`) | Client-side build-time value. Auto-derived; only set explicitly to override. |
 | `CHM_AUTH_PROVIDER` | `none` | Must be `clerk` — connections are keyed by the Clerk `userId`. |
-| `CHM_CONNECTIONS_ENCRYPTION_KEY` | — | 32-byte base64 key (secret) encrypting saved credentials at rest (AES-256-GCM). |
+| `CHM_USER_CONNECTIONS_ENCRYPTION_KEY` | — | 32-byte base64 key (secret) encrypting saved credentials at rest (AES-256-GCM). |
 
 Plus a database backend: the `CONVERSATIONS_D1` binding on Cloudflare, or
 `DATABASE_URL` / `POSTGRES_URL` on Docker / Kubernetes.

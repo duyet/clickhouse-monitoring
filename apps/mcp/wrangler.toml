@@ -62,20 +62,25 @@ zone_name = "chmonitor.dev"
 pattern = "dash.chmonitor.dev/api/v1/mcp/info*"
 zone_name = "chmonitor.dev"
 
+# NON-SECRET, GENERIC placeholders only — keeps this public repo OSS-clean.
+# chmonitor's real host topology + Clerk publishable key are NOT committed; CI
+# injects them at deploy with `wrangler deploy --var KEY:VALUE` from GitHub
+# secrets/vars (see .github/workflows/cloudflare.yml "Deploy MCP worker"). A
+# fork ships these placeholders and overrides them the same way.
 [vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 # NODE_ENV gates auth: production requires CHM_API_KEY_SECRET to be set.
 NODE_ENV = "production"
-# Clerk issuer (publishable key — public, safe to commit). Without it
-# getClerkIssuer() returns null, so even with CLERK_SECRET_KEY set the worker
-# would emit a bare 401 with no WWW-Authenticate challenge and MCP clients could
-# never start the OAuth flow against /api/mcp. Pairs with the CLERK_SECRET_KEY
-# secret (set via scripts/set-secrets.ts) to make clerkOAuthDiscoverable() true.
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuY2htb25pdG9yLmRldiQ"
+# Clerk issuer (publishable key — public but platform-specific, so NOT committed).
+# Injected at deploy from the GitHub Actions variable CHM_CLERK_PUBLISHABLE_KEY.
+# Without it getClerkIssuer() returns null, so even with CLERK_SECRET_KEY set the
+# worker would emit a bare 401 with no WWW-Authenticate challenge and MCP clients
+# could never start the OAuth flow against /api/mcp. Empty → OAuth disabled.
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ""
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview environment (mirrors the dashboard preview at preview.dash.chmonitor.dev)
@@ -91,12 +96,14 @@ zone_name = "chmonitor.dev"
 pattern = "preview.dash.chmonitor.dev/api/v1/mcp/info*"
 zone_name = "chmonitor.dev"
 
+# Generic placeholders (see [vars] above) — real preview topology + pk_test are
+# injected at deploy from CI (CHM_CLERK_PUBLISHABLE_KEY_TEST + host secrets).
 [env.preview.vars]
-CLICKHOUSE_HOST = "https://duet-ubuntu.dingo-mora.ts.net,https://openclaw.dingo-mora.ts.net"
-CLICKHOUSE_USER = "duyet,monitoring"
-CLICKHOUSE_NAME = "duet-ubuntu,duyet-agent"
+CLICKHOUSE_HOST = "http://localhost:8123"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_NAME = "localhost"
 CLICKHOUSE_MAX_EXECUTION_TIME = "60"
 CLOUDFLARE_WORKERS = "1"
 NODE_ENV = "production"
-# Clerk issuer for the preview MCP worker — test instance (see [vars] above).
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bWFnbmV0aWMtcmF5LTkwLmNsZXJrLmFjY291bnRzLmRldiQ"
+# Clerk issuer for the preview MCP worker — test instance, NOT committed.
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ""

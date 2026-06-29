@@ -95,7 +95,7 @@ See [Conversation History](/guide/ai-agent/conversation-history) and [Store Back
 
 ## Where to set these
 
-- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values in your own worker. (In this repo's hosted deploy, non-secret config lives in `apps/dashboard/.env.cloud` and there is no `[vars]` block.) See [Deploy to Cloudflare](/operate/deploy/cloudflare).
+- **Cloudflare Workers** — `wrangler secret put LLM_API_KEY` for secrets; `[vars]` in `wrangler.toml` for non-secret values in your own worker. (In this repo's hosted deploy, non-secret config lives in `apps/dashboard/.env.production` and there is no `[vars]` block.) See [Deploy to Cloudflare](/operate/deploy/cloudflare).
 - **Docker** — `environment:` block in `docker-compose.yml` or `--env-file .env`. See [Deploy with Docker](/operate/deploy/docker).
 - **Kubernetes** — `Secret` for keys, `ConfigMap` for non-secret values. See [Deploy to Kubernetes](/operate/deploy/k8s).
 - **Vercel / self-hosted** — environment variables in the project dashboard or `.env.local`.

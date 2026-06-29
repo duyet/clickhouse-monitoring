@@ -51,14 +51,14 @@ custom_domain = true
 # ─────────────────────────────────────────────────────────────────────────────
 # Worker runtime [vars] are intentionally NOT declared here.
 #
-# Single source of truth = the committed `.env.cloud` (+ `.env.preview` overlay).
+# Single source of truth = the committed `.env.production` (+ `.env.preview` overlay).
 # `scripts/patch-wrangler-env.ts` reads those files at deploy and injects the
 # non-VITE_ keys as worker vars into the generated `dist/server/wrangler.json`
 # (the @cloudflare/vite-plugin strips [vars] from it anyway). The same files feed
 # the vite client build, so each value (CHM_CLOUD_MODE, CHM_AUTH_PROVIDER,
 # CHM_FEATURE_USER_CONNECTIONS_DB, …) is defined exactly ONCE and stays identical
 # across Wrangler and Docker/K8s. Secrets are set separately via set-secrets.ts.
-# Edit env in `.env.cloud` / `.env.preview` — never re-add a [vars] block here.
+# Edit env in `.env.production` / `.env.preview` — never re-add a [vars] block here.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -118,6 +118,6 @@ new_sqlite_classes = ["AgentConversationDurableObject"]
 tag = "v3-drop-legacy-next-dos"
 deleted_classes = ["DOQueueHandler", "AgentConversationDurableObject"]
 
-# Preview worker [vars] also come from .env.cloud + .env.preview via
+# Preview worker [vars] also come from .env.production + .env.preview via
 # `scripts/patch-wrangler-env.ts --env preview` (see the top-level note above) —
 # never re-declare [env.preview.vars] here.

@@ -101,20 +101,20 @@ class InMemoryConnectionStore implements ConnectionStore {
 }
 
 describe('connection store user isolation', () => {
-  const originalKey = process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
+  const originalKey = process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY
   let store: InMemoryConnectionStore
 
   beforeEach(() => {
-    process.env.CHM_CONNECTIONS_ENCRYPTION_KEY =
+    process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY =
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
     store = new InMemoryConnectionStore()
   })
 
   afterEach(() => {
     if (originalKey === undefined) {
-      delete process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
+      delete process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY
     } else {
-      process.env.CHM_CONNECTIONS_ENCRYPTION_KEY = originalKey
+      process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY = originalKey
     }
   })
 

@@ -49,7 +49,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# local env files (secrets). Prod secrets: .env.production.local (covered by
+# .env*.local). .env.prod kept for back-compat with any older local checkout.
 .env*.local
 .env.prod
 

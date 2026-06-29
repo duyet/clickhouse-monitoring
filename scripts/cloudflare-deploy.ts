@@ -15,7 +15,7 @@
  * Env vars required at deploy time (set via CI secrets or .env.prod/local):
  *   CLICKHOUSE_PASSWORD, CLERK_SECRET_KEY, etc.
  *
- * Non-secret runtime/build vars come from .env.cloud / .env.preview (the single
+ * Non-secret runtime/build vars come from .env.production / .env.preview (the single
  * source of truth); CI overrides only the private CLICKHOUSE_HOST/USER/NAME.
  */
 
