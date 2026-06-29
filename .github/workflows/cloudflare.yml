@@ -155,6 +155,10 @@ jobs:
           # preview falls back to a non-AgentState backend (see set-secrets.ts).
           AGENTSTATE_API_KEY_TEST: ${{ secrets.AGENTSTATE_API_KEY_TEST }}
           CHM_API_KEY_SECRET: ${{ secrets.CHM_API_KEY_SECRET }}
+          # Encryption key for per-user ClickHouse connections (was MISSING here,
+          # so prod user-connections returned "storage not enabled"). Required
+          # alongside CHM_FEATURE_USER_CONNECTIONS_DB + Clerk + a D1 backend.
+          CHM_USER_CONNECTIONS_ENCRYPTION_KEY: ${{ secrets.CHM_USER_CONNECTIONS_ENCRYPTION_KEY }}
           CLICKHOUSE_TZ: ${{ secrets.CLICKHOUSE_TZ || 'UTC' }}
           CLICKHOUSE_EXCLUDE_USER_DEFAULT: ${{ secrets.CLICKHOUSE_EXCLUDE_USER_DEFAULT || '' }}
           NEXT_QUERY_CACHE_TTL: ${{ secrets.NEXT_QUERY_CACHE_TTL || '3600' }}

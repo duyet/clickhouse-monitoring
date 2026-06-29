@@ -16,7 +16,7 @@ icon: Users
 
 ## What it does
 
-When enabled, users can choose **Save to server** in the Add Host dialog. Credentials are encrypted at rest with `CHM_CONNECTIONS_ENCRYPTION_KEY` and never returned to the client after save.
+When enabled, users can choose **Save to server** in the Add Host dialog. Credentials are encrypted at rest with `CHM_USER_CONNECTIONS_ENCRYPTION_KEY` and never returned to the client after save.
 
 Browser-only storage remains available when server storage is disabled or the user prefers a local connection.
 
@@ -28,7 +28,7 @@ server returns *"User connections database storage is not enabled"* and the
 
 1. **`CHM_FEATURE_USER_CONNECTIONS_DB=true`** — the feature flag.
 2. **Clerk auth** (`CHM_AUTH_PROVIDER=clerk`) — connections are keyed by the signed-in Clerk `userId`.
-3. **`CHM_CONNECTIONS_ENCRYPTION_KEY`** — a 32-byte base64 key used to encrypt credentials at rest (AES-256-GCM).
+3. **`CHM_USER_CONNECTIONS_ENCRYPTION_KEY`** — a 32-byte base64 key used to encrypt credentials at rest (AES-256-GCM).
 4. **A database backend** — `CONVERSATIONS_D1` on Cloudflare, or `DATABASE_URL` / `POSTGRES_URL` on Docker / Kubernetes.
 
 <Callout type="info" title="One canonical name">
@@ -63,8 +63,8 @@ Set `DATABASE_URL` or `POSTGRES_URL`.
 
 ```bash
 # Cloudflare
-wrangler secret put CHM_CONNECTIONS_ENCRYPTION_KEY
-# Docker / Kubernetes: pass CHM_CONNECTIONS_ENCRYPTION_KEY via -e or a Secret
+wrangler secret put CHM_USER_CONNECTIONS_ENCRYPTION_KEY
+# Docker / Kubernetes: pass CHM_USER_CONNECTIONS_ENCRYPTION_KEY via -e or a Secret
 ```
 </Step>
 <Step>

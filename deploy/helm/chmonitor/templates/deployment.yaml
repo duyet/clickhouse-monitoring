@@ -141,11 +141,11 @@ spec:
                   key: CLERK_SECRET_KEY
             {{- end }}
             {{- if or .Values.secrets.connectionsEncryptionKey .Values.secrets.existingSecret }}
-            - name: CHM_CONNECTIONS_ENCRYPTION_KEY
+            - name: CHM_USER_CONNECTIONS_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ include "chmonitor.appSecretName" . }}
-                  key: CHM_CONNECTIONS_ENCRYPTION_KEY
+                  key: CHM_USER_CONNECTIONS_ENCRYPTION_KEY
                   # optional so a partially-populated existingSecret (e.g. only the
                   # API key) doesn't crash the pod — the feature stays off instead.
                   optional: true

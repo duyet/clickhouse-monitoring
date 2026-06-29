@@ -60,7 +60,7 @@ describe('.env.production (single source of truth for the hosted product)', () =
     const forbidden = [
       'CLICKHOUSE_PASSWORD',
       'CLERK_SECRET_KEY',
-      'CHM_CONNECTIONS_ENCRYPTION_KEY',
+      'CHM_USER_CONNECTIONS_ENCRYPTION_KEY',
       'CHM_API_KEY_SECRET',
       'AGENTSTATE_API_KEY',
       'LLM_API_KEY',

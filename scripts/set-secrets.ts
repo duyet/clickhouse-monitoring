@@ -73,7 +73,7 @@ const DASHBOARD_SECRET_KEYS = [
   // HMAC secret for issuing/verifying MCP API keys. Needed on the dashboard
   // (/api/v1/auth/api-key mints keys via issueApiKey) AND the MCP worker.
   'CHM_API_KEY_SECRET',
-  'CHM_CONNECTIONS_ENCRYPTION_KEY',
+  'CHM_USER_CONNECTIONS_ENCRYPTION_KEY',
   'CLICKHOUSE_TZ',
   'CLICKHOUSE_EXCLUDE_USER_DEFAULT',
   'NEXT_QUERY_CACHE_TTL',

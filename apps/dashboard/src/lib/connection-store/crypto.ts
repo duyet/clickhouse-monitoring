@@ -10,7 +10,7 @@ const VERSION = 1
 
 function readEncryptionKeyMaterial(): string | undefined {
   if (typeof process !== 'undefined' && process.env) {
-    const fromProcess = process.env.CHM_CONNECTIONS_ENCRYPTION_KEY
+    const fromProcess = process.env.CHM_USER_CONNECTIONS_ENCRYPTION_KEY
     if (fromProcess) return fromProcess
   }
   return undefined
@@ -20,7 +20,7 @@ async function importKeyMaterial(keyBase64: string): Promise<CryptoKey> {
   const raw = Uint8Array.from(atob(keyBase64.trim()), (c) => c.charCodeAt(0))
   if (raw.length !== 32) {
     throw new Error(
-      'CHM_CONNECTIONS_ENCRYPTION_KEY must be 32 bytes (base64-encoded)'
+      'CHM_USER_CONNECTIONS_ENCRYPTION_KEY must be 32 bytes (base64-encoded)'
     )
   }
   return crypto.subtle.importKey('raw', raw, { name: ALGORITHM }, false, [
@@ -38,7 +38,7 @@ export async function encryptCredentials(
 ): Promise<string> {
   const keyMaterial = readEncryptionKeyMaterial()
   if (!keyMaterial) {
-    throw new Error('CHM_CONNECTIONS_ENCRYPTION_KEY is not configured')
+    throw new Error('CHM_USER_CONNECTIONS_ENCRYPTION_KEY is not configured')
   }
   const key = await importKeyMaterial(keyMaterial)
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
@@ -62,7 +62,7 @@ export async function decryptCredentials(
 ): Promise<ConnectionCredentials> {
   const keyMaterial = readEncryptionKeyMaterial()
   if (!keyMaterial) {
-    throw new Error('CHM_CONNECTIONS_ENCRYPTION_KEY is not configured')
+    throw new Error('CHM_USER_CONNECTIONS_ENCRYPTION_KEY is not configured')
   }
   const key = await importKeyMaterial(keyMaterial)
   const payload = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0))
