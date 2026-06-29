@@ -1,11 +1,14 @@
 import {
   ArrowRight,
+  Check,
   DatabaseZap,
   KeyRound,
   PlugZap,
   ShieldCheck,
+  Sparkles,
   Terminal,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import type { ReactNode } from 'react'
 
@@ -14,9 +17,15 @@ import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/c
 import { AddHostDialog } from '@/components/connections'
 import { ChmonitorLogo } from '@/components/icons/chmonitor-logo'
 import { Button } from '@/components/ui/button'
+import { BILLING_PLAN_LIST, monthlyEquivalentUsd } from '@/lib/billing/plans'
+import {
+  startCheckout,
+  useBillingSubscription,
+} from '@/lib/billing/use-billing'
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 import { docsSiteUrl } from '@/lib/docs-site'
 import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
+import { cn } from '@/lib/utils'
 
 // Clerk's SignInButton needs a mounted <ClerkProvider>. Gate it behind the
 // build-time constant so non-Clerk (self-hosted) builds render null instead.
@@ -133,6 +142,30 @@ function DocsFooter({ links }: { links: { slug: string; label: string }[] }) {
 /* ------------------------------------------------------------------ */
 
 function ConnectYourHost({ onAddHost }: { onAddHost: () => void }) {
+  const { data: sub } = useBillingSubscription()
+  const currentPlanId = sub?.planId ?? 'free'
+  const isPaid = currentPlanId === 'pro' || currentPlanId === 'max'
+  // Onboarding: pick a plan first, then connect a host. Paid users (or anyone
+  // who already chose) skip straight to connect.
+  const [step, setStep] = useState<'plan' | 'connect'>(
+    isPaid ? 'connect' : 'plan'
+  )
+
+  if (step === 'plan') {
+    return (
+      <div className="space-y-7">
+        <WelcomeHeader
+          title="Choose your plan"
+          subtitle="Start free, or pick a paid plan for more hosts, seats and history. You can upgrade anytime — no card needed for Free."
+        />
+        <OnboardingPlans
+          currentPlanId={currentPlanId}
+          onContinueFree={() => setStep('connect')}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-7">
       <WelcomeHeader
@@ -195,6 +228,112 @@ function ConnectYourHost({ onAddHost }: { onAddHost: () => void }) {
           },
         ]}
       />
+    </div>
+  )
+}
+
+/** Onboarding plan picker: Free continues with no Polar; Pro/Max → checkout. */
+function OnboardingPlans({
+  currentPlanId,
+  onContinueFree,
+}: {
+  currentPlanId: string
+  onContinueFree: () => void
+}) {
+  const [busy, setBusy] = useState<string | null>(null)
+
+  async function choosePaid(planId: 'pro' | 'max') {
+    setBusy(planId)
+    try {
+      await startCheckout(planId, 'yearly')
+    } catch (err) {
+      setBusy(null)
+      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        {BILLING_PLAN_LIST.filter((p) => p.id !== 'enterprise').map((plan) => {
+          const isFree = plan.id === 'free'
+          const price = isFree
+            ? '$0'
+            : `$${monthlyEquivalentUsd(plan, 'yearly') ?? ''}`
+          const isCurrent = plan.id === currentPlanId
+          return (
+            <div
+              key={plan.id}
+              className={cn(
+                'flex flex-col rounded-xl border bg-card p-4 shadow-sm',
+                plan.id === 'pro' && 'border-primary ring-primary/20 ring-1'
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{plan.name}</span>
+                {plan.id === 'pro' && (
+                  <span className="text-primary inline-flex items-center gap-1 text-[11px] font-medium">
+                    <Sparkles className="size-3" /> Popular
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 text-2xl font-bold tabular-nums">
+                {price}
+                {!isFree && (
+                  <span className="text-muted-foreground text-xs font-normal">
+                    {' '}
+                    /mo
+                  </span>
+                )}
+              </div>
+              <p className="text-muted-foreground mt-1 text-xs">
+                {plan.tagline}
+              </p>
+              <ul className="mt-3 flex-1 space-y-1.5">
+                {plan.highlights.slice(0, 3).map((h) => (
+                  <li key={h} className="flex gap-1.5 text-xs">
+                    <Check className="text-emerald-500 mt-0.5 size-3.5 shrink-0" />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4">
+                {isFree ? (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={onContinueFree}
+                    disabled={busy !== null}
+                    data-testid="onboarding-choose-free"
+                  >
+                    Continue with Free
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => choosePaid(plan.id as 'pro' | 'max')}
+                    disabled={busy !== null || isCurrent}
+                    data-testid={`onboarding-choose-${plan.id}`}
+                  >
+                    {busy === plan.id
+                      ? 'Redirecting…'
+                      : isCurrent
+                        ? 'Current plan'
+                        : `Choose ${plan.name}`}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={onContinueFree}
+        className="text-muted-foreground hover:text-foreground mx-auto block text-xs underline-offset-4 hover:underline"
+      >
+        Skip — I'll decide later
+      </button>
     </div>
   )
 }

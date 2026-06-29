@@ -22,12 +22,13 @@ import { filterMenuItemsByPermissions } from '@/lib/feature-permissions/menu'
 export function AppSidebar() {
   const { config } = useFeaturePermissions()
   const cloudMode = isCloudModeClient()
-  // Billing is a cloud-only surface — self-hosting is free forever, so the
-  // paid-plan page would only confuse self-hosters.
+  // Billing + Organization are cloud-only surfaces — self-hosting is free
+  // forever and has no orgs, so these would only confuse self-hosters.
+  const cloudOnlyHrefs = new Set(['/billing', '/organization'])
   const menuItems = filterMenuItemsByPermissions(
     menuItemsConfig,
     config
-  ).filter((item) => cloudMode || item.href !== '/billing')
+  ).filter((item) => cloudMode || !cloudOnlyHrefs.has(item.href))
 
   return (
     <Sidebar collapsible="icon" variant="inset">

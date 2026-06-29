@@ -699,6 +699,15 @@ export const menuItemsConfig: MenuItem[] = [
     permission: { feature: 'billing' },
   },
   {
+    // Cloud (SaaS) team management — members, roles, invitations. Cloud-only
+    // (filtered in app-sidebar.tsx). Org is created on a paid upgrade.
+    title: 'Organization',
+    href: '/organization',
+    icon: UsersIcon,
+    section: 'others',
+    permission: { feature: 'billing' },
+  },
+  {
     title: 'System',
     href: '',
     icon: GearIcon,

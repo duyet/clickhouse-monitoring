@@ -1,5 +1,7 @@
 import {
+  Building2,
   ChevronsUpDown,
+  CreditCard,
   ExternalLink,
   Info,
   LogOut,
@@ -8,11 +10,17 @@ import {
 } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { SignInButton, useClerk, useUser } from '@clerk/tanstack-react-start'
+import {
+  SignInButton,
+  useClerk,
+  useOrganization,
+  useUser,
+} from '@clerk/tanstack-react-start'
 import { useState } from 'react'
 import { useSettingsShortcut } from '@/components/nav-user/use-settings-shortcut'
 import { SettingsDialog } from '@/components/settings'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +37,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useBillingSubscription } from '@/lib/billing/use-billing'
+import { isCloudModeClient } from '@/lib/cloud/cloud-mode'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
@@ -44,11 +54,16 @@ import { clearUserConnectionsCache } from '@/lib/hooks/use-user-connections'
 export function ClerkNavWrapper() {
   const { user, isLoaded, isSignedIn } = useUser()
   const { openUserProfile, signOut } = useClerk()
+  const { organization } = useOrganization()
   const queryClient = useQueryClient()
   const { isMobile } = useSidebar()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { config } = useFeaturePermissions()
   const canUseSettings = isFeatureAllowed(SETTINGS_FEATURE_PERMISSION, config)
+  const cloudMode = isCloudModeClient()
+  // Billing is cloud-only; gate the query so self-host / OSS never calls it.
+  const { data: subscription } = useBillingSubscription()
+  const planLabel = cloudMode ? (subscription?.planId ?? 'free') : null
   const openSettings = () => {
     if (canUseSettings) setSettingsOpen(true)
   }
@@ -145,6 +160,24 @@ export function ClerkNavWrapper() {
                       <span className="truncate text-xs">
                         {user?.primaryEmailAddress?.emailAddress}
                       </span>
+                      <span className="mt-1 flex items-center gap-1.5">
+                        {organization && (
+                          <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-[11px]">
+                            <Building2 className="size-3 shrink-0" />
+                            <span className="truncate">
+                              {organization.name}
+                            </span>
+                          </span>
+                        )}
+                        {planLabel && (
+                          <Badge
+                            variant="secondary"
+                            className="h-4 px-1.5 text-[10px] capitalize"
+                          >
+                            {planLabel}
+                          </Badge>
+                        )}
+                      </span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
@@ -158,6 +191,36 @@ export function ClerkNavWrapper() {
                     <UserIcon className="size-4" />
                     <span>Account Settings</span>
                   </DropdownMenuItem>
+                  {cloudMode && (
+                    <>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onClick={() => (window.location.href = '/billing')}
+                        data-testid="nav-user-billing"
+                      >
+                        <CreditCard className="size-4" />
+                        <span>Billing & plan</span>
+                        {planLabel && (
+                          <Badge
+                            variant="secondary"
+                            className="ml-auto h-4 px-1.5 text-[10px] capitalize"
+                          >
+                            {planLabel}
+                          </Badge>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onClick={() => (window.location.href = '/organization')}
+                        data-testid="nav-user-organization"
+                      >
+                        <Building2 className="size-4" />
+                        <span>
+                          {organization ? 'Organization' : 'Create a team'}
+                        </span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuItem
                     className="flex items-center gap-2"
                     onClick={() => (window.location.href = '/about')}

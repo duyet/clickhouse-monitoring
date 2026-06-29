@@ -4,14 +4,18 @@
  * Body: { planId: 'pro' | 'max', period: 'monthly' | 'yearly' }
  * Returns: { url } — the Polar-hosted checkout URL to redirect the customer to.
  *
- * The Clerk userId is passed as `externalCustomerId`, so Polar stamps every
- * resulting webhook with `customer.externalId` and we never keep a customer map.
+ * `externalCustomerId` is set to the billing-owner id (Clerk org id when the
+ * user already has an active org; Clerk user id for a first-time upgrade). Polar
+ * stamps every resulting webhook with `customer.externalId`. The `metadata`
+ * always carries the actual Clerk userId so the webhook can lazily create a
+ * Clerk org for the buyer on first payment.
  */
 import { createFileRoute } from '@tanstack/react-router'
 
 import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-handler'
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
+import { resolveBillingOwnerId } from '@/lib/billing/billing-owner'
 import {
   getPolarClient,
   isBillingConfigured,
@@ -84,12 +88,20 @@ async function handlePost(request: Request): Promise<Response> {
   }
 
   try {
-    const userId = await resolveConnectionUserId()
+    // userId = the actual Clerk user (for org creation in the webhook).
+    // ownerId = billing owner: orgId when the user already has a paid org in
+    //           session, userId otherwise (first-time upgrade from free).
+    const [userId, ownerId] = await Promise.all([
+      resolveConnectionUserId(),
+      resolveBillingOwnerId(),
+    ])
     const origin = new URL(request.url).origin
     const checkout = await getPolarClient().checkouts.create({
       products: [productId],
-      externalCustomerId: userId,
+      externalCustomerId: ownerId,
       successUrl: `${origin}/billing?status=success`,
+      // userId in metadata lets the webhook lazily create a Clerk org for the
+      // buyer when externalCustomerId was still a user id (first payment).
       metadata: { userId, planId, period },
     })
     return createSuccessResponse({ url: checkout.url })

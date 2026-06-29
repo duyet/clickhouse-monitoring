@@ -1,18 +1,28 @@
 /**
- * Subscription store — D1 persistence for per-user billing state.
+ * Subscription store — D1 persistence for billing state.
+ *
+ * The primary key column is named `user_id` for backward compatibility but now
+ * holds the BILLING-OWNER id, which is either a Clerk user id (user_*) or a
+ * Clerk org id (org_*). The `owner_type` column ('user'|'org') records which
+ * kind, added by migration 0004_subscription_owner.sql.
  *
  * Reads degrade gracefully: when the CHM_CLOUD_D1 binding is absent (local dev,
- * self-host) or there is no row, `get()` returns null and the caller falls back
- * to the free plan. Writes require D1 and are only exercised by the Polar webhook
- * (cloud runtime), so they throw if the binding is missing.
+ * self-host) or there is no row, `getSubscription()` returns null and the caller
+ * falls back to the free plan. Writes require D1 and are only exercised by the
+ * Polar webhook (cloud runtime), so they throw if the binding is missing.
  */
 
 import type { PlanId } from './plans'
 
 import { getPlatformBindings } from '@chm/platform'
 
+export type OwnerType = 'user' | 'org'
+
 export interface UserSubscription {
+  /** Billing-owner id — Clerk user id OR Clerk org id. */
   userId: string
+  /** 'user' for personal subscriptions; 'org' for org-owned paid plans. */
+  ownerType: OwnerType
   planId: PlanId
   billingPeriod: 'monthly' | 'yearly' | null
   status: string
@@ -25,7 +35,10 @@ export interface UserSubscription {
 }
 
 export interface UpsertSubscriptionInput {
+  /** Billing-owner id — Clerk user id OR Clerk org id. */
   userId: string
+  /** 'user' for personal subscriptions; 'org' for org-owned paid plans. Default 'user'. */
+  ownerType?: OwnerType
   planId: PlanId
   billingPeriod: 'monthly' | 'yearly' | null
   status: string
@@ -36,6 +49,7 @@ export interface UpsertSubscriptionInput {
 
 interface D1SubscriptionRow {
   user_id: string
+  owner_type: string | null
   plan_id: string
   billing_period: string | null
   status: string
@@ -49,6 +63,7 @@ interface D1SubscriptionRow {
 function rowToSubscription(row: D1SubscriptionRow): UserSubscription {
   return {
     userId: row.user_id,
+    ownerType: (row.owner_type as OwnerType | null) ?? 'user',
     planId: row.plan_id as PlanId,
     billingPeriod: (row.billing_period as 'monthly' | 'yearly' | null) ?? null,
     status: row.status,
@@ -64,24 +79,31 @@ function getDb() {
   return getPlatformBindings().getD1Database('CHM_CLOUD_D1')
 }
 
-/** Read a user's subscription, or null when none / no D1. */
+/**
+ * Read a subscription by billing-owner id (user id or org id), or null when
+ * none exists / no D1 binding.
+ */
 export async function getSubscription(
-  userId: string
+  ownerId: string
 ): Promise<UserSubscription | null> {
   const db = getDb()
   if (!db) return null
   const row = await db
     .prepare(
-      `SELECT user_id, plan_id, billing_period, status, polar_subscription_id,
-              polar_customer_id, current_period_end, created_at, updated_at
+      `SELECT user_id, owner_type, plan_id, billing_period, status,
+              polar_subscription_id, polar_customer_id, current_period_end,
+              created_at, updated_at
        FROM user_subscriptions WHERE user_id = ?1`
     )
-    .bind(userId)
+    .bind(ownerId)
     .first<D1SubscriptionRow>()
   return row ? rowToSubscription(row) : null
 }
 
-/** Insert or replace a user's subscription row (idempotent on user_id). */
+/**
+ * Insert or replace a subscription row (idempotent on owner id).
+ * `input.userId` is the billing-owner id (user or org).
+ */
 export async function upsertSubscription(
   input: UpsertSubscriptionInput
 ): Promise<void> {
@@ -92,13 +114,16 @@ export async function upsertSubscription(
     )
   }
   const now = Math.floor(Date.now() / 1000)
+  const ownerType: OwnerType = input.ownerType ?? 'user'
   await db
     .prepare(
       `INSERT INTO user_subscriptions
-         (user_id, plan_id, billing_period, status, polar_subscription_id,
-          polar_customer_id, current_period_end, created_at, updated_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)
+         (user_id, owner_type, plan_id, billing_period, status,
+          polar_subscription_id, polar_customer_id, current_period_end,
+          created_at, updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9)
        ON CONFLICT(user_id) DO UPDATE SET
+         owner_type = excluded.owner_type,
          plan_id = excluded.plan_id,
          billing_period = excluded.billing_period,
          status = excluded.status,
@@ -109,6 +134,7 @@ export async function upsertSubscription(
     )
     .bind(
       input.userId,
+      ownerType,
       input.planId,
       input.billingPeriod,
       input.status,
