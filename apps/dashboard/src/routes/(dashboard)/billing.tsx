@@ -126,6 +126,18 @@ function BillingPage() {
                   <Button variant="outline" className="w-full" disabled>
                     Current plan
                   </Button>
+                ) : paid && hasSubscription ? (
+                  // Active subscribers can't start a fresh checkout (Polar blocks
+                  // it: "You already have an active subscription"). Plan changes
+                  // go through the customer portal, which prorates correctly.
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={onPortal}
+                    disabled={busy !== null}
+                  >
+                    {busy === 'portal' ? 'Opening…' : `Change to ${plan.name}`}
+                  </Button>
                 ) : paid ? (
                   <Button
                     className="w-full"
