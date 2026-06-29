@@ -10,6 +10,7 @@ import {
   PlanCard,
   PopularBadge,
 } from '@/components/billing/plan-card'
+import { PlanComparison } from '@/components/billing/plan-comparison'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -149,6 +150,9 @@ function BillingPage() {
           )
         })}
       </div>
+
+      {/* Full benefits matrix */}
+      <PlanComparison currentPlanId={currentPlanId} />
     </div>
   )
 }

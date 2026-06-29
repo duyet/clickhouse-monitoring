@@ -43,6 +43,25 @@ import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { SETTINGS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { isFeatureAllowed } from '@/lib/feature-permissions/shared'
 import { clearUserConnectionsCache } from '@/lib/hooks/use-user-connections'
+import { cn } from '@/lib/utils'
+
+/**
+ * Vivid, brand-accented styling for a paid plan badge so it stands out in the
+ * muted sidebar footer. Pro = amber→orange (brand), Max = violet→fuchsia, any
+ * other paid tier falls back to the solid primary. `free` is never rendered as a
+ * badge (it shows an "Upgrade →" link instead).
+ */
+const PLAN_BADGE_STYLES: Record<string, string> = {
+  pro: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white dark:from-amber-500 dark:to-orange-600',
+  max: 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white dark:from-violet-600 dark:to-fuchsia-600',
+}
+
+function planBadgeClassName(plan: string): string {
+  return cn(
+    'border-transparent font-semibold uppercase tracking-wide shadow-sm',
+    PLAN_BADGE_STYLES[plan] ?? 'bg-primary text-primary-foreground'
+  )
+}
 
 /**
  * Clerk-integrated navigation user menu.
@@ -142,39 +161,45 @@ export function ClerkNavWrapper() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span
-                      className="truncate font-medium"
-                      data-testid="nav-user-name"
-                    >
-                      {user?.fullName ?? 'User'}
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span
+                        className="truncate font-medium"
+                        data-testid="nav-user-name"
+                      >
+                        {user?.fullName ?? 'User'}
+                      </span>
+                      {planLabel && planLabel !== 'free' && (
+                        <Badge
+                          className={cn(
+                            'h-4 shrink-0 cursor-pointer px-1.5 text-[10px]',
+                            planBadgeClassName(planLabel)
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.location.href = '/billing'
+                          }}
+                          data-testid="nav-user-plan-badge"
+                        >
+                          {planLabel}
+                        </Badge>
+                      )}
                     </span>
                     <span
-                      className="truncate text-xs"
+                      className="truncate text-xs text-muted-foreground"
                       data-testid="nav-user-email"
                     >
                       {user?.primaryEmailAddress?.emailAddress}
                     </span>
-                    {planLabel && (
+                    {planLabel === 'free' && (
                       <span
-                        className="mt-0.5 inline-flex cursor-pointer items-center"
+                        className="mt-0.5 inline-flex w-fit cursor-pointer items-center text-[10px] font-medium text-muted-foreground hover:text-foreground"
                         onClick={(e) => {
                           e.stopPropagation()
                           window.location.href = '/billing'
                         }}
                         data-testid="nav-user-plan-badge"
                       >
-                        {planLabel === 'free' ? (
-                          <span className="text-[10px] text-muted-foreground hover:text-foreground">
-                            Upgrade →
-                          </span>
-                        ) : (
-                          <Badge
-                            variant="secondary"
-                            className="pointer-events-none h-4 px-1.5 text-[10px] capitalize"
-                          >
-                            {planLabel}
-                          </Badge>
-                        )}
+                        Upgrade →
                       </span>
                     )}
                   </div>
@@ -214,10 +239,12 @@ export function ClerkNavWrapper() {
                             </span>
                           </span>
                         )}
-                        {planLabel && (
+                        {planLabel && planLabel !== 'free' && (
                           <Badge
-                            variant="secondary"
-                            className="h-4 px-1.5 text-[10px] capitalize"
+                            className={cn(
+                              'h-4 px-1.5 text-[10px]',
+                              planBadgeClassName(planLabel)
+                            )}
                           >
                             {planLabel}
                           </Badge>
@@ -245,10 +272,12 @@ export function ClerkNavWrapper() {
                       >
                         <CreditCard className="size-4" />
                         <span>Billing & plan</span>
-                        {planLabel && (
+                        {planLabel && planLabel !== 'free' && (
                           <Badge
-                            variant="secondary"
-                            className="ml-auto h-4 px-1.5 text-[10px] capitalize"
+                            className={cn(
+                              'ml-auto h-4 px-1.5 text-[10px]',
+                              planBadgeClassName(planLabel)
+                            )}
                           >
                             {planLabel}
                           </Badge>
