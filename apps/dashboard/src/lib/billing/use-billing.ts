@@ -47,6 +47,11 @@ export function useBillingSubscription() {
       return readEnvelope<BillingSubscription>(res)
     },
     staleTime: 60_000,
+    // The Clerk session can hydrate a beat after first paint; a query that fires
+    // during that window 401s and would otherwise cache "free". Always refetch
+    // on mount and retry so the real plan replaces the stale value promptly.
+    refetchOnMount: 'always',
+    retry: 2,
   })
 }
 

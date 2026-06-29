@@ -31,15 +31,22 @@ export function FirstRunGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const noHosts = !isLoading && !isUnauthorized && hosts.length === 0
-  const onSetup = pathname === '/setup'
+  // Account/billing pages stay reachable with zero hosts — a paying user with no
+  // host connected yet must still be able to view/manage their plan and org
+  // (otherwise they're trapped on /setup). /setup is itself exempt (no redirect
+  // loop, it renders the onboarding surface).
+  const onExemptPath =
+    pathname === '/setup' ||
+    pathname === '/billing' ||
+    pathname === '/organization'
 
   useEffect(() => {
-    if (noHosts && !onSetup) {
+    if (noHosts && !onExemptPath) {
       router.replace('/setup')
     }
-  }, [noHosts, onSetup, router])
+  }, [noHosts, onExemptPath, router])
 
-  if (noHosts && !onSetup) {
+  if (noHosts && !onExemptPath) {
     return <PageSkeleton />
   }
 
