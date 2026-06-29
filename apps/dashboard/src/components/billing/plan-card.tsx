@@ -1,0 +1,161 @@
+import { CheckIcon, SparklesIcon } from 'lucide-react'
+
+import type { ReactNode } from 'react'
+import type { Plan } from '@/lib/billing/plans'
+
+import { Badge } from '@/components/ui/badge'
+import { monthlyEquivalentUsd } from '@/lib/billing/plans'
+import { cn } from '@/lib/utils'
+
+/**
+ * Shared billing UI — the single source of truth for plan cards across the
+ * /billing page and the /setup onboarding plan picker, so the two surfaces stay
+ * visually identical. The card is a full-height flex column with the CTA pinned
+ * to the bottom (`mt-auto`), so every card's button lines up on the same
+ * baseline regardless of how many feature rows it has.
+ */
+
+export type BillingPeriod = 'monthly' | 'yearly'
+
+/** Display price (per-month equivalent) for a plan + period. */
+export function formatPlanPrice(plan: Plan, period: BillingPeriod): string {
+  if (plan.priceMonthlyUsd === null) return 'Custom'
+  if (plan.priceMonthlyUsd === 0) return '$0'
+  const v = monthlyEquivalentUsd(plan, period)
+  return v === null ? 'Custom' : `$${v}`
+}
+
+/** "Popular" pill shown on the featured (Pro) card. */
+export function PopularBadge() {
+  return (
+    <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium">
+      <SparklesIcon className="size-3" strokeWidth={2} />
+      Popular
+    </span>
+  )
+}
+
+interface PlanCardProps {
+  plan: Plan
+  period: BillingPeriod
+  /** Featured visual treatment (gradient + ring + lift). Use for the Pro tier. */
+  featured?: boolean
+  /** Top-right slot — e.g. <PopularBadge /> or a "Current" badge. */
+  badge?: ReactNode
+  /** Cap the number of feature rows (the picker shows 3; billing shows all). */
+  maxHighlights?: number
+  /** CTA button(s), rendered in the bottom-pinned footer. */
+  cta: ReactNode
+  className?: string
+}
+
+/**
+ * One plan card. Fancy, generous surface; featured cards get a gradient + ring.
+ * The footer is pushed to the bottom so CTAs align across a row of cards.
+ */
+export function PlanCard({
+  plan,
+  period,
+  featured = false,
+  badge,
+  maxHighlights,
+  cta,
+  className,
+}: PlanCardProps) {
+  const price = formatPlanPrice(plan, period)
+  const showSuffix = plan.priceMonthlyUsd != null && plan.priceMonthlyUsd > 0
+  const highlights =
+    maxHighlights != null
+      ? plan.highlights.slice(0, maxHighlights)
+      : plan.highlights
+
+  return (
+    <div
+      className={cn(
+        'group relative flex h-full flex-col rounded-2xl border bg-card p-6 shadow-sm transition-all duration-200',
+        'hover:-translate-y-0.5 hover:shadow-md',
+        featured &&
+          'border-primary/50 ring-primary/15 from-card to-primary/[0.04] dark:to-primary/[0.07] bg-gradient-to-b shadow-md ring-1',
+        className
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-base font-semibold tracking-tight">{plan.name}</h3>
+        {badge}
+      </div>
+
+      <div className="mt-3 flex items-baseline gap-1">
+        <span className="text-3xl font-bold tracking-tight tabular-nums">
+          {price}
+        </span>
+        {showSuffix && (
+          <span className="text-muted-foreground text-sm font-normal">/mo</span>
+        )}
+      </div>
+
+      <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+        {plan.tagline}
+      </p>
+
+      <ul className="mt-5 space-y-2.5">
+        {highlights.map((h) => (
+          <li key={h} className="flex gap-2.5 text-sm">
+            <CheckIcon
+              className="text-emerald-500 mt-0.5 size-4 shrink-0"
+              strokeWidth={2}
+            />
+            <span className="text-foreground/90">{h}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-auto pt-6">{cta}</div>
+    </div>
+  )
+}
+
+/** "Current" badge used on the user's active plan. */
+export function CurrentPlanBadge() {
+  return <Badge variant="secondary">Current</Badge>
+}
+
+interface BillingPeriodToggleProps {
+  value: BillingPeriod
+  onChange: (period: BillingPeriod) => void
+  className?: string
+}
+
+/** Monthly / Yearly segmented toggle, shared by both surfaces. */
+export function BillingPeriodToggle({
+  value,
+  onChange,
+  className,
+}: BillingPeriodToggleProps) {
+  return (
+    <div className={cn('flex items-center justify-center', className)}>
+      <div className="bg-muted inline-flex rounded-full p-1">
+        {(['monthly', 'yearly'] as const).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onChange(p)}
+            className={cn(
+              'rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors',
+              value === p
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {p}
+            {p === 'yearly' && (
+              <span className="text-emerald-600 dark:text-emerald-400">
+                {' '}
+                · 2 months free
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}

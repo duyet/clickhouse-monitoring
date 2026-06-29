@@ -1,43 +1,33 @@
-import { CheckIcon, ExternalLinkIcon } from 'lucide-react'
+import { ExternalLinkIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { createFileRoute } from '@tanstack/react-router'
 
-import type { Plan } from '@/lib/billing/plans'
-
 import { useState } from 'react'
+import {
+  type BillingPeriod,
+  BillingPeriodToggle,
+  CurrentPlanBadge,
+  PlanCard,
+  PopularBadge,
+} from '@/components/billing/plan-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  BILLING_PLAN_LIST,
-  getPlan,
-  monthlyEquivalentUsd,
-} from '@/lib/billing/plans'
+import { BILLING_PLAN_LIST, getPlan } from '@/lib/billing/plans'
 import {
   openBillingPortal,
   startCheckout,
   useBillingSubscription,
 } from '@/lib/billing/use-billing'
-import { cn } from '@/lib/utils'
-
-type Period = 'monthly' | 'yearly'
-
-function priceLabel(plan: Plan, period: Period): string {
-  if (plan.priceMonthlyUsd === null) return 'Custom'
-  if (plan.priceMonthlyUsd === 0) return '$0'
-  const v = monthlyEquivalentUsd(plan, period)
-  return v === null ? 'Custom' : `$${v}`
-}
 
 function BillingPage() {
   const { data: sub, isLoading } = useBillingSubscription()
-  const [period, setPeriod] = useState<Period>('yearly')
+  const [period, setPeriod] = useState<BillingPeriod>('yearly')
   const [busy, setBusy] = useState<string | null>(null)
 
   const currentPlanId = sub?.planId ?? 'free'
@@ -110,70 +100,32 @@ function BillingPage() {
       </Card>
 
       {/* Billing period toggle */}
-      <div className="flex items-center justify-center gap-2">
-        <div className="bg-muted inline-flex rounded-full p-1">
-          {(['monthly', 'yearly'] as const).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={cn(
-                'rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors',
-                period === p
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground'
-              )}
-            >
-              {p}
-              {p === 'yearly' && (
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  {' '}
-                  · 2 months free
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BillingPeriodToggle value={period} onChange={setPeriod} />
 
       {/* Plan grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-4">
         {BILLING_PLAN_LIST.map((plan) => {
           const isCurrent = plan.id === currentPlanId
           const paid = plan.id === 'pro' || plan.id === 'max'
           return (
-            <Card
+            <PlanCard
               key={plan.id}
-              className={cn(
-                isCurrent && 'border-primary ring-primary/30 ring-1'
-              )}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {plan.name}
-                  {isCurrent && <Badge variant="secondary">Current</Badge>}
-                </CardTitle>
-                <div className="text-2xl font-bold tabular-nums">
-                  {priceLabel(plan, period)}
-                  {plan.priceMonthlyUsd != null && plan.priceMonthlyUsd > 0 ? (
-                    <span className="text-muted-foreground text-sm font-normal">
-                      {' '}
-                      / mo
-                    </span>
-                  ) : null}
-                </div>
-                <CardDescription>{plan.tagline}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2">
-                  {plan.highlights.map((h) => (
-                    <li key={h} className="flex gap-2 text-sm">
-                      <CheckIcon className="text-emerald-500 mt-0.5 size-4 shrink-0" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
-                {paid && !isCurrent && (
+              plan={plan}
+              period={period}
+              featured={plan.id === 'pro'}
+              badge={
+                isCurrent ? (
+                  <CurrentPlanBadge />
+                ) : plan.id === 'pro' ? (
+                  <PopularBadge />
+                ) : undefined
+              }
+              cta={
+                isCurrent ? (
+                  <Button variant="outline" className="w-full" disabled>
+                    Current plan
+                  </Button>
+                ) : paid ? (
                   <Button
                     className="w-full"
                     onClick={() => onCheckout(plan.id as 'pro' | 'max')}
@@ -183,14 +135,17 @@ function BillingPage() {
                       ? 'Redirecting…'
                       : `Upgrade to ${plan.name}`}
                   </Button>
-                )}
-                {plan.id === 'enterprise' && (
+                ) : plan.id === 'enterprise' ? (
                   <Button variant="outline" className="w-full" asChild>
                     <a href="mailto:hello@chmonitor.dev">Contact us</a>
                   </Button>
-                )}
-              </CardContent>
-            </Card>
+                ) : (
+                  <Button variant="outline" className="w-full" disabled>
+                    Free forever
+                  </Button>
+                )
+              }
+            />
           )
         })}
       </div>
