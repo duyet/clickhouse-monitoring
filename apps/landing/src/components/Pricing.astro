@@ -1,98 +1,168 @@
 ---
+// Cloud pricing tiers.
+// ⚠️ Keep price / seats / hosts in sync with the source of truth:
+// apps/dashboard/src/lib/billing/plans.ts (BILLING_PLANS). Yearly = 10× monthly.
 const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>`
+const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+
+interface Tier {
+  name: string
+  badge?: { label: string; cls: string }
+  highlight?: boolean
+  monthly: number | null // null = custom
+  yearlyTotal: number | null
+  yearlyPerMo: number | null
+  tagline: string
+  rows: string[]
+  cta: { label: string; href: string; primary?: boolean }
+}
+
+const tiers: Tier[] = [
+  {
+    name: 'Free',
+    badge: { label: 'Early access', cls: 'ptag-beta' },
+    monthly: 0,
+    yearlyTotal: 0,
+    yearlyPerMo: 0,
+    tagline: 'Try the hosted dashboard, no setup.',
+    rows: [
+      '1 ClickHouse host, 1 seat',
+      'Full monitoring dashboard',
+      'AI agent — daily trial limit',
+      '7-day history',
+      'Community support',
+    ],
+    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev', primary: true },
+  },
+  {
+    name: 'Pro',
+    highlight: true,
+    monthly: 29,
+    yearlyTotal: 290,
+    yearlyPerMo: 24,
+    tagline: 'For a small team running a few clusters.',
+    rows: [
+      'Everything in Free',
+      '3 hosts, 3 seats',
+      'AI agent + scheduled AI Insights',
+      'Basic alerting',
+      '30-day history',
+      'Email support',
+    ],
+    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev', primary: true },
+  },
+  {
+    name: 'Max',
+    monthly: 99,
+    yearlyTotal: 990,
+    yearlyPerMo: 83,
+    tagline: 'For teams operating a fleet of clusters.',
+    rows: [
+      'Everything in Pro',
+      '10 hosts, 10 seats',
+      'Higher AI usage cap',
+      'Fleet view + advanced alerting',
+      'API / MCP access',
+      '90-day history · priority support',
+    ],
+    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev' },
+  },
+  {
+    name: 'Enterprise',
+    monthly: null,
+    yearlyTotal: null,
+    yearlyPerMo: null,
+    tagline: 'For organisations with security & scale needs.',
+    rows: [
+      'Everything in Max',
+      'Unlimited hosts & seats',
+      'Bring-your-own LLM key (BYOK)',
+      'SSO / SAML, RBAC, audit logs',
+      'Custom retention',
+      'SLA & dedicated support',
+    ],
+    cta: { label: 'Contact us', href: 'mailto:hello@chmonitor.dev' },
+  },
+]
 ---
 <section id="pricing" class="band">
   <div class="wrap">
     <div class="sec-head reveal" style="text-align:center">
       <span class="eyebrow">Pricing</span>
-      <h2>Self-host free. Try cloud instantly.</h2>
-      <p>chmonitor is open source. Self-hosting is always free under the GPL-3.0 license. The hosted cloud lets you connect a cluster without any setup.</p>
+      <h2>Self-host free. Cloud for teams.</h2>
+      <p>chmonitor is open source — self-hosting is always free under GPL-3.0. The hosted cloud connects a cluster without any setup. Cloud pricing is not finalised; <strong>early access is free to try</strong> and seats are limited.</p>
     </div>
 
-    <div class="pricing-grid reveal">
-      <!-- Self-host -->
-      <div class="price-card">
-        <div class="price-hd">
-          <div>
-            <span class="pname">Self-host</span>
-            <span class="ptag ptag-free">Free forever</span>
-          </div>
-          <div class="pamount">$0 <small>/ month</small></div>
-          <div class="pdesc">Run it on your own infrastructure. Docker, Cloudflare Workers, or Kubernetes, your choice, your data stays with you.</div>
-        </div>
-        <div class="price-body">
-          <ul class="price-rows">
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Full dashboard, all views, all features
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Connect unlimited ClickHouse clusters
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              AI agent and MCP server
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Docker, Cloudflare Workers, Kubernetes
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              GPL-3.0, modify and redistribute freely
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Community support via GitHub Issues
-            </li>
-          </ul>
-          <div class="price-cta">
-            <a class="btn btn-primary" style="width:100%;justify-content:center" href="https://docs.chmonitor.dev" target="_blank" rel="noopener">
-              Read the quickstart
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
-          </div>
-        </div>
+    <!-- Self-host: always free -->
+    <div class="selfhost-banner reveal">
+      <div class="sh-text">
+        <span class="ptag ptag-free">Free forever</span>
+        <strong>Self-host</strong> — run it on your own infrastructure (Docker, Cloudflare Workers, Kubernetes). All features, unlimited clusters, your data stays with you.
       </div>
+      <a class="btn btn-ghost" href="https://docs.chmonitor.dev" target="_blank" rel="noopener">
+        Read the quickstart <span set:html={arrowSvg} />
+      </a>
+    </div>
 
-      <!-- Cloud -->
-      <div class="price-card price-card-highlight">
-        <div class="price-hd">
-          <div>
-            <span class="pname">Cloud</span>
-            <span class="ptag ptag-beta">Early access</span>
-          </div>
-          <div class="pamount" style="font-size:24px;margin-top:16px">No setup required</div>
-          <div class="pdesc">Connect a ClickHouse cluster directly at <strong>dash.chmonitor.dev</strong> without deploying anything. Cloud pricing is not finalised, early access is free to try.</div>
-        </div>
-        <div class="price-body">
-          <ul class="price-rows">
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Everything in Self-host
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              No server to manage or maintain
-            </li>
-            <li class="price-row">
-              <span set:html={checkSvg} />
-              Connect with a read-only ClickHouse user
-            </li>
-            <li class="price-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
-              Pricing TBD, early access seats are limited
-            </li>
-          </ul>
-          <div class="price-cta">
-            <a class="btn btn-primary" style="width:100%;justify-content:center;background:var(--orange);border-color:var(--orange)" href="https://dash.chmonitor.dev" target="_blank" rel="noopener">
-              Try cloud now, free
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
-          </div>
-        </div>
+    <!-- Cloud plans -->
+    <div class="cloud-head reveal">
+      <span class="ea-badge">Early access — free while in beta</span>
+      <div class="bill-toggle" role="tablist" aria-label="Billing period">
+        <button type="button" data-period="monthly" role="tab" aria-selected="false">Monthly</button>
+        <button type="button" data-period="yearly" role="tab" aria-selected="true" class="active">
+          Yearly <span class="save">2 months free</span>
+        </button>
       </div>
+    </div>
+
+    <div class="cloud-grid reveal" data-period="yearly">
+      {tiers.map((t) => (
+        <div class={`price-card${t.highlight ? ' price-card-highlight' : ''}`}>
+          <div class="price-hd">
+            <div>
+              <span class="pname">{t.name}</span>
+              {t.badge && <span class={`ptag ${t.badge.cls}`}>{t.badge.label}</span>}
+            </div>
+            <div class="pamount">
+              {t.monthly === null ? (
+                <span>Custom</span>
+              ) : t.monthly === 0 ? (
+                <span>$0 <small>/ mo</small></span>
+              ) : (
+                <>
+                  <span class="amt amt-monthly">${t.monthly} <small>/ mo</small></span>
+                  <span class="amt amt-yearly">${t.yearlyPerMo} <small>/ mo</small></span>
+                </>
+              )}
+            </div>
+            {(t.monthly ?? 0) > 0 && (
+              <div class="pbilled">
+                <span class="bill-monthly">billed monthly</span>
+                <span class="bill-yearly">${t.yearlyTotal}/yr · save 2 months</span>
+              </div>
+            )}
+            <div class="pdesc">{t.tagline}</div>
+          </div>
+          <div class="price-body">
+            <ul class="price-rows">
+              {t.rows.map((r) => (
+                <li class="price-row"><span set:html={checkSvg} />{r}</li>
+              ))}
+            </ul>
+            <div class="price-cta">
+              <a
+                class={`btn ${t.cta.primary ? 'btn-primary' : 'btn-ghost'}`}
+                style={t.cta.primary ? 'width:100%;justify-content:center;background:var(--orange);border-color:var(--orange)' : 'width:100%;justify-content:center'}
+                href={t.cta.href}
+                target="_blank"
+                rel="noopener"
+              >
+                {t.cta.label} <span set:html={arrowSvg} />
+              </a>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
 
     <div class="callout reveal" style="margin-top:28px">
@@ -100,4 +170,50 @@ const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" s
       <div>chmonitor only reads from ClickHouse system tables. It never writes to your data. Connect using a least-privilege <code>SELECT</code>-only user for maximum safety.</div>
     </div>
   </div>
+
+  <style>
+    .selfhost-banner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:44px;padding:18px 22px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow-card)}
+    .selfhost-banner .sh-text{font-size:14px;color:var(--muted-fg);text-wrap:pretty}
+    .selfhost-banner .sh-text strong{color:var(--fg)}
+    .cloud-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:40px}
+    .ea-badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--orange)}
+    .ea-badge::before{content:"";width:7px;height:7px;border-radius:999px;background:var(--orange)}
+    .bill-toggle{display:inline-flex;padding:4px;gap:2px;border:1px solid var(--border);border-radius:999px;background:var(--card)}
+    .bill-toggle button{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:600;color:var(--muted-fg);background:transparent;border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
+    .bill-toggle button.active{background:var(--fg);color:var(--bg)}
+    .bill-toggle .save{font-size:11px;font-weight:600;color:var(--emerald)}
+    /* The active pill is var(--fg): near-black in light mode, near-white in dark
+       mode. So the accent must flip per theme to stay readable on it. */
+    .bill-toggle button.active .save{color:#34d399} /* light mode: black pill → light green */
+    :root[data-theme="dark"] .bill-toggle button.active .save{color:#047857} /* dark mode: white pill → dark green */
+    .cloud-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:22px;align-items:stretch}
+    .cloud-grid .pamount{display:flex;align-items:baseline;gap:6px}
+    .cloud-grid .amt{display:none}
+    .cloud-grid[data-period="monthly"] .amt-monthly{display:inline}
+    .cloud-grid[data-period="yearly"] .amt-yearly{display:inline}
+    .pbilled{font-size:12px;color:var(--muted-fg);margin-top:8px;min-height:16px}
+    .cloud-grid[data-period="monthly"] .bill-yearly{display:none}
+    .cloud-grid[data-period="yearly"] .bill-monthly{display:none}
+    @media (max-width:1000px){.cloud-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.cloud-grid{grid-template-columns:1fr}.selfhost-banner{flex-direction:column;align-items:flex-start}}
+  </style>
+
+  <script is:inline>
+    (function () {
+      var grid = document.querySelector('.cloud-grid')
+      var buttons = document.querySelectorAll('.bill-toggle button')
+      if (!grid || !buttons.length) return
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var period = btn.getAttribute('data-period')
+          grid.setAttribute('data-period', period)
+          buttons.forEach(function (b) {
+            var on = b === btn
+            b.classList.toggle('active', on)
+            b.setAttribute('aria-selected', on ? 'true' : 'false')
+          })
+        })
+      })
+    })()
+  </script>
 </section>
