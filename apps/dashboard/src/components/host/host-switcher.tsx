@@ -71,7 +71,7 @@ export function HostSwitcher() {
                 {!showExpanded && <LogoStatusIndicatorSkeleton />}
               </div>
               {showExpanded && (
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 gap-1.5 text-left text-sm leading-tight">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-3 w-16" />
                 </div>
