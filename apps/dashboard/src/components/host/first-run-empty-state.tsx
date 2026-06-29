@@ -1,11 +1,9 @@
 import {
   ArrowRight,
-  Check,
   DatabaseZap,
   KeyRound,
   PlugZap,
   ShieldCheck,
-  Sparkles,
   Terminal,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -13,11 +11,12 @@ import { toast } from 'sonner'
 import type { ReactNode } from 'react'
 
 import { useState } from 'react'
+import { PlanCard, PopularBadge } from '@/components/billing/plan-card'
 import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/clerk-sign-in-button'
 import { AddHostDialog } from '@/components/connections'
 import { ChmonitorLogo } from '@/components/icons/chmonitor-logo'
 import { Button } from '@/components/ui/button'
-import { BILLING_PLAN_LIST, monthlyEquivalentUsd } from '@/lib/billing/plans'
+import { BILLING_PLAN_LIST } from '@/lib/billing/plans'
 import {
   startCheckout,
   useBillingSubscription,
@@ -25,7 +24,6 @@ import {
 import { isClerkEnabled } from '@/lib/clerk/clerk-client'
 import { docsSiteUrl } from '@/lib/docs-site'
 import { useMergedHosts } from '@/lib/swr/use-merged-hosts'
-import { cn } from '@/lib/utils'
 
 // Clerk's SignInButton needs a mounted <ClerkProvider>. Gate it behind the
 // build-time constant so non-Clerk (self-hosted) builds render null instead.
@@ -254,51 +252,20 @@ function OnboardingPlans({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid items-stretch gap-4 sm:grid-cols-3">
         {BILLING_PLAN_LIST.filter((p) => p.id !== 'enterprise').map((plan) => {
           const isFree = plan.id === 'free'
-          const price = isFree
-            ? '$0'
-            : `$${monthlyEquivalentUsd(plan, 'yearly') ?? ''}`
           const isCurrent = plan.id === currentPlanId
           return (
-            <div
+            <PlanCard
               key={plan.id}
-              className={cn(
-                'flex flex-col rounded-xl border bg-card p-4 shadow-sm',
-                plan.id === 'pro' && 'border-primary ring-primary/20 ring-1'
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{plan.name}</span>
-                {plan.id === 'pro' && (
-                  <span className="text-primary inline-flex items-center gap-1 text-[11px] font-medium">
-                    <Sparkles className="size-3" /> Popular
-                  </span>
-                )}
-              </div>
-              <div className="mt-1 text-2xl font-bold tabular-nums">
-                {price}
-                {!isFree && (
-                  <span className="text-muted-foreground text-xs font-normal">
-                    {' '}
-                    /mo
-                  </span>
-                )}
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {plan.tagline}
-              </p>
-              <ul className="mt-3 flex-1 space-y-1.5">
-                {plan.highlights.slice(0, 3).map((h) => (
-                  <li key={h} className="flex gap-1.5 text-xs">
-                    <Check className="text-emerald-500 mt-0.5 size-3.5 shrink-0" />
-                    <span>{h}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4">
-                {isFree ? (
+              plan={plan}
+              period="yearly"
+              featured={plan.id === 'pro'}
+              badge={plan.id === 'pro' ? <PopularBadge /> : undefined}
+              maxHighlights={3}
+              cta={
+                isFree ? (
                   <Button
                     variant="outline"
                     className="w-full"
@@ -321,9 +288,9 @@ function OnboardingPlans({
                         ? 'Current plan'
                         : `Choose ${plan.name}`}
                   </Button>
-                )}
-              </div>
-            </div>
+                )
+              }
+            />
           )
         })}
       </div>
