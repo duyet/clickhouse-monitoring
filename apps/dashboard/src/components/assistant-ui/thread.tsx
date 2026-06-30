@@ -37,6 +37,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
+  LoaderCircleIcon,
   PencilIcon,
   RefreshCwIcon,
 } from 'lucide-react'
@@ -65,6 +66,7 @@ import { useAgentAuthGate } from '@/components/assistant-ui/agent-auth-gate'
 import { JsonRenderMessage } from '@/components/assistant-ui/json-render-message'
 import { TooltipIconButton } from '@/components/assistant-ui/tooltip-icon-button'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
+import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker'
 import { Message, MessageContent } from '@/components/ui/message'
 import {
   MessageScroller,
@@ -298,14 +300,12 @@ function LoadingIndicator() {
   if (!isRunning || hasError || !hasNoParts) return null
 
   return (
-    <div className="flex items-center gap-2 py-1">
-      <span className="inline-flex gap-0.5">
-        <span className="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0ms]" />
-        <span className="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:150ms]" />
-        <span className="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:300ms]" />
-      </span>
-      <span className="text-xs text-muted-foreground/70">Thinking…</span>
-    </div>
+    <Marker className="py-1">
+      <MarkerIcon>
+        <LoaderCircleIcon className="animate-spin" />
+      </MarkerIcon>
+      <MarkerContent className="shimmer text-xs">Thinking…</MarkerContent>
+    </Marker>
   )
 }
 
