@@ -176,7 +176,7 @@ export const pricingFaqs: PricingFaq[] = [
   },
   {
     q: 'How does AI usage metering work?',
-    a: 'Every plan includes a daily allowance of AI agent messages: Free 5/day, Pro 100/day, Max 1,000/day. On Pro and Max, usage past the daily allowance is billed as overage at $5 per 2,000 messages. Enterprise brings its own LLM key (BYOK) for unlimited usage.',
+    a: 'Every plan includes a daily allowance of AI agent messages: Free 5 messages / day, Pro 100 / day, Max 1,000 / day. On Pro and Max, usage past the daily allowance is billed as overage at $5 per 2,000 messages. Enterprise brings its own LLM key (BYOK) for unlimited usage.',
   },
   {
     q: 'What happens when I hit a plan limit?',

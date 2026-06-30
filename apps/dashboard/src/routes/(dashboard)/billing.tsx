@@ -1,8 +1,11 @@
-import { ExternalLinkIcon } from 'lucide-react'
+import { ExternalLinkIcon, SparklesIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { createFileRoute } from '@tanstack/react-router'
 
+import type { ReactNode } from 'react'
+
 import { useState } from 'react'
+import { useClerkIsSignedIn as useClerkIsSignedInImpl } from '@/components/assistant-ui/use-clerk-is-signed-in'
 import {
   type BillingPeriod,
   BillingPeriodToggle,
@@ -11,10 +14,12 @@ import {
   PopularBadge,
 } from '@/components/billing/plan-card'
 import { PlanComparison } from '@/components/billing/plan-comparison'
+import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/clerk-sign-in-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -25,11 +30,31 @@ import {
   startCheckout,
   useBillingSubscription,
 } from '@/lib/billing/use-billing'
+import { isClerkEnabled } from '@/lib/clerk/clerk-client'
+
+/**
+ * Sign-in primitives gated behind the build-time `isClerkEnabled()` constant —
+ * Clerk's `useUser()` / `SignInButton` need a mounted `<ClerkProvider />`. When
+ * Clerk is off (OSS / self-host) `useClerkIsSignedIn` returns true so the
+ * signed-out prompt never shows — billing is a cloud-only surface. Mirrors
+ * `agent-auth-gate.tsx`.
+ */
+const useClerkIsSignedIn: () => boolean = isClerkEnabled()
+  ? useClerkIsSignedInImpl
+  : () => true
+const ClerkSignInButton:
+  | ((props: { children: ReactNode }) => ReactNode)
+  | null = isClerkEnabled() ? ClerkSignInButtonImpl : null
 
 function BillingPage() {
+  const signedIn = useClerkIsSignedIn()
   const { data: sub, isLoading } = useBillingSubscription()
   const [period, setPeriod] = useState<BillingPeriod>('yearly')
   const [busy, setBusy] = useState<string | null>(null)
+
+  // Cloud visitors who aren't signed in get a sign-in prompt instead of a
+  // billing UI they can't act on. (Always signed-in in OSS, so never shown.)
+  if (!signedIn) return <BillingSignedOut />
 
   const currentPlanId = sub?.planId ?? 'free'
   const currentPlan = getPlan(currentPlanId)
@@ -165,6 +190,63 @@ function BillingPage() {
 
       {/* Full benefits matrix */}
       <PlanComparison currentPlanId={currentPlanId} />
+    </div>
+  )
+}
+
+/**
+ * Signed-out cloud view. Leads with a sign-in prompt (you can't check out or
+ * manage a subscription anonymously), then shows the full plan comparison so a
+ * visitor can still weigh the plans before creating an account.
+ */
+function BillingSignedOut() {
+  return (
+    <div className="mx-auto max-w-5xl space-y-8 py-8">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
+        <p className="text-muted-foreground text-sm">
+          Plans and host limits for the hosted cloud. Early access is free while
+          in beta.
+        </p>
+      </div>
+
+      <Card className="overflow-hidden">
+        <div className="from-primary/[0.06] bg-gradient-to-b to-transparent">
+          <CardContent className="flex flex-col items-center gap-4 px-6 py-12 text-center">
+            <div className="bg-primary/10 flex size-12 items-center justify-center rounded-full">
+              <SparklesIcon className="text-primary size-5" strokeWidth={2} />
+            </div>
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-semibold tracking-tight">
+                Sign in to get started
+              </h2>
+              <p className="text-muted-foreground mx-auto max-w-md text-sm leading-relaxed">
+                Create a free account to connect your ClickHouse hosts, choose a
+                plan, and manage your subscription. No card required to start.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              {ClerkSignInButton ? (
+                <ClerkSignInButton>
+                  <Button size="lg">Sign in / Create account</Button>
+                </ClerkSignInButton>
+              ) : null}
+              <Button variant="ghost" size="lg" asChild>
+                <a
+                  href="https://docs.chmonitor.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Read the docs <ExternalLinkIcon className="size-4" />
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </div>
+      </Card>
+
+      {/* Let signed-out visitors compare plans before committing. */}
+      <PlanComparison currentPlanId="free" />
     </div>
   )
 }

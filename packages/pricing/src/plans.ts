@@ -102,7 +102,7 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     highlights: [
       '1 ClickHouse host, 1 seat',
       'Full monitoring dashboard',
-      'AI agent — 5 messages/day',
+      'AI agent — 5 messages / day',
       '7-day conversation & insights history',
       'Community support',
     ],
@@ -131,7 +131,7 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     highlights: [
       'Everything in Free',
       '3 hosts, 3 seats',
-      'AI agent — 100 messages/day, then $5 / 2,000',
+      'AI agent — 100 messages / day, then $5 / 2,000',
       'Scheduled AI Insights',
       'Basic alerting — up to 10 rules',
       'Anomaly detection + data export',
@@ -168,7 +168,7 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     highlights: [
       'Everything in Pro',
       '10 hosts, 10 seats',
-      'AI agent — 1,000 messages/day, then $5 / 2,000',
+      'AI agent — 1,000 messages / day, then $5 / 2,000',
       'Fleet view + advanced alerting (Slack, PagerDuty)',
       'Custom dashboards + webhook integrations',
       'API / MCP access',

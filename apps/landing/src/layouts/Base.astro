@@ -457,6 +457,10 @@ const ogImage = new URL(image, Astro.site).toString()
     .price-rows{display:flex;flex-direction:column;gap:13px}
     .price-row{display:flex;gap:10px;font-size:14px;color:var(--fg-soft);list-style:none}
     .price-row svg{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
+    /* Inherited-tier row ("Everything in X") — a mini section header for the
+       benefits it builds on. */
+    .price-row-inherited{font-weight:600;color:var(--fg);padding-bottom:13px;border-bottom:1px solid var(--border)}
+    .price-row-inherited svg{stroke:var(--orange)}
     .price-cta{margin-top:auto;padding-top:24px}
     @media (max-width:640px){.pricing-grid{grid-template-columns:1fr}}
 

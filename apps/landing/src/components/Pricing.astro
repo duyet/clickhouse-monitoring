@@ -77,7 +77,7 @@ const { compact = false } = Astro.props
           <div class="price-body">
             <ul class="price-rows">
               {t.rows.map((r) => (
-                <li class="price-row"><span set:html={checkSvg} />{r}</li>
+                <li class={`price-row${r.startsWith('Everything in') ? ' price-row-inherited' : ''}`}><span set:html={checkSvg} />{r}</li>
               ))}
             </ul>
             <div class="price-cta">

@@ -98,18 +98,91 @@ export function PlanCard({
       </p>
 
       <ul className="mt-5 space-y-2.5">
-        {highlights.map((h) => (
-          <li key={h} className="flex gap-2.5 text-sm">
-            <CheckIcon
-              className="text-emerald-500 mt-0.5 size-4 shrink-0"
-              strokeWidth={2}
-            />
-            <span className="text-foreground/90">{h}</span>
-          </li>
-        ))}
+        {highlights.map((h) => {
+          // The first bullet on paid tiers ("Everything in Free/Pro/Max") names
+          // the inherited tier — highlight it as a mini section header.
+          const inherited = /^Everything in /.test(h)
+          return (
+            <li
+              key={h}
+              className={cn(
+                'flex gap-2.5 text-sm',
+                inherited && 'border-border/60 mb-1 border-b pb-2.5 font-medium'
+              )}
+            >
+              <CheckIcon
+                className={cn(
+                  'mt-0.5 size-4 shrink-0',
+                  inherited ? 'text-primary' : 'text-emerald-500'
+                )}
+                strokeWidth={2}
+              />
+              <span
+                className={inherited ? 'text-foreground' : 'text-foreground/90'}
+              >
+                {h}
+              </span>
+            </li>
+          )
+        })}
       </ul>
 
-      <div className="mt-auto pt-6">{cta}</div>
+      <div className="mt-auto pt-6">
+        <PlanBillingSummary plan={plan} period={period} />
+        {cta}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Price summary shown right above the upgrade CTA. On yearly it makes the
+ * discount explicit — the annualized monthly price struck through, the actual
+ * yearly total, and the savings. On monthly it nudges toward yearly. Only
+ * renders for paid, fixed-price tiers (Free/Enterprise have nothing to compare).
+ */
+function PlanBillingSummary({
+  plan,
+  period,
+}: {
+  plan: Plan
+  period: BillingPeriod
+}) {
+  if (
+    plan.priceMonthlyUsd == null ||
+    plan.priceMonthlyUsd <= 0 ||
+    plan.priceYearlyUsd == null
+  ) {
+    return null
+  }
+  const annualIfMonthly = plan.priceMonthlyUsd * 12
+  const yearlyTotal = plan.priceYearlyUsd
+  const savings = annualIfMonthly - yearlyTotal
+
+  if (period === 'yearly') {
+    return (
+      <div className="bg-muted/50 mb-3 rounded-lg px-3 py-2 text-xs">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-muted-foreground tabular-nums line-through">
+            ${annualIfMonthly}
+          </span>
+          <span className="text-foreground font-semibold tabular-nums">
+            ${yearlyTotal}
+          </span>
+          <span className="text-muted-foreground">/ year</span>
+        </div>
+        <div className="mt-0.5 text-emerald-600 dark:text-emerald-400">
+          Save ${savings} with yearly billing
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-muted/50 text-muted-foreground mb-3 rounded-lg px-3 py-2 text-xs">
+      <span className="tabular-nums">${annualIfMonthly}</span> / year billed
+      monthly · <span className="text-foreground">save ${savings}</span> with
+      yearly
     </div>
   )
 }

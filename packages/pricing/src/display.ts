@@ -34,14 +34,14 @@ export function planRetention(plan: Plan): string {
 /**
  * AI-usage cell. Daily included messages, plus the overage policy on metered
  * paid tiers. Enterprise (no daily cap) is BYOK.
- * - Free:  "5/day"
- * - Pro:   "100/day + $5/2,000"
- * - Max:   "1,000/day + $5/2,000"
+ * - Free:  "5 messages / day"
+ * - Pro:   "100 messages / day, then $5 / 2,000"
+ * - Max:   "1,000 messages / day, then $5 / 2,000"
  * - Ent:   "BYOK"
  */
 export function planAiUsage(plan: Plan): string {
   if (plan.aiRequestsPerDay === null) return 'BYOK'
-  const perDay = `${plan.aiRequestsPerDay.toLocaleString('en-US')}/day`
+  const perDay = `${plan.aiRequestsPerDay.toLocaleString('en-US')} messages / day`
   if (!plan.aiOverage) return perDay
-  return `${perDay} + $${plan.aiOverage.usdPer}/${plan.aiOverage.messages.toLocaleString('en-US')}`
+  return `${perDay}, then $${plan.aiOverage.usdPer} / ${plan.aiOverage.messages.toLocaleString('en-US')}`
 }
