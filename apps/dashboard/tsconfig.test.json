@@ -47,7 +47,8 @@
       "@radix-ui/react-icons/dist/types": [
         "./node_modules/@radix-ui/react-icons/dist/types"
       ],
-      "bun:test": ["./node_modules/bun-types/test.d.ts"]
+      "bun:test": ["./node_modules/bun-types/test.d.ts"],
+      "bun:sqlite": ["./node_modules/bun-types/sqlite.d.ts"]
     }
   },
   "include": ["src", "vite.config.ts"],

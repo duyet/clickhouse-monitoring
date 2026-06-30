@@ -19,9 +19,11 @@ import { Database } from 'bun:sqlite'
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
+// portable import.meta.url form (tsc doesn't type Bun's import.meta.dir).
 const MIGRATIONS_DIR = join(
-  import.meta.dir,
+  fileURLToPath(new URL('.', import.meta.url)),
   '..',
   '..',
   'db',
