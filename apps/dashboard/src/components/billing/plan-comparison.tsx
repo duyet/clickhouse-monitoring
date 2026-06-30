@@ -5,15 +5,21 @@ import {
   type Plan,
   type PlanCapability,
   type PlanId,
+  planAiUsage,
+  planAlertRules,
   planHasCapability,
+  planHosts,
+  planRetention,
+  planSeats,
 } from '@/lib/billing/plans'
 import { cn } from '@/lib/utils'
 
 /**
  * Side-by-side "what you get" matrix for the billing page. Derives entirely from
- * BILLING_PLANS (the single source of truth) so it can never drift from the
- * cards or the server-side limit checks. Two row groups: hard Limits (numeric)
- * and Features (capability flags). The current plan's column is highlighted.
+ * the shared @chm/pricing source (same data + display helpers the marketing
+ * pricing matrix uses) so the two surfaces can never disagree. Two row groups:
+ * hard Limits (numeric) and Features (capability flags). The current plan's
+ * column is highlighted.
  */
 
 type LimitRow = {
@@ -29,36 +35,12 @@ type FeatureRow = {
   value?: (plan: Plan) => string | boolean
 }
 
-function hosts(plan: Plan): string {
-  return plan.hosts === null ? 'Unlimited' : String(plan.hosts)
-}
-
-function seats(plan: Plan): string {
-  return plan.seats === null ? 'Unlimited' : String(plan.seats)
-}
-
-function retention(plan: Plan): string {
-  return plan.retentionDays === null ? 'Custom' : `${plan.retentionDays} days`
-}
-
-function aiBudget(plan: Plan): string {
-  if (plan.aiMonthlyUsdBudget === null) return 'BYOK'
-  if (plan.id === 'free') return `${plan.aiRequestsPerDay}/day trial`
-  return `$${plan.aiMonthlyUsdBudget}/mo`
-}
-
-function alertRules(plan: Plan): string {
-  if (plan.alertRules === null) return 'Unlimited'
-  if (plan.alertRules === 0) return '—'
-  return String(plan.alertRules)
-}
-
 const LIMIT_ROWS: LimitRow[] = [
-  { label: 'ClickHouse hosts', value: hosts },
-  { label: 'Team seats', value: seats },
-  { label: 'Alert rules', value: alertRules },
-  { label: 'History retention', value: retention },
-  { label: 'AI usage', value: aiBudget },
+  { label: 'ClickHouse hosts', value: planHosts },
+  { label: 'Team seats', value: planSeats },
+  { label: 'Alert rules', value: planAlertRules },
+  { label: 'Conversation & insights history', value: planRetention },
+  { label: 'AI usage', value: planAiUsage },
 ]
 
 const FEATURE_ROWS: FeatureRow[] = [

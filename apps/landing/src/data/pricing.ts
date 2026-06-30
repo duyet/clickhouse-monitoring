@@ -1,14 +1,25 @@
 /**
- * Landing-side pricing data — the single source for the Pricing section AND the
- * dedicated /pricing page (cards, comparison matrix, FAQ), so they can never
- * drift from each other.
+ * Landing-side pricing VIEW MODELS — derived from the shared @chm/pricing
+ * package (the single source of truth, also used by the dashboard), so the
+ * marketing cards / comparison matrix can never drift from the real plans.
  *
- * ⚠️ These numbers MUST stay identical to the real source of truth:
- * apps/dashboard/src/lib/billing/plans.ts (BILLING_PLANS). The landing app is a
- * standalone, dependency-light Astro app and cannot import that module without
- * dragging app deps in, so the values are mirrored here by hand. When you change
- * a price / seat / host / limit / capability in plans.ts, update this file too.
+ * Numbers, limits, capabilities and the AI-usage / retention strings all come
+ * from @chm/pricing. Only pure-presentation choices live here: the "Early
+ * access" badge, CTA links, support-tier labels, and the FAQ copy.
  */
+
+import {
+  BILLING_PLAN_LIST,
+  type Plan,
+  type PlanCapability,
+  type PlanId,
+  planAiUsage,
+  planAlertRules,
+  planHasCapability,
+  planHosts,
+  planRetention,
+  planSeats,
+} from '@chm/pricing'
 
 export interface PricingTier {
   name: string
@@ -24,75 +35,42 @@ export interface PricingTier {
 
 const DASH = 'https://dash.chmonitor.dev'
 
-export const pricingTiers: PricingTier[] = [
-  {
-    name: 'Free',
+/** Pure-presentation per-plan bits not expressed in @chm/pricing. */
+const PRESENTATION: Record<
+  PlanId,
+  { badge?: PricingTier['badge']; highlight?: boolean; cta: PricingTier['cta'] }
+> = {
+  free: {
     badge: { label: 'Early access', cls: 'ptag-beta' },
-    monthly: 0,
-    yearlyTotal: 0,
-    yearlyPerMo: 0,
-    tagline: 'Try the hosted dashboard, no setup.',
-    rows: [
-      '1 ClickHouse host, 1 seat',
-      'Full monitoring dashboard',
-      'AI agent — 25 requests/day trial',
-      '7-day history',
-      'Community support',
-    ],
     cta: { label: 'Start free', href: DASH, primary: true },
   },
-  {
-    name: 'Pro',
+  pro: {
     highlight: true,
-    monthly: 29,
-    yearlyTotal: 290,
-    yearlyPerMo: 24,
-    tagline: 'For a small team running a few clusters.',
-    rows: [
-      'Everything in Free',
-      '3 hosts, 3 seats',
-      'AI agent + scheduled AI Insights',
-      'Basic alerting — up to 10 rules',
-      'Anomaly detection + data export',
-      '30-day history',
-      'Email support',
-    ],
     cta: { label: 'Start free', href: DASH, primary: true },
   },
-  {
-    name: 'Max',
-    monthly: 99,
-    yearlyTotal: 990,
-    yearlyPerMo: 83,
-    tagline: 'For teams operating a fleet of clusters.',
-    rows: [
-      'Everything in Pro',
-      '10 hosts, 10 seats',
-      'Higher AI usage cap',
-      'Fleet view + advanced alerting',
-      'Custom dashboards + webhooks',
-      'API / MCP access · 50 alert rules',
-      '90-day history · priority support',
-    ],
-    cta: { label: 'Start free', href: DASH },
-  },
-  {
-    name: 'Enterprise',
-    monthly: null,
-    yearlyTotal: null,
-    yearlyPerMo: null,
-    tagline: 'For organisations with security & scale needs.',
-    rows: [
-      'Everything in Max',
-      'Unlimited hosts & seats',
-      'Bring-your-own LLM key (BYOK)',
-      'SSO / SAML, RBAC, audit logs',
-      'Custom retention',
-      'SLA & dedicated support',
-    ],
+  max: { cta: { label: 'Start free', href: DASH } },
+  enterprise: {
     cta: { label: 'Contact us', href: 'mailto:hello@chmonitor.dev' },
   },
-]
+}
+
+/** Per-month equivalent of the yearly price, rounded to a whole dollar. */
+function yearlyPerMo(plan: Plan): number | null {
+  if (plan.priceYearlyUsd == null) return null
+  return Math.round(plan.priceYearlyUsd / 12)
+}
+
+export const pricingTiers: PricingTier[] = BILLING_PLAN_LIST.map((plan) => ({
+  name: plan.name,
+  badge: PRESENTATION[plan.id].badge,
+  highlight: PRESENTATION[plan.id].highlight,
+  monthly: plan.priceMonthlyUsd,
+  yearlyTotal: plan.priceYearlyUsd,
+  yearlyPerMo: yearlyPerMo(plan),
+  tagline: plan.tagline,
+  rows: plan.highlights,
+  cta: PRESENTATION[plan.id].cta,
+}))
 
 /** A comparison cell: true (✓), false (—), or a literal string. */
 export type CompareCell = boolean | string
@@ -108,56 +86,76 @@ export interface CompareGroup {
   rows: CompareRow[]
 }
 
-/** Plan column order for the matrix header. */
-export const compareColumns = ['Free', 'Pro', 'Max', 'Enterprise'] as const
+/** Plan column order for the matrix header (derived from the canonical order). */
+export const compareColumns = BILLING_PLAN_LIST.map((p) => p.name) as [
+  string,
+  string,
+  string,
+  string,
+]
+
+/** Map a per-plan function across the 4 tiers into a comparison tuple. */
+function across(fn: (plan: Plan) => CompareCell): CompareRow['values'] {
+  return BILLING_PLAN_LIST.map(fn) as CompareRow['values']
+}
+
+/** ✓/— tuple for a capability flag. */
+function capRow(cap: PlanCapability): CompareRow['values'] {
+  return across((plan) => planHasCapability(plan.id, cap))
+}
+
+/** Support tier is presentation-only (not a single capability flag). */
+const SUPPORT: Record<PlanId, string> = {
+  free: 'Community',
+  pro: 'Email',
+  max: 'Priority',
+  enterprise: 'SLA + dedicated',
+}
 
 export const compareGroups: CompareGroup[] = [
   {
     group: 'Limits',
     rows: [
-      { label: 'ClickHouse hosts', values: ['1', '3', '10', 'Unlimited'] },
-      { label: 'Team seats', values: ['1', '3', '10', 'Unlimited'] },
-      { label: 'Alert rules', values: ['—', '10', '50', 'Unlimited'] },
+      { label: 'ClickHouse hosts', values: across(planHosts) },
+      { label: 'Team seats', values: across(planSeats) },
+      { label: 'Alert rules', values: across(planAlertRules) },
       {
-        label: 'History retention',
-        values: ['7 days', '30 days', '90 days', 'Custom'],
+        label: 'Conversation & insights history',
+        values: across(planRetention),
       },
-      {
-        label: 'AI usage',
-        values: ['25/day trial', '$5/mo', '$20/mo', 'BYOK'],
-      },
+      { label: 'AI usage', values: across(planAiUsage) },
     ],
   },
   {
     group: 'Features',
     rows: [
-      {
-        label: 'Full monitoring dashboard',
-        values: [true, true, true, true],
-      },
-      { label: 'AI agent', values: [true, true, true, true] },
+      { label: 'Full monitoring dashboard', values: capRow('core_monitoring') },
+      { label: 'AI agent', values: capRow('ai_agent') },
       {
         label: 'Scheduled AI Insights',
-        values: [false, true, true, true],
+        values: capRow('ai_insights_scheduled'),
       },
       {
         label: 'Alerting',
-        values: [false, 'Basic', 'Advanced', 'Advanced'],
+        values: across((plan) =>
+          planHasCapability(plan.id, 'alerting_advanced')
+            ? 'Advanced'
+            : planHasCapability(plan.id, 'alerting_basic')
+              ? 'Basic'
+              : false
+        ),
       },
-      { label: 'Anomaly detection', values: [false, true, true, true] },
-      { label: 'Data export & reports', values: [false, true, true, true] },
-      { label: 'Custom dashboards', values: [false, false, true, true] },
-      { label: 'Webhook integrations', values: [false, false, true, true] },
-      { label: 'Fleet view', values: [false, false, true, true] },
-      { label: 'API / MCP access', values: [false, false, true, true] },
+      { label: 'Anomaly detection', values: capRow('anomaly_detection') },
+      { label: 'Data export & reports', values: capRow('data_export') },
+      { label: 'Custom dashboards', values: capRow('custom_dashboards') },
+      { label: 'Webhook integrations', values: capRow('webhook_integrations') },
+      { label: 'Fleet view', values: capRow('fleet_view') },
+      { label: 'API / MCP access', values: capRow('api_mcp_access') },
       {
         label: 'SSO / SAML, RBAC, audit logs',
-        values: [false, false, false, true],
+        values: capRow('sso_rbac_audit'),
       },
-      {
-        label: 'Support',
-        values: ['Community', 'Email', 'Priority', 'SLA + dedicated'],
-      },
+      { label: 'Support', values: across((plan) => SUPPORT[plan.id]) },
     ],
   },
 ]
@@ -178,7 +176,7 @@ export const pricingFaqs: PricingFaq[] = [
   },
   {
     q: 'How does AI usage metering work?',
-    a: 'The Free plan includes a daily trial allowance of AI agent requests. Paid plans get a monthly LLM spend budget instead (Pro $5/mo, Max $20/mo). Enterprise brings its own LLM key (BYOK) for unlimited usage.',
+    a: 'Every plan includes a daily allowance of AI agent messages: Free 5/day, Pro 100/day, Max 1,000/day. On Pro and Max, usage past the daily allowance is billed as overage at $5 per 2,000 messages. Enterprise brings its own LLM key (BYOK) for unlimited usage.',
   },
   {
     q: 'What happens when I hit a plan limit?',

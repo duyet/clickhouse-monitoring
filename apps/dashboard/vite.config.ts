@@ -574,6 +574,7 @@ export default defineConfig({
         '../../packages/clickhouse-client/src/index.ts'
       ),
       '@chm/types': r('../../packages/types/src/index.ts'),
+      '@chm/pricing': r('../../packages/pricing/src/index.ts'),
       // Native platform bindings — replaces @chm/platform's @opennextjs/cloudflare
       // adapter with a `cloudflare:workers` env reader (see src/lib/platform-native.ts).
       '@chm/platform': r('./src/lib/platform-native.ts'),
@@ -612,6 +613,7 @@ export default defineConfig({
       '@chm/logger',
       '@chm/clickhouse-client',
       '@chm/types',
+      '@chm/pricing',
       '@chm/mcp-server',
       '@clickhouse/client-web',
       // client-web's runtime dep. Must be bundled alongside it: the node-server

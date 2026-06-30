@@ -56,9 +56,15 @@ const ogImage = new URL(image, Astro.site).toString()
       }
     ]
   })} />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Self-hosted variable fonts (latin subset, ~60KB total). No render-blocking
+       Google Fonts request and no cross-origin connection — same-origin preload
+       paints text fast with swap fallback. -->
+  <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <style>
+    @font-face{font-family:'Geist';font-style:normal;font-weight:400 700;font-display:swap;src:url('/fonts/geist-latin.woff2') format('woff2')}
+    @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400 600;font-display:swap;src:url('/fonts/jetbrains-mono-latin.woff2') format('woff2')}
+  </style>
   <script is:inline>
     // Resolve theme before paint (no flash): saved choice wins, else OS pref.
     (function () {

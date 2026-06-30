@@ -22,8 +22,11 @@ const { compact = false } = Astro.props
     <!-- Self-host: always free -->
     <div class="selfhost-banner reveal">
       <div class="sh-text">
-        <span class="ptag ptag-free">Free forever</span>
-        <strong>Self-host</strong> — run it on your own infrastructure (Docker, Cloudflare Workers, Kubernetes). All features, unlimited clusters, your data stays with you.
+        <div class="sh-title">
+          <strong>Self-host</strong>
+          <span class="ptag ptag-free">Free forever</span>
+        </div>
+        <p class="sh-desc">Run it on your own infrastructure — Docker, Cloudflare Workers, or Kubernetes. All features, unlimited clusters, and your data stays with you.</p>
       </div>
       <a class="btn btn-ghost" href="https://docs.chmonitor.dev" target="_blank" rel="noopener">
         Read the quickstart <span set:html={arrowSvg} />
@@ -57,7 +60,7 @@ const { compact = false } = Astro.props
               ) : (
                 <>
                   <span class="amt amt-monthly">${t.monthly} <small>/ mo</small></span>
-                  <span class="amt amt-yearly">${t.yearlyPerMo} <small>/ mo</small></span>
+                  <span class="amt amt-yearly"><span class="amt-was">${t.monthly}</span> ${t.yearlyPerMo} <small>/ mo</small></span>
                 </>
               )}
             </div>
@@ -109,9 +112,10 @@ const { compact = false } = Astro.props
 
   <style>
     .selfhost-banner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:44px;padding:18px 22px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow-card)}
-    .selfhost-banner .sh-text{font-size:14px;color:var(--muted-fg);text-wrap:pretty}
-    .selfhost-banner .sh-text .ptag{margin-right:8px}
-    .selfhost-banner .sh-text strong{color:var(--fg)}
+    .selfhost-banner .sh-text{display:flex;flex-direction:column;gap:8px}
+    .selfhost-banner .sh-title{display:flex;align-items:center;gap:10px}
+    .selfhost-banner .sh-title strong{font-size:16px;color:var(--fg)}
+    .selfhost-banner .sh-desc{margin:0;font-size:14px;color:var(--muted-fg);text-wrap:pretty;max-width:62ch}
     .cloud-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:40px}
     .ea-badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--orange)}
     .ea-badge::before{content:"";width:7px;height:7px;border-radius:999px;background:var(--orange)}
@@ -128,6 +132,9 @@ const { compact = false } = Astro.props
     .cloud-grid .amt{display:none}
     .cloud-grid[data-period="monthly"] .amt-monthly{display:inline}
     .cloud-grid[data-period="yearly"] .amt-yearly{display:inline}
+    /* Yearly: show the monthly price struck through so the saving is obvious. */
+    .cloud-grid .amt-was{font-size:.5em;font-weight:600;color:var(--muted-fg);text-decoration:line-through;margin-right:4px}
+    .cloud-grid .amt-was::before{content:"$"}
     .pbilled{font-size:12px;color:var(--muted-fg);margin-top:8px;min-height:16px}
     .cloud-grid[data-period="monthly"] .bill-yearly{display:none}
     .cloud-grid[data-period="yearly"] .bill-monthly{display:none}

@@ -75,6 +75,13 @@
         "typescript": "^6.0.0",
       },
     },
+    "packages/pricing": {
+      "name": "@chm/pricing",
+      "version": "0.1.0",
+      "devDependencies": {
+        "typescript": "^6.0.0",
+      },
+    },
     "packages/sql-builder": {
       "name": "@chm/sql-builder",
       "version": "0.1.0",
@@ -282,6 +289,8 @@
     "@chm/mcp-server": ["@chm/mcp-server@workspace:packages/mcp-server"],
 
     "@chm/platform": ["@chm/platform@workspace:packages/platform"],
+
+    "@chm/pricing": ["@chm/pricing@workspace:packages/pricing"],
 
     "@chm/sql-builder": ["@chm/sql-builder@workspace:packages/sql-builder"],
 
