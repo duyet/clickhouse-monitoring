@@ -73,6 +73,26 @@ export function AddHostDialog({ open, onOpenChange }: AddHostDialogProps) {
             for grants and how to allowlist the Cloud connection.
           </DialogDescription>
         </DialogHeader>
+
+        {!isSignedIn && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-800/30 dark:bg-amber-950/20 dark:text-amber-300">
+            <p className="font-medium">Sign in for more</p>
+            <p className="mt-0.5 text-amber-700 dark:text-amber-400">
+              Server storage is disabled on this deployment.{' '}
+              <a
+                href={docsSiteUrl('features/user-connections')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-200"
+              >
+                Enable user connections
+              </a>
+              . Sign in to select your plan or join an organization to get
+              access to your team&apos;s clusters.
+            </p>
+          </div>
+        )}
+
         <ConnectionForm
           onSave={handleSave}
           onCancel={() => onOpenChange(false)}

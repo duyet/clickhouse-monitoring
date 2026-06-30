@@ -231,12 +231,15 @@ export function HostSwitcher() {
                           <span className="truncate">
                             {activeHost.name || getHost(activeHost.host)}
                           </span>
-                          {activeHost.source === 'demo' && <DemoBadge />}
                         </span>
                         {isServerHost(activeHost.source) ? (
                           <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
                             <HostVersionWithStatus hostId={activeHost.id} />
-                            {activeHost.readOnly && <span>· read-only</span>}
+                            {activeHost.readOnly && (
+                              <span className="hidden min-[500px]:inline">
+                                · read-only
+                              </span>
+                            )}
                           </span>
                         ) : (
                           <span className="truncate text-xs text-muted-foreground">
@@ -277,9 +280,6 @@ export function HostSwitcher() {
                       isActive={host.id === currentHostId}
                       skipStatus={!isServerHost(host.source)}
                     />
-                    {host.source === 'demo' && (
-                      <DemoBadge className="ml-auto" />
-                    )}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -322,19 +322,5 @@ export function HostSwitcher() {
       </SidebarMenu>
       <AddHostDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />
     </>
-  )
-}
-
-/** Small "Demo" pill marking the public read-only cloud demo host. */
-function DemoBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        'shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground',
-        className
-      )}
-    >
-      Demo
-    </span>
   )
 }

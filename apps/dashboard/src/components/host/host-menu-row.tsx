@@ -14,6 +14,18 @@ interface HostMenuRowProps {
   skipStatus?: boolean
 }
 
+/**
+ * Parse a full version string into a short v{major}.{minor} label.
+ * e.g. "24.3.1.1" → "v24.3", "24.12.1.1234" → "v24.12"
+ */
+function formatShortVersion(version: string): string {
+  const parts = version.split('.')
+  if (parts.length >= 2) {
+    return `v${parts[0]}.${parts[1]}`
+  }
+  return version
+}
+
 export const HostMenuRow = function HostMenuRow({
   hostId,
   hostName,
@@ -62,7 +74,15 @@ export const HostMenuRow = function HostMenuRow({
           >
             <TagIcon className="size-3 shrink-0 opacity-70" />
             {/* Version is short and the priority — never shrink it. */}
-            <span className="shrink-0 tabular-nums">{data.version}</span>
+            <span className="shrink-0 tabular-nums">
+              {formatShortVersion(data.version)}
+            </span>
+
+            {/* Show full version in dropdown (more space available) */}
+            <span className="hidden @[240px]:inline text-muted-foreground/60">
+              {data.version}
+            </span>
+
             <span className="shrink-0 opacity-40">·</span>
             <ClockIcon className="size-3 shrink-0 opacity-70" />
             {/* Uptime yields first: it needs min-w-0 to ellipsize inside a flex row. */}

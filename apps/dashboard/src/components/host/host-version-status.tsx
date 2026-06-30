@@ -1,7 +1,8 @@
 /**
  * Host version with status indicator for expanded sidebar state
  *
- * Shows ClickHouse version with online/offline status indicator.
+ * Shows ClickHouse version (vXX.yy format) with online/offline status indicator
+ * and progressive disclosure: version → uptime based on available space.
  */
 
 import { ClockIcon, TagIcon } from 'lucide-react'
@@ -11,9 +12,25 @@ import { useHostStatus } from '@/lib/swr/use-host-status'
 
 interface HostVersionWithStatusProps {
   hostId: number
+  variant?: 'header' | 'dropdown'
 }
 
-export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
+/**
+ * Parse a full version string into a short v{major}.{minor} label.
+ * e.g. "24.3.1.1" → "v24.3", "24.12.1.1234" → "v24.12"
+ */
+function formatShortVersion(version: string): string {
+  const parts = version.split('.')
+  if (parts.length >= 2) {
+    return `v${parts[0]}.${parts[1]}`
+  }
+  return version
+}
+
+export function HostVersionWithStatus({
+  hostId,
+  variant = 'header',
+}: HostVersionWithStatusProps) {
   const { data, isOnline, isLoading } = useHostStatus(hostId, {
     refreshInterval: 60000,
     revalidateOnFocus: false,
@@ -29,6 +46,8 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
   }
 
   if (isOnline && data) {
+    const shortVersion = formatShortVersion(data.version)
+
     return (
       <span
         className="flex items-center gap-1.5 min-w-0 text-xs text-muted-foreground"
@@ -37,13 +56,28 @@ export function HostVersionWithStatus({ hostId }: HostVersionWithStatusProps) {
         <StatusIndicatorOnline />
         <TagIcon className="size-3 shrink-0 opacity-70" />
         {/* Version is short and the priority — never shrink it. */}
-        <span className="shrink-0 tabular-nums">{data.version}</span>
-        <span className="shrink-0 opacity-40">·</span>
-        <ClockIcon className="size-3 shrink-0 opacity-70" />
-        {/* Uptime yields first: it needs min-w-0 to ellipsize inside a flex row. */}
-        <span className="min-w-0 truncate tabular-nums">
-          {formatCompactUptime(data.uptime)}
-        </span>
+        <span className="shrink-0 tabular-nums">{shortVersion}</span>
+
+        {variant === 'dropdown' ? (
+          <>
+            <span className="shrink-0 opacity-40">·</span>
+            {data.version}
+            <span className="shrink-0 opacity-40">·</span>
+            <ClockIcon className="size-3 shrink-0 opacity-70" />
+            <span className="tabular-nums">
+              {formatCompactUptime(data.uptime)}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="shrink-0 opacity-40">·</span>
+            <ClockIcon className="size-3 shrink-0 opacity-70" />
+            {/* Uptime yields first: it needs min-w-0 to ellipsize inside a flex row. */}
+            <span className="min-w-0 truncate tabular-nums">
+              {formatCompactUptime(data.uptime)}
+            </span>
+          </>
+        )}
       </span>
     )
   }
