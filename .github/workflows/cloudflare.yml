@@ -185,6 +185,21 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy --minify
 
+      - name: Apply D1 migrations (production)
+        # Bring the chm-cloud D1 schema up to date BEFORE the new worker goes
+        # live, so a cold/behind database can't 500 the billing webhook or block
+        # per-user connections (the incident behind migrations 0001–0004).
+        # Idempotent: wrangler records applied migrations in the d1_migrations
+        # ledger, so re-running every deploy is a no-op once applied. The
+        # migrations here are additive (CREATE TABLE), safe to apply pre-deploy.
+        # Production only — never from a PR, which could push an unmerged
+        # migration to the shared preview/prod D1.
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler d1 migrations apply chm-cloud --remote
+
       - name: Deploy production
         if: github.event_name != 'pull_request'
         env:
