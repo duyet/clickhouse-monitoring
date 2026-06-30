@@ -338,6 +338,11 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   // failures, peak memory, avg duration, bytes written) so the client can flip
   // modes without a refetch. Conditional aggregation keeps it a single daily
   // scan. Default window is one year (24 * 365 hours) → ~53 calendar columns.
+  //
+  // SETTINGS max_execution_time=25: keeps execution under the Cloudflare Worker
+  // response timeout (~30s). Without it, a slow full-year scan on a busy server
+  // drops the connection mid-stream, returning an empty body (error 1016 —
+  // RECEIVED_EMPTY_DATA) instead of a clean ClickHouse timeout error (159).
   'query-count-heatmap': ({ lastHours = 24 * 365 }) => {
     const timeFilter = buildTimeFilter(lastHours)
     return {
@@ -356,6 +361,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
       ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY date
     ORDER BY date ASC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
