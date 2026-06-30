@@ -396,7 +396,11 @@ export class AgentStateStore implements ConversationStore {
    * @param limit - Maximum number of conversations to return (default: 50)
    * @returns Array of conversation metadata (no messages)
    */
-  async list(userId: string, limit: number = 50): Promise<ConversationMeta[]> {
+  async list(
+    userId: string,
+    limit: number = 50,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]> {
     try {
       const matches: ConversationMeta[] = []
       let cursor: string | undefined
@@ -414,6 +418,10 @@ export class AgentStateStore implements ConversationStore {
           const metadata = (conv.metadata ??
             {}) as Partial<StoredConversationMetadata>
           if (metadata.userId !== userId) {
+            continue
+          }
+          // Skip conversations outside the retention window
+          if (sinceMs != null && conv.updated_at < sinceMs) {
             continue
           }
           matches.push(this.toConversationMeta(conv, userId))

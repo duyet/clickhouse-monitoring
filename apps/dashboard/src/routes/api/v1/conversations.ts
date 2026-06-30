@@ -24,6 +24,9 @@ import {
   createSuccessResponse,
 } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
+import { resolveBillingOwner } from '@/lib/billing/billing-owner'
+import { retentionCutoffMs } from '@/lib/billing/entitlements'
+import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { resolveUserId } from '@/lib/conversation-store/auth'
 import { resolveStore } from '@/lib/conversation-store/resolve-store'
 import { ConversationStoreError } from '@/lib/conversation-store/types'
@@ -99,9 +102,21 @@ async function handleGet(request: Request): Promise<Response> {
         ? Math.min(normalizedLimit, 100)
         : DEFAULT_LIMIT
 
+    // Resolve retention cutoff from billing plan (cloud/Clerk only).
+    // Any failure (OSS, no Clerk, unauthenticated) is silent — no cutoff applied.
+    let sinceMs: number | undefined
+    try {
+      const owner = await resolveBillingOwner()
+      const plan = await getPlanForOwner(owner.id)
+      const cutoff = retentionCutoffMs(plan)
+      if (cutoff != null) sinceMs = cutoff
+    } catch {
+      // Non-cloud / unauthenticated: no retention filter
+    }
+
     // Resolve store and fetch conversations
     const store = await resolveStore()
-    const conversations = await store.list(userId, limit)
+    const conversations = await store.list(userId, limit, sinceMs)
 
     // Transform response to exclude internal fields
     const responseMeta: ConversationMeta[] = conversations.map((conv) => ({

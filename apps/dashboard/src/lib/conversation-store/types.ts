@@ -219,7 +219,20 @@ export interface StoredConversation extends ConversationMeta {
  * All backends (D1, PostgreSQL, memory, browser) implement this.
  */
 export interface ConversationStore {
-  list(userId: string, limit?: number): Promise<ConversationMeta[]>
+  /**
+   * List conversations for a user.
+   *
+   * @param userId - User ID to scope queries
+   * @param limit - Maximum number of conversations to return
+   * @param sinceMs - Optional Unix-ms lower bound on updated_at (retention cutoff).
+   *   When provided, only conversations updated at or after this timestamp are returned.
+   *   Undefined = no cutoff (returns all).
+   */
+  list(
+    userId: string,
+    limit?: number,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]>
   get(
     userId: string,
     conversationId: string

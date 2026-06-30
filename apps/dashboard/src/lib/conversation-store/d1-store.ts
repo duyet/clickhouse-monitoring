@@ -73,19 +73,34 @@ export class D1Store implements ConversationStore {
    * @param limit - Maximum number of conversations to return (default: 50)
    * @returns Array of conversation metadata
    */
-  async list(userId: string, limit: number = 50): Promise<ConversationMeta[]> {
+  async list(
+    userId: string,
+    limit: number = 50,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]> {
     try {
       const db = this.getDb()
 
-      const stmt = db
-        .prepare(
-          `SELECT id, user_id, title, message_count, created_at, updated_at
+      const stmt =
+        sinceMs != null
+          ? db
+              .prepare(
+                `SELECT id, user_id, title, message_count, created_at, updated_at
+           FROM conversations
+           WHERE user_id = ?1 AND updated_at >= ?2
+           ORDER BY updated_at DESC
+           LIMIT ?3`
+              )
+              .bind(userId, sinceMs, limit)
+          : db
+              .prepare(
+                `SELECT id, user_id, title, message_count, created_at, updated_at
            FROM conversations
            WHERE user_id = ?1
            ORDER BY updated_at DESC
            LIMIT ?2`
-        )
-        .bind(userId, limit)
+              )
+              .bind(userId, limit)
 
       const result = await stmt.all<D1ConversationRow>()
 

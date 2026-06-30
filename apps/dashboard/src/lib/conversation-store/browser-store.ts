@@ -41,11 +41,15 @@ export class BrowserStore implements ConversationStore {
    * @param limit - Maximum number of conversations to return
    * @returns Array of conversation metadata, sorted by updatedAt DESC
    */
-  async list(_userId: string, limit?: number): Promise<ConversationMeta[]> {
+  async list(
+    _userId: string,
+    limit?: number,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]> {
     try {
       const conversations = loadConversations()
 
-      const meta: ConversationMeta[] = conversations.map((conv) => ({
+      let meta: ConversationMeta[] = conversations.map((conv) => ({
         id: conv.id,
         userId: DEFAULT_USER_ID,
         title: conv.title,
@@ -53,6 +57,11 @@ export class BrowserStore implements ConversationStore {
         updatedAt: conv.updatedAt,
         messageCount: conv.messages.length,
       }))
+
+      // Apply retention cutoff when provided
+      if (sinceMs != null) {
+        meta = meta.filter((m) => m.updatedAt >= sinceMs)
+      }
 
       // Already sorted by updatedAt DESC from upsertConversation
       const result = limit ? meta.slice(0, limit) : meta

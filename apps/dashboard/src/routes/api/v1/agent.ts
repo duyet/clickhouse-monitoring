@@ -63,6 +63,10 @@ import {
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { getAiUsageToday, incrementAiUsage } from '@/lib/billing/ai-usage-store'
+import { resolveBillingOwner } from '@/lib/billing/billing-owner'
+import { checkAiDailyLimit, limitMessage } from '@/lib/billing/entitlements'
+import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
@@ -523,6 +527,34 @@ async function handlePost(request: Request): Promise<Response> {
     console.log(
       `[Agent API] Custom MCP servers: ${connected} connected, ${errored} failed`
     )
+  }
+
+  // AI daily limit enforcement (cloud only).
+  // resolveBillingOwner() throws when Clerk is not configured (self-hosted),
+  // so the entire block is wrapped in try/catch — OSS deployments skip silently.
+  try {
+    const owner = await resolveBillingOwner()
+    const plan = await getPlanForOwner(owner.id)
+    if (plan.aiRequestsPerDay != null) {
+      const used = await getAiUsageToday(owner.id)
+      const check = checkAiDailyLimit(plan, used)
+      if (!check.allowed) {
+        return new Response(
+          JSON.stringify({
+            error: limitMessage(check),
+            details: {
+              planId: check.planId,
+              limit: check.limit ?? plan.aiRequestsPerDay,
+              reason: check.reason,
+            },
+          }),
+          { status: 402, headers: { 'content-type': 'application/json' } }
+        )
+      }
+      await incrementAiUsage(owner.id)
+    }
+  } catch {
+    // Not cloud / no Clerk owner → skip enforcement; self-hosted stays whole.
   }
 
   const requestOrigin = request.headers.get('origin') ?? undefined

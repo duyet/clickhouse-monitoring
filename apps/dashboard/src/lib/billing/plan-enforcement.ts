@@ -2,16 +2,18 @@
  * Plan-benefit enforcement registry — the single source of truth for *whether
  * each advertised plan benefit is actually enforced in code yet*.
  *
- * Why this exists: `@chm/pricing` advertises limits + capabilities, but during
- * **early access everything is free** ("Early access — free while in beta"), so
- * per-tier feature gating is intentionally NOT switched on — turning it on now
- * would remove capabilities current users already have. The risk is that the
- * gap between "advertised" and "enforced" drifts silently and the marketing
- * promise quietly becomes untrue.
+ * Why this exists: `@chm/pricing` advertises limits + capabilities. This registry
+ * is the single source of truth for *whether each advertised benefit is actually
+ * gated in code*, so the gap between "advertised" and "enforced" can never drift
+ * silently (the tests in `plan-enforcement.test.ts` fail if a benefit is added
+ * without a classification, or if an `enforced` claim names no gate).
  *
- * This registry makes the gap EXPLICIT and the tests (`plan-enforcement.test.ts`)
- * make it impossible to add a benefit without classifying it. Flipping a benefit
- * from `deferred` to `enforced` at GA is a one-line change here plus its wiring.
+ * Per-tier enforcement is now LIVE for the cost/abuse-bounded benefits: host cap,
+ * AI daily-message cap, org seat cap, retention pruning, and the MCP capability.
+ * All gates are **fail-open for self-hosted/OSS** — owner/plan resolution throws
+ * without Clerk, and every call site swallows that to leave OSS ungated (the
+ * "self-hosted stays whole" invariant). Benefits still marked `deferred` either
+ * lack a feature to gate (alerting) or are intentionally free during beta.
  *
  * See plans/02-plan-benefits-parity.md.
  */
@@ -51,7 +53,10 @@ export const CAPABILITY_ENFORCEMENT: Record<PlanCapability, Enforcement> = {
   fleet_view: { status: 'deferred', reason: BETA },
   custom_dashboards: { status: 'deferred', reason: BETA },
   webhook_integrations: { status: 'deferred', reason: BETA },
-  api_mcp_access: { status: 'deferred', reason: BETA },
+  api_mcp_access: {
+    status: 'enforced',
+    gate: 'lib/billing/plan-capability.ts requirePlanCapability — routes/api/mcp.ts POST+GET',
+  },
   sso_rbac_audit: { status: 'deferred', reason: BETA },
 }
 
@@ -72,22 +77,19 @@ export const LIMIT_ENFORCEMENT: Record<LimitKey, Enforcement> = {
     gate: 'routes/api/v1/user-connections.ts handlePost → checkHostLimit (pooled by countOwnerHosts)',
   },
   seats: {
-    status: 'deferred',
-    reason:
-      'Needs a Clerk organizationMembership.created webhook to count members vs plan.seats.',
+    status: 'enforced',
+    gate: 'routes/api/v1/webhooks/clerk.ts organizationMembership.created → checkSeatLimit (rolls back over-limit member)',
   },
   alertRules: {
     status: 'deferred',
     reason: 'No alert-rule create path exists yet.',
   },
   retentionDays: {
-    status: 'deferred',
-    reason:
-      'Conversations/insights are not pruned or read-filtered by plan retention yet.',
+    status: 'enforced',
+    gate: 'conversation list read-filter (conversation-store list sinceMs) + routes/api/cron/retention-prune.ts → retentionCutoffMs',
   },
   aiRequestsPerDay: {
-    status: 'deferred',
-    reason:
-      'Agent route needs a per-owner daily counter (D1) before checkAiDailyLimit can gate.',
+    status: 'enforced',
+    gate: 'routes/api/v1/agent.ts handlePost → checkAiDailyLimit (counter: lib/billing/ai-usage-store.ts / ai_usage_daily)',
   },
 }

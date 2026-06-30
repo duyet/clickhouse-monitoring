@@ -99,7 +99,16 @@ exist yet — that is its own feature (see roadmap). So **no new gating is switc
 on in this plan.** The registry marks `aiRequestsPerDay`, `seats`, `alertRules`,
 `retentionDays` as `deferred` with the concrete next step recorded below.
 
-## Staged enforcement roadmap (each: goal + real test, NOT built here)
+## Staged enforcement roadmap — IMPLEMENTED (override of the beta-deferral)
+
+> **Status update.** The owner explicitly chose to turn enforcement ON now
+> (overriding the "free during beta, defer gating" guard above). The roadmap
+> items below are now BUILT and wired, and `LIMIT_ENFORCEMENT` /
+> `CAPABILITY_ENFORCEMENT` flipped `deferred → enforced` accordingly. Every gate
+> is **fail-open for self-hosted/OSS**: owner/plan resolution throws without
+> Clerk and each call site swallows that, so OSS is never gated ("self-hosted
+> stays whole"). `alertRules` stays `deferred` only because no alerting feature
+> exists to gate. Original goals/tests kept below for traceability.
 
 Recorded so they're tracked, not lost. Implement per-item when GA pricing turns on.
 
