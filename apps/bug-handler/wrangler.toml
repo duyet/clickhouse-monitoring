@@ -1,0 +1,51 @@
+# wrangler.toml — chmonitor bug-handler email worker
+#
+# Receives inbound email from Cloudflare Email Routing and converts it into a
+# GitHub issue. The target address (e.g. bug@chmonitor.dev) and all behavioural
+# knobs are injected via environment variables — nothing is hardcoded here.
+#
+# Email Routing setup (done in the Cloudflare dashboard / API, NOT in wrangler):
+#   1. Enable Email Routing on your zone (chmonitor.dev).
+#   2. Add a custom address rule:  bug@chmonitor.dev  →  Send to Worker  →  chmonitor-bug-handler
+#   3. Set BUG_HANDLER_TARGET_ADDRESS=bug@chmonitor.dev on the worker (via CLI
+#      `--var` or the dashboard) so the worker validates the recipient.
+#
+# Secrets (set with `wrangler secret put`, NOT committed here):
+#   GITHUB_TOKEN — a PAT or GitHub App token with issues:write on GITHUB_REPOSITORY
+#
+# Non-secret runtime config (override the defaults below at deploy time):
+#   wrangler deploy --minify --var GITHUB_REPOSITORY:owner/repo --var BUG_ISSUE_LABELS:bug,sentry
+#
+# Email Workers do NOT need an HTTP route — the worker is invoked by the Email
+# Routing rule above. Do NOT add a [[routes]] block.
+
+name = "chmonitor-bug-handler"
+main = "src/index.ts"
+compatibility_date = "2026-05-28"
+
+minify = true
+
+[observability]
+enabled = true
+
+# Generic, non-secret placeholder vars. Override at deploy time via --var or the
+# Cloudflare dashboard. BUG_HANDLER_TARGET_ADDRESS and GITHUB_TOKEN are injected
+# separately (via --var and `wrangler secret put` respectively) and must NOT
+# appear here.
+[vars]
+GITHUB_REPOSITORY = "chmonitor/chmonitor"
+BUG_ISSUE_LABELS = "bug,sentry,automated"
+BUG_ISSUE_ASSIGNEES = ""
+BUG_ISSUE_TITLE_PREFIX = "[Sentry] "
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview environment
+# ─────────────────────────────────────────────────────────────────────────────
+[env.preview]
+name = "preview-chmonitor-bug-handler"
+
+[env.preview.vars]
+GITHUB_REPOSITORY = "chmonitor/chmonitor"
+BUG_ISSUE_LABELS = "bug,sentry,automated"
+BUG_ISSUE_ASSIGNEES = ""
+BUG_ISSUE_TITLE_PREFIX = "[Sentry] "

@@ -476,3 +476,93 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Bug-handler (apps/bug-handler): standalone Cloudflare EMAIL Worker. Receives
+  # inbound mail (Sentry alerts → bug@chmonitor.dev) via Cloudflare Email Routing
+  # and opens GitHub issues. Own bun.lock (not in the root workspace), like
+  # telemetry. Production deploys chmonitor-bug-handler; PRs deploy
+  # preview-chmonitor-bug-handler. The inbound-email ROUTING rule (address →
+  # worker) is configured once in the Cloudflare dashboard, not here.
+  # ──────────────────────────────────────────────────────────────────────────
+  bug-handler:
+    name: bug-handler
+    # Skip on forked PRs — deploy secrets must not leak to PR-controlled code.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/bug-handler
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bun test src/ --isolate
+
+      - name: Type-check
+        run: bun run type-check
+
+      # Inject the runtime config NOT committed to wrangler.toml:
+      #   --var GITHUB_REPOSITORY           repo issues are filed in (this repo)
+      #   --var BUG_HANDLER_TARGET_ADDRESS  inbound address (repo VARIABLE, e.g.
+      #                                     bug@chmonitor.dev — kept out of repo)
+      #   --var BUG_ISSUE_ASSIGNEES         bot/user to auto-assign (repo VARIABLE,
+      #                                     e.g. duyetbot)
+      # Labels + title prefix keep their committed wrangler.toml defaults.
+      - name: Deploy preview
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TARGET_ADDRESS: ${{ vars.BUG_HANDLER_TARGET_ADDRESS }}
+          ASSIGNEES: ${{ vars.BUG_HANDLER_ASSIGNEES }}
+        run: |
+          bunx wrangler deploy --minify --env preview \
+            --var GITHUB_REPOSITORY:"${{ github.repository }}" \
+            --var BUG_HANDLER_TARGET_ADDRESS:"$TARGET_ADDRESS" \
+            --var BUG_ISSUE_ASSIGNEES:"$ASSIGNEES"
+
+      - name: Deploy production
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TARGET_ADDRESS: ${{ vars.BUG_HANDLER_TARGET_ADDRESS }}
+          ASSIGNEES: ${{ vars.BUG_HANDLER_ASSIGNEES }}
+        run: |
+          bunx wrangler deploy --minify \
+            --var GITHUB_REPOSITORY:"${{ github.repository }}" \
+            --var BUG_HANDLER_TARGET_ADDRESS:"$TARGET_ADDRESS" \
+            --var BUG_ISSUE_ASSIGNEES:"$ASSIGNEES"
+
+      # Runtime secret: the GitHub token the worker uses to open issues. Set
+      # AFTER deploy (the worker must exist first). Skipped — with a clear log —
+      # when BUG_HANDLER_GITHUB_TOKEN is not configured, so the deploy still
+      # succeeds; the worker just logs "GITHUB_TOKEN not set" until it is added.
+      - name: Set GITHUB_TOKEN secret
+        if: github.actor != 'dependabot[bot]'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BUG_HANDLER_GITHUB_TOKEN: ${{ secrets.BUG_HANDLER_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BUG_HANDLER_GITHUB_TOKEN:-}" ]; then
+            echo "BUG_HANDLER_GITHUB_TOKEN secret is empty - skipping. The worker"
+            echo "will log 'GITHUB_TOKEN not set' until you add it."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            printf '%s' "$BUG_HANDLER_GITHUB_TOKEN" | bunx wrangler secret put GITHUB_TOKEN --env preview
+          else
+            printf '%s' "$BUG_HANDLER_GITHUB_TOKEN" | bunx wrangler secret put GITHUB_TOKEN
+          fi

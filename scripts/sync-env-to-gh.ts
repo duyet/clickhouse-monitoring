@@ -84,6 +84,10 @@ const SECRET_KEYS = [
   // in cloudflare.yml, NOT pushed onto the worker). The Sentry DSN itself is
   // public and lives in .env.production (CHM_SENTRY_DSN), not here.
   'SENTRY_AUTH_TOKEN',
+  // Bug-handler email worker (apps/bug-handler): the GitHub token it uses to open
+  // issues from inbound Sentry alert emails. Runtime secret on that worker; CI
+  // (cloudflare.yml bug-handler job) pushes it via `wrangler secret put`.
+  'BUG_HANDLER_GITHUB_TOKEN',
   // Misc runtime
   'NEXT_QUERY_CACHE_TTL',
 ] as const
