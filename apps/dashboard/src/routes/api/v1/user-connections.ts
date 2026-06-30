@@ -13,6 +13,7 @@ import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { resolveBillingOwner } from '@/lib/billing/billing-owner'
 import { checkHostLimit, limitMessage } from '@/lib/billing/entitlements'
+import { countOwnerHosts } from '@/lib/billing/org-host-count'
 import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
 import { queryConnection } from '@/lib/connection-query/connection-client'
@@ -123,14 +124,16 @@ async function handlePost(request: Request): Promise<Response> {
     // network connection to an attacker-supplied host for a request we'll reject.
     //
     // Enforce against the BILLING OWNER's plan (org or user): if the user has an
-    // active Clerk org in their session the org's plan determines the limit.
-    // TODO: org-wide pooling (count connections across all org members vs the
-    // per-org host limit) is a follow-up. For now, count this user's connections.
+    // active Clerk org in their session the org's plan determines the limit, and
+    // the host count is POOLED across all current org members (countOwnerHosts).
+    // For a user owner it's just this user's connections. The count is fail-safe:
+    // an org-enumeration error falls back to the acting user's count, so it never
+    // blocks a paying org on a Clerk hiccup.
     const owner = await resolveBillingOwner()
     const plan = await getPlanForOwner(owner.id)
     if (plan.hosts != null) {
-      const existing = await store.list(userId)
-      const check = checkHostLimit(plan, existing.length)
+      const usedHosts = await countOwnerHosts(owner, store, userId)
+      const check = checkHostLimit(plan, usedHosts)
       if (!check.allowed) {
         return createApiErrorResponse(
           {
