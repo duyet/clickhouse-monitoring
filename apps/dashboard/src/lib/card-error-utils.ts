@@ -90,6 +90,9 @@ const ERROR_KEYWORDS = {
     'exceeded resource',
     'cpu/memory',
     'memory limit',
+    // ClickHouse RECEIVED_EMPTY_DATA (1016): connection dropped mid-stream,
+    // usually because the query ran past a proxy/Worker timeout window.
+    'error code: 1016',
   ],
   permission: [
     'permission',
