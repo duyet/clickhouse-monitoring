@@ -96,20 +96,31 @@ export function checkAlertRuleLimit(
 }
 
 /**
- * Free-tier AI agent daily trial cap. Paid tiers have `aiRequestsPerDay: null`
- * (no daily cap — they meter on the monthly USD budget instead) and are always
- * allowed by this check.
+ * AI agent daily message meter. Every tier now publishes a daily included-message
+ * allowance (`aiRequestsPerDay`): Free 5, Pro 100, Max 1,000, Enterprise null.
+ *
+ * Blocking differs by overage policy:
+ * - Free (`aiOverage: null`) → HARD cap: once today's messages hit the limit the
+ *   check denies and nudges an upgrade.
+ * - Pro/Max (`aiOverage` set) → SOFT cap: the daily allowance is "included", and
+ *   messages past it are billed as overage ($5 / 2,000), so the check stays
+ *   `allowed: true` while still reporting `used`/`limit` for the UI meter.
+ *   (Metered overage billing isn't wired yet — this keeps paid users unblocked.)
+ * - Enterprise (`aiRequestsPerDay: null`) → unlimited.
  */
 export function checkAiDailyLimit(
   plan: Plan,
   requestsToday: number
 ): LimitCheck {
-  return checkCount(
+  const base = checkCount(
     plan,
     requestsToday,
     plan.aiRequestsPerDay,
     'ai_daily_limit'
   )
+  // Paid tiers bill overage past the included allowance — never hard-block.
+  if (plan.aiOverage) return { ...base, allowed: true }
+  return base
 }
 
 /**

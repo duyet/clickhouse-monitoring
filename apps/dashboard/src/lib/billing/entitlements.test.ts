@@ -72,19 +72,28 @@ describe('entitlements — alert rules', () => {
   })
 })
 
-describe('entitlements — AI daily trial (Free only)', () => {
-  test('Free caps at 25 requests/day', () => {
-    expect(checkAiDailyLimit(free, 24).allowed).toBe(true)
-    expect(checkAiDailyLimit(free, 25).allowed).toBe(false)
-    expect(checkAiDailyLimit(free, 25).remaining).toBe(0)
+describe('entitlements — AI daily message cap', () => {
+  test('Free hard-caps at 5 messages/day (no overage)', () => {
+    expect(checkAiDailyLimit(free, 4).allowed).toBe(true)
+    expect(checkAiDailyLimit(free, 5).allowed).toBe(false)
+    expect(checkAiDailyLimit(free, 5).remaining).toBe(0)
   })
 
-  test('paid tiers have no daily cap (meter on USD budget instead)', () => {
-    for (const plan of [pro, max, enterprise]) {
+  test('paid tiers soft-cap: allowed past the included allowance (overage)', () => {
+    for (const plan of [pro, max]) {
       const c = checkAiDailyLimit(plan, 10_000)
+      // Overage policy keeps them unblocked, but they are NOT unlimited — the
+      // included allowance is still reported for the usage meter.
       expect(c.allowed).toBe(true)
-      expect(c.unlimited).toBe(true)
+      expect(c.unlimited).toBe(false)
+      expect(c.limit).toBe(plan.aiRequestsPerDay)
     }
+  })
+
+  test('Enterprise is unlimited (no daily cap)', () => {
+    const c = checkAiDailyLimit(enterprise, 10_000)
+    expect(c.allowed).toBe(true)
+    expect(c.unlimited).toBe(true)
   })
 })
 

@@ -62,9 +62,16 @@ describe('billing plans', () => {
     expect(BILLING_PLANS.pro.alertRules).toBe(10)
     expect(BILLING_PLANS.max.alertRules).toBe(50)
     expect(BILLING_PLANS.enterprise.alertRules).toBeNull()
-    // daily AI trial caps Free only
-    expect(BILLING_PLANS.free.aiRequestsPerDay).toBe(25)
-    expect(BILLING_PLANS.pro.aiRequestsPerDay).toBeNull()
+    // daily AI message allowance: 5 → 100 → 1000 → unlimited
+    expect(BILLING_PLANS.free.aiRequestsPerDay).toBe(5)
+    expect(BILLING_PLANS.pro.aiRequestsPerDay).toBe(100)
+    expect(BILLING_PLANS.max.aiRequestsPerDay).toBe(1000)
+    expect(BILLING_PLANS.enterprise.aiRequestsPerDay).toBeNull()
+    // overage policy: $5 / 2,000 on paid metered tiers, none on Free/Enterprise
+    expect(BILLING_PLANS.free.aiOverage).toBeNull()
+    expect(BILLING_PLANS.pro.aiOverage).toEqual({ usdPer: 5, messages: 2000 })
+    expect(BILLING_PLANS.max.aiOverage).toEqual({ usdPer: 5, messages: 2000 })
+    expect(BILLING_PLANS.enterprise.aiOverage).toBeNull()
   })
 
   test('new feature capabilities sit on the right tiers', () => {

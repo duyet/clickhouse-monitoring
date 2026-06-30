@@ -28,7 +28,7 @@ const faqJsonLd = {
     <!-- Page header -->
     <section class="band" style="padding-bottom:0">
       <div class="wrap">
-        <div class="sec-head reveal" style="text-align:center">
+        <div class="sec-head price-head reveal">
           <span class="eyebrow">Pricing</span>
           <h2>Simple pricing that scales with your fleet</h2>
           <p>Self-hosting is always free under GPL-3.0. The hosted cloud connects a cluster in minutes — start free, upgrade when your team grows. <strong>Early access is free to try</strong> while in beta.</p>
@@ -120,6 +120,12 @@ const faqJsonLd = {
   <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
 
   <style>
+    /* Centered page intro: the shared .sec-head p is max-width:62ch with no
+       auto margins, so center it and the left-flex eyebrow explicitly. */
+    .price-head{text-align:center}
+    .price-head .eyebrow{justify-content:center}
+    .price-head p{margin-inline:auto}
+
     .price-cmp .cmp-yes{stroke:var(--emerald)}
     .price-cmp .cmp-no{stroke:var(--muted-fg);opacity:.45}
     .price-cmp .cmp-val{font-size:13px;font-weight:600}
