@@ -211,6 +211,18 @@ function ConnectYourHost({ onAddHost }: { onAddHost: () => void }) {
           Add ClickHouse host
           <ArrowRight className="ml-auto size-4" />
         </Button>
+
+        <p className="text-muted-foreground mt-3 text-center text-xs">
+          Not sure where to start?{' '}
+          <a
+            href={docsSiteUrl('getting-started/clickhouse-requirements')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium underline-offset-4 hover:underline"
+          >
+            Read the full setup guide
+          </a>
+        </p>
       </div>
 
       <DocsFooter
@@ -219,6 +231,10 @@ function ConnectYourHost({ onAddHost }: { onAddHost: () => void }) {
           {
             slug: 'getting-started/clickhouse-requirements',
             label: 'Create a monitoring user',
+          },
+          {
+            slug: 'guides/connect-firewalled-clickhouse',
+            label: 'Connect behind a firewall',
           },
           {
             slug: 'guides/connection-errors',
