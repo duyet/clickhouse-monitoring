@@ -1,5 +1,5 @@
 import { arrayToCsv, downloadCsv, slugifyFilename, valueToCsv } from './csv'
-import { afterAll, beforeAll, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // valueToCsv

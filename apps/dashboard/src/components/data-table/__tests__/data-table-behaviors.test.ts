@@ -55,8 +55,6 @@ const ROWS = [
   { query: 'DROP TABLE temp', user: 'admin', duration: 10 },
 ] as const
 
-type Row = (typeof ROWS)[number]
-
 // ---------------------------------------------------------------------------
 // applyColumnFilters (real production function)
 //

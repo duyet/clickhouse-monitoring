@@ -47,7 +47,7 @@ describe('OG_PAGES', () => {
   })
 
   test('agents entry has a different headTitle from title', () => {
-    const agents = OG_PAGES['agents']
+    const agents = OG_PAGES.agents
     expect(agents).toBeDefined()
     expect(agents.headTitle).toBe('AI Agent')
     expect(agents.title).toBe('Ask your cluster anything')
@@ -55,7 +55,7 @@ describe('OG_PAGES', () => {
   })
 
   test('overview entry has no headTitle (uses title)', () => {
-    expect(OG_PAGES['overview'].headTitle).toBeUndefined()
+    expect(OG_PAGES.overview.headTitle).toBeUndefined()
   })
 
   test('contains expected slugs', () => {
@@ -85,7 +85,7 @@ describe('OG_PAGES', () => {
   })
 
   test('OgPage type is satisfied at runtime (structural check)', () => {
-    const page: OgPage = OG_PAGES['overview']
+    const page: OgPage = OG_PAGES.overview
     expect(page.eyebrow).toBe('OVERVIEW')
     expect(page.title).toBe('Cluster Overview')
   })

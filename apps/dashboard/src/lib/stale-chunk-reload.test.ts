@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 
 // We import the module fresh per test by re-requiring it.
 // Because the module caches `registered` at module level, we need to
@@ -48,7 +48,7 @@ describe('isDynamicImportError predicate (via unhandledrejection)', () => {
   // reset by reimporting. In Bun tests we achieve this by not reimporting the
   // module — instead we only check the observable effect (reload vs no-reload).
 
-  const RELOAD_TS_KEY = 'chm:stale-chunk-reload-ts'
+  const _RELOAD_TS_KEY = 'chm:stale-chunk-reload-ts'
 
   let reloadCalled: boolean
   let listeners: Record<string, ((e: Event) => void)[]>
@@ -84,7 +84,7 @@ describe('isDynamicImportError predicate (via unhandledrejection)', () => {
       reason,
       preventDefault() {},
     })
-    for (const handler of listeners['unhandledrejection'] ?? []) {
+    for (const handler of listeners.unhandledrejection ?? []) {
       handler(evt)
     }
   }
@@ -96,7 +96,7 @@ describe('isDynamicImportError predicate (via unhandledrejection)', () => {
   // Instead, we just reset `window` to undefined so the re-import guard fires.
   afterEach(() => {
     // Remove window so next setup() starts clean
-    ;(globalThis as unknown as Record<string, unknown>)['window'] = undefined
+    ;(globalThis as unknown as Record<string, unknown>).window = undefined
   })
 
   test('Error with "Failed to fetch dynamically imported module" triggers reload', async () => {
@@ -236,7 +236,7 @@ describe('reload-loop guard', () => {
   }
 
   afterEach(() => {
-    ;(globalThis as unknown as Record<string, unknown>)['window'] = undefined
+    ;(globalThis as unknown as Record<string, unknown>).window = undefined
   })
 
   function fireUnhandledRejection(reason: unknown) {
@@ -244,7 +244,7 @@ describe('reload-loop guard', () => {
       reason,
       preventDefault() {},
     })
-    for (const handler of listeners['unhandledrejection'] ?? []) {
+    for (const handler of listeners.unhandledrejection ?? []) {
       handler(evt)
     }
   }
@@ -356,7 +356,7 @@ describe('vite:preloadError listener', () => {
   }
 
   afterEach(() => {
-    ;(globalThis as unknown as Record<string, unknown>)['window'] = undefined
+    ;(globalThis as unknown as Record<string, unknown>).window = undefined
   })
 
   function fireVitePreloadError() {
@@ -404,12 +404,12 @@ describe('vite:preloadError listener', () => {
 
 describe('SSR guard — no window', () => {
   afterEach(() => {
-    ;(globalThis as unknown as Record<string, unknown>)['window'] = undefined
+    ;(globalThis as unknown as Record<string, unknown>).window = undefined
   })
 
   test('registerStaleChunkReload is a no-op when window is undefined', async () => {
     // Ensure window is not set
-    ;(globalThis as unknown as Record<string, unknown>)['window'] = undefined
+    ;(globalThis as unknown as Record<string, unknown>).window = undefined
 
     // Should not throw
     const { registerStaleChunkReload } = await import(

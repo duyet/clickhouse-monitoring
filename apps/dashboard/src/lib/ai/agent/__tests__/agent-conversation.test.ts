@@ -353,7 +353,7 @@ describe('query tool — execution lifecycle', () => {
 
   test('throws when ClickHouse returns an error object', async () => {
     // Override fetchData for this specific test to simulate a CH error
-    const originalFetch = (await import('@chm/clickhouse-client')).fetchData
+    const _originalFetch = (await import('@chm/clickhouse-client')).fetchData
     const stub = spyOn(
       await import('@chm/clickhouse-client'),
       'fetchData'

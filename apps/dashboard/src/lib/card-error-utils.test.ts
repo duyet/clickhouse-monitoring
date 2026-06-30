@@ -19,7 +19,7 @@
  *     content, to avoid hard-coupling to table-guidance internals).
  */
 
-import type { CardError, CardErrorVariant } from '@/lib/card-error-utils'
+import type { CardError } from '@/lib/card-error-utils'
 
 import { describe, expect, it } from 'bun:test'
 import { ApiErrorType } from '@/lib/api/types'

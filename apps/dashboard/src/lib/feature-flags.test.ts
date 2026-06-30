@@ -24,10 +24,7 @@
  *   - describe 'shape': structural invariants on the featureFlags object.
  */
 
-import type {
-  FeatureFlagName,
-  featureFlags as FeatureFlagsType,
-} from './feature-flags'
+import type { FeatureFlagName } from './feature-flags'
 
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 

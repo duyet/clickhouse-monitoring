@@ -143,7 +143,11 @@ export default {
         return bad(400, 'invalid event')
       }
       const props = (data.props ?? {}) as Record<string, unknown>
-      const deployTarget = asEnum(props.deploy_target, DEPLOY_TARGETS, 'unknown')
+      const deployTarget = asEnum(
+        props.deploy_target,
+        DEPLOY_TARGETS,
+        'unknown'
+      )
       const chVersion = asVersion(props.ch_version)
       const chFlavor = asEnum(props.ch_flavor, CH_FLAVORS, 'unknown')
 

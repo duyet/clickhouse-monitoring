@@ -332,7 +332,6 @@ export function GrantBuilder() {
         :is(.dark) .grant-code .ch-str { color: #4ade80; }
       `}</style>
       <pre className="grant-code overflow-x-auto bg-fd-background p-4 text-[13px] leading-relaxed">
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: output is generated from our own templates, not user input */}
         <code dangerouslySetInnerHTML={{ __html: highlighted }} />
       </pre>
     </div>

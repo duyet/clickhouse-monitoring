@@ -11,7 +11,7 @@
 
 /** Wrap a ClickHouse identifier in backticks, escaping any literal backticks. */
 function quoteId(name: string): string {
-  return '`' + name.replace(/`/g, '``') + '`'
+  return `\`${name.replace(/`/g, '``')}\``
 }
 
 /** Escape single quotes in a ClickHouse string literal. */
@@ -149,10 +149,10 @@ export function generateRevokePrivilegeDdl(
 export function isManagementEnabled(
   env?: Record<string, string | undefined>
 ): boolean {
-  if (env && env['CLICKHOUSE_MANAGEMENT_ENABLED'] === 'true') return true
+  if (env && env.CLICKHOUSE_MANAGEMENT_ENABLED === 'true') return true
   if (
     typeof process !== 'undefined' &&
-    process.env?.['CLICKHOUSE_MANAGEMENT_ENABLED'] === 'true'
+    process.env?.CLICKHOUSE_MANAGEMENT_ENABLED === 'true'
   )
     return true
   return false

@@ -142,8 +142,8 @@ describe('setThreshold', () => {
     setThreshold('a', { warning: 1, critical: 2 })
     setThreshold('b', { warning: 3, critical: 4 })
     const map = loadThresholds()
-    expect(map['a']).toEqual({ warning: 1, critical: 2 })
-    expect(map['b']).toEqual({ warning: 3, critical: 4 })
+    expect(map.a).toEqual({ warning: 1, critical: 2 })
+    expect(map.b).toEqual({ warning: 3, critical: 4 })
   })
 
   test('dispatches changed event', () => {
@@ -167,8 +167,8 @@ describe('resetThreshold', () => {
     setThreshold('b', { warning: 3, critical: 4 })
     resetThreshold('a')
     const map = loadThresholds()
-    expect(map['a']).toBeUndefined()
-    expect(map['b']).toEqual({ warning: 3, critical: 4 })
+    expect(map.a).toBeUndefined()
+    expect(map.b).toEqual({ warning: 3, critical: 4 })
   })
 
   test('is a no-op and returns true when key does not exist', () => {

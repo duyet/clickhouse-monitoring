@@ -1,5 +1,5 @@
 import { exportToCsv, rowsToCsv } from './agent-export'
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // rowsToCsv
@@ -118,7 +118,7 @@ describe('exportToCsv', () => {
   let linkDownload = ''
   let linkClicked = false
   let appendedLink: HTMLAnchorElement | null = null
-  let revokedUrl: string | null = null
+  let _revokedUrl: string | null = null
 
   // A fake anchor element
   const fakeLink = {
@@ -145,7 +145,7 @@ describe('exportToCsv', () => {
     linkDownload = ''
     linkClicked = false
     appendedLink = null
-    revokedUrl = null
+    _revokedUrl = null
 
     // Stub global browser APIs used by exportToCsv
     globalThis.Blob = class MockBlob {
@@ -160,7 +160,7 @@ describe('exportToCsv', () => {
     globalThis.URL = {
       createObjectURL: (_blob: Blob) => 'blob:fake-url',
       revokeObjectURL: (url: string) => {
-        revokedUrl = url
+        _revokedUrl = url
       },
     } as unknown as typeof URL
 
