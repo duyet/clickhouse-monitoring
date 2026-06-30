@@ -65,6 +65,12 @@ const DASHBOARD_SECRET_KEYS = [
   // Clerk server-side secret. In preview the value comes from
   // CLERK_SECRET_KEY_TEST (see resolveValue).
   'CLERK_SECRET_KEY',
+  // Verifies inbound Clerk webhooks (Svix signature). Activates the seat-limit
+  // gate in webhooks/clerk.ts (organizationMembership.created).
+  'CLERK_WEBHOOK_SECRET',
+  // Guards the /api/cron/* endpoints (health-sweep, retention-prune) via a
+  // constant-time bearer compare. Reuses the CHM_API_KEY_SECRET value in prod.
+  'CRON_SECRET',
   // AgentState project key (as_live_...). Presence activates the AgentState
   // conversation-store backend (resolveStore picks it ahead of D1). Non-secret
   // AgentState knobs (base URL, AI-enrich, force-backend) live in
