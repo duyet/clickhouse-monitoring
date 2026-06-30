@@ -12,6 +12,7 @@ import { createErrorResponse as createApiErrorResponse } from '@/lib/api/error-h
 import { createSuccessResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
 import { resolveBillingOwner } from '@/lib/billing/billing-owner'
+import { checkHostLimit, limitMessage } from '@/lib/billing/entitlements'
 import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { validateHostUrl } from '@/lib/browser-connections/host-url'
 import { queryConnection } from '@/lib/connection-query/connection-client'
@@ -129,15 +130,18 @@ async function handlePost(request: Request): Promise<Response> {
     const plan = await getPlanForOwner(owner.id)
     if (plan.hosts != null) {
       const existing = await store.list(userId)
-      if (existing.length >= plan.hosts) {
+      const check = checkHostLimit(plan, existing.length)
+      if (!check.allowed) {
         return createApiErrorResponse(
           {
             type: ApiErrorType.PermissionError,
-            message: `Your ${plan.name} plan includes ${plan.hosts} host${plan.hosts === 1 ? '' : 's'}. Upgrade your plan to connect more.`,
+            message: limitMessage(check),
             details: {
-              planId: plan.id,
-              limit: plan.hosts,
-              reason: 'host_limit',
+              planId: check.planId,
+              // Non-null inside this `plan.hosts != null` guard; coerce for the
+              // string|number details type (LimitCheck.limit is number | null).
+              limit: check.limit ?? plan.hosts,
+              reason: check.reason,
             },
           },
           402,

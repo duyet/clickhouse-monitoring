@@ -1,97 +1,23 @@
 ---
-// Cloud pricing tiers.
-// ⚠️ Keep price / seats / hosts in sync with the source of truth:
-// apps/dashboard/src/lib/billing/plans.ts (BILLING_PLANS). Yearly = 10× monthly.
+// Cloud pricing tiers. Data is shared with the dedicated /pricing page via
+// src/data/pricing.ts (the single landing-side source). Keep those numbers in
+// sync with apps/dashboard/src/lib/billing/plans.ts. Yearly = 10× monthly.
+import { pricingTiers as tiers } from '../data/pricing'
+
 const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>`
 const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
 
-interface Tier {
-  name: string
-  badge?: { label: string; cls: string }
-  highlight?: boolean
-  monthly: number | null // null = custom
-  yearlyTotal: number | null
-  yearlyPerMo: number | null
-  tagline: string
-  rows: string[]
-  cta: { label: string; href: string; primary?: boolean }
-}
-
-const tiers: Tier[] = [
-  {
-    name: 'Free',
-    badge: { label: 'Early access', cls: 'ptag-beta' },
-    monthly: 0,
-    yearlyTotal: 0,
-    yearlyPerMo: 0,
-    tagline: 'Try the hosted dashboard, no setup.',
-    rows: [
-      '1 ClickHouse host, 1 seat',
-      'Full monitoring dashboard',
-      'AI agent — daily trial limit',
-      '7-day history',
-      'Community support',
-    ],
-    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev', primary: true },
-  },
-  {
-    name: 'Pro',
-    highlight: true,
-    monthly: 29,
-    yearlyTotal: 290,
-    yearlyPerMo: 24,
-    tagline: 'For a small team running a few clusters.',
-    rows: [
-      'Everything in Free',
-      '3 hosts, 3 seats',
-      'AI agent + scheduled AI Insights',
-      'Basic alerting',
-      '30-day history',
-      'Email support',
-    ],
-    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev', primary: true },
-  },
-  {
-    name: 'Max',
-    monthly: 99,
-    yearlyTotal: 990,
-    yearlyPerMo: 83,
-    tagline: 'For teams operating a fleet of clusters.',
-    rows: [
-      'Everything in Pro',
-      '10 hosts, 10 seats',
-      'Higher AI usage cap',
-      'Fleet view + advanced alerting',
-      'API / MCP access',
-      '90-day history · priority support',
-    ],
-    cta: { label: 'Start free', href: 'https://dash.chmonitor.dev' },
-  },
-  {
-    name: 'Enterprise',
-    monthly: null,
-    yearlyTotal: null,
-    yearlyPerMo: null,
-    tagline: 'For organisations with security & scale needs.',
-    rows: [
-      'Everything in Max',
-      'Unlimited hosts & seats',
-      'Bring-your-own LLM key (BYOK)',
-      'SSO / SAML, RBAC, audit logs',
-      'Custom retention',
-      'SLA & dedicated support',
-    ],
-    cta: { label: 'Contact us', href: 'mailto:hello@chmonitor.dev' },
-  },
-]
+const { compact = false } = Astro.props
 ---
 <section id="pricing" class="band">
   <div class="wrap">
+    {!compact && (
     <div class="sec-head reveal" style="text-align:center">
       <span class="eyebrow">Pricing</span>
       <h2>Self-host free. Cloud for teams.</h2>
       <p>chmonitor is open source — self-hosting is always free under GPL-3.0. The hosted cloud connects a cluster without any setup. Cloud pricing is not finalised; <strong>early access is free to try</strong> and seats are limited.</p>
     </div>
+    )}
 
     <!-- Self-host: always free -->
     <div class="selfhost-banner reveal">
@@ -166,6 +92,14 @@ const tiers: Tier[] = [
         </div>
       ))}
     </div>
+
+    {!compact && (
+    <div class="compare-link reveal" style="text-align:center;margin-top:26px">
+      <a class="btn btn-ghost" href="/pricing">
+        Compare all plans &amp; features <span set:html={arrowSvg} />
+      </a>
+    </div>
+    )}
 
     <div class="callout reveal" style="margin-top:28px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>

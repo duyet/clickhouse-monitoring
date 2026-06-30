@@ -43,13 +43,20 @@ function retention(plan: Plan): string {
 
 function aiBudget(plan: Plan): string {
   if (plan.aiMonthlyUsdBudget === null) return 'BYOK'
-  if (plan.id === 'free') return 'Daily trial'
+  if (plan.id === 'free') return `${plan.aiRequestsPerDay}/day trial`
   return `$${plan.aiMonthlyUsdBudget}/mo`
+}
+
+function alertRules(plan: Plan): string {
+  if (plan.alertRules === null) return 'Unlimited'
+  if (plan.alertRules === 0) return '—'
+  return String(plan.alertRules)
 }
 
 const LIMIT_ROWS: LimitRow[] = [
   { label: 'ClickHouse hosts', value: hosts },
   { label: 'Team seats', value: seats },
+  { label: 'Alert rules', value: alertRules },
   { label: 'History retention', value: retention },
   { label: 'AI usage', value: aiBudget },
 ]
@@ -67,6 +74,10 @@ const FEATURE_ROWS: FeatureRow[] = [
           ? 'Basic'
           : false,
   },
+  { label: 'Anomaly detection', capability: 'anomaly_detection' },
+  { label: 'Data export & reports', capability: 'data_export' },
+  { label: 'Custom dashboards', capability: 'custom_dashboards' },
+  { label: 'Webhook integrations', capability: 'webhook_integrations' },
   { label: 'Fleet view', capability: 'fleet_view' },
   { label: 'API / MCP access', capability: 'api_mcp_access' },
   { label: 'SSO / SAML, RBAC, audit logs', capability: 'sso_rbac_audit' },

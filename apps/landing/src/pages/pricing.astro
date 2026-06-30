@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
+import Pricing from '../components/Pricing.astro'
+import FinalCta from '../components/FinalCta.astro'
+import Footer from '../components/Footer.astro'
+import { compareColumns, compareGroups, pricingFaqs } from '../data/pricing'
+
+const checkSvg = `<svg class="cmp-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:inline-block;vertical-align:middle"><path d="m5 12 5 5L20 7"/></svg>`
+const crossSvg = `<svg class="cmp-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:inline-block;vertical-align:middle"><path d="m18 6-12 12M6 6l12 12"/></svg>`
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: pricingFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+<Base
+  title="Pricing, chmonitor"
+  description="chmonitor pricing — self-host free under GPL-3.0, or use the hosted cloud. Compare Free, Pro, Max and Enterprise plans, limits and features side by side."
+>
+  <Nav />
+  <main id="top">
+    <!-- Page header -->
+    <section class="band" style="padding-bottom:0">
+      <div class="wrap">
+        <div class="sec-head reveal" style="text-align:center">
+          <span class="eyebrow">Pricing</span>
+          <h2>Simple pricing that scales with your fleet</h2>
+          <p>Self-hosting is always free under GPL-3.0. The hosted cloud connects a cluster in minutes — start free, upgrade when your team grows. <strong>Early access is free to try</strong> while in beta.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plan cards (shared section, compact: no duplicate header) -->
+    <Pricing compact={true} />
+
+    <!-- Full feature comparison matrix -->
+    <section id="compare" class="band band-soft">
+      <div class="wrap">
+        <div class="sec-head reveal" style="text-align:center">
+          <span class="eyebrow">Compare</span>
+          <h2>Every plan, side by side</h2>
+          <p>Limits and features across all four tiers. Self-hosting includes everything, with no caps.</p>
+        </div>
+
+        <div class="cmp-wrap reveal">
+          <div class="cmp-scroll">
+            <table class="cmp-table price-cmp">
+              <thead>
+                <tr>
+                  <th></th>
+                  {compareColumns.map((c) => (
+                    <th class={c === 'Pro' ? 'cmp-highlight' : ''}>{c}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {compareGroups.map((g) => (
+                  <>
+                    <tr class="cmp-group">
+                      <td colspan={compareColumns.length + 1}>{g.group}</td>
+                    </tr>
+                    {g.rows.map((row) => (
+                      <tr>
+                        <td>{row.label}</td>
+                        {row.values.map((v, i) => (
+                          <td class={compareColumns[i] === 'Pro' ? 'cmp-highlight' : ''}>
+                            {v === true ? (
+                              <span set:html={checkSvg} />
+                            ) : v === false ? (
+                              <span set:html={crossSvg} />
+                            ) : (
+                              <span class="cmp-val">{v}</span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="cmp-note reveal">All paid plans include the full monitoring dashboard. <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Self-host</a> for unlimited everything, free forever.</p>
+      </div>
+    </section>
+
+    <!-- Pricing FAQ -->
+    <section id="pricing-faq" class="band">
+      <div class="wrap">
+        <div class="sec-head reveal" style="text-align:center">
+          <span class="eyebrow">FAQ</span>
+          <h2>Pricing questions</h2>
+        </div>
+        <div class="pfaq reveal">
+          {pricingFaqs.map((f) => (
+            <details class="pfaq-item">
+              <summary>
+                {f.q}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <div class="pfaq-a">{f.a}</div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <FinalCta />
+  </main>
+  <Footer />
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
+
+  <style>
+    .price-cmp .cmp-yes{stroke:var(--emerald)}
+    .price-cmp .cmp-no{stroke:var(--muted-fg);opacity:.45}
+    .price-cmp .cmp-val{font-size:13px;font-weight:600}
+    .price-cmp td,.price-cmp th{text-align:center}
+    .price-cmp td:first-child,.price-cmp th:first-child{text-align:left}
+    .price-cmp .cmp-group td{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);background:var(--card-soft, rgba(127,127,127,.06));padding-top:14px}
+    .cmp-note{margin-top:20px;text-align:center;font-size:13px;color:var(--muted-fg)}
+    .cmp-note a{color:var(--orange);text-decoration:underline;text-underline-offset:3px}
+
+    .pfaq{max-width:760px;margin:36px auto 0;display:flex;flex-direction:column;gap:10px}
+    .pfaq-item{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden}
+    .pfaq-item summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;padding:16px 20px;font-weight:600;font-size:15px;list-style:none}
+    .pfaq-item summary::-webkit-details-marker{display:none}
+    .pfaq-item summary svg{width:18px;height:18px;flex-shrink:0;transition:transform .2s ease;color:var(--muted-fg)}
+    .pfaq-item[open] summary svg{transform:rotate(180deg)}
+    .pfaq-a{padding:0 20px 18px;font-size:14px;line-height:1.6;color:var(--muted-fg);text-wrap:pretty}
+  </style>
+</Base>
