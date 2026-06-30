@@ -65,7 +65,7 @@ const RULES: Rule[] = [
     title: 'Host not allowed',
     explanation:
       'The hosted service blocks connections to private, internal, or loopback addresses (SSRF protection). Cloud can only reach publicly routable ClickHouse endpoints.',
-    fix: 'Use a public HTTPS endpoint (e.g. ClickHouse Cloud, or your server exposed on a public host/port). To monitor a private cluster, self-host ClickHouse Monitor inside your network instead.',
+    fix: 'Use a public HTTPS endpoint (e.g. ClickHouse Cloud, or your server exposed on a public host/port). To monitor a private/LAN/Tailscale cluster, self-host ClickHouse Monitor inside your network and set CHM_ALLOW_PRIVATE_HOSTS=true (self-host only — the hosted cloud always blocks private addresses).',
     docsSlug: 'guides/connection-errors',
   },
   {
