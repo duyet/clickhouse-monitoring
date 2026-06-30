@@ -3,7 +3,7 @@ id: cloud-saas-mode
 title: Cloud (SaaS) mode — one codebase, two products
 type: spec
 status: active
-updated: 2026-06-29
+updated: 2026-06-30
 tags:
   - saas
   - cloud
@@ -83,8 +83,18 @@ Docs: `docs/content/guide/guides/connection-errors.mdx` (slug
 M3 wires paid plans via [Polar](https://polar.sh). Cloud-only; OSS/self-host is
 free forever (auth `none` ⇒ unlimited, plans inert).
 
-- **Plans**: `lib/billing/plans.ts` (`BILLING_PLANS`) is the price/capability
-  source of truth; `apps/landing/Pricing.astro` mirrors the numbers.
+- **Plans**: `lib/billing/plans.ts` (`BILLING_PLANS`) is the price/capability/
+  limit source of truth (hosts, seats, `alertRules`, `aiRequestsPerDay` daily
+  trial, `aiMonthlyUsdBudget`, `retentionDays`, `capabilities`). The landing app
+  mirrors the numbers via `apps/landing/src/data/pricing.ts` (shared by
+  `Pricing.astro` + the dedicated `/pricing` page).
+- **Entitlements**: `lib/billing/entitlements.ts` is the single place that turns
+  a `Plan` into yes/no limit decisions — `checkHostLimit` / `checkSeatLimit` /
+  `checkAlertRuleLimit` / `checkAiDailyLimit` / `checkAiBudget` (all `null` =
+  unlimited, return a `LimitCheck` with the API error shape), plus
+  `hasCapability`, `retentionCutoffMs` / `isWithinRetention`, and `limitMessage`
+  for the upgrade nudge. Server limit checks go through here, never `plan.hosts`
+  inline. Fully unit-tested in `entitlements.test.ts` (every plan × every limit).
 - **Config**: `lib/billing/polar-config.ts` — `getPolarClient()` (server
   `sandbox|production` from `CHM_POLAR_SERVER`) + product↔plan mapping from
   `CHM_POLAR_PRODUCT_<PLAN>_<PERIOD>` env vars. Product ids live in env (sandbox
@@ -97,8 +107,10 @@ free forever (auth `none` ⇒ unlimited, plans inert).
 - **Routes**: `api/v1/billing/checkout` (hosted checkout, `externalCustomerId =
   Clerk userId` ⇒ no customer map), `…/portal`, `…/subscription` (GET),
   `api/v1/webhooks/polar` (verifies via `validateEvent` over the RAW body).
-- **Enforcement**: `api/v1/user-connections` POST returns 402 at `plan.hosts`
-  (null = unlimited).
+- **Enforcement**: `api/v1/user-connections` POST returns 402 via
+  `checkHostLimit(plan, count)` + `limitMessage(check)` (null = unlimited). New
+  metered surfaces (alerts, AI) should reuse the matching `entitlements.ts`
+  helper for consistent boundary + error semantics.
 - **UI**: `routes/(dashboard)/billing.tsx`, gated to cloud mode in
   `app-sidebar.tsx`; `feature: 'billing'`.
 - **Setup**: `apps/dashboard/scripts/polar-setup.ts` creates Pro/Max

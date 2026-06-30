@@ -55,4 +55,24 @@ describe('billing plans', () => {
     expect(planHasCapability('max', 'sso_rbac_audit')).toBe(false)
     expect(planHasCapability('enterprise', 'sso_rbac_audit')).toBe(true)
   })
+
+  test('new metered limits are set on every tier', () => {
+    // alert rules: 0 → 10 → 50 → unlimited
+    expect(BILLING_PLANS.free.alertRules).toBe(0)
+    expect(BILLING_PLANS.pro.alertRules).toBe(10)
+    expect(BILLING_PLANS.max.alertRules).toBe(50)
+    expect(BILLING_PLANS.enterprise.alertRules).toBeNull()
+    // daily AI trial caps Free only
+    expect(BILLING_PLANS.free.aiRequestsPerDay).toBe(25)
+    expect(BILLING_PLANS.pro.aiRequestsPerDay).toBeNull()
+  })
+
+  test('new feature capabilities sit on the right tiers', () => {
+    expect(planHasCapability('free', 'data_export')).toBe(false)
+    expect(planHasCapability('pro', 'data_export')).toBe(true)
+    expect(planHasCapability('pro', 'anomaly_detection')).toBe(true)
+    expect(planHasCapability('pro', 'custom_dashboards')).toBe(false)
+    expect(planHasCapability('max', 'custom_dashboards')).toBe(true)
+    expect(planHasCapability('max', 'webhook_integrations')).toBe(true)
+  })
 })

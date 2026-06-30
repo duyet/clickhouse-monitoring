@@ -31,7 +31,11 @@ export type PlanCapability =
   | 'ai_insights_scheduled'
   | 'alerting_basic'
   | 'alerting_advanced' // + Slack/PagerDuty
+  | 'data_export' // CSV/JSON export of query results & scheduled reports
+  | 'anomaly_detection' // automated anomaly / regression detection
   | 'fleet_view'
+  | 'custom_dashboards' // saved custom views / dashboards
+  | 'webhook_integrations' // outbound webhooks for alerts & events
   | 'api_mcp_access'
   | 'sso_rbac_audit'
   | 'priority_support'
@@ -49,6 +53,14 @@ export interface Plan {
   hosts: number | null // null = custom/unlimited; the BINDING meter
   /** Monthly LLM spend allowance in USD. null = BYOK / unlimited (Enterprise). */
   aiMonthlyUsdBudget: number | null
+  /**
+   * AI agent requests allowed per day. Used by the Free tier's "daily trial"
+   * cap (the binding meter when there is no monthly USD budget to spend). null =
+   * no daily cap (paid tiers meter on aiMonthlyUsdBudget instead).
+   */
+  aiRequestsPerDay: number | null
+  /** Max number of saved alert rules. 0 = none, null = unlimited (Enterprise). */
+  alertRules: number | null
   /** History retention for conversations / insights. null = custom. */
   retentionDays: number | null
   capabilities: PlanCapability[]
@@ -70,12 +82,14 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     seats: 1,
     hosts: 1,
     aiMonthlyUsdBudget: 0.5,
+    aiRequestsPerDay: 25,
+    alertRules: 0,
     retentionDays: 7,
     capabilities: [...CORE, 'ai_agent'],
     highlights: [
       '1 ClickHouse host, 1 seat',
       'Full monitoring dashboard',
-      'AI agent — daily trial limit',
+      'AI agent — 25 requests/day trial',
       '7-day history',
       'Community support',
     ],
@@ -89,18 +103,23 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     seats: 3,
     hosts: 3,
     aiMonthlyUsdBudget: 5,
+    aiRequestsPerDay: null,
+    alertRules: 10,
     retentionDays: 30,
     capabilities: [
       ...CORE,
       'ai_agent',
       'ai_insights_scheduled',
       'alerting_basic',
+      'data_export',
+      'anomaly_detection',
     ],
     highlights: [
       'Everything in Free',
       '3 hosts, 3 seats',
       'AI agent + scheduled AI Insights',
-      'Basic alerting',
+      'Basic alerting — up to 10 rules',
+      'Anomaly detection + data export',
       '30-day history',
       'Email support',
     ],
@@ -114,13 +133,19 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     seats: 10,
     hosts: 10,
     aiMonthlyUsdBudget: 20,
+    aiRequestsPerDay: null,
+    alertRules: 50,
     retentionDays: 90,
     capabilities: [
       ...CORE,
       'ai_agent',
       'ai_insights_scheduled',
       'alerting_advanced',
+      'data_export',
+      'anomaly_detection',
       'fleet_view',
+      'custom_dashboards',
+      'webhook_integrations',
       'api_mcp_access',
       'priority_support',
     ],
@@ -129,6 +154,7 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
       '10 hosts, 10 seats',
       'Higher AI usage cap',
       'Fleet view + advanced alerting (Slack, PagerDuty)',
+      'Custom dashboards + webhook integrations',
       'API / MCP access',
       '90-day history',
       'Priority support',
@@ -143,13 +169,19 @@ export const BILLING_PLANS: Record<PlanId, Plan> = {
     seats: null,
     hosts: null,
     aiMonthlyUsdBudget: null, // BYOK / unlimited
+    aiRequestsPerDay: null,
+    alertRules: null, // unlimited
     retentionDays: null,
     capabilities: [
       ...CORE,
       'ai_agent',
       'ai_insights_scheduled',
       'alerting_advanced',
+      'data_export',
+      'anomaly_detection',
       'fleet_view',
+      'custom_dashboards',
+      'webhook_integrations',
       'api_mcp_access',
       'sso_rbac_audit',
       'priority_support',
