@@ -61,7 +61,6 @@ export function Mermaid({ chart }: MermaidProps) {
 
   return (
     <div
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: mermaid output is trusted SVG
       dangerouslySetInnerHTML={{ __html: svg }}
       className="my-4 flex justify-center overflow-auto [&_svg]:max-w-full"
     />

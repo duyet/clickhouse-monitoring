@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 // ---------------------------------------------------------------------------
 
 /** Snapshot + restore a set of env vars around a test scope. */
-function withEnv(
+function _withEnv(
   vars: Record<string, string | undefined>,
   fn: () => void
 ): () => void {
@@ -388,7 +388,7 @@ describe('peerdbFetch', () => {
 
     // PeerDB uses Basic auth with empty username: base64(":" + password)
     const expected = `Basic ${Buffer.from(':secret').toString('base64')}`
-    expect(capturedHeaders['Authorization']).toBe(expected)
+    expect(capturedHeaders.Authorization).toBe(expected)
   })
 
   test('omits Authorization header when no password', async () => {
@@ -406,7 +406,7 @@ describe('peerdbFetch', () => {
 
     // Unique path avoids cache collision
     await peerdbFetch('/v1/no-auth-check')
-    expect(capturedHeaders['Authorization']).toBeUndefined()
+    expect(capturedHeaders.Authorization).toBeUndefined()
   })
 
   test('returns parsed JSON on 2xx response', async () => {

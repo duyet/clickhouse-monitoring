@@ -224,7 +224,7 @@ describe('worker.email — happy path', () => {
     await worker.email(message, FULL_ENV, ctx)
     await Promise.all(pending)
 
-    expect(calls[0].headers['Authorization']).toBe('Bearer ghp_testtoken')
+    expect(calls[0].headers.Authorization).toBe('Bearer ghp_testtoken')
   })
 })
 

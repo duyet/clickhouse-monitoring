@@ -128,7 +128,8 @@
       "!packages/clickhouse-client/src/wasm/generated",
       "!**/*.generated.ts",
       "!.agents",
-      "!.claude"
+      "!.claude",
+      "!.omo"
     ]
   }
 }

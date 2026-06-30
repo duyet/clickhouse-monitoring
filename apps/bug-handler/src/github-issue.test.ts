@@ -216,8 +216,8 @@ describe('createGitHubIssue', () => {
       BASE_CONFIG,
       mockFetch as typeof fetch
     )
-    expect(capturedHeaders['Authorization']).toBe('Bearer ghp_testtoken')
-    expect(capturedHeaders['Accept']).toBe('application/vnd.github+json')
+    expect(capturedHeaders.Authorization).toBe('Bearer ghp_testtoken')
+    expect(capturedHeaders.Accept).toBe('application/vnd.github+json')
     expect(capturedHeaders['User-Agent']).toBe('chmonitor-bug-handler')
     expect(capturedHeaders['X-GitHub-Api-Version']).toBe('2022-11-28')
   })

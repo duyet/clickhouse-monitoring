@@ -63,7 +63,6 @@ beforeEach(() => {
 afterEach(() => {
   // Remove localStorage stub
   try {
-    // biome-ignore lint/performance/noDelete: test cleanup
     delete (globalThis as Record<string, unknown>).localStorage
   } catch {
     // ignore
@@ -165,7 +164,6 @@ describe('getDismissedNotifications', () => {
 
   test('SSR guard: returns empty set when window is undefined', () => {
     const saved = (globalThis as Record<string, unknown>).window
-    // biome-ignore lint/performance/noDelete: SSR simulation
     delete (globalThis as Record<string, unknown>).window
     try {
       const result = getDismissedNotifications()
@@ -230,7 +228,6 @@ describe('dismissNotification', () => {
 
   test('SSR guard: no-op when window is undefined', () => {
     const saved = (globalThis as Record<string, unknown>).window
-    // biome-ignore lint/performance/noDelete: SSR simulation
     delete (globalThis as Record<string, unknown>).window
     try {
       dismissNotification(readonlyNotif)
@@ -276,7 +273,6 @@ describe('dismissAllNotifications', () => {
 
   test('SSR guard: no-op when window is undefined', () => {
     const saved = (globalThis as Record<string, unknown>).window
-    // biome-ignore lint/performance/noDelete: SSR simulation
     delete (globalThis as Record<string, unknown>).window
     try {
       dismissAllNotifications([readonlyNotif])
@@ -319,7 +315,6 @@ describe('clearDismissedNotifications', () => {
   test('SSR guard: no-op when window is undefined', () => {
     lsStub.store[STORAGE_KEY] = JSON.stringify(['some-key'])
     const saved = (globalThis as Record<string, unknown>).window
-    // biome-ignore lint/performance/noDelete: SSR simulation
     delete (globalThis as Record<string, unknown>).window
     try {
       clearDismissedNotifications()

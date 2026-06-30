@@ -41,7 +41,7 @@ describe('TABLE_GUIDANCE', () => {
   })
 
   it('each entry has enableInstructions (non-empty string)', () => {
-    for (const [table, guidance] of Object.entries(TABLE_GUIDANCE)) {
+    for (const [_table, guidance] of Object.entries(TABLE_GUIDANCE)) {
       expect(typeof guidance.enableInstructions).toBe('string')
       expect(guidance.enableInstructions.length).toBeGreaterThan(0)
     }

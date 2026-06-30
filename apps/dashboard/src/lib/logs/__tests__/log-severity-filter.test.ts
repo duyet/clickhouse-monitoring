@@ -8,8 +8,6 @@ const SEVERITY_LEVELS = [
   'Error',
   'Fatal',
 ] as const
-type SeverityLevel = (typeof SEVERITY_LEVELS)[number]
-
 function matchesSeverityFilter(
   level: string,
   filter: string | undefined

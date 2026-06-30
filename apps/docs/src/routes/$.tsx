@@ -13,7 +13,7 @@ import {
   ViewOptionsPopover,
 } from 'fumadocs-ui/layouts/docs/page'
 import { Suspense } from 'react'
-import { useMDXComponents } from '@/components/mdx'
+import { getMDXComponents } from '@/components/mdx'
 import { SidebarFooter } from '@/components/sidebar-footer'
 import { baseOptions } from '@/lib/layout.shared'
 import { gitConfig } from '@/lib/shared'
@@ -95,7 +95,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
           />
         </div>
         <DocsBody>
-          <MDX components={useMDXComponents()} />
+          <MDX components={getMDXComponents()} />
         </DocsBody>
       </DocsPage>
     )

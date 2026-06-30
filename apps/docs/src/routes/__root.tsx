@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-router'
 
 import { RootProvider } from 'fumadocs-ui/provider/tanstack'
-import * as React from 'react'
 import appCss from '@/styles/app.css?url'
 
 export const Route = createRootRoute({

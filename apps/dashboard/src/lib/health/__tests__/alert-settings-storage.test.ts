@@ -9,7 +9,7 @@
  * environment. We shim only what the module under test touches.
  */
 
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import {
   DEFAULT_ALERT_SETTINGS,
   loadAlertSettings,

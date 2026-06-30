@@ -44,18 +44,18 @@ describe('isTelemetryEnabled', () => {
   })
 
   test('DO_NOT_TRACK hard-overrides an explicit enable', () => {
-    expect(
-      isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: '1' })
-    ).toBe(false)
+    expect(isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: '1' })).toBe(
+      false
+    )
     expect(
       isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: 'true' })
     ).toBe(false)
   })
 
   test('DO_NOT_TRACK=0 / false does not opt out', () => {
-    expect(
-      isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: '0' })
-    ).toBe(true)
+    expect(isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: '0' })).toBe(
+      true
+    )
     expect(
       isTelemetryEnabled({ CHM_TELEMETRY: 'on', DO_NOT_TRACK: 'false' })
     ).toBe(true)

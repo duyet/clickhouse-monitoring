@@ -12,7 +12,7 @@
 import type { MergedHostInfo } from '@/lib/swr/use-merged-hosts'
 import type { BrowserConnection } from '@/lib/types/browser-connection'
 
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Mock I/O boundary modules before importing the module under test
