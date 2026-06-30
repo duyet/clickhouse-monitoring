@@ -80,6 +80,10 @@ const SECRET_KEYS = [
   'POLAR_ACCESS_TOKEN_TEST',
   'POLAR_WEBHOOK_SECRET',
   'POLAR_WEBHOOK_SECRET_TEST',
+  // Sentry source-map upload token (build-time only; read by the CI build step
+  // in cloudflare.yml, NOT pushed onto the worker). The Sentry DSN itself is
+  // public and lives in .env.production (CHM_SENTRY_DSN), not here.
+  'SENTRY_AUTH_TOKEN',
   // Misc runtime
   'NEXT_QUERY_CACHE_TTL',
 ] as const

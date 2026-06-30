@@ -1,5 +1,6 @@
 import { createRouter as createTanstackRouter } from '@tanstack/react-router'
 
+import { initSentryClient } from './lib/observability/sentry'
 import { registerStaleChunkReload } from './lib/stale-chunk-reload'
 import { routeTree } from './routeTree.gen'
 
@@ -11,6 +12,9 @@ import { routeTree } from './routeTree.gen'
 export function getRouter() {
   // Recover from stale chunk hashes after a deploy (client-only, idempotent).
   registerStaleChunkReload()
+
+  // Browser-only Sentry init (no-op on the server). See lib/observability/sentry.
+  initSentryClient()
 
   return createTanstackRouter({
     routeTree,

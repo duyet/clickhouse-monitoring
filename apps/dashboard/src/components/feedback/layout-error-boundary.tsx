@@ -3,6 +3,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { ErrorLogger } from '@chm/logger'
 import { Button } from '@/components/ui/button'
+import { reportClientError } from '@/lib/observability/sentry'
 
 /**
  * Error boundary fallback for layout-level errors
@@ -44,13 +45,13 @@ export function LayoutErrorBoundary({
     <ErrorBoundary
       fallbackRender={LayoutErrorFallback}
       onError={(error: unknown) => {
-        ErrorLogger.logError(
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            component: 'LayoutErrorBoundary',
-            action: 'caught',
-          }
-        )
+        const err = error instanceof Error ? error : new Error(String(error))
+        ErrorLogger.logError(err, {
+          component: 'LayoutErrorBoundary',
+          action: 'caught',
+        })
+        // Report to Sentry (no-op when disabled / on the server).
+        reportClientError(err, { boundary: 'LayoutErrorBoundary' })
       }}
     >
       {children}
