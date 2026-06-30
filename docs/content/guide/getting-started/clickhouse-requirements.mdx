@@ -16,24 +16,47 @@ IPs, or a jump host).
 
 ## Copy & paste: pick a permission level
 
-Switch the tab to the level you want, then paste the whole block into a ClickHouse client (or drop the XML into `users.d/`). Replace `your-password` first.
+Toggle the features you need — the SQL and XML output updates automatically. Replace `your-password` before running. The `monitoring_profile` body is in the [recommended profile](#recommended-clickhouse-profile) section below.
 
-<Tabs items={['Read-only (SQL)', 'Read-only + actions (SQL)', 'users.xml']}>
-<Tab value="Read-only (SQL)">
+<GrantBuilder />
+
+The static reference tabs below show every combination individually if you prefer to copy from them directly.
+
+<Tabs items={['Read-only · SQL', 'Explorer · SQL', 'With actions · SQL', 'Read-only · XML', 'Explorer · XML', 'With actions · XML', 'Role-based · XML']}>
+
+<Tab value="Read-only · SQL">
 ```sql
--- View every monitoring page. Cannot kill queries, optimize, or mutate data.
+-- Monitoring dashboards only. Cannot kill queries, optimize, or mutate data.
 CREATE USER monitoring
   IDENTIFIED WITH sha256_password BY 'your-password'
   HOST ANY;
 
+-- All system tables (metrics, queries, merges, replicas, …)
 GRANT SELECT ON system.* TO monitoring;
+
+-- Required for some merge-aware queries
 GRANT CREATE TEMPORARY TABLE ON *.* TO monitoring;
 ```
 </Tab>
-<Tab value="Read-only + actions (SQL)">
+
+<Tab value="Explorer · SQL">
 ```sql
--- Read-only, plus the optional Kill Query and Optimize Table actions.
--- The UI/agent still needs AGENT_ENABLE_CONTROL_TOOLS=true for kill/optimize.
+-- Monitoring dashboards + Data Explorer (query any table in any database).
+-- SELECT ON *.* covers system.* as well — use only if you trust this account
+-- to read all your databases.
+CREATE USER monitoring
+  IDENTIFIED WITH sha256_password BY 'your-password'
+  HOST ANY;
+
+GRANT SELECT ON *.* TO monitoring;
+GRANT CREATE TEMPORARY TABLE ON *.* TO monitoring;
+```
+</Tab>
+
+<Tab value="With actions · SQL">
+```sql
+-- Read-only monitoring, plus Kill Query and Optimize Table actions.
+-- AGENT_ENABLE_CONTROL_TOOLS=true is also required for the AI agent to use these.
 CREATE USER monitoring
   IDENTIFIED WITH sha256_password BY 'your-password'
   HOST ANY;
@@ -44,7 +67,8 @@ GRANT KILL QUERY ON *.* TO monitoring;
 GRANT OPTIMIZE ON *.* TO monitoring;
 ```
 </Tab>
-<Tab value="users.xml">
+
+<Tab value="Read-only · XML">
 ```xml
 <!-- /etc/clickhouse-server/users.d/monitoring.xml -->
 <clickhouse>
@@ -61,8 +85,89 @@ GRANT OPTIMIZE ON *.* TO monitoring;
   </users>
 </clickhouse>
 ```
-Generate the hash with `echo -n 'your-password' | sha256sum`. See the [recommended profile](#recommended-clickhouse-profile) for the `monitoring_profile` body.
+Generate the hash: `echo -n 'your-password' | sha256sum`. See the [recommended profile](#recommended-clickhouse-profile) for the `monitoring_profile` body.
 </Tab>
+
+<Tab value="Explorer · XML">
+```xml
+<!-- /etc/clickhouse-server/users.d/monitoring.xml -->
+<!-- SELECT ON *.* covers system.* and every user database. -->
+<clickhouse>
+  <users>
+    <monitoring>
+      <password_sha256_hex>REPLACE_WITH_SHA256_OF_YOUR_PASSWORD</password_sha256_hex>
+      <networks><ip>::/0</ip></networks>
+      <profile>monitoring_profile</profile>
+      <grants>
+        <query>GRANT SELECT ON *.*</query>
+        <query>GRANT CREATE TEMPORARY TABLE ON *.*</query>
+      </grants>
+    </monitoring>
+  </users>
+</clickhouse>
+```
+Generate the hash: `echo -n 'your-password' | sha256sum`. Run `SYSTEM RELOAD CONFIG` or restart ClickHouse after editing.
+</Tab>
+
+<Tab value="With actions · XML">
+```xml
+<!-- /etc/clickhouse-server/users.d/monitoring.xml -->
+<!-- Read-only monitoring, plus Kill Query and Optimize Table. -->
+<clickhouse>
+  <users>
+    <monitoring>
+      <password_sha256_hex>REPLACE_WITH_SHA256_OF_YOUR_PASSWORD</password_sha256_hex>
+      <networks><ip>::/0</ip></networks>
+      <profile>monitoring_profile</profile>
+      <grants>
+        <query>GRANT SELECT ON system.*</query>
+        <query>GRANT CREATE TEMPORARY TABLE ON *.*</query>
+        <query>GRANT KILL QUERY ON *.*</query>
+        <query>GRANT OPTIMIZE ON *.*</query>
+      </grants>
+    </monitoring>
+  </users>
+</clickhouse>
+```
+Generate the hash: `echo -n 'your-password' | sha256sum`. `AGENT_ENABLE_CONTROL_TOOLS=true` is also required for the AI agent to use Kill Query / Optimize.
+</Tab>
+
+<Tab value="Role-based · XML">
+Roles let you manage grants centrally and assign them to multiple users. Create the role via SQL first, then reference it from the user XML.
+
+**Step 1 — create the role (run once in a ClickHouse client):**
+
+```sql
+CREATE ROLE IF NOT EXISTS monitoring_role;
+GRANT SELECT ON system.* TO monitoring_role;
+GRANT CREATE TEMPORARY TABLE ON *.* TO monitoring_role;
+
+-- Optional: expand to Explorer or action support
+-- GRANT SELECT ON *.* TO monitoring_role;
+-- GRANT KILL QUERY ON *.* TO monitoring_role;
+-- GRANT OPTIMIZE ON *.* TO monitoring_role;
+```
+
+**Step 2 — user config (`/etc/clickhouse-server/users.d/monitoring.xml`):**
+
+```xml
+<clickhouse>
+  <users>
+    <monitoring>
+      <password_sha256_hex>REPLACE_WITH_SHA256_OF_YOUR_PASSWORD</password_sha256_hex>
+      <networks><ip>::/0</ip></networks>
+      <profile>monitoring_profile</profile>
+      <grants>
+        <query>GRANT monitoring_role TO monitoring</query>
+      </grants>
+    </monitoring>
+  </users>
+</clickhouse>
+```
+
+Generate the hash: `echo -n 'your-password' | sha256sum`. Run `SYSTEM RELOAD CONFIG` after editing the XML. Update grants on the role and they apply to all users holding it.
+</Tab>
+
 </Tabs>
 
 ## Minimum: read-only monitoring user
@@ -81,6 +186,18 @@ GRANT SELECT ON system.* TO monitoring;
 -- Allow temporary tables (required for some merge-aware queries)
 GRANT CREATE TEMPORARY TABLE ON *.* TO monitoring;
 ```
+
+## Optional: Data Explorer (query any table)
+
+The Data Explorer lets you run SQL against any table in your ClickHouse instance, not just `system.*`. To enable it, grant `SELECT` on all databases:
+
+```sql
+-- Lets the monitoring user read every table in every database.
+-- Use only if you trust this account to access all your data.
+GRANT SELECT ON *.* TO monitoring;
+```
+
+`SELECT ON *.*` is a superset of `SELECT ON system.*`, so you do not need both.
 
 ## Optional grants for actions
 
