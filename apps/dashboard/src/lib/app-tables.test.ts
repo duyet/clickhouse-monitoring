@@ -17,7 +17,7 @@
  */
 
 import * as appTables from './app-tables'
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // Static (bare) table identifiers — never affected by env vars

@@ -8,7 +8,7 @@ import {
   generateRevokeRoleDdl,
   isManagementEnabled,
 } from './management-ddl'
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 
 // ---------------------------------------------------------------------------
 // generateCreateUserDdl
@@ -181,23 +181,23 @@ describe('generateRevokePrivilegeDdl', () => {
 // ---------------------------------------------------------------------------
 
 describe('isManagementEnabled', () => {
-  const origEnv = process.env['CLICKHOUSE_MANAGEMENT_ENABLED']
+  const origEnv = process.env.CLICKHOUSE_MANAGEMENT_ENABLED
 
   afterEach(() => {
     if (origEnv === undefined) {
-      delete process.env['CLICKHOUSE_MANAGEMENT_ENABLED']
+      delete process.env.CLICKHOUSE_MANAGEMENT_ENABLED
     } else {
-      process.env['CLICKHOUSE_MANAGEMENT_ENABLED'] = origEnv
+      process.env.CLICKHOUSE_MANAGEMENT_ENABLED = origEnv
     }
   })
 
   it('returns false when env is not set', () => {
-    delete process.env['CLICKHOUSE_MANAGEMENT_ENABLED']
+    delete process.env.CLICKHOUSE_MANAGEMENT_ENABLED
     expect(isManagementEnabled()).toBe(false)
   })
 
   it('returns false when env is set to a non-true value', () => {
-    delete process.env['CLICKHOUSE_MANAGEMENT_ENABLED']
+    delete process.env.CLICKHOUSE_MANAGEMENT_ENABLED
     expect(
       isManagementEnabled({ CLICKHOUSE_MANAGEMENT_ENABLED: 'false' })
     ).toBe(false)
@@ -213,8 +213,8 @@ describe('isManagementEnabled', () => {
   })
 
   it('returns true when process.env has CLICKHOUSE_MANAGEMENT_ENABLED=true', () => {
-    delete process.env['CLICKHOUSE_MANAGEMENT_ENABLED']
-    process.env['CLICKHOUSE_MANAGEMENT_ENABLED'] = 'true'
+    delete process.env.CLICKHOUSE_MANAGEMENT_ENABLED
+    process.env.CLICKHOUSE_MANAGEMENT_ENABLED = 'true'
     expect(isManagementEnabled()).toBe(true)
   })
 })

@@ -52,13 +52,13 @@ interface ManagementRequest {
 function isManagementEnabled(): boolean {
   try {
     const bindings = env as Record<string, string | undefined>
-    if (bindings['CLICKHOUSE_MANAGEMENT_ENABLED'] === 'true') return true
+    if (bindings.CLICKHOUSE_MANAGEMENT_ENABLED === 'true') return true
   } catch {
     // cloudflare:workers env not available
   }
   return (
     typeof process !== 'undefined' &&
-    process.env?.['CLICKHOUSE_MANAGEMENT_ENABLED'] === 'true'
+    process.env?.CLICKHOUSE_MANAGEMENT_ENABLED === 'true'
   )
 }
 

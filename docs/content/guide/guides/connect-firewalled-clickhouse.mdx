@@ -1,0 +1,97 @@
+---
+description: Connect a firewalled ClickHouse to chmonitor Cloud — Cloudflare Tunnel (recommended), dedicated egress IPs for allowlisting, jump host, and why allowlisting Cloudflare's shared ranges does not work.
+icon: ShieldCheck
+---
+
+# Connect a firewalled ClickHouse (Cloud)
+
+chmonitor **Cloud** (`dash.chmonitor.dev`) runs entirely on Cloudflare Workers.
+When your ClickHouse is behind a firewall, the Worker has to reach it — and
+because Workers do **not** have a single fixed public IP by default, a plain
+"allowlist our IP" is not straightforward. This guide explains the options,
+ranked by how well they fit chmonitor.
+
+<Callout type="tip" title="Self-hosting? You don't need any of this">
+Self-hosted chmonitor (Docker / Kubernetes / your own Worker) runs inside your
+network, so it reaches ClickHouse directly. This page is only for connecting a
+firewalled ClickHouse to the **hosted Cloud**.
+</Callout>
+
+## Recommended: Cloudflare Tunnel + Access service token
+
+A [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-tunnel/) runs
+a small `cloudflared` connector next to your ClickHouse. It makes only
+**outbound** connections to Cloudflare, so you **open no inbound ports and
+allowlist no IPs**. You then protect the tunnel's public hostname with
+[Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/)
+and give chmonitor a **service token** so only chmonitor can reach it.
+
+**You do:**
+
+1. Install `cloudflared` (2025.7.0+) on a host that can reach ClickHouse and
+   create a tunnel with a public hostname pointing at ClickHouse's HTTP port
+   (`8123` / `8443`):
+   ```bash
+   cloudflared tunnel create chmonitor
+   # route a hostname → your ClickHouse HTTP endpoint
+   cloudflared tunnel route dns chmonitor ch.example.com
+   ```
+2. Add an **Access** application on `ch.example.com` with a **service token**
+   policy, and copy the generated **Client ID** and **Client Secret**.
+3. In chmonitor, add the host with URL `https://ch.example.com` and paste the
+   service-token Client ID / Secret into the connection's headers
+   (`CF-Access-Client-Id` / `CF-Access-Client-Secret`).
+
+**Why this is the default:** no inbound firewall hole, no IP allowlist to
+maintain, the token is per-connection and revocable, and traffic is TLS
+end-to-end. It works today (not beta) on free/standard Zero Trust tiers.
+
+## If you must allowlist an IP: dedicated egress IPs
+
+Some security teams require a literal firewall allowlist. chmonitor talks to
+ClickHouse over **HTTP** (`@clickhouse/client-web`, i.e. Worker `fetch()`), and
+Cloudflare's
+[Dedicated Egress IPs](https://developers.cloudflare.com/cloudflare-one/traffic-policies/egress-policies/dedicated-egress-ips/)
+**do apply to `fetch()`** (they do not apply to raw-TCP `connect()`). That gives
+the Worker a stable source IP you can allowlist.
+
+Caveats:
+
+- It is an **enterprise add-on** on chmonitor's Cloudflare account — contact us
+  if your deployment needs it.
+- The IP is shared across chmonitor's account egress, so the allowlist
+  authorizes "traffic from chmonitor," not a single tenant. Always pair it with
+  TLS + a least-privilege ClickHouse user.
+
+<Callout type="warn" title="Do not allowlist Cloudflare's public IP ranges">
+Cloudflare publishes its IP ranges, but Worker egress over those ranges is
+shared by **every** Cloudflare customer. Allowlisting them authorizes the entire
+Cloudflare fleet — it is not a real allowlist. Use a tunnel or dedicated egress
+IPs instead.
+</Callout>
+
+## Alternative: your own jump host / reverse proxy
+
+Run a small reverse proxy (nginx / HAProxy) on a VM with a **static public IP**
+that forwards to ClickHouse, and allowlist only that proxy. chmonitor then
+connects to the proxy over HTTPS with auth. This always works and is fully under
+your control, but you own the proxy's uptime, TLS, and hardening.
+
+## On the roadmap: Workers VPC
+
+[Workers VPC](https://developers.cloudflare.com/workers-vpc/) (currently beta)
+lets a Worker reach a private service through a Cloudflare Tunnel with **no
+public hostname at all** — the cleanest private-connectivity story. We will adopt
+it for Cloud once it reaches general availability.
+
+## Not supported
+
+[Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) only
+supports PostgreSQL and MySQL, so it cannot front a ClickHouse connection.
+
+## See also
+
+- [ClickHouse User & Grants](/getting-started/clickhouse-requirements) — the
+  least-privilege user chmonitor needs.
+- [Connection errors](/guides/connection-errors) — diagnosing "Test connection"
+  failures.

@@ -263,7 +263,9 @@ describe('runInstancePing error resilience', () => {
 describe('endpoint resolution and kill-switch', () => {
   test('getPingEndpoint falls back to the default collector when unset', () => {
     expect(getPingEndpoint({})).toBe(DEFAULT_TELEMETRY_ENDPOINT)
-    expect(getPingEndpoint({ UNRELATED: 'foo' })).toBe(DEFAULT_TELEMETRY_ENDPOINT)
+    expect(getPingEndpoint({ UNRELATED: 'foo' })).toBe(
+      DEFAULT_TELEMETRY_ENDPOINT
+    )
   })
 
   test('explicit endpoint env overrides the default', () => {

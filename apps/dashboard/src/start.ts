@@ -17,12 +17,14 @@ import { createMiddleware, createStart } from '@tanstack/react-start'
 
 import { env } from 'cloudflare:workers'
 import { clerkMiddleware } from '@clerk/tanstack-react-start/server'
+import { wrapRequestHandler } from '@sentry/cloudflare'
 import {
   bridgeApiKeyEnv,
   bridgePublicReadEnv,
   resolveApiGuard,
 } from '@/lib/auth/api-guard'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
+import { resolveServerSentryOptions } from '@/lib/observability/sentry.server'
 import { withSecurityHeaders } from '@/lib/security-headers'
 
 // Returning a Response from a request middleware short-circuits the chain and
@@ -103,10 +105,48 @@ function hasClerkSecretKey(): boolean {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Sentry server middleware (Cloudflare Worker)
+// ---------------------------------------------------------------------------
+// Workers have no long-lived process, so @sentry/cloudflare binds a client PER
+// REQUEST via wrapRequestHandler: it opens a Sentry scope, runs the downstream
+// chain, captures any thrown error, then RE-THROWS it so existing error
+// handling is unchanged. No-op (passes straight through) when CHM_SENTRY_DSN is
+// unset — the OSS default. Registered as the OUTERMOST middleware so it sees
+// errors from every other middleware and route handler.
+//
+// `context: undefined` — TanStack middleware does not expose the Worker
+// ExecutionContext, so the SDK flushes events inline before returning instead
+// of via waitUntil. Acceptable for low event volume.
+const sentryMiddleware = createMiddleware().server(
+  async ({ next, request }) => {
+    const options = resolveServerSentryOptions(
+      env as Record<string, string | undefined>
+    )
+    if (!options) return next()
+
+    let result: Awaited<ReturnType<typeof next>> | undefined
+    await wrapRequestHandler(
+      { options, request, context: undefined },
+      async () => {
+        result = await next()
+        // wrapRequestHandler needs a Response to thread through; the middleware
+        // result carries it. A throw above propagates out (captured + re-thrown).
+        return result.response instanceof Response
+          ? result.response
+          : new Response(null)
+      }
+    )
+    // `result` is always assigned when wrapRequestHandler resolves without throwing.
+    return result as Awaited<ReturnType<typeof next>>
+  }
+)
+
 export const startInstance = createStart(() => {
-  // Order matters: security-headers is first (outermost) so it wraps the
-  // entire chain and patches the response on the way out.
-  const middleware = [securityHeadersMiddleware]
+  // Order matters: Sentry is first (outermost) so it captures errors from every
+  // other middleware; security-headers is next so it wraps the rest of the
+  // chain and patches the response on the way out.
+  const middleware = [sentryMiddleware, securityHeadersMiddleware]
 
   if (isClerkAuthProvider() && hasClerkSecretKey()) {
     middleware.push(clerkMiddleware())

@@ -109,3 +109,4 @@ ds-bundle/
 .design-sync/node_modules
 apps/dashboard/.ds-tailwind.css
 apps/dashboard/node_modules/dashboard
+.omo/

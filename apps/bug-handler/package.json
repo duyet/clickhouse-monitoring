@@ -1,0 +1,22 @@
+{
+  "name": "bug-handler",
+  "description": "Cloudflare Email Worker that receives inbound bug-alert emails (e.g. from Sentry) and opens GitHub issues automatically.",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy --minify",
+    "deploy:preview": "wrangler deploy --minify --env preview",
+    "dev": "wrangler dev",
+    "test": "bun test src/ --isolate",
+    "type-check": "tsc --noEmit",
+    "typegen": "wrangler types"
+  },
+  "dependencies": {
+    "postal-mime": "^2.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260515.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.97.0"
+  }
+}

@@ -125,7 +125,7 @@ function smoothPath(pts: Pt[]) {
   return d
 }
 const linePath = (pts: Pt[]) =>
-  'M ' + pts.map((p) => `${p[0]} ${p[1]}`).join(' L ')
+  `M ${pts.map((p) => `${p[0]} ${p[1]}`).join(' L ')}`
 const mapPts = (
   sx: number,
   sy: number,

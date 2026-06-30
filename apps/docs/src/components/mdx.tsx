@@ -7,6 +7,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps'
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs'
 import { TypeTable } from 'fumadocs-ui/components/type-table'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
+import { GrantBuilder } from '@/components/mdx/grant-builder'
 import { Mermaid } from '@/components/mdx/mermaid'
 
 // Components made globally available to every MDX page (no per-file imports).
@@ -25,6 +26,8 @@ export function getMDXComponents(components?: MDXComponents) {
     Files,
     Folder,
     TypeTable,
+    // GrantBuilder: interactive permission-level picker on the CH requirements page.
+    GrantBuilder,
     // Mermaid: renders ```mermaid fenced blocks and <Mermaid chart=…/> as SVG.
     Mermaid,
     // Twoslash UI: renders TypeScript hover popups for ```ts twoslash blocks.

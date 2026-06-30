@@ -53,7 +53,7 @@ export function RegressionPanel({ hostId, className }: RegressionPanelProps) {
       hostId,
       incidentId: `sqr-${hostId}-${Math.floor(Date.now() / 60_000)}`,
     })
-  }, [rows.length, hostId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows.length, hostId, rows.reduce]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) return null
   if (error || rows.length === 0) return null

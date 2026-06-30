@@ -5,9 +5,11 @@ import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { docsSiteUrl } from '@/lib/docs-site'
 import { useFeaturePermissions } from '@/lib/feature-permissions/context'
 import { useBrowserConnections } from '@/lib/hooks/use-browser-connections'
 import {
@@ -57,6 +59,19 @@ export function AddHostDialog({ open, onOpenChange }: AddHostDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add ClickHouse host</DialogTitle>
+          <DialogDescription>
+            chmonitor needs a user with <code>SELECT</code> on{' '}
+            <code>system.*</code>. See{' '}
+            <a
+              href={docsSiteUrl('getting-started/clickhouse-requirements')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              required permissions &amp; firewall setup
+            </a>{' '}
+            for grants and how to allowlist the Cloud connection.
+          </DialogDescription>
         </DialogHeader>
         <ConnectionForm
           onSave={handleSave}
