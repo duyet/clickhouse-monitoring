@@ -32,7 +32,7 @@ draft: false          # optional — true hides it from the build
 ---
 ```
 
-The post URL is the file slug (e.g. `chmonitor-v0-3.md` → `/chmonitor-v0-3`).
+The post URL comes from the `version` frontmatter when set (e.g. `version: v0.3` → `/v0.3/`), falling back to the file slug otherwise. See `src/lib/slug.ts`.
 
 ### Embedding video
 
