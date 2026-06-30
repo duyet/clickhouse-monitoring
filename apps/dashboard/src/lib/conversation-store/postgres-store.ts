@@ -147,17 +147,31 @@ export class PostgresStore implements ConversationStore {
    * @param limit - Maximum number of conversations to return (default: 50)
    * @returns Array of conversation metadata
    */
-  async list(userId: string, limit: number = 50): Promise<ConversationMeta[]> {
+  async list(
+    userId: string,
+    limit: number = 50,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]> {
     await this.ensureInitialized()
 
     try {
-      const rows = (await this.sql`
+      const rows = (
+        sinceMs != null
+          ? await this.sql`
+        SELECT id, user_id, title, message_count, created_at, updated_at
+        FROM conversations
+        WHERE user_id = ${userId} AND updated_at >= ${sinceMs}
+        ORDER BY updated_at DESC
+        LIMIT ${limit}
+      `
+          : await this.sql`
         SELECT id, user_id, title, message_count, created_at, updated_at
         FROM conversations
         WHERE user_id = ${userId}
         ORDER BY updated_at DESC
         LIMIT ${limit}
-      `) as PostgresConversationRow[]
+      `
+      ) as PostgresConversationRow[]
 
       return rows.map(
         (row): ConversationMeta => ({

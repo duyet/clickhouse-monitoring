@@ -55,11 +55,18 @@ describe('plan-enforcement — anti-drift coverage', () => {
     }
   })
 
-  test('the host cap is the one enforced limit today', () => {
-    // Documents the audited reality; flip deliberately as enforcement lands.
+  test('the cost/abuse-bounded limits are enforced; alertRules stays deferred', () => {
+    // Enforcement is live for the limits that cap a cost/abuse vector. alertRules
+    // stays deferred only because no alert-rule feature exists to gate yet.
     expect(LIMIT_ENFORCEMENT.hosts.status).toBe('enforced')
-    expect(LIMIT_ENFORCEMENT.seats.status).toBe('deferred')
-    expect(LIMIT_ENFORCEMENT.aiRequestsPerDay.status).toBe('deferred')
+    expect(LIMIT_ENFORCEMENT.seats.status).toBe('enforced')
+    expect(LIMIT_ENFORCEMENT.aiRequestsPerDay.status).toBe('enforced')
+    expect(LIMIT_ENFORCEMENT.retentionDays.status).toBe('enforced')
+    expect(LIMIT_ENFORCEMENT.alertRules.status).toBe('deferred')
+  })
+
+  test('api_mcp_access is the enforced capability gate', () => {
+    expect(CAPABILITY_ENFORCEMENT.api_mcp_access.status).toBe('enforced')
   })
 })
 

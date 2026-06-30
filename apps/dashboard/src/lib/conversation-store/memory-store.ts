@@ -35,11 +35,20 @@ export class MemoryStore implements ConversationStore {
    * @param limit - Maximum number of conversations to return
    * @returns Array of conversation metadata, sorted by updatedAt DESC
    */
-  async list(userId: string, limit?: number): Promise<ConversationMeta[]> {
+  async list(
+    userId: string,
+    limit?: number,
+    sinceMs?: number
+  ): Promise<ConversationMeta[]> {
     const conversations = storage.get(userId) || []
 
     // Sort by updatedAt DESC (most recent first)
-    const sorted = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt)
+    let sorted = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt)
+
+    // Apply retention cutoff when provided
+    if (sinceMs != null) {
+      sorted = sorted.filter((c) => c.updatedAt >= sinceMs)
+    }
 
     // Apply limit if specified
     const limited = limit ? sorted.slice(0, limit) : sorted
