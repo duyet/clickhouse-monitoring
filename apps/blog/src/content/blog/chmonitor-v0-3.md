@@ -20,12 +20,7 @@ Here's the ~28-second launch film — every scene is the real product:
   <figcaption>chmonitor v0.3 — launch film. Dashboard, AI agent, query monitoring, data explorer, topology, health & self-host.</figcaption>
 </figure>
 
-<div class="stat-row">
-  <div class="stat"><div class="n">8</div><div class="l">new features</div></div>
-  <div class="stat"><div class="n">70+</div><div class="l">fixes</div></div>
-  <div class="stat"><div class="n">13</div><div class="l">perf wins</div></div>
-  <div class="stat"><div class="n">71</div><div class="l">charts</div></div>
-</div>
+v0.3 lands 8 new features, more than 70 fixes, 13 performance wins, and 71 charts.
 
 ## Everything that's new
 

@@ -51,6 +51,12 @@ export interface ModeDefaults {
   userConnectionsDb: boolean
   /** Server-side agent conversation persistence. */
   conversationDb: boolean
+  /**
+   * Allow connecting to private / LAN / loopback / Tailscale (CGNAT) ClickHouse
+   * hosts through the connection form. Self-host only — FORCED off in cloud mode
+   * (multi-tenant SSRF safety), regardless of the explicit flag.
+   */
+  allowPrivateHosts: boolean
 }
 
 /**
@@ -65,6 +71,7 @@ const MODE_DEFAULTS: Record<DeploymentMode, ModeDefaults> = {
     clerkPublicRead: false,
     userConnectionsDb: false,
     conversationDb: false,
+    allowPrivateHosts: false,
   },
   cloud: {
     cloudMode: true,
@@ -72,6 +79,7 @@ const MODE_DEFAULTS: Record<DeploymentMode, ModeDefaults> = {
     clerkPublicRead: true,
     userConnectionsDb: true,
     conversationDb: true,
+    allowPrivateHosts: false,
   },
 }
 
@@ -115,6 +123,10 @@ export function resolveConfig(getEnv: EnvGetter): ResolvedConfig {
     parseBool(getEnv('CHM_FEATURE_USER_CONNECTIONS_DB')) ?? d.userConnectionsDb
   const conversationDb =
     parseBool(getEnv('CHM_FEATURE_CONVERSATION_DB')) ?? d.conversationDb
+  // Fail-closed: cloud ALWAYS blocks private hosts, the flag can't override it.
+  const allowPrivateHosts =
+    !cloudMode &&
+    (parseBool(getEnv('CHM_ALLOW_PRIVATE_HOSTS')) ?? d.allowPrivateHosts)
 
   return {
     mode,
@@ -123,5 +135,6 @@ export function resolveConfig(getEnv: EnvGetter): ResolvedConfig {
     clerkPublicRead,
     userConnectionsDb,
     conversationDb,
+    allowPrivateHosts,
   }
 }

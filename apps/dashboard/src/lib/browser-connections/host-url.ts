@@ -2,6 +2,18 @@ import type { Dispatcher, Agent as UndiciAgent } from 'undici'
 
 import { isCloudflareWorkers } from '@chm/clickhouse-client/runtime/cloudflare-workers'
 import { Address4, Address6 } from 'ip-address'
+import { resolveConfig } from '@/lib/config/deployment-mode'
+
+/**
+ * Whether private / LAN / loopback / Tailscale (CGNAT) hosts may be connected.
+ * Resolved from `CHM_ALLOW_PRIVATE_HOSTS`, but FORCED off in cloud mode by
+ * `resolveConfig` — so the hosted multi-tenant service can never be opted into
+ * SSRF-reachable internal targets. Default off; self-host opt-in only.
+ */
+function arePrivateHostsAllowed(): boolean {
+  const env = typeof process !== 'undefined' ? process.env : {}
+  return resolveConfig((k) => env[k]).allowPrivateHosts
+}
 
 const INTERNAL_ADDRESS_ERROR =
   'Connections to internal addresses are not allowed.'
@@ -32,16 +44,22 @@ export type ResolveHostAddresses = (
  */
 export async function validateHostUrl(
   host: string,
-  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
+  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses,
+  allowPrivate: boolean = arePrivateHostsAllowed()
 ): Promise<string | null> {
-  const result = await resolveValidatedHostUrl(host, resolveHostAddresses)
+  const result = await resolveValidatedHostUrl(
+    host,
+    resolveHostAddresses,
+    allowPrivate
+  )
 
   return typeof result === 'string' ? result : null
 }
 
 async function resolveValidatedHostUrl(
   host: string,
-  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses
+  resolveHostAddresses: ResolveHostAddresses = resolveDnsAddresses,
+  allowPrivate: boolean = arePrivateHostsAllowed()
 ): Promise<{ url: URL; addresses: readonly string[] } | string> {
   let url: URL
   try {
@@ -56,12 +74,17 @@ async function resolveValidatedHostUrl(
 
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
 
-  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
-    return INTERNAL_ADDRESS_ERROR
-  }
+  // SSRF guard: reject internal/private/loopback/CGNAT(Tailscale) targets —
+  // UNLESS a self-host operator opted in via CHM_ALLOW_PRIVATE_HOSTS (never in
+  // cloud). The scheme + DNS-resolution checks below stay unconditional.
+  if (!allowPrivate) {
+    if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+      return INTERNAL_ADDRESS_ERROR
+    }
 
-  if (isInternalIp(hostname)) {
-    return INTERNAL_ADDRESS_ERROR
+    if (isInternalIp(hostname)) {
+      return INTERNAL_ADDRESS_ERROR
+    }
   }
 
   if (isIpLiteral(hostname)) {
@@ -75,7 +98,7 @@ async function resolveValidatedHostUrl(
     return DNS_RESOLUTION_ERROR
   }
 
-  if (addresses.some(isInternalIp)) {
+  if (!allowPrivate && addresses.some(isInternalIp)) {
     return INTERNAL_ADDRESS_ERROR
   }
 

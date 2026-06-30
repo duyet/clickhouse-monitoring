@@ -26,6 +26,7 @@ describe('modeDefaults — good defaults from the beginning', () => {
       clerkPublicRead: false,
       userConnectionsDb: false,
       conversationDb: false,
+      allowPrivateHosts: false,
     })
   })
   test('cloud: clerk + anon read-only demo + per-user storage', () => {
@@ -35,7 +36,32 @@ describe('modeDefaults — good defaults from the beginning', () => {
       clerkPublicRead: true,
       userConnectionsDb: true,
       conversationDb: true,
+      allowPrivateHosts: false,
     })
+  })
+})
+
+describe('resolveConfig — allowPrivateHosts (fail-closed in cloud)', () => {
+  const mock = (vars: Record<string, string>) => (k: string) => vars[k]
+
+  test('self-host respects CHM_ALLOW_PRIVATE_HOSTS', () => {
+    expect(
+      resolveConfig(mock({ CHM_ALLOW_PRIVATE_HOSTS: 'true' })).allowPrivateHosts
+    ).toBe(true)
+    expect(resolveConfig(mock({})).allowPrivateHosts).toBe(false)
+  })
+
+  test('cloud FORCES it off even when the flag is set', () => {
+    expect(
+      resolveConfig(
+        mock({ CHM_DEPLOYMENT_MODE: 'cloud', CHM_ALLOW_PRIVATE_HOSTS: 'true' })
+      ).allowPrivateHosts
+    ).toBe(false)
+    expect(
+      resolveConfig(
+        mock({ CHM_CLOUD_MODE: 'true', CHM_ALLOW_PRIVATE_HOSTS: '1' })
+      ).allowPrivateHosts
+    ).toBe(false)
   })
 })
 
@@ -51,6 +77,7 @@ describe('resolveConfig — profile default, explicit var overrides', () => {
       clerkPublicRead: true,
       userConnectionsDb: true,
       conversationDb: true,
+      allowPrivateHosts: false,
     })
   })
 
