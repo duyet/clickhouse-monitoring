@@ -261,7 +261,7 @@ export function ConnectionForm({
           {!dbStorageEnabled && (
             <p className="text-xs text-muted-foreground">
               {dbStorageRequiresSignIn ? (
-                'Sign in to save connections to the server (synced per account).'
+                'Sign in to save connections to the server (synced per account) — then select a plan or join an organization for more access.'
               ) : (
                 <>
                   Server storage is disabled on this deployment.{' '}
@@ -272,7 +272,9 @@ export function ConnectionForm({
                     className="underline underline-offset-2 hover:text-foreground"
                   >
                     Enable user connections
-                  </a>
+                  </a>{' '}
+                  to save credentials to your account and access your
+                  team&apos;s clusters.
                 </>
               )}
             </p>
