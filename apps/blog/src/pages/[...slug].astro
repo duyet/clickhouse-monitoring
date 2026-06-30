@@ -3,10 +3,11 @@ import { getCollection, render } from 'astro:content'
 import Base from '../layouts/Base.astro'
 import Nav from '../components/Nav.astro'
 import Footer from '../components/Footer.astro'
+import { postSlug } from '../lib/slug'
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft)
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }))
+  return posts.map((post) => ({ params: { slug: postSlug(post) }, props: { post } }))
 }
 
 const { post } = Astro.props
