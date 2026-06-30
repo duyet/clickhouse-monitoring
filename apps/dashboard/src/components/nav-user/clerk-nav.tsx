@@ -48,10 +48,11 @@ import { cn } from '@/lib/utils'
 /**
  * Vivid, brand-accented styling for a paid plan badge so it stands out in the
  * muted sidebar footer. Pro = amber→orange (brand), Max = violet→fuchsia, any
- * other paid tier falls back to the solid primary. `free` is never rendered as a
- * badge (it shows an "Upgrade →" link instead).
+ * other paid tier falls back to the solid primary. `free` gets a muted badge
+ * (clicking it still opens /billing to upgrade).
  */
 const PLAN_BADGE_STYLES: Record<string, string> = {
+  free: 'bg-muted text-muted-foreground shadow-none',
   pro: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white dark:from-amber-500 dark:to-orange-600',
   max: 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white dark:from-violet-600 dark:to-fuchsia-600',
 }
@@ -168,7 +169,7 @@ export function ClerkNavWrapper() {
                       >
                         {user?.fullName ?? 'User'}
                       </span>
-                      {planLabel && planLabel !== 'free' && (
+                      {planLabel && (
                         <Badge
                           className={cn(
                             'h-4 shrink-0 cursor-pointer px-1.5 text-[10px]',
@@ -190,18 +191,6 @@ export function ClerkNavWrapper() {
                     >
                       {user?.primaryEmailAddress?.emailAddress}
                     </span>
-                    {planLabel === 'free' && (
-                      <span
-                        className="mt-0.5 inline-flex w-fit cursor-pointer items-center text-[10px] font-medium text-muted-foreground hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.location.href = '/billing'
-                        }}
-                        data-testid="nav-user-plan-badge"
-                      >
-                        Upgrade →
-                      </span>
-                    )}
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
