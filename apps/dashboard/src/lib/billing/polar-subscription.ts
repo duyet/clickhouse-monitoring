@@ -48,6 +48,63 @@ function toUnixSeconds(value: Date | string | null | undefined): number | null {
 }
 
 /**
+ * Negative cache: externalIds Polar has confirmed have no active subscription
+ * (free users / no Polar customer). Without it, every entitlement read for a
+ * free user round-trips to Polar and 404s — the common case on a cloud deploy.
+ *
+ * Per-isolate and best-effort: the map lives only for the Worker isolate's
+ * lifetime, which is plenty to collapse the burst of reads a single page load
+ * fans out. A positive result clears the entry immediately (the user upgraded),
+ * and transient API failures are NOT cached — only a definitive "no customer /
+ * no active sub" — so a Polar blip never hides a real subscription.
+ */
+const NEGATIVE_TTL_MS = 60_000
+const NEGATIVE_CACHE_MAX = 1000
+const noActiveSubUntil = new Map<string, number>()
+
+function hasFreshNegative(externalId: string): boolean {
+  const until = noActiveSubUntil.get(externalId)
+  if (until === undefined) return false
+  if (until > Date.now()) return true
+  noActiveSubUntil.delete(externalId)
+  return false
+}
+
+function rememberNoActiveSub(externalId: string): void {
+  // Bound memory: drop expired entries before growing past the cap.
+  if (noActiveSubUntil.size >= NEGATIVE_CACHE_MAX) {
+    const now = Date.now()
+    for (const [id, until] of noActiveSubUntil) {
+      if (until <= now) noActiveSubUntil.delete(id)
+    }
+  }
+  noActiveSubUntil.set(externalId, Date.now() + NEGATIVE_TTL_MS)
+}
+
+/** True when the error is Polar's 404 "no customer for this externalId". */
+function isResourceNotFound(error: unknown): boolean {
+  const e = error as
+    | {
+        statusCode?: number
+        status?: number
+        response?: { status?: number }
+        name?: string
+      }
+    | null
+    | undefined
+  const status = e?.statusCode ?? e?.status ?? e?.response?.status
+  if (status === 404) return true
+  return (
+    typeof e?.name === 'string' && e.name.toLowerCase().includes('notfound')
+  )
+}
+
+/** Test-only: clear the negative cache so cases don't leak state across tests. */
+export function __resetPolarSubscriptionCacheForTests(): void {
+  noActiveSubUntil.clear()
+}
+
+/**
  * The owner's current paid subscription per Polar, or null when they have none
  * (free), Polar is not configured, or the call fails (caller falls back to the
  * D1 cache / free). When several active subscriptions exist, the highest plan
@@ -57,6 +114,9 @@ export async function pullOwnerSubscriptionFromPolar(
   externalId: string
 ): Promise<OwnerSubscription | null> {
   if (!isBillingConfigured()) return null
+  // Free users (no Polar customer) would otherwise 404 against Polar on every
+  // read — short-circuit those for a minute.
+  if (hasFreshNegative(externalId)) return null
   try {
     const state = await getPolarClient().customers.getStateExternal({
       externalId,
@@ -82,10 +142,14 @@ export async function pullOwnerSubscriptionFromPolar(
         best = candidate
       }
     }
+    if (best) noActiveSubUntil.delete(externalId)
+    else rememberNoActiveSub(externalId)
     return best
-  } catch {
-    // 404 ResourceNotFound (no Polar customer for this externalId yet) or a
-    // transient API error — treat as "no live subscription"; caller falls back.
+  } catch (error) {
+    // A definitive 404 (no Polar customer for this externalId yet) is cacheable
+    // as "free". A transient API error is NOT — caching it would hide a real
+    // subscription for the TTL — so only the 404 path remembers.
+    if (isResourceNotFound(error)) rememberNoActiveSub(externalId)
     return null
   }
 }
