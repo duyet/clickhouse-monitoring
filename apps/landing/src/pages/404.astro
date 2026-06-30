@@ -1,0 +1,79 @@
+---
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+import Base from '../layouts/Base.astro'
+
+const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+---
+
+<Base
+  title="Page not found, chmonitor"
+  description="That page doesn't exist. Head back to chmonitor or jump into the dashboard, docs, or source."
+>
+  <Nav />
+  <main id="top">
+    <section class="band nf">
+      <div class="wrap">
+        <span class="mono nf-code">404</span>
+        <h1>This page doesn't exist</h1>
+        <p>
+          The link may be out of date, or the page moved. Nothing is broken on
+          your end — pick a way back below.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/">
+            Back to home <span set:html={arrowSvg} />
+          </a>
+          <a
+            class="btn btn-ghost"
+            href="https://docs.chmonitor.dev"
+            target="_blank"
+            rel="noopener">Read the docs</a
+          >
+          <a class="btn btn-ghost" href="/pricing">See pricing</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+
+  <style>
+    .nf {
+      text-align: center;
+      padding-top: 96px;
+      padding-bottom: 120px;
+    }
+    .nf .wrap {
+      max-width: 560px;
+    }
+    .nf-code {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--orange);
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+    .nf h1 {
+      font-size: clamp(30px, 5vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      font-weight: 700;
+      text-wrap: balance;
+    }
+    .nf p {
+      margin: 16px auto 0;
+      max-width: 46ch;
+      font-size: 17px;
+      color: var(--muted-fg);
+      text-wrap: pretty;
+    }
+    .nf .hero-actions {
+      justify-content: center;
+      margin-top: 30px;
+    }
+  </style>
+</Base>
