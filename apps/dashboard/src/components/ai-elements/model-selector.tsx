@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 
+import { MonogramProviderIcon } from '@/components/icons/providers'
 import {
   Command,
   CommandDialog,
@@ -17,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { svglLogoUrl } from '@/lib/provider-logos'
 import { cn } from '@/lib/utils'
 
 export type ModelSelectorProps = ComponentProps<typeof Dialog>
@@ -170,16 +172,30 @@ export const ModelSelectorLogo = ({
   provider,
   className,
   ...props
-}: ModelSelectorLogoProps) => (
-  <img
-    {...props}
-    alt={`${provider} logo`}
-    className={cn('size-3 dark:invert', className)}
-    height={12}
-    src={`https://models.dev/logos/${provider}.svg`}
-    width={12}
-  />
-)
+}: ModelSelectorLogoProps) => {
+  const url = svglLogoUrl(provider)
+
+  if (!url) {
+    return (
+      <MonogramProviderIcon
+        provider={provider}
+        className={cn('size-3', className)}
+        size={12}
+      />
+    )
+  }
+
+  return (
+    <img
+      {...props}
+      alt={`${provider} logo`}
+      className={cn('size-3 dark:invert', className)}
+      height={12}
+      src={url}
+      width={12}
+    />
+  )
+}
 
 export type ModelSelectorLogoGroupProps = ComponentProps<'div'>
 
