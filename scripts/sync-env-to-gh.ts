@@ -80,6 +80,10 @@ const SECRET_KEYS = [
   'POLAR_ACCESS_TOKEN_TEST',
   'POLAR_WEBHOOK_SECRET',
   'POLAR_WEBHOOK_SECRET_TEST',
+  // Sentry source-map upload token (build-time only; read by the CI build step
+  // in cloudflare.yml, NOT pushed onto the worker). The Sentry DSN itself is
+  // public and lives in .env.production (CHM_SENTRY_DSN), not here.
+  'SENTRY_AUTH_TOKEN',
   // Bug-handler email worker (apps/bug-handler): the GitHub token it uses to open
   // issues from inbound Sentry alert emails. Runtime secret on that worker; CI
   // (cloudflare.yml bug-handler job) pushes it via `wrangler secret put`.

@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { cloudflare } from '@cloudflare/vite-plugin'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
@@ -170,6 +171,21 @@ const CLIENT_ENV = {
   // falls back to 'ts' — fail-safe to the current behaviour. DARK: no views
   // use declarative configs yet.
   VITE_CONFIG_SOURCE: e.VITE_CONFIG_SOURCE ?? 'ts',
+  // Sentry (error tracking). Disabled unless a DSN is set — the OSS default;
+  // self-hosters opt in with CHM_SENTRY_DSN. The hosted product sets it in
+  // .env.production. The DSN is a public client-side value (safe to inline).
+  VITE_SENTRY_DSN: e.VITE_SENTRY_DSN ?? e.CHM_SENTRY_DSN ?? '',
+  // Sentry environment label. Defaults to the build env (production|preview);
+  // 'development' for local/OSS builds. Server reads the CHM_SENTRY_ENVIRONMENT
+  // worker var separately (patch-wrangler-env.ts).
+  VITE_SENTRY_ENVIRONMENT:
+    e.VITE_SENTRY_ENVIRONMENT ??
+    e.CHM_SENTRY_ENVIRONMENT ??
+    e.CHM_BUILD_ENV ??
+    'development',
+  // Browser tracing sample rate (0..1). Empty → SDK default in sentry-options.ts.
+  VITE_SENTRY_TRACES_SAMPLE_RATE:
+    e.VITE_SENTRY_TRACES_SAMPLE_RATE ?? e.CHM_SENTRY_TRACES_SAMPLE_RATE ?? '',
 } as const
 
 // Explicit text-replacement of each `import.meta.env.VITE_*` read. Deterministic
@@ -504,6 +520,30 @@ const runtimePlugins: PluginOption[] = isNode
       viteReact(),
     ]
 
+// Sentry source-map upload (build-time only). Active ONLY when SENTRY_AUTH_TOKEN
+// is present (CI prod/preview deploys) — local, OSS, and PR-without-token builds
+// skip it entirely so they never fail on a missing token. The plugin uploads
+// source maps for readable stack traces and injects release/debug ids, then
+// deletes the maps from the output so they never ship in the bundle.
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
+const sentryRelease =
+  process.env.VITE_GIT_SHA ??
+  process.env.NEXT_PUBLIC_GIT_SHA ??
+  git('rev-parse HEAD')
+const sentryPlugins: PluginOption[] = sentryAuthToken
+  ? [
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG ?? 'duyet',
+        project: process.env.SENTRY_PROJECT ?? 'chm-cloud',
+        authToken: sentryAuthToken,
+        release: { name: sentryRelease || undefined },
+        telemetry: false,
+        // Maps are generated (build.sourcemap below), uploaded, then removed.
+        sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] },
+      }),
+    ]
+  : []
+
 export default defineConfig({
   // Inline client-exposed build-time env (`import.meta.env.VITE_*`). See
   // CLIENT_ENV above — Worker [vars] are runtime-only and never reach the client.
@@ -627,10 +667,21 @@ export default defineConfig({
       'zod',
     ],
   },
-  plugins: [ssrClientOnlyStub(), tailwindcss(), ...runtimePlugins],
+  // Sentry plugin LAST so it sees the final emitted bundle for source-map upload.
+  plugins: [
+    ssrClientOnlyStub(),
+    tailwindcss(),
+    ...runtimePlugins,
+    ...sentryPlugins,
+  ],
   build: {
     // Cloudflare Workers V8 runs ES2022+ natively; avoids needless downleveling.
     target: 'esnext',
+    // Emit source maps only when uploading to Sentry (token present). 'hidden'
+    // generates the .map files without a sourceMappingURL comment in the JS, so
+    // nothing references them in production; the Sentry plugin deletes them
+    // post-upload. Off otherwise to keep builds lean.
+    sourcemap: sentryAuthToken ? 'hidden' : false,
   },
   optimizeDeps: {
     // Pre-bundle heavy deps to speed cold dev-server start.

@@ -95,6 +95,11 @@ jobs:
           # Provide it as a GitHub Actions *variable*: pk_test for PR previews,
           # pk_live for main. Absent → Clerk cleanly disables (app runs anon).
           VITE_CLERK_PUBLISHABLE_KEY: ${{ github.event_name == 'pull_request' && vars.CHM_CLERK_PUBLISHABLE_KEY_TEST || vars.CHM_CLERK_PUBLISHABLE_KEY }}
+          # Sentry source-map upload (build-time only). When the secret is unset
+          # (forked/dependabot PRs) the vite plugin is skipped — the build still
+          # succeeds, just without uploaded source maps. SENTRY_ORG / SENTRY_PROJECT
+          # default to duyet/chm-cloud in vite.config.ts.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             bun run build:preview
