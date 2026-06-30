@@ -235,11 +235,6 @@ export function HostSwitcher() {
                         {isServerHost(activeHost.source) ? (
                           <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
                             <HostVersionWithStatus hostId={activeHost.id} />
-                            {activeHost.readOnly && (
-                              <span className="hidden min-[500px]:inline">
-                                · read-only
-                              </span>
-                            )}
                           </span>
                         ) : (
                           <span className="truncate text-xs text-muted-foreground">

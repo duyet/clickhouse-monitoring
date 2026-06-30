@@ -22,6 +22,11 @@
           "type": "yaml",
           "path": "deploy/helm/chmonitor/Chart.yaml",
           "jsonpath": "$.appVersion"
+        },
+        {
+          "type": "json",
+          "path": "apps/dashboard/src/package.json",
+          "jsonpath": "$.version"
         }
       ],
       "changelog-sections": [
