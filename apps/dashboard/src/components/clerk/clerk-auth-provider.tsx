@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { clerkAppearance } from './clerk-appearance'
 import { ClerkProvider } from '@clerk/tanstack-react-start'
 import {
   CLERK_PUBLISHABLE_KEY,
@@ -34,7 +35,10 @@ export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
   // value. Clerk also auto-reads VITE_CLERK_PUBLISHABLE_KEY, but being explicit
   // keeps the contract self-documenting and decoupled from Clerk's lookup order.
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY}
+      appearance={clerkAppearance}
+    >
       {children}
     </ClerkProvider>
   )
