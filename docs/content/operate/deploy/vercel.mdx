@@ -1,19 +1,28 @@
 ---
 description: Deploy chmonitor to Vercel — legacy guide for the Next.js v0.2 build; v0.3+ targets Cloudflare Workers or Docker.
 icon: Triangle
+title: Vercel
 ---
 
-# Vercel
+Deploy chmonitor to Vercel using the legacy Next.js build. Vercel auto-deploys on every push to `main` and inlines client env vars at build time.
 
 <Callout type="warn" title="Legacy guide — Next.js v0.2 only">
 This guide targets the **legacy Next.js build (v0.2 and earlier)**. The current app (`apps/dashboard`, TanStack Start, v0.3+) is designed for Cloudflare Workers. If you are running v0.3 or later, use [Cloudflare Workers](/operate/deploy/cloudflare) or [Docker](/operate/deploy/docker) instead.
 </Callout>
 
-## Quick start
+## Prerequisites
+
+<Callout type="info" title="What you need">
+- A Vercel account
+- Node.js 22.x or later (build runtime)
+- A reachable ClickHouse endpoint with a monitoring user
+</Callout>
+
+## Setup
+
+Use the one-click button, or follow the manual steps.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchmonitor%2Fchmonitor&env=CLICKHOUSE_HOST,CLICKHOUSE_USER,CLICKHOUSE_PASSWORD,CLICKHOUSE_MAX_EXECUTION_TIME,CLICKHOUSE_TZ)
-
-Or deploy manually:
 
 <Steps>
 <Step>
@@ -23,9 +32,23 @@ Go to [vercel.com/new](https://vercel.com/new) and import the repository.
 </Step>
 
 <Step>
+### Set build settings
+
+Vercel detects Next.js automatically. Confirm the values below.
+
+| Setting | Value |
+|---|---|
+| Framework preset | Next.js |
+| Build command | `bun run build` (or `npm run build`) |
+| Output directory | `.next` |
+| Install command | `bun install` |
+| Node.js version | 22.x or later |
+</Step>
+
+<Step>
 ### Set environment variables
 
-In the Vercel dashboard, go to **Project → Settings → Environment Variables** and add the variables below.
+In the Vercel dashboard, go to **Project → Settings → Environment Variables** and add the variables from [Configure](#configure) below.
 </Step>
 
 <Step>
@@ -35,21 +58,11 @@ Click **Deploy** or push to `main` to trigger an automatic deploy.
 </Step>
 </Steps>
 
-## Build settings
-
-| Setting | Value |
-|---|---|
-| Framework preset | Next.js |
-| Build command | `bun run build` (or `npm run build`) |
-| Output directory | `.next` |
-| Install command | `bun install` |
-| Node.js version | 22.x or later |
-
-## Configure
+### Configure
 
 Set environment variables in Vercel dashboard → Project → Settings → Environment Variables.
 
-### Client vs server vars on Vercel
+#### Client vs server vars on Vercel
 
 On Vercel (Next.js), client-side vars use `NEXT_PUBLIC_*`. These are inlined at build time. Server-side vars are plain names. This differs from the TanStack app which uses `VITE_*`. For dual-surface settings you set the canonical `CHM_*` name once and the client var is derived from it at build time.
 
@@ -59,7 +72,7 @@ On Vercel (Next.js), client-side vars use `NEXT_PUBLIC_*`. These are inlined at 
 | `VITE_CLERK_PUBLISHABLE_KEY` | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (client) |
 | `VITE_TITLE_SHORT` | `NEXT_PUBLIC_TITLE_SHORT` | Branding (client) |
 
-### ClickHouse connection
+#### ClickHouse connection
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -68,9 +81,7 @@ On Vercel (Next.js), client-side vars use `NEXT_PUBLIC_*`. These are inlined at 
 | `CLICKHOUSE_PASSWORD` | No | `""` | Password(s), same count as HOST |
 | `CLICKHOUSE_NAME` | No | — | Friendly label(s) for host switcher |
 
-#### Multiple hosts
-
-All four variables must have the same count:
+For multiple hosts, all four variables must have the same count:
 
 ```
 CLICKHOUSE_HOST=https://ch1:8443,https://ch2:8443
@@ -79,7 +90,7 @@ CLICKHOUSE_PASSWORD=pass1,pass2
 CLICKHOUSE_NAME=primary,replica
 ```
 
-### Query / pool tuning
+#### Query / pool tuning
 
 | Variable | Default | Description |
 |---|---|---|
@@ -90,7 +101,7 @@ CLICKHOUSE_NAME=primary,replica
 | `CLICKHOUSE_POOL_TIMEOUT` | `300000` | Pool acquire timeout (ms) |
 | `CLICKHOUSE_POOL_CLEANUP_INTERVAL` | `60000` | Pool cleanup interval (ms) |
 
-### Feature permissions
+#### Feature permissions
 
 Add to Vercel env vars:
 
@@ -105,21 +116,28 @@ For a config file, set `CHM_CONFIG_FILE` to a path readable by the Vercel functi
 
 Feature ids: `overview`, `agent`, `insights`, `health`, `queries`, `tables`, `metrics`, `dashboard`, `security`, `logs`, `settings`, `cluster`, `operations`, `actions`, `mcp`, `docs`, `about`.
 
-### Authentication
+#### Authentication
 
-**None (default):**
+<Tabs items={["None", "API key", "Clerk", "Proxy — Cloudflare Access", "Proxy — trusted header"]}>
+<Tab value="None">
+
+Default provider — safe only on a private network.
 
 ```
 CHM_AUTH_PROVIDER=none
 ```
+</Tab>
 
-**API key layer:**
+<Tab value="API key">
+
+Add an API key layer:
 
 ```
 CHM_API_KEY_SECRET=a-long-random-secret
 ```
+</Tab>
 
-**Clerk:**
+<Tab value="Clerk">
 
 ```
 # Server-side (plain var)
@@ -130,16 +148,18 @@ CLERK_SECRET_KEY=sk_live_...
 NEXT_PUBLIC_AUTH_PROVIDER=clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
+</Tab>
 
-**Proxy — Cloudflare Access:**
+<Tab value="Proxy — Cloudflare Access">
 
 ```
 CHM_AUTH_PROVIDER=proxy
 CHM_CF_ACCESS_TEAM_DOMAIN=https://yourteam.cloudflareaccess.com
 CHM_CF_ACCESS_AUD=<audience-tag>
 ```
+</Tab>
 
-**Proxy — trusted header:**
+<Tab value="Proxy — trusted header">
 
 ```
 CHM_AUTH_PROVIDER=proxy
@@ -148,8 +168,10 @@ CHM_PROXY_AUTH_SECRET=a-long-random-secret
 ```
 
 Put chmonitor behind a Vercel Edge Middleware or an upstream proxy that sets the header. See [Authentication](/operate/authentication).
+</Tab>
+</Tabs>
 
-### AI agent
+#### AI agent
 
 ```
 LLM_API_KEY=sk-...
@@ -159,15 +181,15 @@ AGENT_API_TOKEN=bearer-token-for-agent-api
 AGENT_ENABLE_CONTROL_TOOLS=false
 ```
 
+<Callout type="danger" title="Keep the LLM key server-side">
 Never use `NEXT_PUBLIC_LLM_API_KEY` — keep the key server-side only.
+</Callout>
 
-### Conversation store
+#### Conversation store
 
-**Default:** browser localStorage — no server config needed.
+The default is browser localStorage — no server config needed. On Vercel (Next.js v0.2), use `postgres` for server-side persistence. D1 and Durable Object stores are Cloudflare-only.
 
-On Vercel (Next.js v0.2), use `postgres` for server-side persistence. D1 and Durable Object stores are Cloudflare-only.
-
-**Postgres (recommended on Vercel):**
+Postgres is recommended on Vercel:
 
 ```
 CONVERSATION_STORE_BACKEND=postgres
@@ -176,9 +198,9 @@ DATABASE_URL=postgresql://user:pass@host:5432/dbname
 
 Vercel Postgres, Neon, and Supabase all work. Add `DATABASE_URL` in the Vercel dashboard.
 
-### Health alerting
+#### Health alerting
 
-The health sweep endpoint is `GET /api/cron/health-sweep`. Trigger it from a Vercel Cron Job or an external cron:
+The health sweep endpoint is `GET /api/cron/health-sweep`. Trigger it from a Vercel Cron Job or an external cron.
 
 In `vercel.json`:
 
@@ -200,7 +222,7 @@ HEALTH_ALERT_MIN_SEVERITY=warning
 CRON_SECRET=a-random-secret
 ```
 
-### Branding
+#### Branding
 
 ```
 NEXT_PUBLIC_TITLE_SHORT=MyCluster
@@ -209,17 +231,27 @@ NEXT_PUBLIC_MEASUREMENT_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_POSTHOG_KEY=phc_...
 ```
 
-## Upgrading
+## Verify
 
-1. Push to `main` (or merge a PR). Vercel auto-deploys.
-2. For environment variable changes, update them in the dashboard and trigger a redeploy (Deployments → Redeploy).
+- Open the assigned Vercel URL — you should land on the overview page.
+- To upgrade, push to `main` (or merge a PR) and Vercel auto-deploys. For environment variable changes, update them in the dashboard and trigger a redeploy (Deployments → Redeploy).
 
 For breaking changes between major versions, see [Migrating to v0.3](/reference/migrating/v0-3).
 
-## Limitations
+## Troubleshooting
 
 <Callout type="info" title="Vercel limitations">
 - **No D1 / Durable Objects:** Cloudflare-only. Use postgres or clickhouse for conversation store.
 - **Function timeout:** Vercel Hobby plan limits function duration to 10 s. Use Pro or set `CLICKHOUSE_MAX_EXECUTION_TIME` below that limit.
 - **Cold starts:** Vercel serverless functions have cold starts. Set `CLICKHOUSE_POOL_SIZE` appropriately.
 </Callout>
+
+## Related
+
+<Cards>
+  <Card title="Cloudflare Workers" href="/operate/deploy/cloudflare" description="The current v0.3+ deployment target — serverless, global, D1 and Cron support." />
+  <Card title="Docker" href="/operate/deploy/docker" description="Run the published container anywhere Docker runs." />
+  <Card title="Authentication" href="/operate/authentication" description="Choose an auth provider: none, API key, Clerk, or trusted proxy." />
+  <Card title="Migrating to v0.3" href="/reference/migrating/v0-3" description="Breaking changes between major versions." />
+  <Card title="Production checklist" href="/operate/deploy/production-checklist" description="Harden and validate before exposing to a team or the internet." />
+</Cards>

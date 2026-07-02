@@ -1,15 +1,16 @@
 ---
 description: Deploy chmonitor to Railway, Render, or Fly.io in minutes using community-maintained templates.
 icon: MousePointerClick
+title: One-Click Deploy Templates
 ---
 
-# One-Click Deploy Templates
-
-Community templates for deploying chmonitor on Railway, Render, and Fly.io.
+Deploy chmonitor on Railway, Render, or Fly.io with community-maintained templates. Each template runs the published image and wires up a health check for you.
 
 <Callout type="warn" title="Starting-point templates, not verified pipelines">
 These are starting-point templates, not verified CI pipelines. They have not been boot-tested end-to-end against a live ClickHouse instance in automated CI. Review the env var placeholders, substitute real values, and verify the deployment works in your environment before relying on it in production.
 </Callout>
+
+## Prerequisites
 
 All three templates run the published image `ghcr.io/chmonitor/chmonitor:latest`, expose port 3000, and define a health check against `/api/healthz`. You must supply three env vars:
 
@@ -21,9 +22,12 @@ All three templates run the published image `ghcr.io/chmonitor/chmonitor:latest`
 
 The template files live in [`deploy/templates/`](https://github.com/chmonitor/chmonitor/tree/main/deploy/templates) in the repository.
 
----
+## Setup
 
-## Railway
+Pick your platform.
+
+<Tabs items={["Railway", "Render", "Fly.io"]}>
+<Tab value="Railway">
 
 Template: [`deploy/templates/railway.json`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/railway.json)
 
@@ -60,10 +64,9 @@ Alternatively, copy `deploy/templates/railway.json` into your repository root as
   }
 }
 ```
+</Tab>
 
----
-
-## Render
+<Tab value="Render">
 
 Template: [`deploy/templates/render.yaml`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/render.yaml)
 
@@ -103,10 +106,9 @@ services:
       - key: CLICKHOUSE_PASSWORD
         value: YOUR_CLICKHOUSE_PASSWORD   # use Render secret instead
 ```
+</Tab>
 
----
-
-## Fly.io
+<Tab value="Fly.io">
 
 Template: [`deploy/templates/fly.toml`](https://github.com/chmonitor/chmonitor/blob/main/deploy/templates/fly.toml)
 
@@ -145,12 +147,26 @@ fly deploy
 </Steps>
 
 The health check polls `/api/healthz` every 10 seconds with a 20-second grace period on startup.
+</Tab>
+</Tabs>
 
----
-
-## After deploying
+## Verify
 
 - Open `https://your-app-url` — you should land on the overview page.
 - If the page loads but charts are empty, check that the ClickHouse user has `SELECT` on `system.*`.
 - If the health check fails, verify `CLICKHOUSE_HOST` is reachable from inside the container (use the private/internal hostname your platform provides, not `localhost`).
-- For additional configuration (authentication, AI agent, conversation store), see the [Docker deploy guide](/operate/deploy/docker) — the same env vars apply.
+
+## Troubleshooting
+
+<Callout type="info" title="More configuration">
+For additional configuration (authentication, AI agent, conversation store), see the [Docker deploy guide](/operate/deploy/docker) — the same env vars apply.
+</Callout>
+
+## Related
+
+<Cards>
+  <Card title="Docker deployment" href="/operate/deploy/docker" description="Full env var reference — auth, AI agent, and conversation store apply the same way." />
+  <Card title="Cloudflare Workers" href="/operate/deploy/cloudflare" description="Serverless, global hosting for the current v0.3+ app." />
+  <Card title="Kubernetes deployment" href="/operate/deploy/k8s" description="Install chmonitor with the Helm chart." />
+  <Card title="Production checklist" href="/operate/deploy/production-checklist" description="Harden and validate before exposing to a team or the internet." />
+</Cards>

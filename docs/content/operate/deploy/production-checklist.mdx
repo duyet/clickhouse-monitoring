@@ -1,11 +1,10 @@
 ---
 description: Steps to harden and validate a chmonitor deployment before exposing it to a team or the internet.
 icon: ClipboardCheck
+title: Production Checklist
 ---
 
-# Production Checklist
-
-Review each section before exposing chmonitor to a team or the internet.
+Work through each section before exposing chmonitor to a team or the internet. Every item is a hardening or validation step — skipping one leaves a gap.
 
 ## ClickHouse user and grants
 
@@ -18,7 +17,7 @@ Review each section before exposing chmonitor to a team or the internet.
 
 ## Authentication — do not leave fully public
 
-<Callout type="error" title="Open access is not safe on the internet">
+<Callout type="danger" title="Open access is not safe on the internet">
 `CHM_AUTH_PROVIDER=none` is only safe on a private network with no agent or MCP access. If chmonitor is reachable from the internet, use Clerk or a trusted-header proxy provider.
 </Callout>
 
@@ -71,3 +70,12 @@ Review each section before exposing chmonitor to a team or the internet.
 - [ ] Record where secrets are stored and who can rotate them.
 - [ ] Keep a rollback path: previous Docker tag, Helm release revision, or Worker version.
 - [ ] Watch app logs after deploy for ClickHouse connection errors or auth failures.
+
+## Related
+
+<Cards>
+  <Card title="Authentication" href="/operate/authentication" description="Choose and configure an auth provider: none, API key, Clerk, or trusted proxy." />
+  <Card title="Docker deployment" href="/operate/deploy/docker" description="Full env var reference for a self-hosted container." />
+  <Card title="Cloudflare Workers" href="/operate/deploy/cloudflare" description="Serverless hosting with D1 and Cron Trigger support." />
+  <Card title="Kubernetes deployment" href="/operate/deploy/k8s" description="Install chmonitor with the Helm chart, secrets, and probes." />
+</Cards>
