@@ -1,11 +1,10 @@
 ---
-description: Cluster health at a glance — active queries, memory, disk, and CPU pulled from live ClickHouse system tables.
+description: Read cluster health at a glance — active queries, memory, disk, and CPU pulled live from ClickHouse system tables.
 icon: Gauge
+title: Overview
 ---
 
-# Overview
-
-> The landing page for each ClickHouse host: instant health status, active queries, memory, disk, and CPU at a glance.
+The Overview page is where each ClickHouse host lands you: instant health status, active queries, memory, disk, and CPU at a glance.
 
 | | |
 |---|---|
@@ -18,16 +17,18 @@ icon: Gauge
 
 ## What it does
 
-Overview is the first page you land on. It pulls live numbers from several system tables to answer:
+Overview pulls live numbers from several system tables to answer, at a glance:
 
 - Is the server healthy right now?
 - How many queries are running?
 - How much memory and disk are in use?
 - What is CPU load?
 
-The page auto-refreshes on a short interval. There are no write operations.
+The page auto-refreshes on a short interval. It issues no write operations.
 
-### Tabs
+## Using it
+
+The page groups its live signals into five tabs.
 
 <Tabs items={['Connections', 'Queries', 'Merges', 'Replication', 'System']}>
   <Tab value="Connections">
@@ -47,26 +48,34 @@ The page auto-refreshes on a short interval. There are no write operations.
   </Tab>
 </Tabs>
 
-## Pages
-
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
 | Overview | `/overview` | CPU, memory, disk gauges; active query count; connection count; replication lag indicator | `system.asynchronous_metrics`, `system.metrics`, `system.processes`, `system.disks`, `system.tables` |
+
+<Callout type="info" title="Data freshness and behavior">
+- `system.asynchronous_metrics` values are recalculated by ClickHouse on a background interval (default ~1 s). The values shown are as fresh as that interval allows.
+- `system.disks` reports the disks ClickHouse knows about. If you use multiple storage policies or remote disks (S3, HDFS), all configured disks appear.
+- `system.tables` is queried to derive a table count. On clusters with many databases this can be slow; increase `CLICKHOUSE_MAX_EXECUTION_TIME` if overviews time out.
+- The Replication tab shows replication lag only when replicated tables exist on the host. The tab still appears even if there are none.
+</Callout>
 
 ## Permissions & access
 
 Overview is public by default. To restrict it:
 
-```bash
-# Env var
-CHM_FEATURE_OVERVIEW_ACCESS=authenticated
-```
-
-```toml
-# CHM_CONFIG_FILE (TOML)
-[features.overview]
-access = "authenticated"
-```
+<Tabs items={['Env var', 'Config file (TOML)']}>
+  <Tab value="Env var">
+    ```bash
+    CHM_FEATURE_OVERVIEW_ACCESS=authenticated
+    ```
+  </Tab>
+  <Tab value="Config file (TOML)">
+    ```toml
+    [features.overview]
+    access = "authenticated"
+    ```
+  </Tab>
+</Tabs>
 
 To disable the feature entirely:
 
@@ -78,23 +87,17 @@ CHM_FEATURE_OVERVIEW_ENABLED=false
 
 When disabled, the route is removed from the nav and a disabled screen is shown on direct visit.
 
-## Configuration
-
-No feature-specific configuration. The refresh interval and caching behaviour follow the global settings:
+There is no feature-specific configuration. The refresh interval and caching behaviour follow the global query settings:
 
 ```bash
 CLICKHOUSE_MAX_EXECUTION_TIME=60   # query timeout in seconds
 ```
 
-## Notes & limitations
-
-- `system.asynchronous_metrics` values are recalculated by ClickHouse on a background interval (default ~1 s). The values shown are as fresh as that interval allows.
-- `system.disks` reports the disks ClickHouse knows about. If you use multiple storage policies or remote disks (S3, HDFS), all configured disks appear.
-- `system.tables` is queried to derive a table count. On clusters with many databases this can be slow; increase `CLICKHOUSE_MAX_EXECUTION_TIME` if overviews time out.
-- The Replication tab shows replication lag only when replicated tables exist on the host. The tab still appears even if there are none.
-
 ## Related
 
-- [Authentication](/operate/authentication)
-- [Settings reference](/reference/settings)
-- [Health alerting](/guide/features/health)
+<Cards>
+  <Card title="Query monitoring" href="/guide/features/queries" description="Drill from active query counts into live and historical query analysis." />
+  <Card title="Health & alerting" href="/guide/features/health" description="Turn overview signals into alerts via the health sweep cron." />
+  <Card title="Authentication" href="/operate/authentication" description="Who can sign in and what each visitor may access." />
+  <Card title="Settings reference" href="/reference/settings" description="Environment variables and in-app configuration." />
+</Cards>

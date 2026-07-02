@@ -1,11 +1,10 @@
 ---
 description: Browse every database, table, column, index, projection, and dependency in your ClickHouse instance without writing SQL.
 icon: FolderTree
+title: Data Explorer
 ---
 
-# Data Explorer
-
-> Browse every database, table, column, index, projection, and dependency in your ClickHouse instance without writing SQL.
+The Data Explorer is a tree-browser for the entire schema of a ClickHouse host: every database, table, column, index, projection, and dependency, without writing SQL.
 
 | | |
 |---|---|
@@ -18,7 +17,7 @@ icon: FolderTree
 
 ## What it does
 
-The Data Explorer provides a tree-browser for the entire schema of a ClickHouse host. Select a database from the sidebar, then a table, to see:
+Select a database from the sidebar, then a table, to see:
 
 - **Column list** — name, type, and whether the column is part of the primary key, sorting key, or partition key.
 - **DDL** — the `CREATE TABLE` statement for the selected table.
@@ -31,14 +30,36 @@ The Data Explorer provides a tree-browser for the entire schema of a ClickHouse 
 All queries are read-only. No writes are issued.
 
 <Callout type="info" title="Read-only">
-  The explorer cannot create, alter, or drop objects. It only reads from system tables.
+The explorer cannot create, alter, or drop objects. It only reads from system tables.
 </Callout>
 
-## Pages
+## Using it
+
+<Steps>
+  <Step>
+    ### Pick a database
+    Select a database from the sidebar tree. The list comes from `system.databases`.
+  </Step>
+  <Step>
+    ### Select a table
+    Expand the database and choose a table to load its details.
+  </Step>
+  <Step>
+    ### Inspect the schema
+    Review columns, DDL, indexes, skip indexes, projections, dependencies, and table metadata in the detail panels.
+  </Step>
+</Steps>
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
 | Data Explorer | `/explorer` | Database tree; table details: columns, DDL, indexes, projections, skip indexes, dependencies | `system.databases`, `system.tables`, `system.columns`, `system.projection_parts`, `system.data_skipping_indices`, `system.dictionaries` |
+
+<Callout type="info" title="Version-dependent panels and behavior">
+- **`system.data_skipping_indices`** — available since ClickHouse 20.6. The skip-index panel is hidden on older versions.
+- **`system.projection_parts`** — projections were introduced in ClickHouse 21.6. The projections panel is hidden on older versions.
+- **Dependencies** — dependency tracking uses the `dependencies_database` and `dependencies_table` arrays in `system.tables`. These arrays are populated for materialized views and dictionaries. Direct table references in ad-hoc queries are not tracked.
+- On clusters with many databases (hundreds), the initial database list query against `system.databases` may be slow. Increase `CLICKHOUSE_MAX_EXECUTION_TIME` if needed.
+</Callout>
 
 ## Permissions & access
 
@@ -60,24 +81,16 @@ CHM_DISABLED_FEATURES=tables
 access = "authenticated"
 ```
 
-## Configuration
-
-No feature-specific configuration. Global query timeout applies:
+There is no feature-specific configuration. The global query timeout applies:
 
 ```bash
 CLICKHOUSE_MAX_EXECUTION_TIME=60
 ```
 
-## Notes & limitations
-
-- **`system.data_skipping_indices`** — available since ClickHouse 20.6. The skip-index panel is hidden on older versions.
-- **`system.projection_parts`** — projections were introduced in ClickHouse 21.6. The projections panel is hidden on older versions.
-- **Dependencies** — dependency tracking uses the `dependencies_database` and `dependencies_table` arrays in `system.tables`. These arrays are populated for materialized views and dictionaries. Direct table references in ad-hoc queries are not tracked.
-- The explorer is read-only.
-- On clusters with many databases (hundreds), the initial database list query against `system.databases` may be slow. Increase `CLICKHOUSE_MAX_EXECUTION_TIME` if needed.
-
 ## Related
 
-- [Tables](/guide/features/tables)
-- [Authentication](/operate/authentication)
-- [Settings reference](/reference/settings)
+<Cards>
+  <Card title="Tables & storage" href="/guide/features/tables" description="Storage, parts, and replication for the tables you explore." />
+  <Card title="Authentication" href="/operate/authentication" description="Who can sign in and what each visitor may access." />
+  <Card title="Settings reference" href="/reference/settings" description="Environment variables and in-app configuration." />
+</Cards>

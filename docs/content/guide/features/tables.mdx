@@ -1,11 +1,10 @@
 ---
-description: Inspect table storage, replication health, schema, dictionaries, and background data-movement operations across all databases.
+description: Inspect table storage, replication health, schema, dictionaries, and background data-movement across all databases.
 icon: Table2
+title: Tables
 ---
 
-# Tables
-
-> Inspect table storage, replication health, schema details, dictionaries, and background data-movement operations across all databases.
+The Tables feature answers storage and replication questions across every database — sizes, parts, replica health, pending DDL, Kafka consumers, and dictionaries — without writing any SQL.
 
 | | |
 |---|---|
@@ -28,7 +27,9 @@ The Tables feature answers storage and replication questions without writing any
 
 All pages are read-only except for the OPTIMIZE TABLE action on the tables list, which requires an extra grant.
 
-## Pages
+## Using it
+
+Each question maps to a dedicated page.
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -42,6 +43,23 @@ All pages are read-only except for the OPTIMIZE TABLE action on the tables list,
 | Dictionaries | `/dictionaries` | External dictionary status, source type, memory usage | `system.dictionaries` |
 | Kafka Consumers | `/kafka-consumers` | Kafka table engine consumer lag, poll/commit counts, ingestion errors | `system.kafka_consumers` |
 | DDL Queue | `/distributed-ddl-queue` | Cluster-wide DDL task queue status and execution history | `system.distributed_ddl_queue` |
+
+<Callout type="warn" title="OPTIMIZE TABLE privilege required">
+The Tables page can issue `OPTIMIZE TABLE`. The ClickHouse user must have `ALTER TABLE ... OPTIMIZE` (or broader `ALTER`) privilege. Without it the action returns an error.
+</Callout>
+
+<Callout type="info" title="Optional and environment-dependent tables">
+Several pages are only relevant in specific configurations and show an informational empty state when their backing table is absent.
+
+| Page | Condition |
+|---|---|
+| Kafka Consumers | Requires at least one Kafka table engine to be configured |
+| Replicated Fetches | Only present on servers running replicated tables |
+| Dropped Tables | Requires Atomic database engine (default since ClickHouse 20.6) |
+| DDL Queue | Only meaningful on clusters using `ON CLUSTER` DDL |
+</Callout>
+
+- **Readonly Tables** — a replica enters read-only mode when it cannot reach Keeper/ZooKeeper. The `/readonly-tables` page is a filtered view of `system.replicas`; it shows a zero-row table when all replicas are healthy.
 
 ## Permissions & access
 
@@ -63,38 +81,19 @@ CHM_DISABLED_FEATURES=tables
 access = "authenticated"
 ```
 
-Note: the Data Explorer (`/explorer`) is also under the `tables` feature id. Gating tables also gates the explorer.
+The Data Explorer (`/explorer`) is also under the `tables` feature id, so gating tables also gates the explorer.
 
-## Configuration
-
-No feature-specific configuration. The global query timeout applies to all table queries:
+There is no feature-specific configuration. The global query timeout applies to all table queries:
 
 ```bash
 CLICKHOUSE_MAX_EXECUTION_TIME=60
 ```
 
-## Notes & limitations
-
-<Callout type="warn" title="OPTIMIZE TABLE privilege required">
-  The Tables page can issue `OPTIMIZE TABLE`. The ClickHouse user must have `ALTER TABLE ... OPTIMIZE` (or broader `ALTER`) privilege. Without it the action returns an error.
-</Callout>
-
-<Callout type="info" title="Optional and environment-dependent tables">
-  Several pages are only relevant in specific configurations and show an informational empty state when their backing table is absent.
-
-  | Page | Condition |
-  |---|---|
-  | Kafka Consumers | Requires at least one Kafka table engine to be configured |
-  | Replicated Fetches | Only present on servers running replicated tables |
-  | Dropped Tables | Requires Atomic database engine (default since ClickHouse 20.6) |
-  | DDL Queue | Only meaningful on clusters using `ON CLUSTER` DDL |
-</Callout>
-
-- **Readonly Tables** — a replica enters read-only mode when it cannot reach Keeper/ZooKeeper. The `/readonly-tables` page is a filtered view of `system.replicas`; it shows a zero-row table when all replicas are healthy.
-
 ## Related
 
-- [Data Explorer](/guide/features/explorer)
-- [Operations (merges & mutations)](/guide/features/operations)
-- [Authentication](/operate/authentication)
-- [Settings reference](/reference/settings)
+<Cards>
+  <Card title="Data explorer" href="/guide/features/explorer" description="Browse the schema of any table shown in the tables list." />
+  <Card title="Merges & operations" href="/guide/features/operations" description="Merges and mutations behind table part counts." />
+  <Card title="Authentication" href="/operate/authentication" description="Who can sign in and what each visitor may access." />
+  <Card title="Settings reference" href="/reference/settings" description="Environment variables and in-app configuration." />
+</Cards>

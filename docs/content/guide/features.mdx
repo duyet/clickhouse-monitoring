@@ -1,17 +1,16 @@
 ---
-description: chmonitor features — query monitoring, table storage, cluster health, metrics, and AI-powered insights organized by operational question.
+description: Explore every chmonitor feature — query monitoring, storage, cluster health, metrics, and AI insights — with per-feature access control.
 icon: LayoutGrid
+title: Features
 ---
 
-# Features
-
-chmonitor is organized around the operational questions you answer while running a ClickHouse cluster. Each feature maps to one or more routes in the UI and a feature id you can use to control access or disable it.
+chmonitor is organized around the operational questions you answer while running a ClickHouse cluster. Each feature maps to one or more UI routes and a feature id you use to control access or disable it.
 
 <Callout type="info" title="All features are public and enabled by default">
-You only configure what you want to restrict or turn off. The only exceptions are the AI agent (`agent`) and control actions (`actions`), which default to `authenticated` access.
+You only configure what you want to restrict or turn off. The exceptions are the AI agent (`agent`) and control actions (`actions`), which default to `authenticated` access.
 </Callout>
 
-## Feature overview
+## Feature pages
 
 <Cards>
   <Card
@@ -20,32 +19,32 @@ You only configure what you want to restrict or turn off. The only exceptions ar
     description="Cluster health at a glance — active queries, memory, disk, and CPU."
   />
   <Card
-    title="Query Monitoring"
+    title="Query monitoring"
     href="/guide/features/queries"
     description="Live, historical, failed, slow, and expensive query analysis."
   />
   <Card
-    title="Tables & Storage"
+    title="Tables & storage"
     href="/guide/features/tables"
-    description="Table sizes, disk usage, parts, and storage breakdown."
+    description="Table sizes, disk usage, parts, replication, and storage breakdown."
   />
   <Card
-    title="Data Explorer"
+    title="Data explorer"
     href="/guide/features/explorer"
     description="Browse column definitions, dependencies, and projections for any table."
   />
   <Card
-    title="Merges & Operations"
+    title="Merges & operations"
     href="/guide/features/operations"
     description="Active merges, mutations, and background operation throughput."
   />
   <Card
-    title="Clusters & Replication"
+    title="Clusters & replication"
     href="/guide/features/cluster"
     description="Replication lag, queue size, and replica health across hosts."
   />
   <Card
-    title="Metrics & Profiler"
+    title="Metrics & profiler"
     href="/guide/features/metrics"
     description="Server CPU, memory, IO metrics and ClickHouse profiling data."
   />
@@ -55,12 +54,12 @@ You only configure what you want to restrict or turn off. The only exceptions ar
     description="AI-surfaced anomalies, performance patterns, and observations."
   />
   <Card
-    title="Health & Alerting"
+    title="Health & alerting"
     href="/guide/features/health"
     description="Active alerts from the health sweep cron with severity thresholds."
   />
   <Card
-    title="Security & Audit"
+    title="Security & audit"
     href="/guide/features/security"
     description="Who is accessing ClickHouse, with what grants, and how often."
   />
@@ -70,13 +69,20 @@ You only configure what you want to restrict or turn off. The only exceptions ar
     description="Server log entries from system.text_log and related tables."
   />
   <Card
-    title="MCP Server"
+    title="Dashboard"
+    href="/guide/features/dashboard"
+    description="Build a custom view by combining any built-in charts on one canvas."
+  />
+  <Card
+    title="MCP server"
     href="/guide/features/mcp"
     description="ClickHouse monitoring tools for AI clients via the Model Context Protocol."
   />
 </Cards>
 
 ## Feature index
+
+Every feature answers a specific operational question. Use the feature id to gate or disable it.
 
 | Feature | What it answers | Feature id | Page |
 |---|---|---|---|
@@ -136,3 +142,11 @@ enabled = false
 ```
 
 See [Feature Permissions](/operate/advanced/feature-permissions) for the full reference.
+
+## Related
+
+<Cards>
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Full reference for gating and disabling every feature." />
+  <Card title="Authentication" href="/operate/authentication" description="Who can sign in and what each visitor may access." />
+  <Card title="Settings reference" href="/reference/settings" description="Environment variables and in-app configuration." />
+</Cards>
