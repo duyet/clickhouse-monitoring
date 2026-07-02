@@ -1,28 +1,39 @@
 ---
 title: Reference
 description: Configuration reference, MCP, integrations, releases, and project info.
+icon: BookMarked
 ---
 
-# Reference
-
-Look up the details: environment variables, configuration files, the MCP server
-and clients, integrations, and release history.
+Look up the exact details: every environment variable and configuration key, the
+in-app settings, the MCP server and clients, integrations, and release history.
 
 ## Configuration
 
-Every setting chmonitor reads — see
-[Environment Variables](/reference/environment-variables),
-[Configuration](/reference/configuration), and
-[Connection Presets](/reference/connection-presets). The
-[Support Matrix](/reference/support-matrix) lists ClickHouse version coverage.
+Start with how chmonitor reads settings, then drill into the full variable list
+and how to lock down the connection.
+
+<Cards>
+<Card title="Configuration" href="/reference/configuration" description="Sources, precedence, and where each category lives." />
+<Card title="Environment variables" href="/reference/environment-variables" description="Every supported variable, grouped by area." />
+<Card title="Settings" href="/reference/settings" description="In-app settings page and its server-side counterparts." />
+<Card title="Connection presets" href="/reference/connection-presets" description="Create a least-privilege read-only ClickHouse user." />
+<Card title="Support matrix" href="/reference/support-matrix" description="ClickHouse version and distribution coverage." />
+</Cards>
 
 ## MCP
 
-Expose chmonitor to AI tools over the Model Context Protocol:
-[MCP Server](/reference/mcp-server) and [MCP Clients](/reference/mcp-clients).
+Expose chmonitor to AI tools over the Model Context Protocol.
 
-## Integrations & project
+<Cards>
+<Card title="MCP server" href="/reference/mcp-server" description="Endpoint, tools, and security model." />
+<Card title="MCP clients" href="/reference/mcp-clients" description="Connect Claude, Cursor, and other MCP clients." />
+</Cards>
 
-[Grafana bridge](/reference/grafana-bridge),
-[catalog contributing](/reference/catalog-contributing),
-[releases](/reference/releases), and [migrating](/reference/migrating).
+## Integrations and project
+
+<Cards>
+<Card title="Grafana bridge" href="/reference/grafana-bridge" description="Bridge chmonitor data into Grafana." />
+<Card title="Catalog contributing" href="/reference/catalog-contributing" description="Contribute queries and dashboards." />
+<Card title="Releases" href="/reference/releases" description="Version history and changelog." />
+<Card title="Migrating" href="/reference/migrating" description="Upgrade between major versions." />
+</Cards>

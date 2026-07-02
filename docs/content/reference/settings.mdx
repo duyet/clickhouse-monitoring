@@ -5,7 +5,9 @@ icon: Cog
 
 # Settings
 
-The in-app Settings page (feature id: `settings`, route `/settings`) lets operators configure alert thresholds, manage browser connections, tune agent session options, and change the UI theme — without redeploying.
+The in-app Settings page (feature id: `settings`, route `/settings`) lets
+operators configure alert thresholds, manage browser connections, tune agent
+session options, and change the UI theme — without redeploying.
 
 To reach it, open the dashboard and click **Settings** in the navigation.
 
@@ -18,11 +20,15 @@ To reach it, open the dashboard and click **Settings** in the navigation.
 | Agent session | Model picker, token/cost display, conversation store selection |
 | Theme | Light / dark / system |
 
-Settings changes made in-app are stored per browser session or in the configured conversation store. They do not affect server-side environment variables.
+Settings changes made in-app are stored per browser session or in the configured
+conversation store. They do not affect server-side environment variables.
 
-## Conversation History (agent settings sidebar)
+## Conversation history (agent settings sidebar)
 
-The agent settings sidebar includes a **read-only** "Conversation History" section that names the backend currently storing agent chats. The backend is chosen at deploy time by environment variables — it cannot be switched from the UI. Labels you may see:
+The agent settings sidebar includes a **read-only** "Conversation History" section
+that names the backend currently storing agent chats. The backend is chosen at
+deploy time by environment variables — it cannot be switched from the UI. Labels
+you may see:
 
 | Label | Meaning |
 |---|---|
@@ -31,11 +37,17 @@ The agent settings sidebar includes a **read-only** "Conversation History" secti
 | **D1** | Cloudflare D1 (SQLite) database |
 | **Postgres** | A PostgreSQL-compatible database |
 
-To change the active backend, set the relevant server-side env vars and redeploy. See [Conversation history backends](/guide/ai-agent) in the AI Agent docs for the full env-var reference and setup steps.
+To change the active backend, set the relevant server-side env vars and redeploy.
+See [Conversation history backends](/guide/ai-agent) in the AI Agent docs for the
+full env-var reference and setup steps.
 
 ## Gating or disabling Settings
 
-By default, the Settings page is **public** — any visitor can open it. To restrict or remove it:
+By default, the Settings page is **public** — any visitor can open it. To restrict
+or remove it, use env vars or a config file.
+
+<Tabs items={["Environment variables", "Config file"]}>
+<Tab value="Environment variables">
 
 ```bash
 # Require authentication to access Settings
@@ -45,18 +57,24 @@ CHM_FEATURE_SETTINGS_ACCESS=authenticated
 CHM_FEATURE_SETTINGS_ENABLED=false
 ```
 
-Or in a config file:
+</Tab>
+<Tab value="Config file">
 
 ```toml
 [features.settings]
 access = "authenticated"
 ```
 
+</Tab>
+</Tabs>
+
 ## Server-side configuration
 
-Most operational configuration is done through environment variables, not the in-app Settings UI. Key variables:
+Most operational configuration is done through environment variables, not the
+in-app Settings UI. The key variables, grouped by area:
 
-**ClickHouse connection**
+<Accordions>
+<Accordion title="ClickHouse connection">
 
 ```bash
 CLICKHOUSE_HOST=https://your-clickhouse-host:8443
@@ -70,14 +88,16 @@ CLICKHOUSE_PASSWORD=secret-a,secret-b
 CLICKHOUSE_NAME=prod-a,prod-b
 ```
 
-**Query runtime**
+</Accordion>
+<Accordion title="Query runtime">
 
 ```bash
 CLICKHOUSE_MAX_EXECUTION_TIME=60    # seconds
 CLICKHOUSE_TZ=UTC
 ```
 
-**Feature permissions**
+</Accordion>
+<Accordion title="Feature permissions">
 
 ```bash
 CHM_FEATURE_AGENT_ACCESS=authenticated
@@ -86,7 +106,8 @@ CHM_AUTH_REQUIRED_FEATURES=agent,mcp,settings,actions
 CHM_DISABLED_FEATURES=peerdb
 ```
 
-**Health alerting**
+</Accordion>
+<Accordion title="Health alerting">
 
 ```bash
 HEALTH_ALERT_ENABLED=true
@@ -95,7 +116,8 @@ HEALTH_ALERT_MIN_SEVERITY=warning
 CRON_SECRET=your-cron-endpoint-secret
 ```
 
-**AI agent**
+</Accordion>
+<Accordion title="AI agent">
 
 ```bash
 LLM_API_KEY=your-key
@@ -103,7 +125,8 @@ LLM_API_BASE=https://openrouter.ai/api/v1
 LLM_MODEL=openrouter/free
 ```
 
-**Conversation persistence** (build-time flag + runtime backend)
+</Accordion>
+<Accordion title="Conversation persistence (build-time flag + runtime backend)">
 
 ```bash
 # Set the canonical name at build time (before bun run build);
@@ -114,7 +137,8 @@ CHM_FEATURE_CONVERSATION_DB=true
 CONVERSATION_STORE_BACKEND=agentstate   # or: d1, postgres, memory
 ```
 
-**Branding (build-time, TanStack app)**
+</Accordion>
+<Accordion title="Branding (build-time, TanStack app)">
 
 ```bash
 VITE_TITLE_SHORT=ClickHouse
@@ -122,11 +146,21 @@ VITE_LOGO=https://example.com/logo.svg
 VITE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-> The legacy Next.js app (v0.2 and earlier) used `NEXT_PUBLIC_*` equivalents for these client-side variables.
+<Callout type="info" title="Legacy Next.js prefix">
+The legacy Next.js app (v0.2 and earlier) used `NEXT_PUBLIC_*` equivalents for
+these client-side variables.
+</Callout>
+
+</Accordion>
+</Accordions>
 
 ## Related
 
-- [Feature Permissions](/operate/advanced/feature-permissions) — full reference for `CHM_FEATURE_*` env
-- [Authentication](/operate/authentication) — setting up Clerk, Cloudflare Access, or proxy auth
-- [AI Agent](/guide/ai-agent) — agent configuration and conversation store options
-- [Install & Configure](/operate/deploy) — platform-specific deployment with all env vars
+<Cards>
+<Card title="Configuration" href="/reference/configuration" description="How chmonitor reads settings and which category lives where." />
+<Card title="Environment variables" href="/reference/environment-variables" description="Full list of every variable, grouped by category." />
+<Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Full reference for CHM_FEATURE_* env." />
+<Card title="Authentication" href="/operate/authentication" description="Setting up Clerk, Cloudflare Access, or proxy auth." />
+<Card title="AI agent" href="/guide/ai-agent" description="Agent configuration and conversation store options." />
+<Card title="Install & configure" href="/operate/deploy" description="Platform-specific deployment with all env vars." />
+</Cards>

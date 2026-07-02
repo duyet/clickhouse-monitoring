@@ -1,15 +1,10 @@
 ---
 description: Connect Claude Desktop, Cursor, Claude Code, or any MCP-compatible client to your chmonitor deployment.
 icon: PlugZap
+title: MCP client setup
 ---
 
-# MCP Client Setup
-
-Step-by-step setup for connecting Claude Desktop, Cursor, Claude Code, or any MCP-compatible client to your chmonitor deployment.
-
-The server-side reference (endpoint, tools, security model) is at [MCP Server](/reference/mcp-server).
-
----
+Connect Claude Desktop, Cursor, Claude Code, or any MCP-compatible client to your chmonitor deployment, step by step. The server-side reference (endpoint, tools, security model) is at [MCP Server](/reference/mcp-server).
 
 ## Before you start
 
@@ -21,13 +16,15 @@ You need:
 
 The MCP endpoint is `<your-deployment>/api/mcp`. It uses the **Streamable HTTP** transport — no WebSocket, no persistent session.
 
----
-
 ## Authentication
 
 If `CHM_API_KEY_SECRET` is set on the server, every request must carry a bearer token.
 
-**Issue a token** (once, on the server):
+<Steps>
+<Step>
+### Issue a token
+
+Run this once, on the server:
 
 ```bash
 curl -X POST https://dash.example.com/api/v1/auth/api-key \
@@ -35,17 +32,20 @@ curl -X POST https://dash.example.com/api/v1/auth/api-key \
   -d '{"sub": "my-mcp-client"}'
 ```
 
-The response returns a `chm_` prefixed token. Pass it in the `Authorization` header:
+The response returns a `chm_` prefixed token.
+</Step>
+<Step>
+### Pass it in the Authorization header
 
 ```
 Authorization: Bearer chm_<token>
 ```
 
 Tokens are HMAC-SHA-256 signed and expire after 30 days by default.
+</Step>
+</Steps>
 
 If neither `CHM_API_KEY_SECRET` nor Clerk is configured, the endpoint accepts anonymous requests — suitable for a trusted local deployment.
-
----
 
 ## Client setup
 
@@ -139,8 +139,6 @@ Point your client at `https://dash.example.com/api/mcp`. The three methods the s
 </Tab>
 </Tabs>
 
----
-
 ## Available tools
 
 Once connected, your AI assistant can use these tools:
@@ -160,8 +158,6 @@ Once connected, your AI assistant can use these tools:
 All tools are read-only and respect the `CLICKHOUSE_MAX_EXECUTION_TIME` limit configured on the server.
 
 Pass `hostId` (integer, default `0`) to any tool to target a specific host when `CLICKHOUSE_HOST` lists more than one.
-
----
 
 ## Example prompts
 
@@ -190,6 +186,10 @@ Paste any of these into Claude, Cursor, or your MCP client after connecting:
 - "What is the current memory usage of the ClickHouse server?"
 - "How many active connections are there and what is the server uptime?"
 
----
+## Related
 
-See [MCP Server](/reference/mcp-server) for the full security model, resource URIs, and pre-built prompts.
+<Cards>
+  <Card title="MCP server" href="/reference/mcp-server" description="Full security model, resource URIs, and pre-built prompts." />
+  <Card title="API keys" href="/operate/authentication/api-keys" description="Issue and manage the chm_ tokens MCP clients use." />
+  <Card title="Features — MCP" href="/guide/features/mcp" description="What the MCP feature does and how to gate it." />
+</Cards>

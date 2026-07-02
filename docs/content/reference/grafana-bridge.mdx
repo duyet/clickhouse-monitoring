@@ -1,17 +1,14 @@
 ---
 description: Query ClickHouse system tables from Grafana panels alongside chmonitor — copy-paste SQL for running queries, slow queries, merges, parts, and replication lag.
 icon: AreaChart
+title: Grafana bridge
 ---
 
-# Grafana Bridge
-
-chmonitor and Grafana can coexist on the same ClickHouse cluster. There is no official integration and no special bridge process — both tools query ClickHouse system tables directly using the ClickHouse HTTP or native protocol. This page explains the setup and provides copy-paste panel queries derived from the same SQL that chmonitor uses internally.
+Run chmonitor and Grafana side by side on the same ClickHouse cluster. There is no official integration and no special bridge process — both tools query ClickHouse system tables directly using the ClickHouse HTTP or native protocol. This page walks through the setup and gives you copy-paste panel queries derived from the same SQL chmonitor uses internally.
 
 <Callout type="info" title="Community recipe">
 This is a community starting point, not an officially maintained integration. The queries are adapted from chmonitor's query configs and target ClickHouse v23.8+. Use them as a baseline and adjust to your schema version.
 </Callout>
-
----
 
 ## How it works
 
@@ -23,9 +20,11 @@ Both tools connect as separate clients. chmonitor uses the `@clickhouse/client` 
 
 You can give each tool the same credentials, or create separate ClickHouse users with `GRANT SELECT ON system.*` (see [Least-privilege connection presets](/reference/connection-presets)).
 
----
+## Setup
 
-## Install the Grafana ClickHouse data source
+<Steps>
+<Step>
+### Install the ClickHouse data source
 
 Install the official plugin from Grafana Labs:
 
@@ -34,6 +33,9 @@ grafana-cli plugins install grafana-clickhouse-datasource
 ```
 
 Or via the Grafana UI: **Configuration → Plugins → Search "ClickHouse"**.
+</Step>
+<Step>
+### Point it at your ClickHouse host
 
 Configure the data source to point at the same ClickHouse host that chmonitor uses:
 
@@ -45,8 +47,13 @@ Configure the data source to point at the same ClickHouse host that chmonitor us
 | Password | Same as `CLICKHOUSE_PASSWORD` |
 | Default database | `system` |
 | TLS | Match your ClickHouse TLS settings |
+</Step>
+<Step>
+### Add the panel queries
 
----
+Paste the [panel queries](#panel-queries) below into a Grafana panel's "Query" field with the ClickHouse data source selected, or import the [starter dashboard JSON](#starter-dashboard-json).
+</Step>
+</Steps>
 
 ## Panel queries
 
@@ -85,8 +92,6 @@ ORDER BY elapsed DESC
 
 **Suggested panel type:** Table. Sort by `elapsed` descending. Color `elapsed` with thresholds at 5 s (yellow) and 30 s (red).
 
----
-
 ### 2. Slow queries (`system.query_log`)
 
 Top slowest completed queries from the last 24 hours. Equivalent to chmonitor's **Slow Queries** page.
@@ -112,11 +117,11 @@ ORDER BY query_duration_ms DESC
 LIMIT 50
 ```
 
-**Note:** `system.query_log` must be enabled in your ClickHouse server config. The `query_cache_usage` column is available from ClickHouse v24.1+; omit it on older versions.
+<Callout type="info" title="Requires system.query_log">
+`system.query_log` must be enabled in your ClickHouse server config. The `query_cache_usage` column is available from ClickHouse v24.1+; omit it on older versions.
+</Callout>
 
 **Suggested panel type:** Table. Use a bar gauge overlay on `query_duration_s`.
-
----
 
 ### 3. Active merges (`system.merges`)
 
@@ -141,8 +146,6 @@ ORDER BY progress DESC
 ```
 
 **Suggested panel type:** Table. Add a stat panel with `COUNT(*)` for an at-a-glance merge count.
-
----
 
 ### 4. Parts per table (`system.parts`)
 
@@ -170,8 +173,6 @@ LIMIT 50
 
 **Suggested panel type:** Table. Highlight tables where `part_count` is unusually high (many small parts indicate a merge backlog).
 
----
-
 ### 5. Replication lag (`system.replicas`)
 
 Replication queue depth and delay per replicated table. Equivalent to chmonitor's **Replicas** page.
@@ -194,11 +195,11 @@ FROM system.replicas
 ORDER BY absolute_delay DESC, queue_size DESC
 ```
 
-**Note:** `system.replicas` is only populated for tables using a `Replicated*MergeTree` engine. Returns empty on standalone (non-replicated) ClickHouse instances.
+<Callout type="info" title="Replicated tables only">
+`system.replicas` is only populated for tables using a `Replicated*MergeTree` engine. Returns empty on standalone (non-replicated) ClickHouse instances.
+</Callout>
 
 **Suggested panel type:** Table. Add a stat panel with `max(absolute_delay)` and a threshold alert at 60 s.
-
----
 
 ## Starter dashboard JSON
 
@@ -207,8 +208,6 @@ A minimal Grafana dashboard JSON is available at [`docs/assets/grafana/chmonitor
 Import it via **Dashboards → Import → Upload JSON file**. Select your ClickHouse data source when prompted.
 
 The starter includes all five panels above with suggested layouts and thresholds. It is a community baseline — not an official release artifact.
-
----
 
 ## Credentials and access control
 
@@ -223,11 +222,17 @@ GRANT SELECT ON system.* TO grafana_ro;
 
 See [Least-privilege connection presets](/reference/connection-presets) for a complete example including network restrictions.
 
----
-
 ## Limitations
 
 - **No real-time streaming.** Grafana polls ClickHouse on a configurable interval (minimum ~5 s). chmonitor's running-queries view also polls every 5 s. Neither tool provides push-based streaming from ClickHouse.
 - **`system.query_log` retention.** Slow query history depends on your `query_log` TTL. Default retention is 30 days; adjust via `system.query_log` `flush_interval_milliseconds` and partition TTL in your ClickHouse config.
 - **`system.replicas` requires ZooKeeper/Keeper.** If your cluster does not use replication, the replicas panel returns no rows.
 - **ClickHouse version.** Queries target v23.8+. Some columns (`query_cache_usage`, `peak_threads_usage`) are only available on newer versions — the queries fall back gracefully or note the version requirement inline.
+
+## Related
+
+<Cards>
+  <Card title="Connection presets" href="/reference/connection-presets" description="Least-privilege ClickHouse users for the dashboard and Grafana." />
+  <Card title="Support matrix" href="/reference/support-matrix" description="Which ClickHouse versions and distributions are supported." />
+  <Card title="Enable system tables" href="/guide/getting-started/clickhouse-enable-system-tables" description="Turn on query_log and the other system tables these panels read." />
+</Cards>
