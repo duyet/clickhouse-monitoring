@@ -1,11 +1,10 @@
 ---
+title: Public (no auth)
 description: Run chmonitor with no authentication — all routes are open to anyone who can reach the server. Best for local dev or trusted networks.
 icon: Globe
 ---
 
-# Public (no auth)
-
-The default mode. The dashboard and all `/api/v1/*` routes are open to anyone who can reach the server.
+Public is the default mode. The dashboard and all `/api/v1/*` routes are open to anyone who can reach the server.
 
 <Mermaid chart={`sequenceDiagram
   participant B as Browser
@@ -13,9 +12,9 @@ The default mode. The dashboard and all `/api/v1/*` routes are open to anyone wh
   B->>A: GET /api/v1/*
   A-->>B: 200 data (open)`} />
 
-## Configuration
+## Setup
 
-No configuration needed. This is the default when `CHM_AUTH_PROVIDER` is unset.
+No configuration needed — this is the default when `CHM_AUTH_PROVIDER` is unset.
 
 ```bash
 CHM_AUTH_PROVIDER=none   # or omit entirely
@@ -25,32 +24,62 @@ If you also set `CHM_API_KEY_SECRET`, the API key layer activates for non-browse
 
 ## When to use
 
+Public mode fits environments where every visitor is already trusted:
+
 - Local development
 - Internal network with no external exposure
 - Read-only dashboards where the data is not sensitive
 
-## When not to use
-
-<Callout type="warn" title="Not for public internet">
-Do not use public mode on an internet-exposed deployment. Your ClickHouse credentials and query data will be visible to any visitor. Switch to a provider before exposing the dashboard externally.
-</Callout>
+Avoid public mode for:
 
 - Any public-internet deployment where you want to restrict access
 - Dashboards showing sensitive query data or credentials
 - Multi-user setups where you need per-user audit trails
 
-## How to lock down
+## Troubleshooting
 
-To add authentication, switch to another provider:
+<Callout type="warn" title="Not for public internet">
+Do not use public mode on an internet-exposed deployment. Your ClickHouse credentials and query data will be visible to any visitor. Switch to a provider before exposing the dashboard externally.
+</Callout>
 
-- [Clerk](/operate/authentication/clerk) — add browser sign-in with Clerk accounts
-- [Cloudflare Access](/operate/authentication/cloudflare-access) — put the dashboard behind Cloudflare Access
-- [Trusted header](/operate/authentication/trusted-header) — front with nginx or k8s ingress auth
+To add browser authentication, switch to another provider:
+
+<Cards>
+  <Card
+    title="Clerk"
+    href="/operate/authentication/clerk"
+    description="Add browser sign-in with Clerk accounts."
+  />
+  <Card
+    title="Cloudflare Access"
+    href="/operate/authentication/cloudflare-access"
+    description="Put the dashboard behind Cloudflare Access Zero Trust."
+  />
+  <Card
+    title="Trusted header"
+    href="/operate/authentication/trusted-header"
+    description="Front with nginx or Kubernetes ingress auth."
+  />
+</Cards>
 
 To lock down programmatic access only (keep the dashboard open), set `CHM_API_KEY_SECRET` and issue `chm_` tokens to authorized callers. See [API keys](/operate/authentication/api-keys).
 
 ## Related
 
-- [Authentication overview](/operate/authentication)
-- [Environment Variables — Authentication](/reference/environment-variables#authentication)
-- [Feature Permissions](/operate/advanced/feature-permissions)
+<Cards>
+  <Card
+    title="Authentication overview"
+    href="/operate/authentication"
+    description="Compare all auth providers and the two-layer model."
+  />
+  <Card
+    title="Environment variables — Authentication"
+    href="/reference/environment-variables#authentication"
+    description="Every CHM_* auth variable and its default."
+  />
+  <Card
+    title="Feature permissions"
+    href="/operate/advanced/feature-permissions"
+    description="Gate individual features to authenticated users."
+  />
+</Cards>

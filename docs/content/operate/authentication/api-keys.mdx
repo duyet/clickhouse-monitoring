@@ -1,11 +1,14 @@
 ---
+title: API keys (chm_ Bearer)
 description: Issue and use chm_ Bearer tokens for programmatic access to chmonitor — MCP clients, scripts, and CI pipelines.
 icon: KeyRound
 ---
 
-# API keys (chm_ Bearer)
-
 The API key layer is provider-agnostic. It activates whenever `CHM_API_KEY_SECRET` is set, regardless of which auth provider is configured. This is how MCP clients, scripts, and CI pipelines authenticate.
+
+- Keys are HMAC-SHA-256 signed and time-limited.
+- A valid key satisfies the auth guard on any `/api/v1/*` route.
+- The key layer coexists with any provider: a valid key always grants access, and if the key is absent or invalid the provider's check runs next.
 
 <Mermaid chart={`sequenceDiagram
   participant C as Client / Script
@@ -15,13 +18,9 @@ The API key layer is provider-agnostic. It activates whenever `CHM_API_KEY_SECRE
   C->>A: GET /api/v1/* (Bearer chm_token)
   A-->>C: 200 data`} />
 
-## How it works
+## Setup
 
-- Keys are HMAC-SHA-256 signed and time-limited.
-- A valid key satisfies the auth guard on any `/api/v1/*` route.
-- The key layer coexists with any provider: a valid key always grants access, and if the key is absent or invalid the provider's check runs next.
-
-## Configuration
+Set the signing secret server-side:
 
 ```bash
 CHM_API_KEY_SECRET=a-long-random-string-keep-this-secret
@@ -37,7 +36,7 @@ Set this out-of-band in production. For Cloudflare Workers:
 wrangler secret put CHM_API_KEY_SECRET
 ```
 
-## Issuing a token
+## Issue a token
 
 Call the key-issuance endpoint. It uses its own secret-based auth (the same `CHM_API_KEY_SECRET`):
 
@@ -48,9 +47,9 @@ curl -X POST https://dash.example.com/api/v1/auth/api-key \
 
 The response includes a `chm_` token. Tokens are time-limited; re-issue before expiry.
 
-## Using a token
+## Verify
 
-Pass the token in the `Authorization` header:
+Pass the token in the `Authorization` header on any `/api/v1/*` route:
 
 ```bash
 curl https://dash.example.com/api/v1/hosts \
@@ -65,13 +64,33 @@ curl https://dash.example.com/api/mcp \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
-## Notes
+## Troubleshooting
 
-- The `/api/mcp` endpoint also accepts Clerk OAuth bearer tokens. See [Clerk](/operate/authentication/clerk) and [MCP Server](/reference/mcp-server).
-- Feature-level permissions apply on top of the key auth. See [Feature Permissions](/operate/advanced/feature-permissions).
+<Accordions>
+<Accordion title="The /api/mcp endpoint rejects my chm_ token">
+The `/api/mcp` endpoint also accepts Clerk OAuth bearer tokens. If you are using Clerk OAuth instead of a `chm_` key, see [Clerk](/operate/authentication/clerk) and [MCP Server](/reference/mcp-server).
+</Accordion>
+<Accordion title="A valid token still gets 403 on some features">
+Feature-level permissions apply on top of the key auth. Even an authenticated caller may be denied a specific feature. See [Feature Permissions](/operate/advanced/feature-permissions).
+</Accordion>
+</Accordions>
 
 ## Related
 
-- [Authentication overview](/operate/authentication)
-- [MCP Server](/reference/mcp-server)
-- [Environment Variables — Authentication](/reference/environment-variables#authentication)
+<Cards>
+  <Card
+    title="Authentication overview"
+    href="/operate/authentication"
+    description="Compare all auth providers and the two-layer model."
+  />
+  <Card
+    title="MCP server"
+    href="/reference/mcp-server"
+    description="Connect MCP clients with chm_ Bearer tokens or Clerk OAuth."
+  />
+  <Card
+    title="Environment variables — Authentication"
+    href="/reference/environment-variables#authentication"
+    description="Every CHM_* auth variable and its default."
+  />
+</Cards>

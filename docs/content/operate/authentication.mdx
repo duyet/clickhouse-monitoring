@@ -1,18 +1,52 @@
 ---
+title: Authentication
 description: Two-layer auth system for chmonitor — choose a browser auth provider and an optional API key layer for programmatic access.
 icon: ShieldCheck
 ---
 
-# Authentication
-
-chmonitor has two independent auth layers that work together on every `/api/v1/*` route:
+chmonitor has two independent auth layers that work together on every `/api/v1/*` route. A request is allowed when **either** layer accepts it. The only fully public setup is `CHM_AUTH_PROVIDER=none` with no `CHM_API_KEY_SECRET`.
 
 - **Auth provider** — one of `none`, `clerk`, `proxy`, or `trusted`. Controls whether browser sessions are authenticated. Set the canonical `CHM_AUTH_PROVIDER`; the client `VITE_AUTH_PROVIDER` is derived from it at build time (you don't set it separately).
 - **API key layer** — always active when `CHM_API_KEY_SECRET` is set. Authenticates programmatic clients (MCP, scripts, CI) with signed `chm_` Bearer tokens, independent of the provider.
 
-A request is allowed when either layer accepts it. The only fully public setup is `CHM_AUTH_PROVIDER=none` with no `CHM_API_KEY_SECRET`.
+## Compare auth methods
 
-## Choose an auth method
+| Method | Who reads it | Browser / proxy auth | curl / MCP auth |
+|---|---|---|---|
+| Public (`none`) | — | open | none needed |
+| API key | Provider-agnostic; active when `CHM_API_KEY_SECRET` set | — | `Authorization: Bearer chm_…` |
+| Clerk | `clerk` provider | Clerk `__session` cookie | Clerk token or `chm_` key |
+| Clerk OAuth (MCP only) | MCP server | — | OAuth bearer token |
+| Proxy → Cloudflare Access | `proxy` provider | `Cf-Access-Jwt-Assertion` JWT | — |
+| Proxy → trusted header (bare subject) | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
+| Proxy → trusted headers (full profile) | `trusted` provider | forwarded headers (oauth2-proxy / Dex / Authelia) | shared secret header |
+
+## Which one should I use?
+
+| Situation | Recommended setup |
+|---|---|
+| Local dev or internal network, no login needed | Public (`none`) — default |
+| Hosted dashboard with user accounts and sign-in | Clerk |
+| Behind Cloudflare Access | Proxy — `cloudflare-access` |
+| Behind nginx/SSO with a bare identity header | Proxy — `trusted-header` |
+| Behind oauth2-proxy / Dex / Authelia / Traefik ForwardAuth | Trusted (`trusted`) |
+| MCP clients, scripts, CI pipelines | API key (`CHM_API_KEY_SECRET`) — add alongside any provider |
+
+## How enforcement decides
+
+<Callout type="info" title="Request evaluation order">
+For each `/api/v1/*` request, in order:
+
+1. If `CHM_AUTH_PROVIDER=none` and `CHM_API_KEY_SECRET` is not set → **allow** (public).
+2. The key-issuance route `/api/v1/auth/api-key` is exempt (it has its own auth).
+3. A valid `chm_` Bearer token → **allow**.
+4. The active provider's check runs; if it authenticates → **allow**.
+5. Otherwise → `401 { "error": "Authentication required" }`.
+
+All paths fail closed: a missing config or verification error resolves to "not authenticated".
+</Callout>
+
+## Choose a provider
 
 <Cards>
   <Card
@@ -47,45 +81,22 @@ A request is allowed when either layer accepts it. The only fully public setup i
   />
 </Cards>
 
-## Which one should I use?
-
-| Situation | Recommended setup |
-|---|---|
-| Local dev or internal network, no login needed | Public (`none`) — default |
-| Hosted dashboard with user accounts and sign-in | Clerk |
-| Behind Cloudflare Access | Proxy — `cloudflare-access` |
-| Behind nginx/SSO with a bare identity header | Proxy — `trusted-header` |
-| Behind oauth2-proxy / Dex / Authelia / Traefik ForwardAuth | Trusted (`trusted`) |
-| MCP clients, scripts, CI pipelines | API key (`CHM_API_KEY_SECRET`) — add alongside any provider |
-
-## Summary
-
-| Method | Who reads it | Browser / proxy auth | curl / MCP auth |
-|---|---|---|---|
-| Public (`none`) | — | open | none needed |
-| API key | Provider-agnostic; active when `CHM_API_KEY_SECRET` set | — | `Authorization: Bearer chm_…` |
-| Clerk | `clerk` provider | Clerk `__session` cookie | Clerk token or `chm_` key |
-| Clerk OAuth (MCP only) | MCP server | — | OAuth bearer token |
-| Proxy → Cloudflare Access | `proxy` provider | `Cf-Access-Jwt-Assertion` JWT | — |
-| Proxy → trusted header (bare subject) | `proxy` provider | `X-Forwarded-User` + shared secret | shared secret header |
-| Proxy → trusted headers (full profile) | `trusted` provider | forwarded headers (oauth2-proxy / Dex / Authelia) | shared secret header |
-
-## How enforcement decides
-
-<Callout type="info" title="Request evaluation order">
-For each `/api/v1/*` request, in order:
-
-1. If `CHM_AUTH_PROVIDER=none` and `CHM_API_KEY_SECRET` is not set → **allow** (public).
-2. The key-issuance route `/api/v1/auth/api-key` is exempt (it has its own auth).
-3. A valid `chm_` Bearer token → **allow**.
-4. The active provider's check runs; if it authenticates → **allow**.
-5. Otherwise → `401 { "error": "Authentication required" }`.
-
-All paths fail closed: a missing config or verification error resolves to "not authenticated".
-</Callout>
-
 ## Related
 
-- [Environment Variables — Authentication](/reference/environment-variables#authentication)
-- [Feature Permissions](/operate/advanced/feature-permissions)
-- [MCP Server](/reference/mcp-server)
+<Cards>
+  <Card
+    title="Environment variables — Authentication"
+    href="/reference/environment-variables#authentication"
+    description="Every CHM_* auth variable, its default, and where to set it."
+  />
+  <Card
+    title="Feature permissions"
+    href="/operate/advanced/feature-permissions"
+    description="Gate individual features (agent, actions, tables) to authenticated users."
+  />
+  <Card
+    title="MCP server"
+    href="/reference/mcp-server"
+    description="Connect MCP clients with chm_ Bearer tokens or Clerk OAuth."
+  />
+</Cards>
