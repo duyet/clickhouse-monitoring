@@ -14,6 +14,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
       FROM merge('system', '^query_log')
       WHERE type = 'QueryFinish'
         AND toDate(event_time) = today()
+      SETTINGS max_execution_time = 25
     `,
   }),
 
@@ -52,6 +53,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     FROM event_count
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -74,6 +76,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY
       1 ASC,
       3 DESC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -91,6 +94,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     GROUP BY event_time
     ORDER BY event_time ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -107,6 +111,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY event_time
     ORDER BY event_time ASC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -122,6 +127,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY 1
     ORDER BY 1
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -154,6 +160,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY query_cache_usage
     ORDER BY query_count DESC
+    SETTINGS max_execution_time = 25
   `,
       sql: [
         {
@@ -172,6 +179,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY query_cache_usage
     ORDER BY query_count DESC
+    SETTINGS max_execution_time = 25
   `,
         },
       ],
@@ -205,6 +213,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${buildTimeFilter(lastHours, 'q.event_time')}` : ''}
     GROUP BY 1, 2
     ORDER BY 1 ASC, 4 DESC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -249,6 +258,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     FROM event_count
     LEFT JOIN breakdown USING event_time
     ORDER BY 1
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -266,6 +276,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
           ${timeFilter ? `AND ${timeFilter}` : ''}
     GROUP BY 1, 2
     ORDER BY 1 ASC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -288,6 +299,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     ORDER BY
       1 ASC,
       3 DESC
+    SETTINGS max_execution_time = 25
   `,
     }
   },
@@ -309,6 +321,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
   GROUP BY event_time
   ORDER BY event_time ASC
   WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+  SETTINGS max_execution_time = 25
 `,
     }
   },
@@ -329,6 +342,7 @@ export const queryCharts: Record<string, ChartQueryBuilder> = {
     GROUP BY event_time
     ORDER BY event_time ASC
     WITH FILL TO ${nowOrToday(interval)} STEP ${fillStep(interval)}
+    SETTINGS max_execution_time = 25
   `,
     }
   },
