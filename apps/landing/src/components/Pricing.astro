@@ -2,7 +2,11 @@
 // Cloud pricing tiers. Data is shared with the dedicated /pricing page via
 // src/data/pricing.ts (the single landing-side source). Keep those numbers in
 // sync with apps/dashboard/src/lib/billing/plans.ts. Yearly = 10× monthly.
-import { pricingTiers as tiers } from '../data/pricing'
+import {
+  monthsFreeText,
+  pricingTiers as tiers,
+  yearlyMonthsFreeValue,
+} from '../data/pricing'
 
 const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>`
 const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
@@ -35,11 +39,11 @@ const { compact = false } = Astro.props
 
     <!-- Cloud plans -->
     <div class="cloud-head reveal">
-      <span class="ea-badge">Early access — free while in beta</span>
+      <span class="ea-badge">Early access — paid plans free while in beta</span>
       <div class="bill-toggle" role="tablist" aria-label="Billing period">
         <button type="button" data-period="monthly" role="tab" aria-selected="false">Monthly</button>
         <button type="button" data-period="yearly" role="tab" aria-selected="true" class="active">
-          Yearly <span class="save">2 months free</span>
+          Yearly <span class="save">{monthsFreeText(yearlyMonthsFreeValue)} free</span>
         </button>
       </div>
     </div>
@@ -68,7 +72,7 @@ const { compact = false } = Astro.props
               {(t.monthly ?? 0) > 0 && (
                 <>
                   <span class="bill-monthly">billed monthly</span>
-                  <span class="bill-yearly">${t.yearlyTotal}/yr · save 2 months</span>
+                  <span class="bill-yearly">${t.yearlyTotal}/yr · save {monthsFreeText(t.yearlyMonthsFree ?? 0)}</span>
                 </>
               )}
             </div>
@@ -83,7 +87,7 @@ const { compact = false } = Astro.props
             <div class="price-cta">
               <a
                 class={`btn ${t.cta.primary ? 'btn-primary' : 'btn-ghost'}`}
-                style={t.cta.primary ? 'width:100%;justify-content:center;background:var(--orange);border-color:var(--orange)' : 'width:100%;justify-content:center'}
+                style={t.cta.primary && t.highlight ? 'width:100%;justify-content:center;background:var(--orange);border-color:var(--orange);color:#fff' : 'width:100%;justify-content:center'}
                 href={t.cta.href}
                 target="_blank"
                 rel="noopener"
