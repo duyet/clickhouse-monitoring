@@ -30,7 +30,7 @@ const faqJsonLd = {
       <div class="wrap">
         <div class="sec-head price-head reveal">
           <span class="eyebrow">Pricing</span>
-          <h2>Simple pricing that scales with your fleet</h2>
+          <h1>Simple pricing that scales with your fleet</h1>
           <p>Self-hosting is always free under GPL-3.0. The hosted cloud connects a cluster in minutes — start free, upgrade when your team grows. <strong>Early access is free to try</strong> while in beta.</p>
         </div>
       </div>
@@ -124,6 +124,9 @@ const faqJsonLd = {
        auto margins, so center it and the left-flex eyebrow explicitly. */
     .price-head{text-align:center}
     .price-head .eyebrow{justify-content:center}
+    /* Promoted page title: match the global .sec-head h2 type scale so the
+       h1 looks identical to the section headings below it. */
+    .price-head h1{font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.025em;font-weight:700;margin-top:14px;text-wrap:balance}
     .price-head p{margin-inline:auto}
 
     .price-cmp .cmp-yes{stroke:var(--emerald)}

@@ -143,6 +143,20 @@ describe('computeStuckMutations', () => {
     expect(r.label).toBe('6 active · 0 stuck · 0 failed')
   })
 
+  test('exactly five active stays ok (boundary)', () => {
+    expect(
+      computeStuckMutations(state([{ active: 5, stuck: 0, failed: 0 }]), false)
+        .status
+    ).toBe('ok')
+  })
+
+  test('stuck outranks a high active count (worst-of wins)', () => {
+    expect(
+      computeStuckMutations(state([{ active: 9, stuck: 1, failed: 0 }]), false)
+        .status
+    ).toBe('critical')
+  })
+
   test('no data → healthy zero', () => {
     expect(computeStuckMutations(state([]), false).status).toBe('ok')
   })
@@ -159,6 +173,12 @@ describe('computeRunningMutations', () => {
     expect(
       computeRunningMutations(state([{ running_count: 10 }]), false).status
     ).toBe('critical')
+  })
+
+  test('non-finite running count is reported as error', () => {
+    const r = computeRunningMutations(state([{ running_count: 'oops' }]), false)
+    expect(r.status).toBe('error')
+    expect(r.value).toBe(0)
   })
 })
 
