@@ -1,17 +1,18 @@
 ---
+title: v0.3 — What's New
 description: What's new in chmonitor v0.3 — TanStack Start framework, pluggable auth, MCP server, AI agent improvements, and new monitoring views.
 icon: Tag
 ---
 
-# v0.3 — What's New
+v0.3 rebuilds the dashboard on TanStack Start, ships a pluggable authentication system, and delivers the monitoring and UI improvements accumulated during the v0.2 cycle.
 
-v0.3 rebuilds the dashboard on TanStack Start, ships a pluggable authentication system, and delivers monitoring and UI improvements accumulated during the v0.2 cycle.
-
----
+<Callout type="warn" title="Upgrading from v0.2?">
+For most self-hosters, the only required action is a redeploy. The `NEXT_PUBLIC_*` → `VITE_*` rename is optional — old names still work. See [Migrate to v0.3](/reference/migrating/v0-3) for the full walkthrough.
+</Callout>
 
 ## TanStack Start (new framework)
 
-The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with Vite. Every page is pre-rendered at build time so the initial shell loads from cache before ClickHouse is contacted. The legacy Next.js app is removed.
+The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with Vite. Every page is pre-rendered at build time, so the initial shell loads from cache before ClickHouse is contacted. The legacy Next.js app is removed.
 
 - Static prerender for all 75+ dashboard pages ([#1392](https://github.com/chmonitor/chmonitor/issues/1392)).
 - TanStack Query replaces SWR for client-side data fetching ([#1562](https://github.com/chmonitor/chmonitor/issues/1562)).
@@ -24,8 +25,6 @@ The dashboard is rewritten on [TanStack Start](https://tanstack.com/start) with 
 - Collapsed chart rows unmounted to stop background polling ([#1580](https://github.com/chmonitor/chmonitor/issues/1580)).
 
 See [Migrate to v0.3](/reference/migrating/v0-3) for upgrade steps.
-
----
 
 ## Pluggable authentication
 
@@ -41,12 +40,10 @@ Additional auth features:
 
 - Read/write permission model + `CHM_CLERK_PUBLIC_READ` for public read access ([#1535](https://github.com/chmonitor/chmonitor/issues/1535), [#1536](https://github.com/chmonitor/chmonitor/issues/1536)).
 - Always-on API key layer (`CHM_API_KEY_SECRET`) issues signed `chm_` Bearer tokens for scripts and MCP clients, independent of the active provider.
-- `auth=none` opens everything; backend still enforces per-endpoint ([#1533](https://github.com/chmonitor/chmonitor/issues/1533)).
+- `auth=none` opens everything; the backend still enforces per-endpoint ([#1533](https://github.com/chmonitor/chmonitor/issues/1533)).
 - Auth on `/api/v1/clean`, `/api/v1/init`, `/api/v1/pageview` endpoints ([#1602](https://github.com/chmonitor/chmonitor/issues/1602)).
 
 See [Authentication](/operate/authentication) for setup details.
-
----
 
 ## Cluster topology visualization
 
@@ -56,8 +53,6 @@ The `/cluster` page now shows a live topology diagram.
 - Physical cluster groupings shown with labeled hull overlays.
 - Nodes sized and colored by live metrics.
 - Nodes can be toggled on/off; the diagram adjusts height to the data.
-
----
 
 ## AI agent
 
@@ -71,15 +66,11 @@ The built-in AI agent runs on the [Vercel AI SDK](https://sdk.vercel.ai/) `ToolL
 - Multi-provider LLM config (`LLM_API_KEY`, `LLM_API_BASE`, `LLM_MODEL`) plus a redesigned chat UI with model selector.
 - Hover-prefetch and lazy provider init for lower interaction latency ([#1544](https://github.com/chmonitor/chmonitor/issues/1544)).
 
----
-
 ## MCP server
 
 - MCP endpoint at `/api/mcp` — Streamable HTTP, stateless, no separate worker required.
 - Clerk OAuth login/consent flow for MCP clients — authenticate with a browser OAuth flow instead of a `chm_` key.
 - In-process MCP route in the TanStack app.
-
----
 
 ## Query page improvements
 
@@ -89,8 +80,6 @@ The built-in AI agent runs on the [Vercel AI SDK](https://sdk.vercel.ai/) `ToolL
 - **Request Info dialog** redesigned with formatted SQL and metadata badges.
 - Menu counts batched into a single query per page load ([#1591](https://github.com/chmonitor/chmonitor/issues/1591)).
 
----
-
 ## Table/card layout for all data pages
 
 Every data table now has a card grid view alongside the standard table view. Toggle between them per page; cards default on narrow screens.
@@ -99,23 +88,21 @@ Every data table now has a card grid view alongside the standard table view. Tog
 - Rich expandable rows for SQL, metadata, and related actions inline.
 - Mobile layout uses SQL-hero cards.
 
----
-
 ## New monitoring views
 
 Added from ClickHouse system tables:
 
-- **Kafka consumers** — `system.kafka_consumers` at `/kafka-consumers`.
-- **Part log** — `system.part_log` redesigned with lifecycle charts, KPIs, and a filterable events table.
-- **Query metric log** — `system.query_metric_log` at `/query-metric-log`.
-- **User processes** — `system.user_processes` with formatted badges and memory bars.
-- **Moves** — `system.moves` at `/moves`.
-- **Dropped tables** — `system.dropped_tables` at `/dropped-tables`.
-- **Warnings** — `system.warnings` at `/warnings`.
-- **Replicated fetches** — `system.replicated_fetches` at `/replicated-fetches`.
-- **Replicated MergeTree settings** — at `/replicated-merge-tree-settings`.
-
----
+| View | System table | Route |
+|---|---|---|
+| Kafka consumers | `system.kafka_consumers` | `/kafka-consumers` |
+| Part log | `system.part_log` | redesigned with lifecycle charts, KPIs, and a filterable events table |
+| Query metric log | `system.query_metric_log` | `/query-metric-log` |
+| User processes | `system.user_processes` | formatted badges and memory bars |
+| Moves | `system.moves` | `/moves` |
+| Dropped tables | `system.dropped_tables` | `/dropped-tables` |
+| Warnings | `system.warnings` | `/warnings` |
+| Replicated fetches | `system.replicated_fetches` | `/replicated-fetches` |
+| Replicated MergeTree settings | — | `/replicated-merge-tree-settings` |
 
 ## Deployment
 
@@ -125,8 +112,30 @@ Added from ClickHouse system tables:
 - **Auto-refresh interval** persisted to localStorage across reloads.
 - **Time range** persisted to localStorage and synced to the URL.
 
----
-
 ## Breaking changes
 
-See [Migrate to v0.3](/reference/migrating/v0-3) for upgrade steps. The only required action for most self-hosters is a redeploy. The `NEXT_PUBLIC_*` → `VITE_*` rename is optional — old names still work.
+<Callout type="warn" title="NEXT_PUBLIC_* → VITE_* rename (optional)">
+The `NEXT_PUBLIC_*` → `VITE_*` rename is optional — old names still work as a fallback. The only required action for most self-hosters is a redeploy.
+</Callout>
+
+See [Migrate to v0.3](/reference/migrating/v0-3) for upgrade steps.
+
+## Related
+
+<Cards>
+  <Card
+    title="Migrate to v0.3"
+    href="/reference/migrating/v0-3"
+    description="Step-by-step upgrade guide, including the VITE_* rename."
+  />
+  <Card
+    title="Authentication"
+    href="/operate/authentication"
+    description="Set up the new pluggable auth providers."
+  />
+  <Card
+    title="Environment variables"
+    href="/reference/environment-variables"
+    description="Every configuration option, including new v0.3 vars."
+  />
+</Cards>

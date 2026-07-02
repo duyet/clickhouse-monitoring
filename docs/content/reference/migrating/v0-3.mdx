@@ -1,13 +1,10 @@
 ---
+title: Migrate to v0.3
 description: Upgrade chmonitor from v0.2 (Next.js) to v0.3 (TanStack Start) — platform steps and the VITE_* variable rename.
 icon: ArrowRightLeft
 ---
 
-# Migrate to v0.3
-
-v0.3 introduces a migration update. The dashboard is rebuilt on TanStack Start. Features, routes, and ClickHouse setup are unchanged. Browser-exposed environment variables are now standardized on the `VITE_*` prefix, with `NEXT_PUBLIC_*` kept as a compatibility fallback.
-
----
+v0.3 rebuilds the dashboard on TanStack Start. Features, routes, and ClickHouse setup are unchanged. Browser-exposed environment variables now standardize on the `VITE_*` prefix, with `NEXT_PUBLIC_*` kept as a compatibility fallback. For most deployments, the upgrade is a redeploy plus an optional rename.
 
 ## What changed
 
@@ -23,13 +20,13 @@ Variables exposed to the browser now use the `VITE_` prefix. Server-side and sec
 | `NEXT_PUBLIC_AUTOCOMPLETE_LIMIT` | `VITE_AUTOCOMPLETE_LIMIT` |
 | `NEXT_PUBLIC_RUNNING_QUERIES_REFRESH_MS` | `VITE_RUNNING_QUERIES_REFRESH_MS` |
 
-> The old `NEXT_PUBLIC_*` names still work as a fallback. The rename is recommended but not required — nothing breaks if you skip it.
+<Callout type="info" title="The rename is optional">
+The old `NEXT_PUBLIC_*` names still work as a fallback. The rename is recommended but not required — nothing breaks if you skip it.
+</Callout>
 
 <Callout type="warn" title="Browser variables are build-time only">
 Browser variables must be set **at build time** (in your CI build step or build config), not only as runtime environment variables.
 </Callout>
-
----
 
 ## Upgrade steps by platform
 
@@ -242,8 +239,6 @@ Verify Overview loads with live data.
 </Tab>
 </Tabs>
 
----
-
 ## Automate it with an AI assistant
 
 Don't want to hand-edit env files? Paste your current configuration (`.env`,
@@ -281,21 +276,37 @@ plus a short list of what you changed:
 6. Flag anything that has no v0.3 equivalent instead of silently dropping it.
 ```
 
-> This same prompt is published in the v0.3 GitHub release notes, kept in sync
-> from `.github/release-migration-prompt.md`.
-
----
+<Callout type="info" title="Kept in sync with the release notes">
+This same prompt is published in the v0.3 GitHub release notes, kept in sync
+from `.github/release-migration-prompt.md`.
+</Callout>
 
 ## Verify
 
 After upgrading on any platform:
 
-1. Open the dashboard — Overview should render charts with live data.
-2. If authentication is enabled, sign in and confirm data loads.
-3. If the AI agent is configured, open `/agents` and send a message.
-4. Check `/about` — the build timestamp and version should reflect the new release.
+<Steps>
+<Step>
+### Load the dashboard
 
----
+Open the dashboard — Overview should render charts with live data.
+</Step>
+<Step>
+### Confirm authentication
+
+If authentication is enabled, sign in and confirm data loads.
+</Step>
+<Step>
+### Test the AI agent
+
+If the AI agent is configured, open `/agents` and send a message.
+</Step>
+<Step>
+### Check the build
+
+Check `/about` — the build timestamp and version should reflect the new release.
+</Step>
+</Steps>
 
 ## New variables in v0.3
 
@@ -312,6 +323,26 @@ v0.3 adds optional new configuration. None is required for the upgrade — set t
 
 See [Environment Variables](/reference/environment-variables) for the full list.
 
----
+<Callout type="info" title="ClickHouse setup carries over">
+ClickHouse hosts, credentials, and feature permissions carry over unchanged. No ClickHouse schema changes are required.
+</Callout>
 
-_ClickHouse hosts, credentials, and feature permissions carry over unchanged. No ClickHouse schema changes are required._
+## Related
+
+<Cards>
+  <Card
+    title="v0.3 — What's New"
+    href="/reference/releases/v0-3"
+    description="The full list of features and changes in this release."
+  />
+  <Card
+    title="Environment variables"
+    href="/reference/environment-variables"
+    description="Every configuration option, including new v0.3 vars."
+  />
+  <Card
+    title="Authentication"
+    href="/operate/authentication"
+    description="Set up the new pluggable auth providers."
+  />
+</Cards>
