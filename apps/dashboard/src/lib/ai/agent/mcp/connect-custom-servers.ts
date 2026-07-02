@@ -6,11 +6,19 @@
  * provides a closeAll() for stream-end cleanup.
  *
  * Security: each endpoint passes an SSRF guard before any network call is
- * made. Private IP ranges and cloud metadata addresses are rejected; http:
- * is only permitted on loopback hosts (dev convenience).
+ * made. The guard reuses the shared `validateHostUrl` used for ClickHouse
+ * connections — it resolves the hostname and rejects the endpoint if ANY
+ * resolved A/AAAA address is private/reserved (defeating DNS-rebinding and
+ * names that point at internal ranges), on top of rejecting non-`::1` IPv6
+ * literals and numeric-/hex-/octal-encoded IPv4 hosts. http: is only
+ * permitted on loopback hosts (dev convenience).
  */
 
 import { createMCPClient } from '@ai-sdk/mcp'
+import {
+  type ResolveHostAddresses,
+  validateHostUrl,
+} from '@/lib/browser-connections/host-url'
 
 export interface CustomMcpServerInput {
   id: string
@@ -43,16 +51,26 @@ const CONNECT_TIMEOUT_MS = 8_000
  * Returns true when the URL is safe to connect to as an MCP endpoint.
  *
  * Allowed:
- *   - https: on any publicly-routable hostname
- *   - http: on localhost / 127.0.0.1 / [::1] (dev convenience)
+ *   - https: on a publicly-routable hostname whose every resolved A/AAAA
+ *     address is public (verified by the shared `validateHostUrl` SSRF guard)
+ *   - http:/https: on localhost / 127.0.0.1 / [::1] (dev convenience)
  *
  * Rejected:
  *   - non-http/https protocols
  *   - http: on non-loopback hosts
- *   - private / reserved IPv4 literals (10.x, 172.16-31.x, 192.168.x,
- *     127.x, 169.254.x, 0.0.0.0)
+ *   - non-`::1` IPv6 literals (public or private)
+ *   - numeric-/hex-/octal-encoded IPv4 hosts (e.g. 2130706433, 0x7f000001,
+ *     0177.0.0.1, 127.1) that bypass simple dotted-quad checks
+ *   - any host that resolves (or is) a private/reserved/loopback/CGNAT
+ *     address — including DNS names that point at internal ranges
+ *
+ * Async because it performs DNS resolution via `validateHostUrl`. The optional
+ * `resolveHostAddresses` override is for tests (avoids real DNS).
  */
-export function isAllowedMcpUrl(raw: string): boolean {
+export async function isAllowedMcpUrl(
+  raw: string,
+  resolveHostAddresses?: ResolveHostAddresses
+): Promise<boolean> {
   let url: URL
   try {
     url = new URL(raw)
@@ -60,51 +78,80 @@ export function isAllowedMcpUrl(raw: string): boolean {
     return false
   }
 
-  const { protocol, hostname } = url
-
+  const { protocol } = url
   if (protocol !== 'https:' && protocol !== 'http:') return false
 
+  // Reject obfuscated integer IPv4 encodings using the RAW host token, BEFORE
+  // new URL() canonicalises them into an innocent-looking dotted quad (e.g.
+  // 2130706433 / 0x7f000001 / 0177.0.0.1 / 127.1 all become 127.0.0.1). This
+  // runs first so such forms can never slip through the loopback allowance.
+  if (isNumericEncodedHost(rawHostname(raw))) return false
+
+  // Normalise the hostname (lowercase, strip IPv6 brackets) as validateHostUrl
+  // does, so our extra literal checks agree with the shared guard.
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
+
   const isLoopback =
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '[::1]' ||
-    hostname === '::1'
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
 
-  if (protocol === 'http:') {
-    // http only allowed for loopback (dev convenience)
-    return isLoopback
-  }
+  // http is only permitted for loopback (dev convenience).
+  if (protocol === 'http:') return isLoopback
 
-  // https: — reject private/reserved IP literals; allow DNS names
-  return !isPrivateOrReservedIp(hostname)
+  // Loopback over https is fine and needs no DNS resolution.
+  if (isLoopback) return true
+
+  // Reject any remaining IPv6 literal (only ::1 is allowed, handled above).
+  // IPv6 SSRF filtering is subtle, so refuse all other v6 literals outright.
+  if (hostname.includes(':')) return false
+
+  // Delegate the SSRF decision to the shared guard: it resolves the hostname
+  // and rejects when it (or any resolved A/AAAA) is private/reserved. Honors
+  // CHM_ALLOW_PRIVATE_HOSTS exactly like ClickHouse connections do.
+  const error = await validateHostUrl(raw, resolveHostAddresses)
+  return error === null
 }
 
-/** Returns true when the hostname is a private or reserved IPv4 literal. */
-function isPrivateOrReservedIp(hostname: string): boolean {
-  // strip IPv6 brackets
-  const h = hostname.startsWith('[') ? hostname.slice(1, -1) : hostname
+/**
+ * Extract the raw host token from a URL string (host between scheme and the
+ * path/port, after any userinfo, with IPv6 brackets stripped) WITHOUT going
+ * through `new URL()`, whose parser canonicalises integer IPv4 encodings. Used
+ * to detect those encodings before they are normalised away.
+ */
+function rawHostname(raw: string): string {
+  const afterScheme = raw.slice(raw.indexOf('://') + 3)
+  const authority = afterScheme.split(/[/?#]/, 1)[0] ?? ''
+  const hostPort = authority.slice(authority.lastIndexOf('@') + 1)
 
-  // Loopback: 127.x.x.x
-  if (/^127\./.test(h)) return true
-
-  // Link-local / AWS metadata: 169.254.x.x
-  if (/^169\.254\./.test(h)) return true
-
-  // Private class A: 10.x.x.x
-  if (/^10\./.test(h)) return true
-
-  // Private class B: 172.16.x.x – 172.31.x.x
-  const b172 = h.match(/^172\.(\d{1,3})\./)
-  if (b172) {
-    const octet = Number(b172[1])
-    if (octet >= 16 && octet <= 31) return true
+  if (hostPort.startsWith('[')) {
+    const end = hostPort.indexOf(']')
+    return hostPort.slice(1, end === -1 ? undefined : end).toLowerCase()
   }
 
-  // Private class C: 192.168.x.x
-  if (/^192\.168\./.test(h)) return true
+  const colon = hostPort.indexOf(':')
+  return (colon === -1 ? hostPort : hostPort.slice(0, colon)).toLowerCase()
+}
 
-  // All zeros
-  if (h === '0.0.0.0') return true
+/**
+ * Returns true for hosts that are numeric/hex/octal IPv4 encodings rather than
+ * a real hostname or a clean dotted-decimal IPv4 quad. Fed the RAW host token
+ * (see `rawHostname`). Clean quads (e.g. 8.8.8.8, 192.168.1.1) return false and
+ * are left to `validateHostUrl`; loopback/private literals still get rejected
+ * there, and numeric-encoded forms (including loopback ones) are rejected here.
+ */
+function isNumericEncodedHost(h: string): boolean {
+  // Standard dotted-decimal IPv4 quad — let validateHostUrl classify it.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return false
+
+  // Bare integer forms.
+  if (/^0x[\da-f]+$/i.test(h)) return true // hex, e.g. 0x7f000001
+  if (/^\d+$/.test(h)) return true // decimal, e.g. 2130706433
+
+  // Dotted forms whose every part is numeric/hex but which are NOT a clean
+  // decimal quad (short forms like 127.1, octal 0177.0.0.1, hex 0x7f.0.0.1).
+  const parts = h.split('.')
+  if (parts.length >= 2 && parts.every((p) => /^(0x[\da-f]+|\d+)$/i.test(p))) {
+    return true
+  }
 
   return false
 }
@@ -150,7 +197,7 @@ export async function connectCustomMcpServers(
   const toConnect = servers.slice(0, MAX_SERVERS)
 
   for (const server of toConnect) {
-    if (!isAllowedMcpUrl(server.endpoint)) {
+    if (!(await isAllowedMcpUrl(server.endpoint))) {
       statuses.push({
         id: server.id,
         status: 'error',
