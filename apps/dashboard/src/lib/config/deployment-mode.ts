@@ -17,75 +17,31 @@
 // unset / empty / unrecognised CHM_DEPLOYMENT_MODE resolves to oss, so the
 // open-source build is never degraded and cloud behaviour is strictly opt-in.
 //
-// ►► To change what a mode defaults to, edit ONE place: MODE_DEFAULTS below. ◄◄
+// ►► To change what a mode defaults to, edit ONE place: MODE_DEFAULTS in
+//    ../../../scripts/deploy-defaults.ts — the single matrix shared with the
+//    deploy build script (scripts/patch-wrangler-env.ts). ◄◄
 
-import { type AuthProvider, parseAuthProvider } from '@/lib/auth/provider'
+import { parseAuthProvider } from '@/lib/auth/provider'
 
-export const DEPLOYMENT_MODES = ['oss', 'cloud'] as const
-export type DeploymentMode = (typeof DEPLOYMENT_MODES)[number]
+// The mode-default matrix lives in a plain, non-aliased module so the deploy
+// build script (which runs before the vite build and can't use `@/` imports)
+// derives from the SAME copy. Re-exported here to preserve this module's public
+// API for existing `@/lib/config/deployment-mode` importers.
+export {
+  DEPLOYMENT_MODES,
+  type DeploymentMode,
+  MODE_DEFAULTS,
+  type ModeDefaults,
+  modeDefaults,
+  parseDeploymentMode,
+} from '../../../scripts/deploy-defaults'
 
-/**
- * Parse a raw env string into a deployment mode. `cloud` / `saas` select cloud;
- * `oss` / `self-hosted` / anything else → oss (fail-closed). Never throws.
- */
-export function parseDeploymentMode(
-  value: string | null | undefined
-): DeploymentMode {
-  const normalized = value?.trim().toLowerCase()
-  if (normalized === 'cloud' || normalized === 'saas') return 'cloud'
-  return 'oss'
-}
-
-/**
- * The set of defaults a deployment mode resolves to — the "good defaults from
- * the beginning". A mode alone yields a correct, coherent deployment.
- */
-export interface ModeDefaults {
-  /** Public read-only demo hosts for anon + blank workspace when signed in. */
-  cloudMode: boolean
-  /** Default auth posture (overridable with CHM_AUTH_PROVIDER). */
-  authProvider: AuthProvider
-  /** Anonymous visitors may read (but not write) without signing in. */
-  clerkPublicRead: boolean
-  /** Per-user ClickHouse connection storage (D1/Postgres). */
-  userConnectionsDb: boolean
-  /** Server-side agent conversation persistence. */
-  conversationDb: boolean
-  /**
-   * Allow connecting to private / LAN / loopback / Tailscale (CGNAT) ClickHouse
-   * hosts through the connection form. Self-host only — FORCED off in cloud mode
-   * (multi-tenant SSRF safety), regardless of the explicit flag.
-   */
-  allowPrivateHosts: boolean
-}
-
-/**
- * SINGLE SOURCE OF TRUTH for per-mode defaults. To tune what `oss` or `cloud`
- * ships with, edit here — every reader (vite client build + server) derives from
- * this map via resolveConfig().
- */
-const MODE_DEFAULTS: Record<DeploymentMode, ModeDefaults> = {
-  oss: {
-    cloudMode: false,
-    authProvider: 'none',
-    clerkPublicRead: false,
-    userConnectionsDb: false,
-    conversationDb: false,
-    allowPrivateHosts: false,
-  },
-  cloud: {
-    cloudMode: true,
-    authProvider: 'clerk',
-    clerkPublicRead: true,
-    userConnectionsDb: true,
-    conversationDb: true,
-    allowPrivateHosts: false,
-  },
-}
-
-export function modeDefaults(mode: DeploymentMode): ModeDefaults {
-  return MODE_DEFAULTS[mode]
-}
+import {
+  type DeploymentMode,
+  type ModeDefaults,
+  modeDefaults,
+  parseDeploymentMode,
+} from '../../../scripts/deploy-defaults'
 
 // ---------------------------------------------------------------------------
 // Resolution: per-mode default, then explicit-var override.
