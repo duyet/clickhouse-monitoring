@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
+import { useAiQuota } from '@/lib/ai/agent/use-ai-quota'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
 import { useToolConfig } from '@/lib/hooks/use-tool-config'
 import { cn } from '@/lib/utils'
@@ -257,6 +258,9 @@ export function ComposerToolbar({
         </span>
       </Button>
 
+      {/* Daily AI usage — cloud-only, hidden on OSS / unlimited plans. */}
+      <AiQuotaIndicator />
+
       <SkillDetailDialog
         skill={skillDetail}
         open={skillDetail !== null}
@@ -275,5 +279,46 @@ export function ComposerToolbar({
         onRemove={(id) => onRemoveContext?.(id)}
       />
     </div>
+  )
+}
+
+/**
+ * Subtle "X / N today" chip pinned to the end of the composer toolbar, giving a
+ * Free-tier user forewarning of their daily AI-message allowance instead of only
+ * discovering it via a 402 mid-conversation. Cloud-only: {@link useAiQuota}
+ * resolves `show: false` on OSS, for unlimited plans, and on any endpoint
+ * error/absence, so nothing renders in those cases.
+ */
+function AiQuotaIndicator() {
+  const quota = useAiQuota()
+  if (!quota.show || quota.limit === null) return null
+
+  const { used, limit, remaining } = quota
+  const depleted = remaining !== null && remaining <= 0
+  const low = remaining !== null && remaining > 0 && remaining <= 1
+
+  return (
+    <span
+      className="text-muted-foreground ml-auto flex items-center gap-1 px-1 text-[11px] tabular-nums"
+      title={
+        depleted
+          ? "You've used all of today's AI messages. Resets tomorrow."
+          : `${remaining} of ${limit} daily AI messages left`
+      }
+    >
+      <span
+        className={cn(
+          'font-medium',
+          depleted
+            ? 'text-destructive'
+            : low
+              ? 'text-amber-600 dark:text-amber-500'
+              : 'text-foreground'
+        )}
+      >
+        {used}
+      </span>
+      <span>/{limit} today</span>
+    </span>
   )
 }

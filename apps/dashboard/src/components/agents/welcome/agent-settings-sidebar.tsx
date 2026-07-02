@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/drawer'
 import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useAiQuota } from '@/lib/ai/agent/use-ai-quota'
 import { useAgentSkills } from '@/lib/hooks/use-agent-skills'
 import {
   CONVERSATION_BACKEND_LABELS,
@@ -106,6 +107,9 @@ export function AgentSettingsSidebar({
       <SidebarSection label="Model">
         <AgentModelPicker variant="panel" />
       </SidebarSection>
+
+      {/* DAILY AI USAGE (cloud-only; renders nothing on OSS / unlimited) */}
+      <AiUsagePanel />
 
       {/* MCP SERVER */}
       <SidebarSection label="MCP Servers">
@@ -339,6 +343,62 @@ function ConversationHistoryPanel() {
         variables and cannot be changed here.
       </p>
     </div>
+  )
+}
+
+/**
+ * Compact "X / N messages today" meter for the daily AI allowance. Cloud-only:
+ * {@link useAiQuota} resolves `show: false` on OSS, for unlimited plans, and on
+ * any endpoint error/absence, so this renders nothing outside the cloud Free/Pro
+ * tiers with a bounded quota.
+ */
+function AiUsagePanel() {
+  const quota = useAiQuota()
+  if (!quota.show || quota.limit === null) return null
+
+  const { used, limit, remaining } = quota
+  const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+  const depleted = remaining !== null && remaining <= 0
+  const low = remaining !== null && remaining > 0 && remaining <= 1
+
+  return (
+    <SidebarSection
+      label="Daily AI usage"
+      right={
+        <span className="text-muted-foreground text-[10px] tabular-nums">
+          <span
+            className={cn(
+              'font-medium',
+              depleted
+                ? 'text-destructive'
+                : low
+                  ? 'text-amber-600 dark:text-amber-500'
+                  : 'text-foreground'
+            )}
+          >
+            {used}
+          </span>
+          /{limit}
+        </span>
+      }
+    >
+      <div className="space-y-1.5">
+        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              depleted ? 'bg-destructive' : low ? 'bg-amber-500' : 'bg-primary'
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <p className="text-muted-foreground text-[10.5px] leading-snug">
+          {depleted
+            ? "You've used all of today's messages. The limit resets tomorrow."
+            : `${remaining} message${remaining === 1 ? '' : 's'} left today`}
+        </p>
+      </div>
+    </SidebarSection>
   )
 }
 
