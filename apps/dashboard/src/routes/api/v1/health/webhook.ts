@@ -2,8 +2,16 @@
  * Health Webhook Proxy Endpoint
  * POST /api/v1/health/webhook
  *
- * Securely proxies Slack/Discord webhook requests from the server side to
+ * Securely proxies Slack/Discord/etc. webhook requests from the server side to
  * bypass browser CORS preflight restrictions.
+ *
+ * SECURITY (SSRF): this endpoint makes the server fetch a caller-supplied URL,
+ * so it is an SSRF sink. Every URL is run through `validateHostUrl` (the same
+ * guard used for ClickHouse connections) which rejects private / loopback /
+ * link-local / metadata targets (RFC1918 10/8, 172.16/12, 192.168/16,
+ * 127.0.0.0/8, 169.254.0.0/16, ::1, IPv6 ULA fc00::/7, CGNAT, …) — both raw IP
+ * literals and hostnames that resolve into those ranges. Errors are returned as
+ * a generic 400 so we never leak internal DNS/resolution detail.
  *
  * Ported from apps/dashboard/app/api/v1/health/webhook/route.ts.
  * - Per-route auth (authorizeFeatureRequest / SETTINGS_FEATURE_PERMISSION)
@@ -17,18 +25,49 @@ import { createFileRoute } from '@tanstack/react-router'
 import { debug, error } from '@chm/logger'
 import { createErrorResponse } from '@/lib/api/shared/response-builder'
 import { ApiErrorType } from '@/lib/api/types'
+import {
+  type ResolveHostAddresses,
+  validateHostUrl,
+} from '@/lib/browser-connections/host-url'
 
 const ROUTE_CONTEXT = {
   route: '/api/v1/health/webhook',
   method: 'POST',
 } as const
 
-async function handlePost(request: Request): Promise<Response> {
+/** Generic, non-leaky message for a blocked/invalid destination URL. */
+const BLOCKED_URL_MESSAGE =
+  'The webhook URL is not allowed. Use a public HTTPS endpoint.'
+
+interface WebhookRequestBody {
+  url?: string
+  text?: string
+  /**
+   * Optional provider hint (e.g. "slack", "discord", "telegram", "pagerduty").
+   * When present, `payload` is forwarded to the webhook verbatim instead of the
+   * default `{ text, content }` wrapper — so callers can send provider-specific
+   * bodies (Slack blocks, Discord embeds, PagerDuty events, …).
+   */
+  provider?: string
+  /** Exact JSON body to forward when `provider` is set. */
+  payload?: unknown
+}
+
+/** Injectable dependencies (tests override the DNS resolver + fetch). */
+interface WebhookDeps {
+  resolveHostAddresses?: ResolveHostAddresses
+  fetchImpl?: typeof fetch
+}
+
+async function handlePost(
+  request: Request,
+  deps: WebhookDeps = {}
+): Promise<Response> {
   debug('[POST /api/v1/health/webhook] Proxying alert webhook')
 
-  let body: { url?: string; text?: string }
+  let body: WebhookRequestBody
   try {
-    body = (await request.json()) as { url?: string; text?: string }
+    body = (await request.json()) as WebhookRequestBody
   } catch {
     return createErrorResponse(
       {
@@ -40,7 +79,7 @@ async function handlePost(request: Request): Promise<Response> {
     )
   }
 
-  const { url, text } = body
+  const { url, text, provider, payload } = body
 
   if (!url || typeof url !== 'string' || !url.startsWith('https://')) {
     return createErrorResponse(
@@ -53,15 +92,58 @@ async function handlePost(request: Request): Promise<Response> {
     )
   }
 
-  if (!text || typeof text !== 'string') {
+  // SSRF guard: block private / loopback / link-local / metadata destinations.
+  // Reuses the shared ClickHouse connection guard so the block ranges stay in
+  // one place. On a blocked/invalid host we return a generic 400 and log the
+  // real reason server-side only (no leak of internal resolution detail).
+  const ssrfError = await validateHostUrl(url, deps.resolveHostAddresses)
+  if (ssrfError) {
+    error(
+      '[POST /api/v1/health/webhook] Blocked SSRF-unsafe webhook URL',
+      new Error(ssrfError)
+    )
     return createErrorResponse(
       {
         type: ApiErrorType.ValidationError,
-        message: 'Missing or invalid "text": expected a string payload',
+        message: BLOCKED_URL_MESSAGE,
       },
       400,
       ROUTE_CONTEXT
     )
+  }
+
+  // Determine the outgoing body. With a `provider` hint the caller controls the
+  // exact JSON (forwarded verbatim); otherwise keep the backward-compatible
+  // `{ text, content }` wrapper driven by `text`.
+  const usesProvider =
+    typeof provider === 'string' && provider.trim().length > 0
+
+  let outgoingBody: unknown
+  if (usesProvider) {
+    if (payload === undefined || payload === null) {
+      return createErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message:
+            'Missing or invalid "payload": expected a JSON body when "provider" is set',
+        },
+        400,
+        ROUTE_CONTEXT
+      )
+    }
+    outgoingBody = payload
+  } else {
+    if (!text || typeof text !== 'string') {
+      return createErrorResponse(
+        {
+          type: ApiErrorType.ValidationError,
+          message: 'Missing or invalid "text": expected a string payload',
+        },
+        400,
+        ROUTE_CONTEXT
+      )
+    }
+    outgoingBody = { text, content: text }
   }
 
   debug(
@@ -69,14 +151,15 @@ async function handlePost(request: Request): Promise<Response> {
     `${url.substring(0, 40)}...`
   )
 
+  const doFetch = deps.fetchImpl ?? fetch
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 10_000)
 
   try {
-    const res = await fetch(url, {
+    const res = await doFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, content: text }),
+      body: JSON.stringify(outgoingBody),
       signal: controller.signal,
     })
 
@@ -121,3 +204,6 @@ export const Route = createFileRoute('/api/v1/health/webhook')({
     },
   },
 })
+
+// Exported for unit tests only.
+export { handlePost as __handlePostForTests }

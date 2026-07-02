@@ -65,7 +65,11 @@ async function handlePost(request: Request): Promise<Response> {
           })
         const count = memberships.data.length
 
-        const check = checkSeatLimit(plan, count)
+        // The `organizationMembership.created` webhook fires after Clerk has
+        // already added the new member, so `count` is the post-addition total.
+        // `checkSeatLimit` uses `used < limit` ("is there room for one more?"),
+        // so pass the pre-addition count to ask whether this new member fits.
+        const check = checkSeatLimit(plan, count - 1)
         if (!check.allowed) {
           await clerkClient().organizations.deleteOrganizationMembership({
             organizationId: orgId,
