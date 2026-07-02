@@ -28,9 +28,15 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      # Install so commitlint resolves from the repo's pinned devDependencies
+      # (incl. the conventional-changelog-conventionalcommits transitive dep),
+      # instead of a flaky `bunx --bun commitlint@latest` npm fetch at check time.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Validate PR title is a conventional commit
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "Validating PR title: $PR_TITLE"
-          echo "$PR_TITLE" | bunx --bun commitlint --config commitlint.config.js
+          echo "$PR_TITLE" | bunx commitlint --config commitlint.config.js
