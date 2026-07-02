@@ -1,15 +1,15 @@
 ---
+title: Troubleshooting
 description: Diagnose and fix common chmonitor issues — connection failures, auth errors, performance problems, and Kubernetes probe failures.
 icon: Wrench
 ---
 
-# Troubleshooting
-
-Common issues and how to diagnose them.
+Common issues and how to diagnose them, grouped by symptom. Expand the entry that matches what you're seeing.
 
 ## Connection failures
 
-### Dashboard shows "Connection error" or blank charts
+<Accordions>
+<Accordion title='Dashboard shows "Connection error" or blank charts'>
 
 **Check the ClickHouse URL:**
 
@@ -41,7 +41,8 @@ If host count differs from user/password count, the second host silently falls b
 If ClickHouse uses a self-signed cert, set `CLICKHOUSE_VERIFY_CERT=false` or pass `?verify=false` in the URL. In production, install the CA cert instead.
 </Callout>
 
-### Health endpoint returns 503
+</Accordion>
+<Accordion title="Health endpoint returns 503">
 
 `/healthz` always returns 200 (static liveness probe). `/api/healthz` returns 503 when the ClickHouse connection fails. Check:
 
@@ -55,7 +56,8 @@ curl -s https://your-dashboard/api/healthz | jq .
 # {"status":"error","clickhouse":"error","message":"..."} on failure
 ```
 
-### "Query timeout" on large tables
+</Accordion>
+<Accordion title='"Query timeout" on large tables'>
 
 Increase `CLICKHOUSE_MAX_EXECUTION_TIME` (default 60 seconds):
 
@@ -65,11 +67,13 @@ CLICKHOUSE_MAX_EXECUTION_TIME=120
 
 For heavy queries (full query-log scans), the dashboard also respects ClickHouse-level query complexity limits. Consider raising `max_execution_time` on the monitoring user profile.
 
----
+</Accordion>
+</Accordions>
 
 ## Auth failures (401 / white screen)
 
-### Every page returns 401
+<Accordions>
+<Accordion title="Every page returns 401">
 
 `CHM_AUTH_PROVIDER` is set to something other than `none` but is not configured properly:
 
@@ -85,7 +89,8 @@ curl -s https://your-dashboard/api/v1/auth/me | jq .
 # {"error":"Authentication required"} when auth is on but request is not authenticated
 ```
 
-### White screen after login (Clerk)
+</Accordion>
+<Accordion title="White screen after login (Clerk)">
 
 The client auth value is derived from `CHM_AUTH_PROVIDER` and inlined at build time. If `CHM_AUTH_PROVIDER` was not set at build time, the client JS doesn't know about Clerk and may loop or blank out.
 
@@ -97,11 +102,13 @@ curl https://your-dashboard/ | grep pk_live
 ```
 
 If it is missing, rebuild with:
+
 ```bash
 CHM_AUTH_PROVIDER=clerk CHM_CLERK_PUBLISHABLE_KEY=pk_live_... bun run build
 ```
 
-### API key returns 401
+</Accordion>
+<Accordion title="API key returns 401">
 
 - The token must be prefixed `chm_` — tokens issued by `/api/v1/auth/api-key`.
 - The token was issued against a specific `CHM_API_KEY_SECRET`. If the secret was rotated, old tokens are invalid.
@@ -113,28 +120,33 @@ curl -X POST https://your-dashboard/api/v1/auth/api-key \
   -H "Authorization: Bearer $CHM_API_KEY_SECRET"
 ```
 
-### MCP client returns 401
+</Accordion>
+<Accordion title="MCP client returns 401">
 
 <Callout type="info" title="MCP endpoint is closed by default">
 One of `CHM_API_KEY_SECRET`, `CLERK_SECRET_KEY`, or `CHM_MCP_PUBLIC=true` must be set to open the endpoint. See [MCP Server — Permissions](/guide/features/mcp#permissions--access).
 </Callout>
 
----
+</Accordion>
+</Accordions>
 
 ## Performance / timeouts
 
-### Dashboard is slow to load
+<Accordions>
+<Accordion title="Dashboard is slow to load">
 
 Most dashboard pages are a static shell with client-side data fetching. A slow initial page usually means:
 - The static bundle is not cached at the edge (first request after a deploy).
 - The ClickHouse query itself is slow.
 
 To identify slow queries, open the AI agent and ask:
+
 > "What were the slowest queries in the last 5 minutes?"
 
 Or from the Queries → Slow Queries page.
 
-### Charts refresh too frequently
+</Accordion>
+<Accordion title="Charts refresh too frequently">
 
 Default refresh is 60 seconds for most charts. Reduce load by setting a longer interval:
 
@@ -145,7 +157,8 @@ Default refresh is 60 seconds for most charts. Reduce load by setting a longer i
 
 Alternatively, enable query caching on the monitoring user profile (see [ClickHouse User & Grants](/guide/getting-started/clickhouse-requirements#recommended-clickhouse-profile)).
 
-### `max_query_size exceeded` errors
+</Accordion>
+<Accordion title="max_query_size exceeded errors">
 
 Some dashboard queries on very large query logs can exceed ClickHouse's default `max_query_size`. Add to the monitoring user profile:
 
@@ -153,11 +166,13 @@ Some dashboard queries on very large query logs can exceed ClickHouse's default 
 <max_query_size>1073741824</max_query_size>
 ```
 
----
+</Accordion>
+</Accordions>
 
 ## AI agent / LLM failures
 
-### Agent returns "LLM API key not set"
+<Accordions>
+<Accordion title='Agent returns "LLM API key not set"'>
 
 Set `LLM_API_KEY` to your OpenRouter, Anthropic, or OpenAI key:
 
@@ -172,33 +187,40 @@ LLM_BASE_URL=https://api.anthropic.com/v1
 LLM_MODEL=claude-opus-4-5
 ```
 
-### Agent does not respond / hangs
+</Accordion>
+<Accordion title="Agent does not respond / hangs">
 
 Check:
+
 1. `LLM_API_KEY` is a server-side variable (not `VITE_LLM_API_KEY`).
 2. The provider endpoint is reachable from the Worker / container.
 3. The model name is correct for the provider — OpenRouter uses `provider/model` format (e.g. `anthropic/claude-3-5-sonnet`).
 
-### Agent answers are vague or wrong
+</Accordion>
+<Accordion title="Agent answers are vague or wrong">
 
 The agent is bounded by the ClickHouse user's grants. If it cannot read `system.query_log` (the most data-rich source), answers will be shallow.
 
 Confirm grants:
+
 ```sql
 SELECT count() FROM system.query_log;
 ```
 
 If this returns a permission error, grant the monitoring user `SELECT ON system.*`.
 
-### Agent session metrics show high token usage
+</Accordion>
+<Accordion title="Agent session metrics show high token usage">
 
 Long conversations accumulate context. Start a new conversation to reset the context window. If you see large token counts on simple questions, the system prompt or a long skill is being included — this is expected and keeps answers accurate.
 
----
+</Accordion>
+</Accordions>
 
 ## Kubernetes / Helm health probes
 
-### Pod stuck in `CrashLoopBackOff`
+<Accordions>
+<Accordion title="Pod stuck in CrashLoopBackOff">
 
 <Callout type="warn" title="Stale image tag">
 Common cause: the image pulled is stale (`latest` tag was not updated after a deploy). Check the image digest with `kubectl describe pod` and force a re-pull with `kubectl rollout restart deployment chmonitor`.
@@ -209,7 +231,8 @@ kubectl describe pod <chmonitor-pod> | grep Image
 kubectl rollout restart deployment chmonitor
 ```
 
-### Liveness probe failing
+</Accordion>
+<Accordion title="Liveness probe failing">
 
 `/healthz` (liveness) should always return 200 — it is a static response. If it is failing, the container is not starting at all. Check container logs:
 
@@ -221,11 +244,13 @@ Common causes:
 - Missing required env vars (`CLICKHOUSE_HOST`)
 - Port mismatch — the Worker listens on `8080` by default; confirm the probe and container port match
 
-### Readiness probe failing
+</Accordion>
+<Accordion title="Readiness probe failing">
 
 `/api/healthz` (readiness) checks the ClickHouse connection. A 503 here means the pod is up but cannot reach ClickHouse. The pod will be removed from the Service endpoints until it recovers.
 
 Check:
+
 1. ClickHouse is running and the connection string is correct.
 2. NetworkPolicy allows port 8443 from the dashboard namespace.
 3. The monitoring user credentials work: `curl http://pod:8080/api/healthz`.
@@ -254,7 +279,8 @@ startupProbe:
   periodSeconds: 5
 ```
 
-### Helm chart: dashboard can reach ClickHouse but shows no data
+</Accordion>
+<Accordion title="Helm chart: dashboard can reach ClickHouse but shows no data">
 
 The chart creates a `ConfigMap` for env vars. Confirm the values are correct:
 
@@ -264,11 +290,15 @@ kubectl get configmap chmonitor -o yaml | grep CLICKHOUSE
 
 If the host uses `https://`, confirm TLS is allowed or `CLICKHOUSE_VERIFY_CERT=false` is set.
 
----
+</Accordion>
+</Accordions>
 
 ## Related
 
-- [ClickHouse User & Grants](/guide/getting-started/clickhouse-requirements)
-- [MCP Server — Permissions](/guide/features/mcp#permissions--access)
-- [Authentication](/operate/authentication)
-- [Upgrading ClickHouse](/guide/guides/upgrade-clickhouse)
+<Cards>
+<Card title="ClickHouse User & Grants" href="/guide/getting-started/clickhouse-requirements" description="The least-privilege monitoring user and grants the dashboard needs." />
+<Card title="Connection errors" href="/guide/guides/connection-errors" description="Diagnose 'Test connection' failures kind by kind." />
+<Card title="MCP Server — Permissions" href="/guide/features/mcp#permissions--access" description="Open and secure the MCP endpoint." />
+<Card title="Authentication" href="/operate/authentication" description="Compare and configure chmonitor auth providers." />
+<Card title="Upgrading ClickHouse" href="/guide/guides/upgrade-clickhouse" description="Upgrade safely while chmonitor stays connected." />
+</Cards>
