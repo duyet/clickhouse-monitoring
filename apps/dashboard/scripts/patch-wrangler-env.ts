@@ -8,19 +8,32 @@
  * sections in "redirected" (tool-generated) configs, so we can't use --env.
  * Instead, this script patches the top-level config directly for each target.
  *
- * IMPORTANT: If wrangler.toml routes/vars change, update the objects below.
+ * Worker name/routes are read back from wrangler.toml and the mode-default vars
+ * from ./deploy-defaults, so nothing here is hand-synced with those sources.
  *
  * Usage:
  *   bun scripts/patch-wrangler-env.ts              # patch production values
  *   bun scripts/patch-wrangler-env.ts --env preview # patch preview values
  */
 
+// Worker name/routes come from the parsed wrangler.toml — the single source of
+// truth — instead of being duplicated here. Bun imports TOML natively.
+import wranglerToml from '../wrangler.toml' with { type: 'toml' }
+import { modeDefaultVars, parseDeploymentMode } from './deploy-defaults'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
+
+type WranglerTarget = {
+  name?: string
+  routes?: Array<{ pattern: string; custom_domain?: boolean }>
+}
+const wrangler = wranglerToml as WranglerTarget & {
+  env?: { preview?: WranglerTarget }
+}
 
 const envFlag = process.argv.find((a) => a === '--env')
 const envName = envFlag ? process.argv[process.argv.indexOf(envFlag) + 1] : null
@@ -71,23 +84,10 @@ const fileVars = isPreview
 // worker never depends on per-request runtime derivation (a missing/mismatched
 // runtime read would silently drop the cloud public-read posture → anon 401).
 // The .env file's explicit values still win over these mode defaults.
-// ►► Keep in sync with MODE_DEFAULTS in src/lib/config/deployment-mode.ts ◄◄
-// (this build script can't import the @/-aliased module).
-const deploymentMode =
-  (fileVars.CHM_DEPLOYMENT_MODE ?? '').trim().toLowerCase() === 'cloud'
-    ? 'cloud'
-    : 'oss'
-const MODE_DEFAULT_VARS: Record<'cloud' | 'oss', Record<string, string>> = {
-  cloud: {
-    CHM_CLOUD_MODE: 'true',
-    CHM_AUTH_PROVIDER: 'clerk',
-    CHM_CLERK_PUBLIC_READ: 'true',
-    CHM_FEATURE_USER_CONNECTIONS_DB: 'true',
-    CHM_FEATURE_CONVERSATION_DB: 'true',
-  },
-  oss: {},
-}
-const resolvedVars = { ...MODE_DEFAULT_VARS[deploymentMode], ...fileVars }
+// The mode-default matrix comes from ./deploy-defaults — the SAME copy the
+// runtime resolver (src/lib/config/deployment-mode.ts) uses, so they can't drift.
+const deploymentMode = parseDeploymentMode(fileVars.CHM_DEPLOYMENT_MODE)
+const resolvedVars = { ...modeDefaultVars(deploymentMode), ...fileVars }
 
 // Worker [vars] = every non-VITE_ key from the cloud env file. Only the private
 // deployment topology is allowed to be overridden from process.env (CI injects
@@ -109,15 +109,18 @@ for (const [k, v] of Object.entries(resolvedVars)) {
   vars[k] = override && override !== '' ? override : v
 }
 
-const config = isPreview
-  ? {
-      name: 'preview-chmonitor-dash',
-      routes: [{ pattern: 'preview.dash.chmonitor.dev', custom_domain: true }],
-    }
-  : {
-      name: 'chmonitor-dash',
-      routes: [{ pattern: 'dash.chmonitor.dev', custom_domain: true }],
-    }
+// Worker name + routes: read from the parsed wrangler.toml (top-level for
+// production, [env.preview] for preview) so they are never duplicated here.
+const target = isPreview ? wrangler.env?.preview : wrangler
+const name = target?.name
+const routes = target?.routes
+if (!name || !routes || routes.length === 0) {
+  console.error(
+    `❌ Missing name/routes in wrangler.toml for ${isPreview ? 'env.preview' : 'production'}`
+  )
+  process.exit(1)
+}
+const config = { name, routes }
 
 generated.name = config.name
 generated.routes = config.routes
