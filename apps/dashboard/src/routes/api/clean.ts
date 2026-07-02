@@ -16,7 +16,7 @@ import { getClient } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { EVENTS_TABLE } from '@/lib/app-tables'
-import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
+import { bridgeApiKeyEnv, isAuthenticatedRequest } from '@/lib/auth/api-guard'
 
 const QUERY_CLEANUP_MAX_DURATION_SECONDS = 10 * 60 // 10 minutes
 const MONITORING_USER = () => process.env.CLICKHOUSE_USER || ''
@@ -167,8 +167,15 @@ export const Route = createFileRoute('/api/clean')({
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
         bridgeApiKeyEnv(env as Record<string, string | undefined>)
 
-        const authFailure = await enforceAuth(request)
-        if (authFailure) return authFailure
+        // Mutating endpoint (KILL QUERY): require a genuinely authenticated
+        // caller. isAuthenticatedRequest() intentionally ignores public-read,
+        // so anonymous callers cannot reach it in cloud public-read mode.
+        if (!(await isAuthenticatedRequest(request))) {
+          return Response.json(
+            { error: 'Authentication required' },
+            { status: 401 }
+          )
+        }
 
         const searchParams = new URL(request.url).searchParams
         const hostIdRaw = searchParams.get('hostId')
