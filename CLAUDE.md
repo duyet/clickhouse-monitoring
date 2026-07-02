@@ -527,11 +527,10 @@ The project uses custom chart components with consistent patterns:
 - **Beautify SQL**: Disabled by default to prevent slow rendering of very large queries. Users can toggle it on manually.
 - **Design**: Uses native shadcn/ui components (`Badge`, `Separator`, `ScrollArea`) for a premium look and consistent UI.
 
-#### Agent Session Metrics
-- **Location**: Agent settings sidebar.
-- **Features**: Real-time monitoring of tokens (input/output), estimated cost, and tool calls.
-- **Analytics Dialog**: Detailed breakdown of session analytics available via a premium dialog.
-- **Usage**: Automatically aggregates metrics from AI SDK messages using `useAgentSessionStats`.
+#### Agent Message Stats
+- **Location**: A compact stats footer under each assistant message in the chat thread (`components/assistant-ui/-thread/message-stats.tsx`: `MessageStatsFooter`).
+- **Features**: Duration · throughput · tokens (input/output) · tool calls · model · timestamp, with an info button that opens `MessageStatsDialog` for the full token / timing / model breakdown.
+- **Usage**: Metrics are read from AI SDK message metadata via `extractMessageUsage` (`lib/ai/agent/message-metadata.ts`); token totals and estimated cost are computed by `aggregateUsage` / `aggregateUsageWithCost` / `estimateCost` against `MODEL_PRICING` (`lib/ai/agent/analytics.ts`).
 
 #### Graceful Error Handling Pattern
 

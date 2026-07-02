@@ -12,7 +12,15 @@ import { RunningMutationsCard, StuckMutationsCard } from './mutations-cards'
 import { EMPTY_STATE, useHealthChecks } from './use-health-checks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { dispatchAlert, isEscalation } from '@/lib/health/alert-dispatcher'
+import {
+  alertStatusKey,
+  dispatchAlert,
+  dispatchRecovery,
+  healthIncidentId,
+  isEscalation,
+  loadAlertStatuses,
+  saveAlertStatuses,
+} from '@/lib/health/alert-dispatcher'
 import {
   computeCheckStatus,
   computeRunningMutations,
@@ -209,17 +217,21 @@ export function HealthGrid() {
   }, [dataUpdatedAt, hostId, isLoading])
 
   // Dispatch alerts on escalation for ALL checks, independent of the filter, so
-  // hiding a card never silences (or, on remount, re-fires) its alert.
-  const lastStatusRef = useRef<
-    Record<string, 'ok' | 'warning' | 'critical' | null>
-  >({})
+  // hiding a card never silences its alert. Last-seen status is persisted per
+  // `host::checkId` in localStorage (not a per-instance ref), so escalation
+  // state survives component remount / navigation: returning to /health does
+  // NOT re-fire an alert whose status has not changed. On de-escalation back to
+  // `ok`, a recovery event is emitted so downstream consumers can clear it.
   useEffect(() => {
     // `dataUpdatedAt` re-runs this on each refresh; skip before the first fetch.
     if (isLoading || dataUpdatedAt === 0) return
+    const statuses = loadAlertStatuses()
+    let changed = false
     for (const item of itemsRef.current) {
       const s = item.status
       if (s !== 'ok' && s !== 'warning' && s !== 'critical') continue
-      const prev = lastStatusRef.current[item.id] ?? null
+      const key = alertStatusKey(hostId, item.id)
+      const prev = statuses[key] ?? null
       if (isEscalation(prev, s) && s !== 'ok') {
         void dispatchAlert({
           checkId: item.id,
@@ -228,10 +240,26 @@ export function HealthGrid() {
           value: item.alert.value,
           label: item.alert.label,
           hostId,
+          incidentId: healthIncidentId(hostId, item.id, s),
+        })
+      } else if (s === 'ok' && (prev === 'warning' || prev === 'critical')) {
+        // Recovered: report against the severity that just cleared.
+        void dispatchRecovery({
+          checkId: item.id,
+          title: item.alert.title,
+          severity: prev,
+          value: item.alert.value,
+          label: item.alert.label,
+          hostId,
+          incidentId: healthIncidentId(hostId, item.id, prev),
         })
       }
-      lastStatusRef.current[item.id] = s
+      if (statuses[key] !== s) {
+        statuses[key] = s
+        changed = true
+      }
     }
+    if (changed) saveAlertStatuses(statuses)
   }, [dataUpdatedAt, hostId, isLoading])
 
   const counts = useMemo<HealthCounts>(() => {
