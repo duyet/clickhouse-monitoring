@@ -19,8 +19,74 @@
           </ul>
         </div>
         <div class="feat-shot reveal">
-          <div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span></div>
-          <img src="/landing-assets/health-summary.png" alt="chmonitor health summary indicators" loading="lazy" decoding="async" />
+          <div class="browser-bar">
+            <span class="lights"><i></i><i></i><i></i></span>
+            <span class="hs-crumb mono">overview · health</span>
+          </div>
+          <div class="hs-board" role="img" aria-label="Cluster health board: replication lag, readonly replicas and disk are healthy; delayed inserts and memory are warnings; failed queries and stuck mutations are critical.">
+            <div class="hs-head">
+              <span class="hs-title">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M2 2v12M5 2v12M8 4v8M11 2v12M14 5v6"/></svg>
+                Cluster health
+              </span>
+              <span class="hs-live"><i aria-hidden="true"></i> live</span>
+            </div>
+            <div class="hs-grid" aria-hidden="true">
+              <div class="hs-tile" data-s="ok">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Replication lag</span>
+                <span class="hs-val">0.4s</span>
+                <div class="hs-bar"><span style="--w:20%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="ok">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Readonly replicas</span>
+                <span class="hs-val">0</span>
+                <div class="hs-bar"><span style="--w:6%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="warn">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Delayed inserts</span>
+                <span class="hs-val">12/s</span>
+                <div class="hs-bar"><span style="--w:58%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="crit">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Failed queries</span>
+                <span class="hs-val">38</span>
+                <div class="hs-bar"><span style="--w:82%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="warn">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Memory used</span>
+                <span class="hs-val">81%</span>
+                <div class="hs-bar"><span style="--w:81%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="ok">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Disk used</span>
+                <span class="hs-val">62%</span>
+                <div class="hs-bar"><span style="--w:62%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="ok">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Parts / partition</span>
+                <span class="hs-val">94</span>
+                <div class="hs-bar"><span style="--w:34%"></span></div>
+              </div>
+              <div class="hs-tile" data-s="crit">
+                <span class="hs-dot"></span>
+                <span class="hs-name">Stuck mutations</span>
+                <span class="hs-val">2</span>
+                <div class="hs-bar"><span style="--w:74%"></span></div>
+              </div>
+            </div>
+            <div class="hs-legend" aria-hidden="true">
+              <span data-s="ok"><i></i> Healthy</span>
+              <span data-s="warn"><i></i> Warning</span>
+              <span data-s="crit"><i></i> Critical</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -37,9 +103,134 @@
           </ul>
         </div>
         <div class="feat-shot reveal">
-          <div class="browser-bar"><span class="lights"><i></i><i></i><i></i></span></div>
-          <img src="/landing-assets/health-audit.png" alt="chmonitor generated audit prompt dialog" loading="lazy" decoding="async" />
+          <div class="hs-pbar">
+            <span class="hs-pb-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 13.5 9.5 21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5z"/></svg>
+              Audit prompt
+            </span>
+            <span class="hs-copy" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy Markdown
+            </span>
+          </div>
+          <div class="hs-prompt" role="img" aria-label="Generated audit prompt: investigate a failed-queries spike on host prod-eu-1 running ClickHouse 24.3, with metric, current value 38, threshold under 5, and toggled context — metric query, raw data, system tables and common causes included.">
+            <div class="hs-p-title mono"># Investigate: failed-queries spike</div>
+            <div class="hs-p-grid mono" aria-hidden="true">
+              <div><span>metric</span><b>failed_queries / 15m</b></div>
+              <div><span>host</span><b>prod-eu-1 · v24.3</b></div>
+              <div><span>current</span><b class="hs-cx">38</b></div>
+              <div><span>threshold</span><b>&lt; 5</b></div>
+            </div>
+            <div class="hs-p-label" aria-hidden="true">Included context</div>
+            <div class="hs-chips" aria-hidden="true">
+              <span class="hs-chip" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> Metric query</span>
+              <span class="hs-chip" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> Raw data</span>
+              <span class="hs-chip" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> System tables</span>
+              <span class="hs-chip" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> Common causes</span>
+              <span class="hs-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Docs links</span>
+            </div>
+            <div class="hs-code mono" aria-hidden="true">
+              <span class="c">-- system tables to inspect</span>
+              <span>system.query_log <span class="c">·</span> system.errors</span>
+              <span class="c">-- exceptions in the window</span>
+              <span><span class="k">SELECT</span> type, count() <span class="k">FROM</span> system.query_log</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
+
+<style>
+  /* ── Health section: hand-crafted, theme-aware viz (replaces screenshots) ──
+     Status palette derives from Base tokens; only --crit is local (no red token).
+     color-mix gives theme-correct tints in both light and dark. */
+  .hs-board,.hs-prompt{--ok:var(--emerald);--warn:var(--amber);--crit:#e11d48}
+  :global(:root[data-theme="dark"]) .hs-board,
+  :global(:root[data-theme="dark"]) .hs-prompt{--crit:#fb7185}
+
+  .hs-crumb{margin-left:2px;font-size:11.5px;color:var(--muted-fg);letter-spacing:.01em}
+
+  /* ── health board ── */
+  .hs-board{padding:18px 18px 16px;background:var(--card)}
+  .hs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .hs-title{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--fg)}
+  .hs-title svg{width:15px;height:15px;color:var(--orange)}
+  .hs-live{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-fg)}
+  .hs-live i{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 0 color-mix(in oklab,var(--emerald) 55%,transparent);animation:hs-pulse 2.4s ease-out infinite}
+
+  .hs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .hs-tile{--c:var(--ok);
+    display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"dot name val" "bar bar bar";
+    align-items:center;column-gap:9px;row-gap:9px;
+    padding:11px 12px;border:1px solid var(--border);border-radius:11px;
+    background:color-mix(in oklab,var(--c) 5%,var(--card));transition:border-color .18s ease,transform .18s ease}
+  .hs-tile:hover{border-color:color-mix(in oklab,var(--c) 45%,var(--border));transform:translateY(-1px)}
+  .hs-tile[data-s="warn"]{--c:var(--warn)}
+  .hs-tile[data-s="crit"]{--c:var(--crit)}
+  .hs-dot{grid-area:dot;width:8px;height:8px;border-radius:50%;background:var(--c);
+    box-shadow:0 0 0 3px color-mix(in oklab,var(--c) 20%,transparent)}
+  .hs-name{grid-area:name;font-size:12.5px;font-weight:500;color:var(--fg-soft);letter-spacing:-.005em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hs-val{grid-area:val;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:600;
+    color:var(--c);font-variant-numeric:tabular-nums}
+  .hs-bar{grid-area:bar;height:5px;border-radius:999px;overflow:hidden;
+    background:color-mix(in oklab,var(--fg) 8%,transparent)}
+  .hs-bar span{display:block;height:100%;width:var(--w);border-radius:999px;
+    background:linear-gradient(90deg,color-mix(in oklab,var(--c) 62%,transparent),var(--c));
+    transform:scaleX(0);transform-origin:left;animation:hs-grow .9s cubic-bezier(.22,1,.36,1) .15s forwards}
+
+  .hs-legend{display:flex;gap:16px;margin-top:14px;padding-top:13px;border-top:1px solid var(--border-soft)}
+  .hs-legend span{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted-fg)}
+  .hs-legend i{width:8px;height:8px;border-radius:50%}
+  .hs-legend span[data-s="ok"] i{background:var(--emerald)}
+  .hs-legend span[data-s="warn"] i{background:var(--amber)}
+  .hs-legend span[data-s="crit"] i{background:var(--crit)}
+
+  /* ── audit prompt card ── */
+  .hs-pbar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    height:42px;padding:0 14px;background:var(--browser-bar);border-bottom:1px solid var(--border-soft)}
+  .hs-pb-title{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--fg);letter-spacing:-.01em}
+  .hs-pb-title svg{width:15px;height:15px}
+  .hs-copy{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:8px;
+    border:1px solid var(--border);background:var(--card);font-size:11.5px;font-weight:600;color:var(--fg-soft)}
+  .hs-copy svg{width:13px;height:13px}
+
+  .hs-prompt{padding:18px;background:var(--card)}
+  .hs-p-title{font-size:13.5px;font-weight:600;color:var(--fg);letter-spacing:-.005em}
+  .hs-p-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:14px}
+  .hs-p-grid > div{display:flex;flex-direction:column;gap:3px;
+    padding:9px 11px;border:1px solid var(--border-soft);border-radius:9px;background:var(--bg-soft)}
+  .hs-p-grid span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-fg)}
+  .hs-p-grid b{font-size:12.5px;font-weight:600;color:var(--fg-soft)}
+  .hs-cx{color:var(--crit) !important}
+
+  .hs-p-label{margin:18px 0 10px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg)}
+  .hs-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .hs-chip{display:inline-flex;align-items:center;gap:6px;height:27px;padding:0 11px;border-radius:999px;
+    border:1px solid var(--border);background:var(--card);font-size:12px;font-weight:500;color:var(--muted-fg)}
+  .hs-chip svg{width:12px;height:12px;color:var(--muted-fg);opacity:.6}
+  .hs-chip[data-on="true"]{color:var(--fg-soft);border-color:color-mix(in oklab,var(--emerald) 40%,var(--border));
+    background:color-mix(in oklab,var(--emerald) 9%,var(--card))}
+  .hs-chip[data-on="true"] svg{color:var(--emerald);opacity:1}
+
+  .hs-code{margin-top:16px;display:flex;flex-direction:column;gap:5px;
+    padding:14px;border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-soft);
+    font-size:11.5px;line-height:1.5;color:var(--fg-soft);overflow-x:auto}
+  .hs-code > span{white-space:nowrap}
+  .hs-code .c{color:var(--muted-fg)}
+  .hs-code .k{color:var(--violet);font-weight:600}
+
+  @keyframes hs-grow{to{transform:scaleX(1)}}
+  @keyframes hs-pulse{
+    0%{box-shadow:0 0 0 0 color-mix(in oklab,var(--emerald) 55%,transparent)}
+    70%,100%{box-shadow:0 0 0 6px transparent}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hs-bar span{animation:none;transform:scaleX(1)}
+    .hs-live i{animation:none}
+  }
+  @media (max-width:480px){
+    .hs-grid,.hs-p-grid{grid-template-columns:1fr}
+  }
+</style>

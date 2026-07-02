@@ -14,6 +14,8 @@ import type { HealthCheckDef } from '@/components/health/health-checks'
 import type { HealthCheckState } from '@/components/health/use-health-checks'
 import type { Thresholds } from '@/lib/health/thresholds-storage'
 
+import { classifyValue } from '@/lib/alerting/rule-registry'
+
 export type HealthStatus = 'ok' | 'warning' | 'critical' | 'loading' | 'error'
 
 /** Sort order: worst first, then unknown (error/loading) last. */
@@ -76,9 +78,7 @@ export function computeCheckStatus(
     value = raw === null || raw === undefined ? 0 : Number(raw)
     label = check.formatLabel ? check.formatLabel(value) : String(value)
     if (Number.isFinite(value)) {
-      if (value >= thresholds.critical) status = 'critical'
-      else if (value >= thresholds.warning) status = 'warning'
-      else status = 'ok'
+      status = classifyValue(value, thresholds)
     } else {
       status = 'error'
       label = 'Invalid value'
@@ -143,9 +143,22 @@ export function computeStuckMutations(
       failed = 0
     } else {
       label = `${active} active · ${stuck} stuck · ${failed} failed`
-      if (stuck > 0 || failed > 0) status = 'critical'
-      else if (active > 5) status = 'warning'
-      else status = 'ok'
+      // Mutations-specific rules layered on the shared classifier: any stuck or
+      // failed mutation (count ≥ 1) is critical; more than five active is a
+      // warning. Counts are non-negative integers, so `> 0` ≡ `>= 1` and
+      // `> 5` ≡ `>= 6`. Take the worst of the two signals.
+      const blockingStatus = classifyValue(Math.max(stuck, failed), {
+        warning: Number.POSITIVE_INFINITY,
+        critical: 1,
+      })
+      const activeStatus = classifyValue(active, {
+        warning: 6,
+        critical: Number.POSITIVE_INFINITY,
+      })
+      status =
+        SEVERITY_RANK[blockingStatus] <= SEVERITY_RANK[activeStatus]
+          ? blockingStatus
+          : activeStatus
     }
   } else {
     status = 'ok'
@@ -182,7 +195,7 @@ export function computeRunningMutations(
       value = 0
     } else {
       label = `${value.toLocaleString()} running mutations`
-      status = value >= 10 ? 'critical' : value >= 3 ? 'warning' : 'ok'
+      status = classifyValue(value, { warning: 3, critical: 10 })
     }
   } else {
     label = '0 running mutations'
