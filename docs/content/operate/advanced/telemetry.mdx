@@ -1,17 +1,19 @@
 ---
 description: Anonymous product telemetry — on by default, opt out anytime, no PII, no third-party trackers.
 icon: Radio
+title: Product Telemetry
 ---
 
-# Product Telemetry
+chmonitor includes an anonymous, privacy-first telemetry system. It is **on by
+default** and you can turn it off at any time — with a single environment
+variable. It collects lightweight, aggregate product analytics (five events,
+three dimensions, no PII) to help the project understand how the dashboard is
+used at a high level.
 
-chmonitor includes an anonymous, privacy-first telemetry system. It is **on by default** and you can turn it off at any time — with a single environment variable. It collects lightweight, aggregate product analytics (five events, three dimensions, no PII) to help the project understand how the dashboard is used at a high level.
+This is separate from [Self-Tracking](/operate/advanced/self-tracking), which
+writes dashboard usage events to your own ClickHouse instance.
 
-This is separate from [Self-Tracking](/operate/advanced/self-tracking), which writes dashboard usage events to your own ClickHouse instance.
-
----
-
-## On by default — how to opt out
+## Opt out — on by default
 
 Telemetry runs unless you explicitly turn it off. Any **one** of these disables it:
 
@@ -22,13 +24,50 @@ Telemetry runs unless you explicitly turn it off. Any **one** of these disables 
 | `DO_NOT_TRACK` | Server runtime — the cross-tool [opt-out standard](https://consoledonottrack.com) | `1` (any truthy value) |
 | `CHM_TELEMETRY_ENDPOINT` | Server runtime — collection endpoint | `""` (empty = hard kill-switch, no network call) |
 
-`DO_NOT_TRACK` is a **hard override**: when set, telemetry is off regardless of `CHM_TELEMETRY`. Leaving everything unset keeps telemetry **on**.
+<Callout type="info">
+`DO_NOT_TRACK` is a **hard override**: when set, telemetry is off regardless of
+`CHM_TELEMETRY`. Leaving everything unset keeps telemetry **on**.
+</Callout>
+
+<Tabs items={['Server-side', 'Do Not Track', 'Client build-time']}>
+<Tab value="Server-side">
+```bash
+CHM_TELEMETRY=off
+```
+
+Applies to Cloudflare Worker, Docker, and Kubernetes deployments. `0`, `false`,
+and `no` are also accepted.
+</Tab>
+<Tab value="Do Not Track">
+```bash
+DO_NOT_TRACK=1
+```
+
+The cross-tool [opt-out standard](https://consoledonottrack.com). A hard
+override — telemetry is off regardless of `CHM_TELEMETRY`.
+</Tab>
+<Tab value="Client build-time">
+```bash
+VITE_TELEMETRY_ENABLED=off
+```
+
+Or, to remove the endpoint entirely:
+
+```bash
+VITE_TELEMETRY_ENDPOINT=""
+```
+
+Inlined at `bun run build` / `vite build`.
+</Tab>
+</Tabs>
 
 ### Collection endpoint
 
-Data is sent to the project's collector at `https://telemetry.chmonitor.dev/v1/ping` by default. Point it elsewhere (e.g. your own [collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry)) by setting `CHM_TELEMETRY_ENDPOINT` (server) or `VITE_TELEMETRY_ENDPOINT` (client build). Setting it to an empty string disables the network call entirely.
-
----
+Data is sent to the project's collector at
+`https://telemetry.chmonitor.dev/v1/ping` by default. Point it elsewhere (e.g.
+your own [collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry))
+by setting `CHM_TELEMETRY_ENDPOINT` (server) or `VITE_TELEMETRY_ENDPOINT`
+(client build). Setting it to an empty string disables the network call entirely.
 
 ## What is collected
 
@@ -50,8 +89,6 @@ Data is sent to the project's collector at `https://telemetry.chmonitor.dev/v1/p
 | `ch_version` | `MAJOR.MINOR` only | `24.8` |
 | `ch_flavor` | `oss`, `altinity`, `cloud`, `unknown` | `oss` |
 
----
-
 ## What is NOT collected
 
 - Query text, SQL statements, or fingerprints
@@ -60,53 +97,37 @@ Data is sent to the project's collector at `https://telemetry.chmonitor.dev/v1/p
 - Table names, database names, or schema information
 - Any free-text or user-generated content
 
-A defensive redaction layer (`redact.ts`) runs before every event is emitted. It drops any prop whose key name implies sensitive content (`host`, `ip`, `url`, `query`, `sql`, `email`, `token`, …) and any string value that matches an email, IPv4/IPv6 address, or URL pattern. When in doubt, it drops.
+A defensive redaction layer (`redact.ts`) runs before every event is emitted. It
+drops any prop whose key name implies sensitive content (`host`, `ip`, `url`,
+`query`, `sql`, `email`, `token`, …) and any string value that matches an email,
+IPv4/IPv6 address, or URL pattern. When in doubt, it drops.
 
-The ClickHouse version is always truncated to `MAJOR.MINOR` (e.g. `24.8`) — never the full four-part string — to avoid matching the IPv4 redaction pattern.
-
----
-
-## How to disable
-
-<Tabs items={['Server-side', 'Do Not Track', 'Client build-time']}>
-<Tab value="Server-side">
-```bash
-CHM_TELEMETRY=off
-```
-
-Applies to Cloudflare Worker, Docker, and Kubernetes deployments. `0`, `false`, and `no` are also accepted.
-</Tab>
-<Tab value="Do Not Track">
-```bash
-DO_NOT_TRACK=1
-```
-
-The cross-tool [opt-out standard](https://consoledonottrack.com). A hard override — telemetry is off regardless of `CHM_TELEMETRY`.
-</Tab>
-<Tab value="Client build-time">
-```bash
-VITE_TELEMETRY_ENABLED=off
-# or, to remove the endpoint entirely:
-VITE_TELEMETRY_ENDPOINT=""
-```
-
-Inlined at `bun run build` / `vite build`.
-</Tab>
-</Tabs>
-
----
+<Callout type="info">
+The ClickHouse version is always truncated to `MAJOR.MINOR` (e.g. `24.8`) — never
+the full four-part string — to avoid matching the IPv4 redaction pattern.
+</Callout>
 
 ## Transport and storage
 
-**Instance ping** (`maybePingInstance`) runs once per day when due, sending a hashed install id + deploy target + ClickHouse `MAJOR.MINOR` to the collection endpoint. It is a hard no-op when telemetry is disabled, when the endpoint is an empty string, or in non-browser contexts (SSR/prerender).
+**Instance ping** (`maybePingInstance`) runs once per day when due, sending a
+hashed install id + deploy target + ClickHouse `MAJOR.MINOR` to the collection
+endpoint. It is a hard no-op when telemetry is disabled, when the endpoint is an
+empty string, or in non-browser contexts (SSR/prerender).
 
-The endpoint is received by the [telemetry collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry) — a public, write-only Cloudflare Worker that records to **Analytics Engine** (and, when D1 is attached, keeps a deduped daily row per install indefinitely). It cannot be read back over HTTP.
+The endpoint is received by the [telemetry collector](https://github.com/chmonitor/chmonitor/tree/main/apps/telemetry)
+— a public, write-only Cloudflare Worker that records to **Analytics Engine**
+(and, when D1 is attached, keeps a deduped daily row per install indefinitely).
+It cannot be read back over HTTP.
 
-> **Retention:** Analytics Engine stores data for **3 months**, then auto-deletes. For permanent retention the collector can also write to D1 (Cloudflare's SQLite), which keeps one deduped row per install per day forever. See the collector README.
+<Callout type="info" title="Retention">
+Analytics Engine stores data for **3 months**, then auto-deletes. For permanent
+retention the collector can also write to D1 (Cloudflare's SQLite), which keeps
+one deduped row per install per day forever. See the collector README.
+</Callout>
 
-**Event tracking** (`track()`) is typed and redacted, then delivered by the event sink to the collector's `/v1/event` endpoint. The sink installs once per app load and is a hard no-op when telemetry is disabled or no endpoint resolves.
-
----
+**Event tracking** (`track()`) is typed and redacted, then delivered by the event
+sink to the collector's `/v1/event` endpoint. The sink installs once per app load
+and is a hard no-op when telemetry is disabled or no endpoint resolves.
 
 ## Activation metric
 
@@ -114,9 +135,10 @@ The project tracks a single derived metric called "activation":
 
 > activation = `cluster_connected` AND (`health_viewed` OR `queries_viewed`)
 
-A session is considered activated when a cluster is connected and the user viewed either the Health or Queries page in that session. This definition lives in `activation.ts` and is the same across the client, any analytics query over the telemetry store, and this documentation.
-
----
+A session is considered activated when a cluster is connected and the user viewed
+either the Health or Queries page in that session. This definition lives in
+`activation.ts` and is the same across the client, any analytics query over the
+telemetry store, and this documentation.
 
 ## Privacy stance
 
@@ -129,9 +151,17 @@ A session is considered activated when a cluster is connected and the user viewe
 - **Hard kill-switch** — setting the endpoint env to an empty string stops all network calls regardless of any other setting.
 </Callout>
 
----
-
 ## Related
 
-- [Self-Tracking](/operate/advanced/self-tracking) — writes dashboard usage events (page visits, query executions) to your own ClickHouse instance. A different system, entirely within your infrastructure.
-- [Environment Variables](/reference/environment-variables) — full reference for all configuration variables.
+<Cards>
+  <Card
+    title="Self-Tracking"
+    href="/operate/advanced/self-tracking"
+    description="Writes dashboard usage events (page visits, query executions) to your own ClickHouse instance. A different system, entirely within your infrastructure."
+  />
+  <Card
+    title="Environment Variables"
+    href="/reference/environment-variables"
+    description="Full reference for all configuration variables."
+  />
+</Cards>

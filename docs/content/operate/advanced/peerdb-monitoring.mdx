@@ -1,9 +1,8 @@
 ---
 description: Read-only PeerDB Mirrors and Peers section — configure PEERDB_API_URL to surface replication status, throughput, and lag without mutating PeerDB.
 icon: Replace
+title: PeerDB Monitoring
 ---
-
-# PeerDB Monitoring
 
 CHM includes an optional, **view-only** PeerDB section (Mirrors and Peers) that
 surfaces replication status, throughput, lag, and per-mirror detail from a
@@ -11,24 +10,34 @@ surfaces replication status, throughput, lag, and per-mirror detail from a
 proxies a read-only allowlist of the PeerDB REST API.
 
 <Callout type="info">
-Open it at `/peerdb` once configured. The section is hidden until `PEERDB_API_URL` is set.
+Open it at `/peerdb` once configured. The section is hidden until
+`PEERDB_API_URL` is set.
 </Callout>
 
----
+## Configure
 
-## Enable
+<Steps>
+<Step>
+### Set the API URL and password
 
 Set `PEERDB_API_URL` (and `PEERDB_PASSWORD` if your PeerDB API requires auth),
 then restart the app.
 
+For the PeerDB **UI** behind NextAuth, include the `/api` suffix:
+
 ```bash
-# PeerDB UI behind NextAuth — include the /api suffix
 PEERDB_API_URL=https://peerdb.example.com/api
 PEERDB_PASSWORD=your-peerdb-ui-password
+```
 
-# OR a raw flow-api with no auth — use the bare origin
+For a raw **flow-api** with no auth, use the bare origin:
+
+```bash
 PEERDB_API_URL=http://localhost:8113
 ```
+</Step>
+<Step>
+### Tune caching and timeouts
 
 | Variable | Default | Description |
 |---|---|---|
@@ -39,8 +48,8 @@ PEERDB_API_URL=http://localhost:8113
 | `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Upstream request timeout. |
 
 See the full list in [Environment Variables](/reference/environment-variables).
-
----
+</Step>
+</Steps>
 
 ## Connection status
 
@@ -52,8 +61,6 @@ The header shows a status pill that distinguishes:
 - **Unreachable** — wrong `PEERDB_API_URL` or a network/DNS issue.
 - **Not configured** — `PEERDB_API_URL` is unset.
 
----
-
 ## Security
 
 CHM proxies only a **read-only allowlist** of PeerDB endpoints
@@ -62,12 +69,11 @@ config, maintenance) are rejected with `403`. The PeerDB credential is attached
 server-side and never reaches the browser bundle, and secret-shaped peer config
 fields are masked in the UI.
 
-The section also respects [Feature Permissions](/operate/advanced/feature-permissions)
-— gate it with `CHM_FEATURE_PEERDB_ACCESS=authenticated` or disable it with
+The section also respects
+[Feature Permissions](/operate/advanced/feature-permissions) — gate it with
+`CHM_FEATURE_PEERDB_ACCESS=authenticated` or disable it with
 `CHM_FEATURE_PEERDB_ENABLED=false`. The proxy enforces the same gate, so it
 cannot be reached directly when the feature is disabled or restricted.
-
----
 
 ## Local development (mock)
 
@@ -79,8 +85,6 @@ bun run peerdb:mock                                  # serves :8113
 PEERDB_API_URL=http://localhost:8113 bun run dev     # → /peerdb
 ```
 
----
-
 ## Troubleshooting
 
 | Symptom | Likely cause |
@@ -89,3 +93,18 @@ PEERDB_API_URL=http://localhost:8113 bun run dev     # → /peerdb
 | Pill shows **Unreachable** | `PEERDB_API_URL` host/port wrong, or the API is not reachable from the CHM server. |
 | Mirrors load but charts are empty | The mirror has no recent CDC graph/batch data yet, or the PeerDB version doesn't expose those endpoints. |
 | Large fleets show partial KPI totals | Per-row metrics load lazily above 24 mirrors; the Throughput/Rows-synced cards label how many mirrors are loaded. Expand a row to load its metrics. |
+
+## Related
+
+<Cards>
+  <Card
+    title="Feature Permissions"
+    href="/operate/advanced/feature-permissions"
+    description="Gate or disable the PeerDB section with CHM_FEATURE_PEERDB_ACCESS and CHM_FEATURE_PEERDB_ENABLED."
+  />
+  <Card
+    title="Environment Variables"
+    href="/reference/environment-variables"
+    description="Full reference for all PeerDB and connection variables."
+  />
+</Cards>

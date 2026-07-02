@@ -3,24 +3,28 @@ title: Deploy & Operate
 description: Ship chmonitor to production, secure it, and tune advanced behaviour.
 ---
 
-# Deploy & Operate
-
 Everything you need to run chmonitor in production — from the first deploy to
 authentication and advanced configuration.
 
-## Deployment
-
-Pick a target and ship: Docker, Kubernetes, Cloudflare Workers, Vercel, or a
-self-hosted Node server. See [Deployment](/operate/deploy) for the full matrix
-and a [production checklist](/operate/deploy/production-checklist).
-
-## Authentication
-
-chmonitor ships open by default and layers in auth when you need it — API keys,
-Clerk, Cloudflare Access, or a trusted reverse proxy. Start at
-[Authentication](/operate/authentication).
-
-## Advanced
-
-Multi-host setups, feature permissions, editions, self-tracking, telemetry, and
-other operational knobs live under [Advanced](/operate/advanced).
+<Cards>
+  <Card
+    title="Deployment"
+    href="/operate/deploy"
+    description="Pick a target and ship: Docker, Kubernetes, Cloudflare Workers, Vercel, or a self-hosted Node server."
+  />
+  <Card
+    title="Production checklist"
+    href="/operate/deploy/production-checklist"
+    description="Verify the essentials before you go live."
+  />
+  <Card
+    title="Authentication"
+    href="/operate/authentication"
+    description="Open by default; layer in API keys, Clerk, Cloudflare Access, or a trusted reverse proxy when you need it."
+  />
+  <Card
+    title="Advanced"
+    href="/operate/advanced"
+    description="Multi-host setups, feature permissions, editions, self-tracking, telemetry, and other operational knobs."
+  />
+</Cards>
