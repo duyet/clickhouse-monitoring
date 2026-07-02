@@ -23,30 +23,31 @@ module.exports = {
     },
 
     // ── Apps must not import from other apps ──────────────────────────────
+    // Generalized: forbid ANY apps/X → apps/Y (X !== Y). Covers every app
+    // (blog, bug-handler, dashboard, docs, landing, mcp, telemetry, …) so new
+    // apps are guarded automatically. Intra-app imports (apps/X → apps/X) are
+    // allowed via the $1 back-reference to the captured app name.
     {
       name: 'no-cross-app-imports',
       severity: 'error',
-      comment: 'Apps must not import from other apps.',
-      from: { path: '^apps/dashboard/' },
-      to: { path: '^apps/mcp/' },
-    },
-    {
-      name: 'no-cross-app-imports-reverse',
-      severity: 'error',
-      comment: 'Apps must not import from other apps.',
-      from: { path: '^apps/mcp/' },
-      to: { path: '^apps/dashboard/' },
+      comment:
+        'Apps must not import from other apps. Extract shared code into a @chm/* package instead.',
+      from: { path: '^apps/([^/]+)/' },
+      to: {
+        path: '^apps/([^/]+)/',
+        pathNot: '^apps/$1/',
+      },
     },
 
     // ── Leaf packages must stay leaf-only ─────────────────────────────────
-    // @chm/types, @chm/sql-builder, @chm/logger, @chm/platform
+    // @chm/types, @chm/sql-builder, @chm/logger, @chm/platform, @chm/pricing
     {
       name: 'leaf-packages-no-internal-deps',
       severity: 'error',
       comment:
         'Leaf packages must not depend on higher-layer @chm/* packages.',
       from: {
-        path: '^packages/(types|sql-builder|logger|platform)/',
+        path: '^packages/(types|sql-builder|logger|platform|pricing)/',
       },
       to: {
         path: '^packages/(clickhouse-client|mcp-server)/',
