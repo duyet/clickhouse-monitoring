@@ -315,11 +315,11 @@ of local files.
 - Cloudflare worker size dry-run: `bun wrangler deploy --minify --dry-run`
 - Code-smell automation workflow now records findings in `docs/knowledge/core-memory.md`, then validates `gh run list --branch main --limit 10 ...` and keeps a dedicated memory note under `/Users/duet/.codex/automations/code-smell-detector/memory.md`.
 
-**Docs content workflow**: `docs/content/**` is the committed source of truth for the docs. The standalone Astro **Starlight** site at `apps/docs` (→ docs.chmonitor.dev) generates its content collection from it via `scripts/sync-docs.mjs` on every build. There is no per-release versioning.
+**Docs content workflow**: `docs/content/**` is the committed source of truth for the docs. The standalone **Fumadocs** site (TanStack Start, deployed to Cloudflare Workers → docs.chmonitor.dev) at `apps/docs` generates its content collection from it via `scripts/sync-docs.mjs` on every build. There is no per-release versioning.
 
-- `cd apps/docs && bun run dev` - Preview the docs site locally (http://localhost:4321)
-- `cd apps/docs && bun run build` - Full static build (sync-docs → astro build incl. Pagefind)
-- Edit only `docs/content/**`; `apps/docs/src/content/docs/**` is regenerated and gitignored.
+- `cd apps/docs && bun run dev` - Preview the docs site locally (sync-docs → `vite dev`)
+- `cd apps/docs && bun run build` - Full build (sync-docs → generate-og → `vite build`)
+- Edit only `docs/content/**`; the generated `apps/docs/content/docs/**` is regenerated and gitignored.
 
 **IMPORTANT — keep the AI Agent docs in sync**: `docs/content/ai-agent.mdx` is
 the user-facing reference for the agent's tools, skills, and configuration.
@@ -329,7 +329,7 @@ skill (`.agents/skills/*/SKILL.md`), or an agent env var, update
 
 ## Architecture
 
-> **NOTE:** `apps/dashboard` is now the TanStack Start app (v0.3+). The Next.js migration is complete. For the app internals, see `apps/dashboard/CLAUDE.md` or `docs/PRD.md` §10.2. The Next.js-era subsections below are kept as historical reference and no longer apply.
+> **NOTE:** `apps/dashboard` is now the TanStack Start app (v0.3+). The Next.js migration is complete. For the app internals, see `apps/dashboard/CLAUDE.md` or `docs/PRD.md` §10.2.
 
 ### Core Technologies (TanStack Start, current)
 
@@ -351,141 +351,15 @@ Pages are prerendered at build time (static shell) with client-side data fetchin
 
 - All dashboard pages are file-based routes under `src/routes/(dashboard)/`
 - API routes live at `src/routes/api/`
-- Multi-host routing via `?host=0` query param (unchanged from v0.2)
+- Multi-host routing via `?host=0` query param
 
----
-
-### Legacy: Next.js Static Site Architecture (historical reference — no longer in use)
-
-**CRITICAL**: Fully static site. No SSR, no middleware, no server components. Client-side only.
-
-- Use `'use client'` for all pages
-- Use client-side redirect (`useRouter` + `useEffect`), never `redirect()` from next/navigation
-- Use SWR for all data fetching
-- Query params for routing (`?host=0`), not dynamic routes
-
-### Legacy: Routing Pattern
-
-**Old (Dynamic)**: `https://example.com/0/overview`
-**New (Static)**: `https://example.com/overview?host=0`
-
-**Benefits:**
-- Faster initial page load (static shell pre-rendered)
-- Better CDN caching (static pages cache at edge)
-- Simpler deployment (standalone output)
-- Progressive data loading (client fetches data independently)
-
-### File Structure
-
-```
-app/
-├── api/v1/              # API routes for data fetching
-│   ├── data/            # Generic query endpoint
-│   ├── charts/[name]/   # Chart-specific data
-│   ├── tables/[name]/   # Table data with pagination
-│   ├── explorer/        # Data explorer API (dependencies, projections)
-│   └── hosts/           # List available hosts
-├── overview/            # Static overview page (5 tabs: Connections, Queries, Merges, Replication, System)
-├── dashboard/           # Static dashboard page
-├── explorer/            # Static database explorer page with tree browser
-├── tables/              # Static tables list
-├── clusters/            # Static clusters overview
-├── running-queries/     # Static query monitoring pages
-├── [query]/             # Dynamic query detail routes
-└── layout.tsx           # Root layout with SWR provider
-
-components/
-├── data-table/          # Advanced data table system
-├── charts/              # Chart components (32 components)
-│   └── * (all use SWR with hostId prop)
-├── overview-chards/     # Overview page charts
-├── header-client.tsx    # Client-side header with host selector
-└── ui/                  # shadcn/ui components
-
-lib/
-├── api/
-│   ├── types.ts         # API request/response types
-│   ├── chart-registry.ts # Chart query registry
-│   └── table-registry.ts # Table query registry
-├── swr/
-│   ├── provider.tsx     # SWR configuration
-│   ├── use-host.ts      # Extract hostId from query params
-│   ├── use-chart-data.ts # Chart data fetching hook
-│   └── use-table-data.ts # Table data fetching hook
-├── query-config/        # Centralized query configurations
-│   ├── queries/         # Query monitoring configs
-│   ├── merges/          # Merge operation configs
-│   ├── more/            # System metrics configs
-│   ├── tables/          # Table-specific configs
-│   └── system/          # System-level configs
-├── clickhouse.ts        # ClickHouse client (hostId required)
-└── server-context.ts    # Server-side context
-```
-
-### Multi-Host Support
-
-**IMPORTANT**: All data fetching now requires `hostId` parameter.
-
-**Query Parameter Approach:**
-```typescript
-// URL: /overview?host=1
-'use client'
-import { OverviewCharts } from '@/components/overview-charts/overview-charts-client'
-
-export default function OverviewPage() {
-  // OverviewCharts and its child components use useHostId() internally
-  return <OverviewCharts />
-}
-```
-
-**Environment Variables:**
-- `CLICKHOUSE_HOST` - Comma-separated list of hosts
-- `CLICKHOUSE_USER` - Comma-separated list of users
-- `CLICKHOUSE_PASSWORD` - Comma-separated list of passwords
-- `CLICKHOUSE_NAME` - Comma-separated list of custom names
+**Multi-host env vars** (comma-separated lists):
+- `CLICKHOUSE_HOST` - hosts
+- `CLICKHOUSE_USER` - users
+- `CLICKHOUSE_PASSWORD` - passwords
+- `CLICKHOUSE_NAME` - custom names
 
 ### Key Patterns
-
-#### SWR Data Fetching Pattern
-
-**All client components that fetch data follow this pattern:**
-
-```typescript
-'use client'
-import { Suspense } from 'react'
-import { useHostId } from '@/lib/swr'
-import { ChartSkeleton } from '@/components/skeletons'
-import { YourChart } from '@/components/charts/your-chart'
-
-export default function YourPage() {
-  const hostId = useHostId()
-
-  return (
-    <Suspense fallback={<ChartSkeleton />}>
-      <YourChart hostId={hostId} />
-    </Suspense>
-  )
-}
-```
-
-**Chart Components:**
-```typescript
-'use client'
-import useSWR from 'swr'
-import { useChartData } from '@/lib/swr/use-chart-data'
-
-export function YourChart({ hostId }: { hostId: number }) {
-  const { data, error, isLoading } = useChartData({
-    name: 'your-chart-name',
-    hostId,
-    interval: 300000, // 5 minutes
-  })
-
-  if (isLoading) return <ChartSkeleton />
-  if (error) return <ChartError error={error} />
-  // ... render chart
-}
-```
 
 #### Data Table System
 
@@ -534,10 +408,10 @@ The project uses custom chart components with consistent patterns:
 
 #### Graceful Error Handling Pattern
 
-Charts use graceful error handling during SWR revalidation to preserve user experience:
+Charts use graceful error handling during background refresh to preserve user experience:
 
 - **Initial load errors**: Show full `ChartError` component with retry button
-- **Revalidation errors**: Keep showing existing data with subtle amber indicator
+- **Background-refresh errors**: Keep showing existing data with subtle amber indicator
 - **Indicator behavior**: Hidden by default, visible on card hover (same pattern as CardToolbar)
 - **Error details**: Click indicator to see error type, message, timestamp, and retry button
 - **Auto-recovery**: Indicator clears automatically when next refresh succeeds
@@ -598,30 +472,20 @@ export function InfoBadge({ className, ...props }) {
 }
 ```
 
-#### File Organization
-
-- Server components use `.tsx` without "use client"
-- Client components explicitly use "use client" directive
-- Page components are in `app/[...]/page.tsx`
-- Layout components are in `app/[...]/layout.tsx`
-- Config files are named `config.ts` within route directories
-
 #### Component Patterns
 
-- Use Server Components by default
-- Client components for interactivity (context, state management)
+- Dashboard pages are file-based routes under `src/routes/(dashboard)/`; API routes under `src/routes/api/`
 - Compound components for complex UI (e.g., data tables)
 - Custom hooks for shared logic
-- **Hooks at deepest consumer**: Use hooks (like `useHostId`, `useSWR`) at the component that actually needs the data, NOT at parent levels. Avoid prop drilling through intermediate components. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop from `NavMain → MenuGroup → MenuItem`.
+- **Hooks at deepest consumer**: Use hooks (like `useHostId`) at the component that actually needs the data, NOT at parent levels. Avoid prop drilling through intermediate components. Example: `CountBadge` calls `useHostId()` internally rather than receiving `hostId` as a prop from `NavMain → MenuGroup → MenuItem`.
 
 #### Query Patterns
 
 - All queries include `QUERY_COMMENT` for identification
 - Use `fetchData` function for consistent error handling and logging
 - Query parameters are properly sanitized through `query_params`
-- **CRITICAL**: `fetchData` now requires `hostId` parameter (not optional)
-- Client components use SWR hooks for data fetching
-- Server components can use API routes for data fetching
+- **CRITICAL**: `fetchData` requires the `hostId` parameter (not optional)
+- Client components fetch via TanStack Query hooks against the `/api/*` routes
 
 #### ClickHouse Version Compatibility
 
@@ -714,78 +578,7 @@ export const backupsConfig: QueryConfig = {
 
 ## Common Tasks
 
-### Adding a New Static Route
-
-1. Create directory in `app/` (e.g., `app/your-route/`)
-2. Create `page.tsx` as client component using `useHostId()`
-3. Add `QueryConfig` to `lib/query-config/` if needed
-4. Add menu item to `menu.ts` with href `/your-route`
-5. Use SWR hooks for data fetching
-
-**Template:**
-```typescript
-// app/your-route/page.tsx
-'use client'
-
-import { Suspense } from 'react'
-import { RelatedCharts, Table } from '@/components'
-import { ChartSkeleton, TableSkeleton } from '@/components/skeletons'
-import { useHostId } from '@/lib/swr'
-import { yourConfig } from '@/lib/query-config'
-
-export default function YourRoutePage() {
-  const hostId = useHostId()
-
-  return (
-    <div className="flex flex-col gap-4">
-      <Suspense fallback={<ChartSkeleton />}>
-        <RelatedCharts relatedCharts={yourConfig.relatedCharts} hostId={hostId} />
-      </Suspense>
-      <Suspense fallback={<TableSkeleton />}>
-        <Table title="Your Data" queryConfig={yourConfig} />
-      </Suspense>
-    </div>
-  )
-}
-```
-
-### Adding a New Chart Component
-
-1. Create component in `components/charts/your-chart.tsx`
-2. Define SQL query in `lib/query-config/` if not exists
-3. Use SWR `useChartData` hook with `hostId` prop
-4. Handle loading, error, and empty states
-5. Export and use in pages or related charts
-
-**Template:**
-```typescript
-// components/charts/your-chart.tsx
-'use client'
-
-import { useChartData } from '@/lib/swr/use-chart-data'
-import { ChartSkeleton } from '@/components/skeletons'
-import { ChartError } from '@/components/error-alert'
-
-interface YourChartProps {
-  hostId: number
-  interval?: number
-}
-
-export function YourChart({ hostId, interval }: YourChartProps) {
-  const { data, error, isLoading } = useChartData({
-    name: 'your-chart-name',
-    hostId,
-    interval,
-  })
-
-  if (isLoading) return <ChartSkeleton />
-  if (error) return <ChartError error={error} />
-  if (!data || data.length === 0) return <div>No data available</div>
-
-  // Render your chart using data
-  return <div>{/* Chart rendering */}</div>
-}
-```
+For adding a new route or chart component in the TanStack Start app (file-based routes, TanStack Query data fetching, `QueryConfig`), see `apps/dashboard/CLAUDE.md`.
 
 ### Modifying Data Tables
 
@@ -803,44 +596,13 @@ export function YourChart({ hostId, interval }: YourChartProps) {
 
 ## Important Files
 
-### Core Application
-- `next.config.ts` - Next.js configuration (standalone output mode)
-- `app/layout.tsx` - Root layout with SWR provider and Suspense
-- `app/page.tsx` - Root redirect to `/overview?host=0`
-- `components/header-client.tsx` - Client-side header with host selector
+For the app's file layout (routes, data layer, query configs, types), see `apps/dashboard/CLAUDE.md`. Key cross-cutting files:
 
-### Data Layer
 - `lib/clickhouse.ts` - ClickHouse client and `fetchData` (hostId required)
-- `lib/swr/use-host.ts` - Extract hostId from query params
-- `lib/swr/use-chart-data.ts` - SWR hook for chart data
-- `lib/swr/use-table-data.ts` - SWR hook for table data
-- `lib/api/chart-registry.ts` - Chart query registry
 - `lib/query-config/index.ts` - Centralized query configurations
-
-### Configuration
-- `menu.ts` - Navigation menu configuration (static routes)
+- `menu.ts` - Navigation menu configuration
 - `.env.local` - Environment variables for ClickHouse hosts
-
-### Types
-- `lib/api/types.ts` - API request/response types
 - `types/query-config.ts` - Query configuration types
-
-## Migration Notes
-
-### Completed (Dec 2024)
-- Migrated from dynamic `app/[host]/*` routes to static routes with `?host=` query parameter
-- All 32 chart components converted to use SWR with `hostId` prop
-- API routes created at `/api/v1/*` for data fetching
-- Query configs centralized in `lib/query-config/`
-
-### Breaking Changes
-- URL structure changed: `/0/overview` → `/overview?host=0`
-- `fetchData()` now requires `hostId` parameter (was optional)
-- All data fetching moved to client-side via SWR
-
-### Deployment
-- Build mode: `output: 'standalone'` (hybrid static + API)
-- Deploy to Cloudflare Workers: `npx wrangler login` then `bun run cf:deploy`
 
 ## AI Agents
 
