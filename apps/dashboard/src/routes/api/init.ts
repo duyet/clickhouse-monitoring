@@ -14,7 +14,7 @@ import { env } from 'cloudflare:workers'
 import { getClient } from '@chm/clickhouse-client'
 import { error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
-import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
+import { bridgeApiKeyEnv, isAuthenticatedRequest } from '@/lib/auth/api-guard'
 import { initTrackingTable } from '@/lib/tracking'
 
 export const Route = createFileRoute('/api/init')({
@@ -24,8 +24,15 @@ export const Route = createFileRoute('/api/init')({
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
         bridgeApiKeyEnv(env as Record<string, string | undefined>)
 
-        const authFailure = await enforceAuth(request)
-        if (authFailure) return authFailure
+        // Mutating endpoint (CREATE TABLE): require a genuinely authenticated
+        // caller. isAuthenticatedRequest() intentionally ignores public-read,
+        // so anonymous callers cannot reach it in cloud public-read mode.
+        if (!(await isAuthenticatedRequest(request))) {
+          return Response.json(
+            { error: 'Authentication required' },
+            { status: 401 }
+          )
+        }
 
         const searchParams = new URL(request.url).searchParams
         const hostIdRaw = searchParams.get('hostId')

@@ -11,6 +11,11 @@
  *
  * Auth enforced via enforceAuth() (provider-aware; allows anonymous when
  * provider=none, matching Next middleware behaviour from the legacy app).
+ *
+ * PageView is intentionally reachable by anonymous browsers (that is its whole
+ * purpose), so it is NOT locked behind isAuthenticatedRequest(). To stop an
+ * anonymous caller from spamming inserts into the events table, the anonymous
+ * INSERT is guarded by a best-effort per-IP fixed-window rate limiter.
  */
 
 import { createFileRoute } from '@tanstack/react-router'
@@ -25,6 +30,36 @@ import { bridgeApiKeyEnv, enforceAuth } from '@/lib/auth/api-guard'
 /** Trim whitespace and strip trailing slash/question-mark from a URL string. */
 function normalizeUrl(url: string): string {
   return url.trim().replace(/(\/|\?)$/, '')
+}
+
+// Best-effort in-memory rate limiter. Module scope persists for the lifetime of
+// a Worker isolate, so this bounds anonymous insert spam per isolate without any
+// external store. Fixed window: at most PAGEVIEW_RATE_LIMIT requests per IP per
+// PAGEVIEW_RATE_WINDOW_MS.
+const PAGEVIEW_RATE_LIMIT = 30
+const PAGEVIEW_RATE_WINDOW_MS = 60_000
+const pageviewHits = new Map<string, { count: number; resetAt: number }>()
+
+/** Returns true when this IP is within its allowed request budget. */
+function allowPageview(ip: string): boolean {
+  const key = ip || 'unknown'
+  const now = Date.now()
+  const entry = pageviewHits.get(key)
+
+  if (!entry || now >= entry.resetAt) {
+    pageviewHits.set(key, { count: 1, resetAt: now + PAGEVIEW_RATE_WINDOW_MS })
+    // Opportunistically evict expired entries to bound map growth.
+    if (pageviewHits.size > 10_000) {
+      for (const [k, v] of pageviewHits) {
+        if (now >= v.resetAt) pageviewHits.delete(k)
+      }
+    }
+    return true
+  }
+
+  if (entry.count >= PAGEVIEW_RATE_LIMIT) return false
+  entry.count += 1
+  return true
 }
 
 export const Route = createFileRoute('/api/pageview')({
@@ -70,6 +105,11 @@ export const Route = createFileRoute('/api/pageview')({
         const realIp = request.headers.get('x-real-ip') ?? ''
         const forwardedFor = request.headers.get('x-forwarded-for') ?? realIp
         const ip = (forwardedFor.split(',')[0] || '').trim()
+
+        // Rate-limit the anonymous-reachable INSERT to prevent event-table spam.
+        if (!allowPageview(ip)) {
+          return Response.json({ error: 'Too many requests' }, { status: 429 })
+        }
 
         try {
           await client.insert({
