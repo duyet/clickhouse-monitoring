@@ -14,6 +14,7 @@ import {
   PopularBadge,
 } from '@/components/billing/plan-card'
 import { PlanComparison } from '@/components/billing/plan-comparison'
+import { UsageSummary } from '@/components/billing/usage-summary'
 import { ClerkSignInButton as ClerkSignInButtonImpl } from '@/components/clerk/clerk-sign-in-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -123,6 +124,9 @@ function BillingPage() {
             )}
           </div>
         </CardHeader>
+        <CardContent>
+          <UsageSummary />
+        </CardContent>
       </Card>
 
       {/* Billing period toggle */}
