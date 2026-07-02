@@ -1,5 +1,7 @@
-import { Check, Minus } from 'lucide-react'
+import { Check, Minus, Sparkles } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
+import { CAPABILITY_ENFORCEMENT } from '@/lib/billing/plan-enforcement'
 import {
   BILLING_PLAN_LIST,
   type Plan,
@@ -20,6 +22,13 @@ import { cn } from '@/lib/utils'
  * pricing matrix uses) so the two surfaces can never disagree. Two row groups:
  * hard Limits (numeric) and Features (capability flags). The current plan's
  * column is highlighted.
+ *
+ * Features whose capabilities the enforcement registry
+ * ({@link CAPABILITY_ENFORCEMENT}) marks `deferred` are NOT gated per tier yet —
+ * they're free for everyone during beta. For those rows we render a single
+ * "beta — included for everyone" treatment instead of the misleading paid ✓/—
+ * columns. Driving this off the enforcement registry (rather than a hardcoded
+ * list) means the matrix and the actual gates can never drift.
  */
 
 type LimitRow = {
@@ -30,8 +39,16 @@ type LimitRow = {
 
 type FeatureRow = {
   label: string
-  /** Either a capability flag (✓/—) or a custom per-plan string. */
-  capability?: PlanCapability
+  /**
+   * Capabilities this row represents. Used to look up enforcement status: a row
+   * whose capabilities are all `deferred` renders the "included for everyone"
+   * beta treatment. When enforced per tier, the flag/`value` columns are shown.
+   */
+  capabilities: PlanCapability[]
+  /**
+   * Optional per-plan display when the feature is enforced per tier (custom
+   * string or boolean). Defaults to a ✓/— flag on the first capability.
+   */
   value?: (plan: Plan) => string | boolean
 }
 
@@ -44,11 +61,12 @@ const LIMIT_ROWS: LimitRow[] = [
 ]
 
 const FEATURE_ROWS: FeatureRow[] = [
-  { label: 'Full monitoring dashboard', capability: 'core_monitoring' },
-  { label: 'AI agent', capability: 'ai_agent' },
-  { label: 'Scheduled AI Insights', capability: 'ai_insights_scheduled' },
+  { label: 'Full monitoring dashboard', capabilities: ['core_monitoring'] },
+  { label: 'AI agent', capabilities: ['ai_agent'] },
+  { label: 'Scheduled AI Insights', capabilities: ['ai_insights_scheduled'] },
   {
     label: 'Alerting',
+    capabilities: ['alerting_basic', 'alerting_advanced'],
     value: (plan) =>
       planHasCapability(plan.id, 'alerting_advanced')
         ? 'Advanced'
@@ -56,15 +74,26 @@ const FEATURE_ROWS: FeatureRow[] = [
           ? 'Basic'
           : false,
   },
-  { label: 'Anomaly detection', capability: 'anomaly_detection' },
-  { label: 'Data export & reports', capability: 'data_export' },
-  { label: 'Custom dashboards', capability: 'custom_dashboards' },
-  { label: 'Webhook integrations', capability: 'webhook_integrations' },
-  { label: 'Fleet view', capability: 'fleet_view' },
-  { label: 'API / MCP access', capability: 'api_mcp_access' },
-  { label: 'SSO / SAML, RBAC, audit logs', capability: 'sso_rbac_audit' },
-  { label: 'Priority support', capability: 'priority_support' },
+  { label: 'Anomaly detection', capabilities: ['anomaly_detection'] },
+  { label: 'Data export & reports', capabilities: ['data_export'] },
+  { label: 'Custom dashboards', capabilities: ['custom_dashboards'] },
+  { label: 'Webhook integrations', capabilities: ['webhook_integrations'] },
+  { label: 'Fleet view', capabilities: ['fleet_view'] },
+  { label: 'API / MCP access', capabilities: ['api_mcp_access'] },
+  { label: 'SSO / SAML, RBAC, audit logs', capabilities: ['sso_rbac_audit'] },
+  { label: 'Priority support', capabilities: ['priority_support'] },
 ]
+
+/**
+ * A feature is "included for everyone" when every capability it represents is
+ * marked `deferred` in the enforcement registry — i.e. advertised but not gated
+ * per tier yet (free during beta).
+ */
+function isIncludedForEveryone(row: FeatureRow): boolean {
+  return row.capabilities.every(
+    (capability) => CAPABILITY_ENFORCEMENT[capability].status === 'deferred'
+  )
+}
 
 function Cell({ value }: { value: string | boolean }) {
   if (value === true) {
@@ -88,6 +117,18 @@ function Cell({ value }: { value: string | boolean }) {
     )
   }
   return <span className="text-[13px] font-medium">{value}</span>
+}
+
+function BetaIncludedBadge() {
+  return (
+    <Badge
+      variant="outline"
+      className="gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+    >
+      <Sparkles className="size-3" strokeWidth={2} aria-hidden="true" />
+      Beta — included for everyone
+    </Badge>
+  )
 }
 
 export function PlanComparison({ currentPlanId }: { currentPlanId: PlanId }) {
@@ -156,24 +197,35 @@ export function PlanComparison({ currentPlanId }: { currentPlanId: PlanId }) {
                 <td className="px-4 py-2.5 text-left text-muted-foreground">
                   {row.label}
                 </td>
-                {plans.map((plan) => {
-                  const value: string | boolean = row.capability
-                    ? planHasCapability(plan.id, row.capability)
-                    : (row.value?.(plan) ?? false)
-                  return (
-                    <td
-                      key={plan.id}
-                      className={cn(
-                        'px-4 py-2.5 text-center',
-                        plan.id === currentPlanId && 'bg-muted/30'
-                      )}
-                    >
-                      <span className="inline-flex items-center justify-center">
-                        <Cell value={value} />
-                      </span>
-                    </td>
-                  )
-                })}
+                {isIncludedForEveryone(row) ? (
+                  <td
+                    colSpan={plans.length}
+                    className="px-4 py-2.5 text-center"
+                  >
+                    <span className="inline-flex items-center justify-center">
+                      <BetaIncludedBadge />
+                    </span>
+                  </td>
+                ) : (
+                  plans.map((plan) => {
+                    const value: string | boolean = row.value
+                      ? row.value(plan)
+                      : planHasCapability(plan.id, row.capabilities[0])
+                    return (
+                      <td
+                        key={plan.id}
+                        className={cn(
+                          'px-4 py-2.5 text-center',
+                          plan.id === currentPlanId && 'bg-muted/30'
+                        )}
+                      >
+                        <span className="inline-flex items-center justify-center">
+                          <Cell value={value} />
+                        </span>
+                      </td>
+                    )
+                  })
+                )}
               </tr>
             ))}
           </tbody>
