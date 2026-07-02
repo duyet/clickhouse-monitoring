@@ -1,19 +1,20 @@
 ---
 description: Expose your chmonitor instance as a Model Context Protocol server so AI assistants like Claude and Cursor can query ClickHouse directly.
 icon: Plug
+title: MCP Server
 ---
 
-# MCP Server
+Turn your chmonitor instance into a remote Model Context Protocol server so AI assistants — Claude Desktop, Cursor, or any MCP client — can run tools against your ClickHouse cluster without direct database access.
 
-> Expose your chmonitor instance as a Model Context Protocol server so AI assistants can query your ClickHouse cluster directly.
-
-| | |
-|---|---|
-| **Routes** | `/mcp` (UI info page) |
-| **Feature id** | `mcp` |
-| **Default access** | Closed (401) — requires `CHM_API_KEY_SECRET`, `CLERK_SECRET_KEY`, or `CHM_MCP_PUBLIC=true` |
-| **System tables** | None directly — the MCP server wraps the same tools available to the rest of the dashboard |
-| **ClickHouse grants** | Inherits grants of the configured `CLICKHOUSE_USER` |
+<TypeTable
+  data={{
+    Routes: { type: "/mcp", description: "UI info page (protocol endpoint is /api/mcp)" },
+    "Feature id": { type: "mcp", description: "Used by permission env vars and config" },
+    "Default access": { type: "Closed (401)", description: "Requires CHM_API_KEY_SECRET, CLERK_SECRET_KEY, or CHM_MCP_PUBLIC=true" },
+    "System tables": { type: "None directly", description: "Wraps the same tools available to the rest of the dashboard" },
+    "ClickHouse grants": { type: "Inherited", description: "Inherits grants of the configured CLICKHOUSE_USER" },
+  }}
+/>
 
 ## What it does
 
@@ -33,33 +34,22 @@ Tools available via MCP include schema exploration, query execution, metrics, he
   CH-->>MCP: results
   MCP-->>Client: tool response`} />
 
-See [MCP Server reference](/reference/mcp-server) for the full tool list and protocol details.
+See the [MCP Server reference](/reference/mcp-server) for the full tool list and protocol details.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
 | MCP Info | `/mcp` | Connection URL, setup instructions, tool list | — |
 
-## Permissions & access
+## Using it
 
-<Callout type="warn" title="Secure by default">
-The MCP endpoint (`/api/mcp`) returns **401 Unauthorized** by default. It only opens when you explicitly configure at least one of:
+Pick an auth scheme, then point your MCP client at `/api/mcp`.
 
-- **`CHM_API_KEY_SECRET`** — API key auth (recommended). See [API keys](/operate/authentication/api-keys).
-- **`CLERK_SECRET_KEY`** — Clerk OAuth token introspection. See [Clerk authentication](/operate/authentication/clerk).
-- **`CHM_MCP_PUBLIC=true`** — explicit opt-in for trusted private networks. A warning is logged on every request.
+<Tabs items={["API key (recommended)", "Clerk OAuth", "Public (trusted networks)"]}>
+<Tab value="API key (recommended)">
 
-Without one of these, every request — including from Claude Desktop, Cursor, and other MCP clients — is rejected with `401`.
-</Callout>
-
-The MCP endpoint (`/api/mcp`) is **closed by default**. Anonymous requests receive a `401` response unless at least one of the following is true:
-
-- `CHM_API_KEY_SECRET` is set (API key auth — recommended for production)
-- `CLERK_SECRET_KEY` is set (Clerk OAuth)
-- `CHM_MCP_PUBLIC=true` is set (explicit opt-in for trusted private networks; a warning is logged on every request)
-
-**Production setup — API key auth:**
+Set a secret to enable API key auth for all `/api/v1/*` routes including `/api/mcp`:
 
 ```bash
 CHM_API_KEY_SECRET=<random-secret-min-32-chars>
@@ -79,31 +69,66 @@ Pass the token in MCP client requests:
 Authorization: Bearer chm_...
 ```
 
-**Production setup — Clerk OAuth (MCP OAuth flow):**
+</Tab>
+<Tab value="Clerk OAuth">
 
-When `CHM_AUTH_PROVIDER=clerk`, the `/api/mcp` endpoint also accepts Clerk OAuth bearer tokens. Clerk acts as the auth server; chmonitor verifies the token via REST introspection using `CLERK_SECRET_KEY`. No additional MCP-specific configuration needed.
+When `CHM_AUTH_PROVIDER=clerk`, the `/api/mcp` endpoint also accepts Clerk OAuth bearer tokens (the MCP OAuth flow). Clerk acts as the auth server; chmonitor verifies the token via REST introspection using `CLERK_SECRET_KEY`. No additional MCP-specific configuration is needed.
+
+</Tab>
+<Tab value="Public (trusted networks)">
+
+Allow anonymous access when no auth scheme is configured. Only appropriate for trusted private networks — a warning is logged on every request:
+
+```bash
+CHM_MCP_PUBLIC=true
+```
+
+</Tab>
+</Tabs>
+
+## Permissions & access
+
+<Callout type="warn" title="Secure by default">
+The MCP endpoint (`/api/mcp`) returns **401 Unauthorized** by default. It only opens when you explicitly configure at least one of:
+
+- **`CHM_API_KEY_SECRET`** — API key auth (recommended). See [API keys](/operate/authentication/api-keys).
+- **`CLERK_SECRET_KEY`** — Clerk OAuth token introspection. See [Clerk authentication](/operate/authentication/clerk).
+- **`CHM_MCP_PUBLIC=true`** — explicit opt-in for trusted private networks. A warning is logged on every request.
+
+Without one of these, every request — including from Claude Desktop, Cursor, and other MCP clients — is rejected with `401`.
+</Callout>
 
 Disable the MCP feature (removes it from the nav and blocks `/api/mcp`):
+
+<Tabs items={["Disable", "Config file"]}>
+<Tab value="Disable">
 
 ```bash
 CHM_FEATURE_MCP_ENABLED=false
 ```
 
-Config file:
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.mcp]
 enabled = true
 ```
 
+</Tab>
+</Tabs>
+
 ## Configuration
 
-| Variable | Description |
-|---|---|
-| `CHM_API_KEY_SECRET` | Enables API key authentication for all `/api/v1/*` routes including `/api/mcp`. Required for production use without Clerk. |
-| `CLERK_SECRET_KEY` | Enables Clerk OAuth token verification. Used for Clerk OAuth token introspection. |
-| `CHM_MCP_PUBLIC` | Set to `true` to allow anonymous access when no auth scheme is configured. Only appropriate for trusted private networks. A warning is logged on every request when this is active. |
-| `CHM_AUTH_PROVIDER` | `none` (default), `clerk`, or `proxy`. Controls how sessions are verified. |
+<TypeTable
+  data={{
+    CHM_API_KEY_SECRET: { type: "string", description: "Enables API key authentication for all /api/v1/* routes including /api/mcp. Required for production use without Clerk." },
+    CLERK_SECRET_KEY: { type: "string", description: "Enables Clerk OAuth token verification. Used for Clerk OAuth token introspection." },
+    CHM_MCP_PUBLIC: { type: "boolean", description: "Set to true to allow anonymous access when no auth scheme is configured. Only appropriate for trusted private networks. A warning is logged on every request when active." },
+    CHM_AUTH_PROVIDER: { type: "none | clerk | proxy", description: "Controls how sessions are verified. Defaults to none." },
+  }}
+/>
 
 The MCP endpoint is secure by default: it returns `401` when no auth is configured, unless `CHM_MCP_PUBLIC=true` is explicitly set.
 
@@ -116,7 +141,9 @@ The MCP endpoint is secure by default: it returns `401` when no auth is configur
 
 ## Related
 
-- [MCP Server reference](/reference/mcp-server)
-- [API keys](/operate/authentication/api-keys)
-- [Authentication](/operate/authentication)
-- [Feature permissions](/operate/advanced/feature-permissions)
+<Cards>
+  <Card title="MCP Server reference" href="/reference/mcp-server" description="Full tool list and protocol details." />
+  <Card title="API keys" href="/operate/authentication/api-keys" description="Issue and use API keys for programmatic access." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+</Cards>
