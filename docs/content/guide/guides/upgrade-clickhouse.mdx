@@ -1,11 +1,10 @@
 ---
+title: Upgrading ClickHouse
 description: Safely upgrade ClickHouse when chmonitor is connected — pre-upgrade checks, version-by-version dashboard changes, and post-upgrade validation.
 icon: ArrowUpCircle
 ---
 
-# Upgrading ClickHouse
-
-Steps to safely upgrade ClickHouse when chmonitor is connected to it, including which system-table changes affect the dashboard and how to validate everything after the upgrade.
+Upgrade ClickHouse safely while chmonitor stays connected to it: run the pre-upgrade checks, know which system-table changes affect the dashboard, then validate everything afterward.
 
 ## Before you upgrade
 
@@ -74,13 +73,15 @@ All replicas should be healthy with no read-only instances before the upgrade.
 
 ## Version-by-version changes that affect the dashboard
 
-chmonitor uses versioned SQL (the `since` field in each query config) to automatically pick the right query for the connected ClickHouse version. No config changes are needed when upgrading, but the notes below explain what you gain.
+chmonitor uses versioned SQL (the `since` field in each query config) to automatically pick the right query for the connected ClickHouse version. No config changes are needed when upgrading, but the notes below explain what you gain at each step.
 
-### 19.x → 22.x
+<Tabs items={["19.x → 22.x", "22.x → 23.x", "23.x → 24.x", "24.x → 25.x", "Keeper tables"]}>
+<Tab value="19.x → 22.x">
 
 Basic monitoring (processes, merges, replicas, metrics, disks, settings, parts) works on any version the dashboard supports. Older versions are missing several tables entirely.
 
-### 22.x → 23.x
+</Tab>
+<Tab value="22.x → 23.x">
 
 - **`system.query_views_log`** — available from 22.4. The Query Views Log page becomes active.
 - **`system.moves`** — parts moving between volumes become visible.
@@ -88,7 +89,8 @@ Basic monitoring (processes, merges, replicas, metrics, disks, settings, parts) 
 - **`system.session_log`** — security: Login Attempts and Sessions pages become active.
 - **`system.processors_profile_log`** — Query Profiler page becomes active.
 
-### 23.x → 24.x
+</Tab>
+<Tab value="23.x → 24.x">
 
 - **`system.user_processes`** — per-user process tree (separate from `system.processes`). The User Processes page becomes active from 23.3.
 - **`system.part_log`** — part-level event history. Merge Performance anomaly detection becomes active.
@@ -98,15 +100,20 @@ Basic monitoring (processes, merges, replicas, metrics, disks, settings, parts) 
 - **`system.view_refreshes`** — Refreshable Materialized Views become visible.
 - **`system.zookeeper_connection_log`** — detailed Keeper connection history (added in 25.8; dashboard shows a notice on older versions).
 
-### 24.x → 25.x
+</Tab>
+<Tab value="24.x → 25.x">
 
 - **`system.distributed_ddl_queue`** — Distributed DDL queue page becomes active.
 - **`system.asynchronous_metrics`** — extra background-metrics page becomes available.
 - **`system.replicated_merge_tree_settings`** — per-table replicated merge-tree settings page.
 
-### ClickHouse Keeper tables
+</Tab>
+<Tab value="Keeper tables">
 
 All Keeper-related pages (`system.zookeeper`, `system.zookeeper_connection`, `system.zookeeper_log`, `system.zookeeper_info`, `system.zookeeper_watches`) require ClickHouse Keeper or ZooKeeper to be configured. They appear as empty notices when Keeper is not set up.
+
+</Tab>
+</Tabs>
 
 ## After the upgrade
 
@@ -157,13 +164,39 @@ After a major upgrade, `system.settings` may contain settings marked deprecated.
 
 ## Rolling upgrades on replicated clusters
 
-1. Upgrade one replica at a time.
-2. After each node upgrades, confirm it rejoins replication (`is_readonly = 0`, `queue_size` draining).
-3. The dashboard's Replication page shows per-table replica health across the cluster.
-4. Do not upgrade the next node until the previous one is fully caught up.
+<Steps>
+<Step>
+### Upgrade one replica at a time
+
+Upgrade a single node before touching the next.
+</Step>
+<Step>
+### Confirm the node rejoins replication
+
+After each node upgrades, confirm it rejoins replication (`is_readonly = 0`, `queue_size` draining).
+</Step>
+<Step>
+### Watch the Replication page
+
+The dashboard's Replication page shows per-table replica health across the cluster.
+</Step>
+<Step>
+### Wait before the next node
+
+Do not upgrade the next node until the previous one is fully caught up.
+</Step>
+</Steps>
+
+## Troubleshooting
+
+<Callout type="info" title="A page still shows 'Table not available' after upgrading">
+The dashboard picks up new system tables automatically, but the table has to exist and the monitoring user must be able to SELECT from it. Re-check grants with the sanity queries above, and confirm the table exists for your version in the version-by-version notes. Keeper pages stay empty until ClickHouse Keeper or ZooKeeper is configured.
+</Callout>
 
 ## Related
 
-- [ClickHouse User & Grants](/guide/getting-started/clickhouse-requirements)
-- [Troubleshooting](/guide/guides/troubleshooting)
-- [Health probes](/operate/deploy/k8s#health-probes)
+<Cards>
+<Card title="ClickHouse User & Grants" href="/guide/getting-started/clickhouse-requirements" description="Re-apply the least-privilege grants the dashboard needs." />
+<Card title="Troubleshooting" href="/guide/guides/troubleshooting" description="Diagnose connection, auth, performance, and probe failures." />
+<Card title="Health probes" href="/operate/deploy/k8s#health-probes" description="Liveness and readiness probe settings for Kubernetes." />
+</Cards>

@@ -1,19 +1,14 @@
 ---
+title: Proxy & SSO auth setup
 description: Set up Cloudflare Access, nginx + oauth2-proxy, or Traefik ForwardAuth in front of chmonitor using the proxy or trusted auth provider.
 icon: ShieldCheck
 ---
 
-# Proxy & SSO auth setup
-
-End-to-end setup guides for putting chmonitor behind a proxy that handles login. Three patterns are covered:
+Put chmonitor behind a proxy that handles login. Three patterns are covered — pick the one that matches your stack. All three use chmonitor's `trusted` or `proxy` auth provider; see [Authentication](/operate/authentication) for the full comparison.
 
 - **Cloudflare Access + Tunnel** — Zero Trust, signed JWT, no shared secret needed.
 - **nginx + oauth2-proxy** — self-hosted OIDC login in front of nginx.
 - **Traefik ForwardAuth + OIDC** — Traefik middleware forwarding an OIDC session.
-
-All three use chmonitor's `trusted` or `proxy` auth provider. See [Authentication](/operate/authentication) for the full comparison.
-
----
 
 ## Quick comparison
 
@@ -23,9 +18,10 @@ All three use chmonitor's `trusted` or `proxy` auth provider. See [Authenticatio
 | nginx + oauth2-proxy | `trusted` | Shared secret header (`X-Chm-Proxy-Secret`) |
 | Traefik ForwardAuth + OIDC | `trusted` | Shared secret header or network isolation |
 
----
+## Set up your proxy
 
-## Cloudflare Access + Tunnel
+<Tabs items={["Cloudflare Access + Tunnel", "nginx + oauth2-proxy", "Traefik ForwardAuth + OIDC"]}>
+<Tab value="Cloudflare Access + Tunnel">
 
 Cloudflare Access sits in front of chmonitor and issues a signed JWT on every authenticated request. chmonitor verifies the JWT cryptographically against Cloudflare's JWKS — no secret to share.
 
@@ -98,19 +94,14 @@ Unauthenticated requests hit the Access login page (Cloudflare redirects them) b
 </Step>
 </Steps>
 
----
+</Tab>
+<Tab value="nginx + oauth2-proxy">
 
-## nginx + oauth2-proxy
-
-oauth2-proxy sits alongside nginx and handles the OIDC login flow. After login it sets forwarded-identity headers that chmonitor's `trusted` provider reads.
-
-### Architecture
+oauth2-proxy sits alongside nginx and handles the OIDC login flow. After login it sets forwarded-identity headers that chmonitor's `trusted` provider reads. nginx uses `auth_request` to check with oauth2-proxy on every request. If the session is valid, oauth2-proxy sets identity headers; nginx forwards them to chmonitor along with a shared secret.
 
 ```
 Browser → nginx → oauth2-proxy (login) → nginx → chmonitor
 ```
-
-nginx uses `auth_request` to check with oauth2-proxy on every request. If the session is valid, oauth2-proxy sets identity headers; nginx forwards them to chmonitor along with a shared secret.
 
 <Steps>
 <Step>
@@ -203,13 +194,10 @@ curl -b "session=..." https://chmonitor.yourcompany.com/api/v1/auth/me | jq .
 </Step>
 </Steps>
 
----
-
-## Traefik ForwardAuth + OIDC
+</Tab>
+<Tab value="Traefik ForwardAuth + OIDC">
 
 Traefik's `forwardAuth` middleware sends every request to an external auth server (e.g. Authelia, Authentik, or a custom endpoint) before proxying it. On success the auth server adds identity headers.
-
-### Architecture
 
 ```
 Browser → Traefik → Authelia (forwardAuth) → Traefik → chmonitor
@@ -262,7 +250,7 @@ services:
         Remote-User,Remote-Groups,Remote-Name,Remote-Email
 ```
 
-Authelia sets `Remote-User`, `Remote-Name`, `Remote-Groups`, `Remote-Email`. Tell chmonitor to read those:
+Authelia sets `Remote-User`, `Remote-Name`, `Remote-Groups`, `Remote-Email`. Tell chmonitor to read those.
 </Step>
 <Step>
 ### Configure chmonitor
@@ -311,44 +299,101 @@ curl https://chmonitor.yourcompany.com/api/v1/auth/me | jq .
 </Step>
 </Steps>
 
----
+</Tab>
+</Tabs>
 
 ## Trusted provider — full reference
 
-All env vars for `CHM_AUTH_PROVIDER=trusted`:
+All env vars for `CHM_AUTH_PROVIDER=trusted`.
 
 ### Trust gate
 
-| Variable | Default | Description |
-|---|---|---|
-| `CHM_TRUSTED_AUTH_SECRET` | — | Shared secret the proxy sends in the secret header. Constant-time compared. |
-| `CHM_TRUSTED_ALLOW_INSECURE` | `false` | Skip secret check when the worker is network-isolated behind the proxy. |
-| `CHM_TRUSTED_SHARED_SECRET_HEADER` | `X-Chm-Proxy-Secret` | Header name the proxy sends the secret in. |
+<TypeTable
+  type={{
+    CHM_TRUSTED_AUTH_SECRET: {
+      description: 'Shared secret the proxy sends in the secret header. Constant-time compared.',
+      type: 'string',
+      default: '—',
+    },
+    CHM_TRUSTED_ALLOW_INSECURE: {
+      description: 'Skip secret check when the worker is network-isolated behind the proxy.',
+      type: 'boolean',
+      default: 'false',
+    },
+    CHM_TRUSTED_SHARED_SECRET_HEADER: {
+      description: 'Header name the proxy sends the secret in.',
+      type: 'string',
+      default: 'X-Chm-Proxy-Secret',
+    },
+  }}
+/>
 
 ### Identity headers
 
-| Variable | Default header | Maps to |
-|---|---|---|
-| `CHM_TRUSTED_USER_HEADER` | `X-Forwarded-User` | User subject / id |
-| `CHM_TRUSTED_EMAIL_HEADER` | `X-Forwarded-Email` | Email address |
-| `CHM_TRUSTED_NAME_HEADER` | `X-Forwarded-Preferred-Username` | Display name |
-| `CHM_TRUSTED_AVATAR_HEADER` | `X-Forwarded-Avatar` | Avatar URL |
-| `CHM_TRUSTED_GROUPS_HEADER` | `X-Forwarded-Groups` | Comma-separated group list |
-| `CHM_TRUSTED_ROLE_HEADER` | `X-Forwarded-Role` | Single role (merged into groups) |
-| `CHM_TRUSTED_CUSTOM_HEADERS` | — | Extra claims: `field:Header-Name` pairs |
+<TypeTable
+  type={{
+    CHM_TRUSTED_USER_HEADER: {
+      description: 'Maps to: User subject / id.',
+      type: 'string',
+      default: 'X-Forwarded-User',
+    },
+    CHM_TRUSTED_EMAIL_HEADER: {
+      description: 'Maps to: Email address.',
+      type: 'string',
+      default: 'X-Forwarded-Email',
+    },
+    CHM_TRUSTED_NAME_HEADER: {
+      description: 'Maps to: Display name.',
+      type: 'string',
+      default: 'X-Forwarded-Preferred-Username',
+    },
+    CHM_TRUSTED_AVATAR_HEADER: {
+      description: 'Maps to: Avatar URL.',
+      type: 'string',
+      default: 'X-Forwarded-Avatar',
+    },
+    CHM_TRUSTED_GROUPS_HEADER: {
+      description: 'Maps to: Comma-separated group list.',
+      type: 'string',
+      default: 'X-Forwarded-Groups',
+    },
+    CHM_TRUSTED_ROLE_HEADER: {
+      description: 'Maps to: Single role (merged into groups).',
+      type: 'string',
+      default: 'X-Forwarded-Role',
+    },
+    CHM_TRUSTED_CUSTOM_HEADERS: {
+      description: 'Extra claims: field:Header-Name pairs.',
+      type: 'string',
+      default: '—',
+    },
+  }}
+/>
 
 ### Access control
 
-| Variable | Default | Description |
-|---|---|---|
-| `CHM_TRUSTED_ALLOWED_GROUPS` | — | Comma-separated list of groups. If set, user must be in at least one. |
+<TypeTable
+  type={{
+    CHM_TRUSTED_ALLOWED_GROUPS: {
+      description: 'Comma-separated list of groups. If set, user must be in at least one.',
+      type: 'string',
+      default: '—',
+    },
+  }}
+/>
 
----
+## Troubleshooting
+
+<Callout type="info" title="Every page returns 401">
+The `trusted` and `proxy` providers reject requests they can't verify. Confirm the trust gate: for `proxy`, `CHM_CF_ACCESS_TEAM_DOMAIN` and `CHM_CF_ACCESS_AUD`; for `trusted`, `CHM_TRUSTED_AUTH_SECRET` or `CHM_TRUSTED_ALLOW_INSECURE`. See [Troubleshooting → Auth failures](/guide/guides/troubleshooting).
+</Callout>
 
 ## Related
 
-- [Authentication overview](/operate/authentication)
-- [Trusted proxy docs](/operate/authentication/trusted-proxy)
-- [Cloudflare Access docs](/operate/authentication/cloudflare-access)
-- [Trusted header docs](/operate/authentication/trusted-header)
-- [API keys](/operate/authentication/api-keys)
+<Cards>
+<Card title="Authentication overview" href="/operate/authentication" description="Compare all chmonitor auth providers side by side." />
+<Card title="Trusted proxy docs" href="/operate/authentication/trusted-proxy" description="Reference for the trusted forwarded-identity provider." />
+<Card title="Cloudflare Access docs" href="/operate/authentication/cloudflare-access" description="Reference for the proxy JWT provider." />
+<Card title="Trusted header docs" href="/operate/authentication/trusted-header" description="Header mapping for forwarded identity." />
+<Card title="API keys" href="/operate/authentication/api-keys" description="Issue and use chmonitor API tokens." />
+</Cards>
