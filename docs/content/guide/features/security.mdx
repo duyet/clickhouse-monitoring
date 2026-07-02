@@ -1,20 +1,21 @@
 ---
 description: Audit ClickHouse users, roles, session history, login attempts, and security-relevant events from one place.
 icon: ShieldCheck
+title: Security
 ---
 
-# Security
+Audit who has access to ClickHouse and what they have been doing — user and role definitions, session history, login attempts, and security-relevant events.
 
-> Audit user sessions, login attempts, access control roles, and user definitions.
-
-| | |
-|---|---|
-| **Routes** | `/users`, `/roles`, `/security/sessions`, `/security/login-attempts`, `/security/audit-log` |
-| **Feature id** | `security` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_SECURITY_ACCESS=authenticated` to gate) |
-| **System tables** | `system.users`, `system.roles`, `system.session_log` |
-| **ClickHouse grants** | `SELECT` on `system.users`, `system.roles`, `system.session_log`; or `SHOW ACCESS` |
+<TypeTable
+  data={{
+    Routes: { type: "/users, /roles, /security/sessions, /security/login-attempts, /security/audit-log", description: "Pages in this section" },
+    "Feature id": { type: "security", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_SECURITY_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "system.users, system.roles, system.session_log", description: "Data sources" },
+    "ClickHouse grants": { type: "SELECT or SHOW ACCESS", description: "SELECT on the tables above, or SHOW ACCESS" },
+  }}
+/>
 
 ## What it does
 
@@ -30,7 +31,7 @@ The Security section gives operators visibility into who has access to ClickHous
 
 **Audit Log** is a filtered view of `system.session_log` focused on security-relevant events.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -40,6 +41,13 @@ The Security section gives operators visibility into who has access to ClickHous
 | Login Attempts | `/security/login-attempts` | Auth events and failure reasons | `system.session_log` |
 | Audit Log | `/security/audit-log` | Security-relevant session events | `system.session_log` |
 
+## Using it
+
+- Open `/users` and `/roles` to review defined users (with auth methods and profiles) and roles.
+- Use `/security/sessions` for session history with authentication details.
+- Watch `/security/login-attempts` for auth failures — a signal for brute-force attempts or misconfigured client credentials.
+- Review `/security/audit-log` for a filtered view of security-relevant session events.
+
 ## Permissions & access
 
 All Security pages share the `security` feature id.
@@ -48,23 +56,32 @@ All Security pages share the `security` feature id.
 This section contains sensitive access-control data. It is recommended to gate it behind authentication in production.
 </Callout>
 
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
+
 ```bash
 CHM_FEATURE_SECURITY_ACCESS=authenticated
 ```
 
-Disable entirely:
+</Tab>
+<Tab value="Disable">
 
 ```bash
 CHM_FEATURE_SECURITY_ENABLED=false
 ```
 
-Config file:
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.security]
 enabled = true
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
 
 ## Configuration
 
@@ -89,6 +106,8 @@ Alternatively, `SHOW ACCESS` grants read access to all access-related system tab
 
 ## Related
 
-- [Authentication](/operate/authentication)
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [ClickHouse system.session_log docs](https://clickhouse.com/docs/en/operations/system-tables/session_log)
+<Cards>
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="ClickHouse system.session_log" href="https://clickhouse.com/docs/en/operations/system-tables/session_log" description="Upstream reference for the session log." />
+</Cards>

@@ -1,20 +1,21 @@
 ---
 description: At-a-glance cluster health dashboard with automated headless health-sweep alerts via webhook and Cloudflare Cron.
 icon: HeartPulse
+title: Health
 ---
 
-# Health
+Get a single status grid of cluster health across replication, merges, errors, disks, load, and parts — plus a headless sweep endpoint that fires webhook alerts on a schedule.
 
-> At-a-glance cluster health dashboard and automated headless health-sweep alerts.
-
-| | |
-|---|---|
-| **Routes** | `/health` |
-| **Feature id** | `health` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_HEALTH_ACCESS=authenticated` to gate) |
-| **System tables** | `system.metrics`, `system.asynchronous_metrics`, `system.replicas`, `system.merges`, `system.errors`, `system.disks`, `system.replication_queue`, `system.processes`, `system.query_log`, `system.parts` |
-| **ClickHouse grants** | `SELECT` on the system tables above |
+<TypeTable
+  data={{
+    Routes: { type: "/health", description: "The health status grid" },
+    "Feature id": { type: "health", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_HEALTH_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "10 system tables", description: "metrics, asynchronous_metrics, replicas, merges, errors, disks, replication_queue, processes, query_log, parts" },
+    "ClickHouse grants": { type: "SELECT", description: "SELECT on the system tables above" },
+  }}
+/>
 
 ## What it does
 
@@ -31,33 +32,46 @@ Checks cover:
 
 In addition to the UI, chmonitor exposes a **headless health-sweep** endpoint (`GET /api/cron/health-sweep`) that runs the same checks and dispatches webhook alerts. This is designed to be called on a schedule (e.g., Cloudflare Cron every 5 minutes) without a browser.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
 | Health | `/health` | Status grid with per-check severity and details | `system.metrics`, `system.asynchronous_metrics`, `system.replicas`, `system.merges`, `system.errors`, `system.disks`, `system.replication_queue`, `system.processes`, `system.query_log`, `system.parts` |
 
+## Using it
+
+Open `/health` for the status grid — each check reports ok / warning / critical with a summary. Start incident triage here, then drill into the linked feature sections for detail.
+
+To run the same checks without a browser, call the health-sweep endpoint (see below) on a schedule.
+
 ## Permissions & access
 
-Disable:
-
-```bash
-CHM_FEATURE_HEALTH_ENABLED=false
-```
-
-Require authentication:
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
 
 ```bash
 CHM_FEATURE_HEALTH_ACCESS=authenticated
 ```
 
-Config file:
+</Tab>
+<Tab value="Disable">
+
+```bash
+CHM_FEATURE_HEALTH_ENABLED=false
+```
+
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.health]
 enabled = true
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
 
 ## Configuration
 
@@ -89,12 +103,19 @@ The health-sweep endpoint runs checks over all configured hosts and sends a webh
 Without `CRON_SECRET`, the `/api/cron/health-sweep` endpoint is publicly accessible. Set it and pass it as `Authorization: Bearer <secret>` from your cron caller.
 </Callout>
 
+<Steps>
+<Step>
+### Set secrets
+
 Example for Cloudflare Workers (using `wrangler secret put`):
 
 ```bash
 wrangler secret put CRON_SECRET
 wrangler secret put HEALTH_ALERT_WEBHOOK_URL
 ```
+</Step>
+<Step>
+### Enable alerting
 
 Example environment block:
 
@@ -104,8 +125,9 @@ HEALTH_ALERT_MIN_SEVERITY=warning
 HEALTH_ALERT_WEBHOOK_URL=https://hooks.slack.com/services/...
 CRON_SECRET=<random-secret>
 ```
-
-To call the endpoint manually:
+</Step>
+<Step>
+### Call it manually
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" \
@@ -113,6 +135,8 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 ```
 
 The endpoint returns a JSON array of check results. It always returns HTTP 200; alert dispatch happens server-side.
+</Step>
+</Steps>
 
 ### Scheduling (Cloudflare Cron)
 
@@ -134,7 +158,9 @@ The cron handler calls the health-sweep logic directly — no HTTP hop needed wh
 
 ## Related
 
-- [Metrics](/guide/features/metrics)
-- [Cluster](/guide/features/cluster)
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [Authentication](/operate/authentication)
+<Cards>
+  <Card title="Metrics" href="/guide/features/metrics" description="Live counters, async metrics, and CPU profiling." />
+  <Card title="Cluster" href="/guide/features/cluster" description="Topology and Keeper/ZooKeeper coordination." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+</Cards>

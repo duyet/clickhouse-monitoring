@@ -1,20 +1,21 @@
 ---
 description: Real-time and background-calculated server metrics, counters, and CPU profiling data from ClickHouse system tables.
 icon: Activity
+title: Metrics
 ---
 
-# Metrics
+See live server counters, background-calculated resource metrics, and per-processor CPU profiling — three views of server-level performance.
 
-> Real-time and background-calculated server metrics, counters, and CPU profiling data.
-
-| | |
-|---|---|
-| **Routes** | `/metrics`, `/asynchronous-metrics`, `/profiler` |
-| **Feature id** | `metrics` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_METRICS_ACCESS=authenticated` to gate) |
-| **System tables** | `system.metrics`, `system.asynchronous_metrics`, `system.processors_profile_log` |
-| **ClickHouse grants** | `SELECT` on the system tables above |
+<TypeTable
+  data={{
+    Routes: { type: "/metrics, /asynchronous-metrics, /profiler", description: "Pages in this section" },
+    "Feature id": { type: "metrics", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_METRICS_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "system.metrics, system.asynchronous_metrics, system.processors_profile_log", description: "Data sources" },
+    "ClickHouse grants": { type: "SELECT", description: "SELECT on the system tables above" },
+  }}
+/>
 
 ## What it does
 
@@ -26,7 +27,7 @@ The Metrics section exposes three views of server-level performance data.
 
 **Profiler** queries `system.processors_profile_log` to show CPU time broken down by query processor (pipeline step). Use it to find which stage of query execution is consuming the most CPU.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -34,29 +35,42 @@ The Metrics section exposes three views of server-level performance data.
 | Async Metrics | `/asynchronous-metrics` | Background-calculated resource metrics | `system.asynchronous_metrics` |
 | Profiler | `/profiler` | CPU profiling data per query processor | `system.processors_profile_log` |
 
+## Using it
+
+- Open `/metrics` for live gauges — active connections, threads, in-flight merges. These reset on server restart.
+- Use `/asynchronous-metrics` for background-calculated resource stats (CPU load, memory, uptime, OS-level) suited to dashboards and alerting.
+- Open `/profiler` to break CPU time down by query processor and find the pipeline stage consuming the most CPU.
+
 ## Permissions & access
 
 All three pages share the `metrics` feature id.
 
-Disable:
-
-```bash
-CHM_FEATURE_METRICS_ENABLED=false
-```
-
-Require authentication:
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
 
 ```bash
 CHM_FEATURE_METRICS_ACCESS=authenticated
 ```
 
-Config file:
+</Tab>
+<Tab value="Disable">
+
+```bash
+CHM_FEATURE_METRICS_ENABLED=false
+```
+
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.metrics]
 enabled = true
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
 
 ## Configuration
 
@@ -73,7 +87,9 @@ No feature-specific configuration. The profiler page requires `system.processors
 
 ## Related
 
-- [Health](/guide/features/health)
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [ClickHouse system.metrics docs](https://clickhouse.com/docs/en/operations/system-tables/metrics)
-- [ClickHouse system.asynchronous_metrics docs](https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics)
+<Cards>
+  <Card title="Health" href="/guide/features/health" description="At-a-glance cluster health and alerting." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="ClickHouse system.metrics" href="https://clickhouse.com/docs/en/operations/system-tables/metrics" description="Upstream reference for live counters." />
+  <Card title="ClickHouse system.asynchronous_metrics" href="https://clickhouse.com/docs/en/operations/system-tables/asynchronous_metrics" description="Upstream reference for background metrics." />
+</Cards>

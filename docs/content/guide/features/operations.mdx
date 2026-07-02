@@ -1,20 +1,21 @@
 ---
 description: Track active merges, historical merge performance, mutations, part moves, and the part-event timeline for all MergeTree tables.
 icon: GitMerge
+title: Operations
 ---
 
-# Operations
+Watch the background work MergeTree engines do continuously — merges, mutations, part moves — and audit the full part-event timeline for every table.
 
-> Track active merges, historical merge performance, mutations, part moves, and the part-event timeline for all MergeTree tables.
-
-| | |
-|---|---|
-| **Routes** | `/merges`, `/merge-performance`, `/mutations`, `/moves`, `/part-log` |
-| **Feature id** | `operations` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_OPERATIONS_ACCESS=authenticated` to gate) |
-| **System tables** | `system.merges`, `system.mutations`, `system.moves`, `system.part_log` |
-| **ClickHouse grants** | `SELECT` on the system tables above; `KILL MUTATION` for the kill-mutation action |
+<TypeTable
+  data={{
+    Routes: { type: "/merges, /merge-performance, /mutations, /moves, /part-log", description: "Pages in this section" },
+    "Feature id": { type: "operations", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_OPERATIONS_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "system.merges, system.mutations, system.moves, system.part_log", description: "Data sources" },
+    "ClickHouse grants": { type: "SELECT + KILL MUTATION", description: "SELECT on the tables above; KILL MUTATION for the kill action" },
+  }}
+/>
 
 ## What it does
 
@@ -28,7 +29,7 @@ Operations covers the background work MergeTree engines do continuously:
 
 All pages are read-only except the kill-mutation action on `/mutations`.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -38,25 +39,49 @@ All pages are read-only except the kill-mutation action on `/mutations`.
 | Moves | `/moves` | In-progress part moves: source/target disk, part name, size, elapsed | `system.moves` |
 | Part Log | `/part-log` | Part lifecycle events: NewPart, MergedPart, MutatedPart, DownloadedPart, RemovedPart | `system.part_log` |
 
+## Using it
+
+- Open `/merges` to see merges in flight — it doubles as the entry point for the Operations section in the nav (feature id `operations`).
+- Check `/merge-performance` for merge size and duration trends pulled from the part log.
+- Use `/mutations` to track `ALTER ... UPDATE/DELETE` progress, and stop a stuck mutation with the kill-mutation action.
+- Watch `/moves` during TTL or storage-policy migrations between disks and volumes.
+- Browse `/part-log` for the complete part lifecycle across every table.
+
 ## Permissions & access
 
-All sub-routes share the `operations` feature id:
+All sub-routes share the `operations` feature id.
+
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
 
 ```bash
-# Gate to authenticated users
 CHM_FEATURE_OPERATIONS_ACCESS=authenticated
+```
 
-# Disable entirely
+</Tab>
+<Tab value="Disable">
+
+```bash
 CHM_FEATURE_OPERATIONS_ENABLED=false
 # or
 CHM_DISABLED_FEATURES=operations
 ```
+
+</Tab>
+<Tab value="Config file">
 
 ```toml
 # CHM_CONFIG_FILE (TOML)
 [features.operations]
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
+
+<Callout type="warn" title="KILL MUTATION privilege required">
+  The kill-mutation button on `/mutations` issues `KILL MUTATION`. The ClickHouse user must have `ALTER TABLE` privilege (or specifically `KILL MUTATION`). Without it the action returns an error.
+</Callout>
 
 ## Configuration
 
@@ -68,10 +93,6 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 
 ## Notes & limitations
 
-<Callout type="warn" title="KILL MUTATION privilege required">
-  The kill-mutation button on `/mutations` issues `KILL MUTATION`. The ClickHouse user must have `ALTER TABLE` privilege (or specifically `KILL MUTATION`). Without it the action returns an error.
-</Callout>
-
 <Callout type="info" title="part_log must be enabled">
   `system.part_log` requires `<part_log>` to be enabled in the ClickHouse server config. It is disabled by default on some distributions. If absent, `/merge-performance` and `/part-log` show a table-not-found notice.
 </Callout>
@@ -82,7 +103,9 @@ CLICKHOUSE_MAX_EXECUTION_TIME=60
 
 ## Related
 
-- [Tables](/guide/features/tables)
-- [Queries](/guide/features/queries)
-- [Authentication](/operate/authentication)
-- [Settings reference](/reference/settings)
+<Cards>
+  <Card title="Tables" href="/guide/features/tables" description="Inspect table sizes, parts, columns, and storage." />
+  <Card title="Queries" href="/guide/features/queries" description="Monitor live, historical, and expensive queries." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Settings reference" href="/reference/settings" description="Every configuration setting in one place." />
+</Cards>
