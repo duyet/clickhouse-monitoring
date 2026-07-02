@@ -1,5 +1,8 @@
 import { loadAlertSettings } from './alert-settings-storage'
 
+/** Actionable health severities used for escalation/recovery bookkeeping. */
+export type HealthAlertStatus = 'ok' | 'warning' | 'critical'
+
 export interface HealthAlertEvent {
   checkId: string
   title: string
@@ -7,11 +10,80 @@ export interface HealthAlertEvent {
   value: number | null
   label: string
   hostId: number
-  /** Monotonic id used to keep dismissed notifications from suppressing later incidents */
+  /**
+   * Monotonic id used to keep dismissed notifications from suppressing later
+   * incidents. Prefer a stable, windowed id (see {@link healthIncidentId}) so
+   * repeated dispatches within the same window dedup downstream.
+   */
   incidentId?: string
+  /**
+   * Whether this event raises an alert or clears one. Optional and defaults to
+   * `'alert'` so existing consumers that ignore it keep working unchanged.
+   */
+  kind?: 'alert' | 'recovery'
 }
 
 const HEALTH_ALERT_EVENT = 'health-alert'
+
+/**
+ * Persisted last-seen status per `host::checkId`, so escalation state survives
+ * component remount / navigation and {@link dispatchAlert} does not re-fire when
+ * the user returns to /health. Mirrors the storage shape of
+ * {@link file://./thresholds-storage.ts} / {@link file://./history-storage.ts}.
+ */
+const ALERT_STATUS_STORAGE_KEY = 'health-alert-status'
+
+/** Dedup window for stable health incident ids (1 minute). */
+const INCIDENT_WINDOW_MS = 60_000
+
+export type AlertStatusMap = Record<string, HealthAlertStatus>
+
+/** Storage key for a single check's last-seen status. */
+export function alertStatusKey(hostId: number, checkId: string): string {
+  return `${hostId}::${checkId}`
+}
+
+/**
+ * Stable, windowed incident id (same approach as regression-panel /
+ * mv-staleness-badge) so repeated escalations within a window dedup downstream.
+ */
+export function healthIncidentId(
+  hostId: number,
+  checkId: string,
+  severity: HealthAlertStatus
+): string {
+  return `hc-${hostId}-${checkId}-${severity}-${Math.floor(Date.now() / INCIDENT_WINDOW_MS)}`
+}
+
+export function loadAlertStatuses(): AlertStatusMap {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(ALERT_STATUS_STORAGE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object') return {}
+    const sanitized: AlertStatusMap = {}
+    for (const [key, value] of Object.entries(
+      parsed as Record<string, unknown>
+    )) {
+      if (value === 'ok' || value === 'warning' || value === 'critical') {
+        sanitized[key] = value
+      }
+    }
+    return sanitized
+  } catch {
+    return {}
+  }
+}
+
+export function saveAlertStatuses(map: AlertStatusMap): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(ALERT_STATUS_STORAGE_KEY, JSON.stringify(map))
+  } catch {
+    // Quota or serialization failure — escalation dedup is best-effort, ignore.
+  }
+}
 
 export function emitInAppAlert(alert: HealthAlertEvent): void {
   if (typeof window === 'undefined') return
@@ -32,12 +104,17 @@ export function subscribeInAppAlerts(
   return () => window.removeEventListener(HEALTH_ALERT_EVENT, listener)
 }
 
+/** Notification/webhook label: severity for alerts, "RESOLVED" for recoveries. */
+function alertPrefix(alert: HealthAlertEvent): string {
+  return alert.kind === 'recovery' ? 'RESOLVED' : alert.severity.toUpperCase()
+}
+
 export function fireBrowserNotification(alert: HealthAlertEvent): void {
   if (typeof window === 'undefined') return
   if (!('Notification' in window)) return
   if (Notification.permission !== 'granted') return
   try {
-    new Notification(`[${alert.severity.toUpperCase()}] ${alert.title}`, {
+    new Notification(`[${alertPrefix(alert)}] ${alert.title}`, {
       body: alert.label,
       tag: `health:${alert.checkId}:${alert.severity}`,
     })
@@ -59,7 +136,7 @@ export async function fireWebhook(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 10_000)
   try {
-    const text = `[${alert.severity.toUpperCase()}] ${alert.title} — ${alert.label} (host ${alert.hostId})`
+    const text = `[${alertPrefix(alert)}] ${alert.title} — ${alert.label} (host ${alert.hostId})`
     const res = await fetch('/api/v1/health/webhook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -79,26 +156,57 @@ export async function dispatchAlert(alert: HealthAlertEvent): Promise<void> {
     if (settings.minSeverity === 'critical' && alert.severity !== 'critical') {
       return
     }
-    const withIncident: HealthAlertEvent = {
+    const event: HealthAlertEvent = {
       ...alert,
+      kind: alert.kind ?? 'alert',
       incidentId: alert.incidentId ?? String(Date.now()),
     }
-    emitInAppAlert(withIncident)
+    emitInAppAlert(event)
     if (settings.browserNotificationsEnabled) {
-      fireBrowserNotification(withIncident)
+      fireBrowserNotification(event)
     }
     if (settings.webhookEnabled && settings.webhookUrl) {
-      await fireWebhook(withIncident)
+      await fireWebhook(event)
     }
   } catch (err) {
     console.error('[health] dispatchAlert failed', err)
   }
 }
 
+/**
+ * De-escalation: emit a recovery event when a check transitions back to `ok`.
+ * `severity` carries the severity that just cleared, so downstream consumers can
+ * match and clear the corresponding active alert. Honours the same `minSeverity`
+ * gate as {@link dispatchAlert} so a warning recovery stays silent when only
+ * critical alerts are enabled.
+ */
+export async function dispatchRecovery(alert: HealthAlertEvent): Promise<void> {
+  try {
+    const settings = loadAlertSettings()
+    if (settings.minSeverity === 'critical' && alert.severity !== 'critical') {
+      return
+    }
+    const event: HealthAlertEvent = {
+      ...alert,
+      kind: 'recovery',
+      incidentId: alert.incidentId ?? String(Date.now()),
+    }
+    emitInAppAlert(event)
+    if (settings.browserNotificationsEnabled) {
+      fireBrowserNotification(event)
+    }
+    if (settings.webhookEnabled && settings.webhookUrl) {
+      await fireWebhook(event)
+    }
+  } catch (err) {
+    console.error('[health] dispatchRecovery failed', err)
+  }
+}
+
 /** Severity ordering: ok < warning < critical. Returns true if `next` is more severe than `prev`. */
 export function isEscalation(
-  prev: 'ok' | 'warning' | 'critical' | null,
-  next: 'ok' | 'warning' | 'critical'
+  prev: HealthAlertStatus | null,
+  next: HealthAlertStatus
 ): boolean {
   const order = { ok: 0, warning: 1, critical: 2 } as const
   if (prev === null) {
