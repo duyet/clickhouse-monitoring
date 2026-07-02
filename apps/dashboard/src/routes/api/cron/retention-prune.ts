@@ -7,9 +7,14 @@
  *
  * Hard-deletes conversation rows in CHM_CLOUD_D1 that are older than each
  * user's plan retention window. Iterates over all distinct user_ids, resolves
- * their billing plan via getPlanForOwner, computes the cutoff with
+ * their effective billing plan via resolveRetentionPlanForUser (the BILLING
+ * OWNER's plan — user id PLUS every Clerk org they belong to, most generous
+ * wins — NOT the bare user_id, which would miss org-owned paid subscriptions and
+ * wrongly delete data on 30/90-day plans), computes the cutoff with
  * retentionCutoffMs, and issues a DELETE WHERE updated_at < cutoff. Users on
- * enterprise (retentionDays: null) are skipped (unlimited retention).
+ * enterprise (retentionDays: null) are skipped (unlimited retention). If owner
+ * resolution fails (e.g. Clerk enumeration error) the user is skipped rather
+ * than pruned, so a transient failure can never cause silent deletion.
  *
  * Guarded by a shared secret (CRON_SECRET) supplied via the `Authorization:
  * Bearer <secret>` header or the `?secret=` query param. Returns 401 on
@@ -25,7 +30,7 @@ import { error, log } from '@chm/logger'
 import { getPlatformBindings } from '@chm/platform'
 import { secretsMatch } from '@/lib/auth/providers/constant-time'
 import { retentionCutoffMs } from '@/lib/billing/entitlements'
-import { getPlanForOwner } from '@/lib/billing/user-subscription'
+import { resolveRetentionPlanForUser } from '@/lib/billing/retention-owner'
 
 function isAuthorized(request: Request): boolean {
   const bindings = env as Record<string, string | undefined>
@@ -75,7 +80,9 @@ async function handler(request: Request): Promise<Response> {
 
     for (const userId of userIds) {
       try {
-        const plan = await getPlanForOwner(userId)
+        // Resolve the BILLING OWNER's plan (org-aware), not the bare user_id,
+        // so prune matches what the conversations read-filter displays.
+        const plan = await resolveRetentionPlanForUser(userId)
         const cutoff = retentionCutoffMs(plan)
 
         // null = unlimited (enterprise) — nothing to prune
