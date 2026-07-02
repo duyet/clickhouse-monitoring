@@ -22,6 +22,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { env } from 'cloudflare:workers'
 import { error, generateRequestId } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 import { generateInsights } from '@/lib/insights/generate-insights'
 import { isInsightPromptStyle } from '@/lib/insights/prompts'
 import { resolveInsightModel } from '@/lib/insights/resolve-model'
@@ -29,6 +30,18 @@ import { resolveInsightModel } from '@/lib/insights/resolve-model'
 async function handlePost(request: Request): Promise<Response> {
   bridgeClickHouseEnv(env as Record<string, string | undefined>)
   const requestId = generateRequestId()
+
+  // Write gate: this POST runs the expensive collect → LLM enrich → persist
+  // pipeline. The global /api/v1 middleware is a public passthrough under
+  // provider='none' / CHM_CLERK_PUBLIC_READ, so this route must self-enforce
+  // that anonymous callers cannot trigger it. A valid `chm_` API key still
+  // authenticates programmatic clients. Mirrors the /api/v1/actions guard.
+  const permissionResponse = await authorizeFeatureRequest(
+    { feature: 'insights', defaultAccess: 'authenticated', operation: 'write' },
+    request,
+    { allowAgentBearerToken: true }
+  )
+  if (permissionResponse) return permissionResponse
 
   try {
     const searchParams = new URL(request.url).searchParams

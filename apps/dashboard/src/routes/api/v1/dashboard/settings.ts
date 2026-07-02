@@ -14,6 +14,7 @@ import { debug, error } from '@chm/logger'
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { ApiErrorType } from '@/lib/api/types'
 import { DASHBOARD_SETTINGS_TABLE } from '@/lib/app-tables'
+import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
 
 const TABLE_SETTINGS = DASHBOARD_SETTINGS_TABLE
 
@@ -161,6 +162,24 @@ export const Route = createFileRoute('/api/v1/dashboard/settings')({
 
       POST: async ({ request }) => {
         bridgeClickHouseEnv(env as Record<string, string | undefined>)
+
+        // Write gate: this POST runs `ALTER TABLE ... UPDATE`, a cluster
+        // mutation. The global /api/v1 middleware is a public passthrough
+        // under provider='none' / CHM_CLERK_PUBLIC_READ, so this route must
+        // self-enforce that anonymous callers cannot mutate settings. A valid
+        // `chm_` API key still authenticates programmatic clients. Mirrors the
+        // /api/v1/actions guard.
+        const permissionResponse = await authorizeFeatureRequest(
+          {
+            feature: 'settings',
+            defaultAccess: 'authenticated',
+            operation: 'write',
+          },
+          request,
+          { allowAgentBearerToken: true }
+        )
+        if (permissionResponse) return permissionResponse
+
         debug('[POST /api/v1/dashboard/settings] Updating settings')
 
         try {
