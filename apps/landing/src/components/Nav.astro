@@ -48,9 +48,59 @@
           Dashboard
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-haspopup="dialog" aria-expanded="false" aria-controls="mobile-menu">
+          <svg class="i-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          <svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile drawer: mirrors every desktop destination + the Dashboard CTA and
+       theme toggle for viewports where .nav-links is hidden (≤1024px). -->
+  <div class="nav-drawer" id="mobile-menu" data-open="false" aria-hidden="true">
+    <div class="nav-drawer-backdrop" data-nav-close></div>
+    <nav class="nav-drawer-panel" role="dialog" aria-modal="true" aria-label="Site menu">
+      <div class="nav-drawer-head">
+        <span class="nav-drawer-title">Menu</span>
+        <button type="button" class="nav-drawer-close" aria-label="Close menu" data-nav-close>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="nav-drawer-body">
+        <span class="nav-drawer-label">Product</span>
+        <a href="/#features">Features</a>
+        <a href="/#data-explorer">Data Explorer</a>
+        <a href="/#health">Health</a>
+        <a href="/#capabilities">Capabilities</a>
+        <span class="nav-drawer-label">Explore</span>
+        <a href="/#open-source">Open source</a>
+        <a href="/pricing">Pricing</a>
+        <a href="https://docs.chmonitor.dev" target="_blank" rel="noopener">Docs</a>
+        <span class="nav-drawer-label">Resources</span>
+        <a href="https://blog.chmonitor.dev" target="_blank" rel="noopener">Blog</a>
+        <a href="/changelog">Changelog</a>
+        <a href="/brand">Brand</a>
+      </div>
+      <div class="nav-drawer-foot">
+        <div class="nav-drawer-theme">
+          <span>Theme</span>
+          <button type="button" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+            <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          </button>
+        </div>
+        <a class="btn btn-ghost" href="https://github.com/chmonitor/chmonitor" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.35 4.8-4.58 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+          Star on GitHub
+        </a>
+        <a class="btn btn-primary" href="https://dash.chmonitor.dev" target="_blank" rel="noopener">
+          Dashboard
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </nav>
+  </div>
   <script is:inline>
     // Reflect dropdown open/close state in aria-expanded (CSS handles the
     // hover/focus-within reveal; this keeps screen readers in sync).
@@ -67,13 +117,52 @@
     })
 
     // Theme toggle: flip data-theme, persist the choice. The head script set the
-    // initial value (saved choice or OS preference) before paint.
-    var toggle = document.querySelector('.theme-toggle')
-    if (toggle) {
+    // initial value (saved choice or OS preference) before paint. Wire every
+    // toggle (desktop nav bar + the mobile drawer) so both stay in sync.
+    document.querySelectorAll('.theme-toggle').forEach(function (toggle) {
       toggle.addEventListener('click', function () {
         var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
         document.documentElement.setAttribute('data-theme', next)
         try { localStorage.setItem('chm-theme', next) } catch (e) {}
+      })
+    })
+
+    // Mobile drawer: open/close the off-canvas menu shown at ≤1024px.
+    var navToggle = document.querySelector('.nav-toggle')
+    var drawer = document.getElementById('mobile-menu')
+    if (navToggle && drawer) {
+      var panel = drawer.querySelector('.nav-drawer-panel')
+      var openDrawer = function () {
+        drawer.setAttribute('data-open', 'true')
+        drawer.setAttribute('aria-hidden', 'false')
+        navToggle.setAttribute('aria-expanded', 'true')
+        navToggle.setAttribute('aria-label', 'Close menu')
+        document.body.style.overflow = 'hidden'
+        var first = drawer.querySelector('.nav-drawer-close')
+        if (first) first.focus()
+      }
+      var closeDrawer = function (restoreFocus) {
+        drawer.setAttribute('data-open', 'false')
+        drawer.setAttribute('aria-hidden', 'true')
+        navToggle.setAttribute('aria-expanded', 'false')
+        navToggle.setAttribute('aria-label', 'Open menu')
+        document.body.style.overflow = ''
+        if (restoreFocus !== false) navToggle.focus()
+      }
+      navToggle.addEventListener('click', function () {
+        drawer.getAttribute('data-open') === 'true' ? closeDrawer() : openDrawer()
+      })
+      drawer.querySelectorAll('[data-nav-close]').forEach(function (el) {
+        el.addEventListener('click', function () { closeDrawer() })
+      })
+      // Close after following an in-page link (don't steal focus from the target).
+      if (panel) {
+        panel.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', function () { closeDrawer(false) })
+        })
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.getAttribute('data-open') === 'true') closeDrawer()
       })
     }
     // Follow OS changes only while the user hasn't picked a theme.
