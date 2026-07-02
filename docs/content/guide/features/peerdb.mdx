@@ -1,75 +1,47 @@
 ---
 description: Monitor PeerDB replication mirrors and peers from within chmonitor — read-only, proxied, no direct database access required.
 icon: Replace
+title: PeerDB
 ---
 
-# PeerDB
+Monitor PeerDB replication mirrors and peers without leaving chmonitor — an optional, read-only integration that proxies the PeerDB API server-side.
 
-> Monitor PeerDB replication mirrors and peers from within chmonitor (optional, read-only).
-
-| | |
-|---|---|
-| **Routes** | `/peerdb`, `/peerdb/peers` |
-| **Feature id** | `peerdb` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_PEERDB_ACCESS=authenticated` to gate) |
-| **System tables** | None — proxies the PeerDB REST API, not ClickHouse system tables |
-| **ClickHouse grants** | None required |
+<TypeTable
+  data={{
+    Routes: { type: "/peerdb, /peerdb/peers", description: "Pages in this section" },
+    "Feature id": { type: "peerdb", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_PEERDB_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "None", description: "Proxies the PeerDB REST API, not ClickHouse system tables" },
+    "ClickHouse grants": { type: "None", description: "No ClickHouse grants required" },
+  }}
+/>
 
 ## What it does
 
 When you set `PEERDB_API_URL`, chmonitor adds a PeerDB section to the navigation. It proxies read-only calls to the PeerDB API so you can monitor replication without leaving the chmonitor UI.
 
-**Mirrors** (`/peerdb`) shows all configured replication mirrors with status, throughput, and per-table sync state.
-
-**Peers** (`/peerdb/peers`) lists source and destination peers, replication slot lag, and a mirror connectivity graph.
+- **Mirrors** (`/peerdb`) shows all configured replication mirrors with status, throughput, and per-table sync state.
+- **Peers** (`/peerdb/peers`) lists source and destination peers, replication slot lag, and a mirror connectivity graph.
 
 Mutation requests (create, delete, pause, resume) are blocked at the proxy layer and return HTTP 403. chmonitor only ever reads from PeerDB.
 
 The PeerDB section does not appear in the navigation when `PEERDB_API_URL` is unset.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
 | Mirrors | `/peerdb` | Mirror status, throughput, per-table sync | — (PeerDB API) |
 | Peers | `/peerdb/peers` | Peer list, slot lag, mirror graph | — (PeerDB API) |
 
-## Permissions & access
+## Using it
 
-The `peerdb` feature id controls visibility.
+<Steps>
+<Step>
+### Point chmonitor at your PeerDB API
 
-Disable:
-
-```bash
-CHM_FEATURE_PEERDB_ENABLED=false
-```
-
-Require authentication:
-
-```bash
-CHM_FEATURE_PEERDB_ACCESS=authenticated
-```
-
-Config file:
-
-```toml
-[features.peerdb]
-enabled = true
-access = "authenticated"
-```
-
-## Configuration
-
-| Variable | Default | Description |
-|---|---|---|
-| `PEERDB_API_URL` | (unset) | PeerDB API base URL. Include the `/api` suffix for the UI API (e.g., `https://peerdb.example.com/api`). When unset, the PeerDB section is hidden entirely. |
-| `PEERDB_PASSWORD` | (unset) | HTTP Basic auth password. The username is left empty. |
-| `PEERDB_CACHE_TTL_MS` | `10000` | Response cache TTL in milliseconds. |
-| `PEERDB_CACHE_MAX_ENTRIES` | `500` | Maximum number of cached responses. |
-| `PEERDB_FETCH_TIMEOUT_MS` | `10000` | Timeout for proxied PeerDB API requests. |
-
-Example:
+Set `PEERDB_API_URL` (include the `/api` suffix for the UI API). Add `PEERDB_PASSWORD` if the API requires HTTP Basic auth:
 
 ```bash
 PEERDB_API_URL=https://peerdb.example.com/api
@@ -77,9 +49,70 @@ PEERDB_PASSWORD=my-peerdb-password
 PEERDB_CACHE_TTL_MS=15000
 ```
 
+</Step>
+<Step>
+### Open the PeerDB section
+
+Once `PEERDB_API_URL` is set, the PeerDB section appears in the nav. Open `/peerdb` for mirror status, throughput, and per-table sync state.
+
+</Step>
+<Step>
+### Inspect peers and lag
+
+Open `/peerdb/peers` to list source and destination peers, replication slot lag, and the mirror connectivity graph.
+
+</Step>
+</Steps>
+
+## Permissions & access
+
+The `peerdb` feature id controls visibility.
+
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
+
+```bash
+CHM_FEATURE_PEERDB_ACCESS=authenticated
+```
+
+</Tab>
+<Tab value="Disable">
+
+```bash
+CHM_FEATURE_PEERDB_ENABLED=false
+```
+
+</Tab>
+<Tab value="Config file">
+
+```toml
+# CHM_CONFIG_FILE (TOML)
+[features.peerdb]
+enabled = true
+access = "authenticated"
+```
+
+</Tab>
+</Tabs>
+
+## Configuration
+
+<TypeTable
+  data={{
+    PEERDB_API_URL: { type: "string", description: "PeerDB API base URL. Include the /api suffix for the UI API (e.g. https://peerdb.example.com/api). When unset, the PeerDB section is hidden entirely. Default: unset." },
+    PEERDB_PASSWORD: { type: "string", description: "HTTP Basic auth password. The username is left empty. Default: unset." },
+    PEERDB_CACHE_TTL_MS: { type: "number", description: "Response cache TTL in milliseconds. Default: 10000." },
+    PEERDB_CACHE_MAX_ENTRIES: { type: "number", description: "Maximum number of cached responses. Default: 500." },
+    PEERDB_FETCH_TIMEOUT_MS: { type: "number", description: "Timeout for proxied PeerDB API requests. Default: 10000." },
+  }}
+/>
+
 ## Notes & limitations
 
-- This integration is **read-only**. Any PeerDB API call that would mutate state (create/delete/pause/resume mirrors or peers) is blocked at the chmonitor proxy layer and returns HTTP 403.
+<Callout type="info" title="Read-only by design">
+Any PeerDB API call that would mutate state (create/delete/pause/resume mirrors or peers) is blocked at the chmonitor proxy layer and returns HTTP 403.
+</Callout>
+
 - The PeerDB API URL must be reachable from the chmonitor server, not from the user's browser. All PeerDB requests are server-side proxied.
 - `PEERDB_API_URL` that points to the bare origin (without `/api`) is intended for direct flow-api use; the UI mirrors/peers pages expect the `/api`-suffixed URL.
 - PeerDB version compatibility is not guaranteed across major PeerDB releases. If the PeerDB API shape changes, some fields may not render correctly.
@@ -87,5 +120,7 @@ PEERDB_CACHE_TTL_MS=15000
 
 ## Related
 
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [PeerDB documentation](https://docs.peerdb.io)
+<Cards>
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="PeerDB documentation" href="https://docs.peerdb.io" description="Upstream reference for PeerDB mirrors and peers." />
+</Cards>

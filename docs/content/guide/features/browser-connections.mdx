@@ -1,20 +1,21 @@
 ---
 description: Add personal ClickHouse connections in the browser with AES-256-GCM encrypted credentials and server-side proxy — no config changes needed.
 icon: Globe
+title: Browser Connections
 ---
 
-# Browser Connections
+Add personal ClickHouse connections directly in your browser and query them through the chmonitor proxy — without touching server config.
 
-> Add personal ClickHouse connections in the browser and query them via the chmonitor proxy — without touching server config.
-
-| | |
-|---|---|
-| **Routes** | (app shell, connection selector in header) |
-| **Feature id** | (none — part of the app shell, not a gated feature) |
-| **Default access** | `public` |
-| **Requires auth** | No |
-| **System tables** | None |
-| **ClickHouse grants** | Whatever the connection's user has |
+<TypeTable
+  data={{
+    Routes: { type: "App shell", description: "Connection selector in the header" },
+    "Feature id": { type: "None", description: "Part of the app shell, not a gated feature" },
+    "Default access": { type: "public", description: "Anonymous access allowed by default" },
+    "Requires auth": { type: "No", description: "No auth required" },
+    "System tables": { type: "None", description: "No ClickHouse system tables queried" },
+    "ClickHouse grants": { type: "Per connection", description: "Whatever the connection's user has" },
+  }}
+/>
 
 ## What it does
 
@@ -22,13 +23,36 @@ chmonitor normally connects to ClickHouse using the server-side `CLICKHOUSE_HOST
 
 When a user adds a connection, the credentials are stored in **encrypted browser localStorage** (AES-256-GCM with a device-bound key). When they query, chmonitor creates a short-lived **session token** server-side; subsequent chart/table requests use the token instead of sending the password on every request. All queries still proxy through the chmonitor server — the browser never opens a direct connection to ClickHouse.
 
+The connection selector in the header shows both server-configured hosts and browser-stored connections. Switching between them changes which host all dashboard pages query.
+
 This is useful for:
 
-- Personal development: quickly point chmonitor at a local ClickHouse instance
-- Testing: connect to a staging cluster without redeploying
-- Demos: show a read-only user's view without sharing admin credentials
+- **Personal development** — quickly point chmonitor at a local ClickHouse instance.
+- **Testing** — connect to a staging cluster without redeploying.
+- **Demos** — show a read-only user's view without sharing admin credentials.
 
-The connection selector in the header shows both server-configured hosts and browser-stored connections. Switching between them changes which host all dashboard pages query.
+## Using it
+
+<Steps>
+<Step>
+### Add a connection
+
+Open the connection selector in the header and add a ClickHouse host. Credentials are encrypted in browser localStorage with AES-256-GCM (device-bound key) — nothing is written to server config.
+
+</Step>
+<Step>
+### Query through the proxy
+
+On first query, chmonitor mints a short-lived session token server-side; later chart/table requests use the token instead of resending the password. All queries proxy through the chmonitor server.
+
+</Step>
+<Step>
+### Switch hosts
+
+Use the header selector to switch between server-configured and browser-stored hosts. The selected host applies to every dashboard page.
+
+</Step>
+</Steps>
 
 ## Permissions & access
 
@@ -40,7 +64,7 @@ If you want to prevent users from switching hosts at all, restrict access to the
 
 No server-side configuration. Browser connections are managed entirely in the client.
 
-For teams, configure hosts server-side:
+For teams, configure hosts server-side so all users share the same host list without any browser setup:
 
 ```bash
 CLICKHOUSE_HOST=https://host1.example.com:8443,https://host2.example.com:8443
@@ -65,6 +89,9 @@ Credentials are encrypted in browser localStorage, but XSS on the dashboard coul
 
 ## Related
 
-- [Getting started](/guide/getting-started)
-- [Authentication](/operate/authentication)
-- [Settings reference](/reference/settings)
+<Cards>
+  <Card title="User Connections (Server Storage)" href="/guide/features/user-connections" description="Sync personal connections across devices with Clerk." />
+  <Card title="Getting started" href="/guide/getting-started" description="Install and connect chmonitor to ClickHouse." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Settings reference" href="/reference/settings" description="Every configuration setting in one place." />
+</Cards>

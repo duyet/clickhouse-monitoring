@@ -1,18 +1,19 @@
 ---
 description: Save personal ClickHouse connections to the server so they sync across devices when signed in with Clerk — encrypted at rest with AES-256-GCM.
 icon: Users
+title: User Connections (Server Storage)
 ---
 
-# User Connections (Server Storage)
+Save personal ClickHouse hosts to the server so they sync across devices when signed in with Clerk — encrypted at rest with AES-256-GCM.
 
-> Save personal ClickHouse hosts to the server so they sync across devices when signed in with Clerk.
-
-| | |
-|---|---|
-| **Feature id** | (none — gated by env flags) |
-| **Default access** | Authenticated Clerk users only |
-| **Requires auth** | Yes (Clerk) |
-| **Storage** | D1 (Cloudflare) or PostgreSQL |
+<TypeTable
+  data={{
+    "Feature id": { type: "None", description: "Gated by env flags, not a feature id" },
+    "Default access": { type: "Authenticated", description: "Clerk users only" },
+    "Requires auth": { type: "Yes (Clerk)", description: "Connections are keyed by the signed-in Clerk userId" },
+    Storage: { type: "D1 or PostgreSQL", description: "D1 (Cloudflare) or PostgreSQL backend" },
+  }}
+/>
 
 ## What it does
 
@@ -20,11 +21,9 @@ When enabled, users can choose **Save to server** in the Add Host dialog. Creden
 
 Browser-only storage remains available when server storage is disabled or the user prefers a local connection.
 
-## Enable server storage
+## Using it
 
-Server storage needs **four** things present together. If any one is missing the
-server returns *"User connections database storage is not enabled"* and the
-**Save to server** toggle stays hidden.
+Server storage needs **four** things present together. If any one is missing the server returns *"User connections database storage is not enabled"* and the **Save to server** toggle stays hidden.
 
 1. **`CHM_FEATURE_USER_CONNECTIONS_DB=true`** — the feature flag.
 2. **Clerk auth** (`CHM_AUTH_PROVIDER=clerk`) — connections are keyed by the signed-in Clerk `userId`.
@@ -74,7 +73,7 @@ The Add Host dialog shows an enabled **Save to server** toggle when all four req
 </Step>
 </Steps>
 
-## Security notes
+## Permissions & access
 
 <Callout type="info" title="Per-user isolation">
 Each connection row is keyed by the signed-in Clerk `userId`. List, read, update, delete, and chart/table proxy routes all resolve auth first and query with `WHERE user_id = ?`. Guessing another user's `connectionId` returns 404 — never their credentials.
@@ -89,6 +88,8 @@ Each connection row is keyed by the signed-in Clerk `userId`. List, read, update
 
 ## Related
 
-- [Browser Connections](/guide/features/browser-connections)
-- [Authentication](/operate/authentication)
-- [Environment variables](/reference/environment-variables)
+<Cards>
+  <Card title="Browser Connections" href="/guide/features/browser-connections" description="Add personal connections stored in the browser." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Environment variables" href="/reference/environment-variables" description="Every env var chmonitor reads." />
+</Cards>

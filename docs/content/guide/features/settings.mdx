@@ -1,32 +1,34 @@
 ---
 description: View all ClickHouse server settings with non-default values highlighted, plus MergeTree and Replicated MergeTree engine settings.
 icon: Settings
+title: Settings
 ---
 
-# Settings
+Audit ClickHouse configuration without SQL — see every server setting with non-default values highlighted, plus MergeTree and Replicated MergeTree engine settings.
 
-> View server settings changed from defaults, MergeTree engine settings, and the in-app configuration UI.
-
-| | |
-|---|---|
-| **Routes** | `/settings`, `/mergetree-settings`, `/replicated-merge-tree-settings` |
-| **Feature id** | `settings` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_SETTINGS_ACCESS=authenticated` to gate) |
-| **System tables** | `system.settings`, `system.merge_tree_settings`, `system.replicated_merge_tree_settings` |
-| **ClickHouse grants** | `SELECT` on the system tables above |
+<TypeTable
+  data={{
+    Routes: { type: "/settings, /mergetree-settings, /replicated-merge-tree-settings", description: "Pages in this section" },
+    "Feature id": { type: "settings", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_SETTINGS_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "system.settings, system.merge_tree_settings, system.replicated_merge_tree_settings", description: "Data sources" },
+    "ClickHouse grants": { type: "SELECT", description: "SELECT on the system tables above" },
+  }}
+/>
 
 ## What it does
 
 The Settings section has two distinct purposes.
 
-**ClickHouse server settings** (at `/settings`) queries `system.settings` to list all server-level configuration values. The table highlights values that have been changed from their defaults, making it easy to audit non-default configuration. Use it to spot unexpected overrides or verify that a setting change took effect.
+- **ClickHouse server settings** (at `/settings`) queries `system.settings` to list all server-level configuration values. The table highlights values that have been changed from their defaults, making it easy to audit non-default configuration. Use it to spot unexpected overrides or verify that a setting change took effect.
+- **MergeTree settings** (at `/mergetree-settings`) queries `system.merge_tree_settings` to show engine-specific settings for MergeTree tables. The **Replicated MergeTree settings** page (at `/replicated-merge-tree-settings`) queries `system.replicated_merge_tree_settings`.
 
-**MergeTree settings** (at `/mergetree-settings`) queries `system.merge_tree_settings` to show engine-specific settings for MergeTree tables. Similarly, the **Replicated MergeTree settings** page (at `/replicated-merge-tree-settings`) queries `system.replicated_merge_tree_settings`.
+<Callout type="info" title="Two kinds of settings">
+This section covers **ClickHouse server** settings (read-only, from system tables). chmonitor also has an **application-level** settings page where operators configure the dashboard itself — connection details, theme preferences, and feature toggles. See the [Settings reference](/reference/settings) for that.
+</Callout>
 
-**In-app settings UI** — chmonitor also has an application-level settings page where operators configure the dashboard itself (connection details, theme preferences, and feature toggles). See [Settings](/reference/settings) for that reference.
-
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -34,29 +36,44 @@ The Settings section has two distinct purposes.
 | MergeTree Settings | `/mergetree-settings` | MergeTree engine settings and values | `system.merge_tree_settings` |
 | Replicated MergeTree Settings | `/replicated-merge-tree-settings` | Replicated MergeTree settings; flags changed-from-default | `system.replicated_merge_tree_settings` |
 
+## Using it
+
+- Open `/settings` to review all server settings; non-default values are highlighted so you can spot unexpected overrides or confirm a change took effect.
+- Open `/mergetree-settings` to inspect MergeTree engine settings, and `/replicated-merge-tree-settings` for Replicated MergeTree settings with changed-from-default values flagged.
+- To change a setting, use ClickHouse SQL (`SET`, `ALTER TABLE ... MODIFY SETTING`) or edit the server config — these pages are read-only.
+
 ## Permissions & access
 
 All three pages share the `settings` feature id.
 
-To gate this section behind authentication (recommended if settings values are sensitive):
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
+
+Recommended if settings values are sensitive:
 
 ```bash
 CHM_FEATURE_SETTINGS_ACCESS=authenticated
 ```
 
-Disable entirely:
+</Tab>
+<Tab value="Disable">
 
 ```bash
 CHM_FEATURE_SETTINGS_ENABLED=false
 ```
 
-Config file:
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.settings]
 enabled = true
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
 
 ## Configuration
 
@@ -70,7 +87,9 @@ No feature-specific environment variables. The pages are read-only — chmonitor
 
 ## Related
 
-- [Settings reference](/reference/settings)
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [ClickHouse system.settings docs](https://clickhouse.com/docs/en/operations/system-tables/settings)
-- [ClickHouse system.merge_tree_settings docs](https://clickhouse.com/docs/en/operations/system-tables/merge_tree_settings)
+<Cards>
+  <Card title="Settings reference" href="/reference/settings" description="Every dashboard configuration setting in one place." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="ClickHouse system.settings" href="https://clickhouse.com/docs/en/operations/system-tables/settings" description="Upstream reference for server settings." />
+  <Card title="ClickHouse system.merge_tree_settings" href="https://clickhouse.com/docs/en/operations/system-tables/merge_tree_settings" description="Upstream reference for MergeTree settings." />
+</Cards>
