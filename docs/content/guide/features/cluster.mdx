@@ -1,20 +1,21 @@
 ---
 description: Monitor distributed cluster topology, replication health, and Keeper/ZooKeeper coordination state across shards and replicas.
 icon: Boxes
+title: Cluster
 ---
 
-# Cluster
+See what nodes make up your cluster and how Keeper/ZooKeeper coordinates them — shard/replica topology, coordination health, the znode tree, and connection history.
 
-> Monitor distributed cluster topology, replication health, and Keeper/ZooKeeper coordination state.
-
-| | |
-|---|---|
-| **Routes** | `/clusters`, `/keeper/overview`, `/keeper`, `/keeper/info`, `/keeper/connections`, `/keeper/connection-log`, `/keeper/log`, `/keeper/watches` |
-| **Feature id** | `cluster` |
-| **Default access** | `public` |
-| **Requires auth** | No (set `CHM_FEATURE_CLUSTER_ACCESS=authenticated` to gate) |
-| **System tables** | `system.clusters`, `system.zookeeper`, `system.zookeeper_info`, `system.zookeeper_connection`, `system.zookeeper_connection_log`, `system.zookeeper_log`, `system.zookeeper_watches` |
-| **ClickHouse grants** | `SELECT` on the system tables above |
+<TypeTable
+  data={{
+    Routes: { type: "/clusters, /keeper/overview, /keeper, /keeper/info, /keeper/connections, /keeper/connection-log, /keeper/log, /keeper/watches", description: "Pages in this section" },
+    "Feature id": { type: "cluster", description: "Used by permission env vars and config" },
+    "Default access": { type: "public", description: "Set CHM_FEATURE_CLUSTER_ACCESS=authenticated to gate" },
+    "Requires auth": { type: "No", description: "Anonymous access allowed by default" },
+    "System tables": { type: "system.clusters, system.zookeeper*", description: "system.clusters plus the six system.zookeeper_* tables" },
+    "ClickHouse grants": { type: "SELECT", description: "SELECT on the system tables above" },
+  }}
+/>
 
 ## What it does
 
@@ -36,7 +37,7 @@ The **Clusters** page renders an interactive topology map of every shard and rep
 
 The **Keeper** sub-section shows the ZooKeeper/ClickHouse Keeper coordination layer: node health, liveness, request latency, the znode tree, active watches, and connection history. These pages are only available when your ClickHouse server has Keeper or ZooKeeper configured.
 
-## Pages
+### Pages
 
 | Page | Route | What it shows | System tables |
 |---|---|---|---|
@@ -49,29 +50,45 @@ The **Keeper** sub-section shows the ZooKeeper/ClickHouse Keeper coordination la
 | Request Log | `/keeper/log` | Per-request log of Keeper operations and responses | `system.zookeeper_log` |
 | Watches | `/keeper/watches` | Currently active watches registered by this server | `system.zookeeper_watches` |
 
+## Using it
+
+- Open `/clusters` for the interactive topology map — confirm shard layouts, spot misconfigured hosts, or audit membership after scaling.
+- Start Keeper triage at `/keeper/overview` for liveness, request load, and latency across nodes.
+- Browse the znode tree at `/keeper?path=/`, and drill into per-node role and raft log at `/keeper/info`.
+- Check `/keeper/connections` for live connections, `/keeper/connection-log` for connect/disconnect history, `/keeper/log` for per-request operations, and `/keeper/watches` for active watches.
+
+Keeper pages appear automatically when `system.zookeeper_info` is accessible on the connected host. If the table is absent (no Keeper configured), pages show an empty state rather than an error.
+
 ## Permissions & access
 
 All Cluster pages use the `cluster` feature id.
 
-Disable the entire section:
-
-```bash
-CHM_FEATURE_CLUSTER_ENABLED=false
-```
-
-Require authentication:
+<Tabs items={["Gate to authenticated", "Disable", "Config file"]}>
+<Tab value="Gate to authenticated">
 
 ```bash
 CHM_FEATURE_CLUSTER_ACCESS=authenticated
 ```
 
-Using a config file (`CHM_CONFIG_FILE`):
+</Tab>
+<Tab value="Disable">
+
+```bash
+CHM_FEATURE_CLUSTER_ENABLED=false
+```
+
+</Tab>
+<Tab value="Config file">
 
 ```toml
+# CHM_CONFIG_FILE (TOML)
 [features.cluster]
 enabled = true
 access = "authenticated"
 ```
+
+</Tab>
+</Tabs>
 
 ## Configuration
 
@@ -89,7 +106,9 @@ No feature-specific configuration. Keeper pages appear automatically when `syste
 
 ## Related
 
-- [Authentication](/operate/authentication)
-- [Feature permissions](/operate/advanced/feature-permissions)
-- [ClickHouse system.clusters docs](https://clickhouse.com/docs/en/operations/system-tables/clusters)
-- [ClickHouse system.zookeeper docs](https://clickhouse.com/docs/en/operations/system-tables/zookeeper)
+<Cards>
+  <Card title="Authentication" href="/operate/authentication" description="Configure sign-in and access control." />
+  <Card title="Feature permissions" href="/operate/advanced/feature-permissions" description="Gate or disable features per section." />
+  <Card title="ClickHouse system.clusters" href="https://clickhouse.com/docs/en/operations/system-tables/clusters" description="Upstream reference for cluster topology." />
+  <Card title="ClickHouse system.zookeeper" href="https://clickhouse.com/docs/en/operations/system-tables/zookeeper" description="Upstream reference for the znode tree." />
+</Cards>
