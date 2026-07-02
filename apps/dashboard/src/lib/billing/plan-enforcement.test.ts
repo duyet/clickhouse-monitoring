@@ -1,4 +1,4 @@
-import { checkHostLimit } from './entitlements'
+import { checkAiBudget, checkHostLimit } from './entitlements'
 import {
   CAPABILITY_ENFORCEMENT,
   LIMIT_ENFORCEMENT,
@@ -37,6 +37,7 @@ describe('plan-enforcement — anti-drift coverage', () => {
       'alertRules',
       'retentionDays',
       'aiRequestsPerDay',
+      'aiMonthlyUsdBudget',
     ]
     for (const key of limitKeys) {
       expect(LIMIT_ENFORCEMENT[key]).toBeDefined()
@@ -61,12 +62,38 @@ describe('plan-enforcement — anti-drift coverage', () => {
     expect(LIMIT_ENFORCEMENT.hosts.status).toBe('enforced')
     expect(LIMIT_ENFORCEMENT.seats.status).toBe('enforced')
     expect(LIMIT_ENFORCEMENT.aiRequestsPerDay.status).toBe('enforced')
+    expect(LIMIT_ENFORCEMENT.aiMonthlyUsdBudget.status).toBe('enforced')
     expect(LIMIT_ENFORCEMENT.retentionDays.status).toBe('enforced')
     expect(LIMIT_ENFORCEMENT.alertRules.status).toBe('deferred')
   })
 
   test('api_mcp_access is the enforced capability gate', () => {
     expect(CAPABILITY_ENFORCEMENT.api_mcp_access.status).toBe('enforced')
+  })
+})
+
+describe('plan-enforcement — monthly AI USD budget really blocks', () => {
+  test('a bounded plan blocks once spend reaches the budget', () => {
+    const pro = BILLING_PLANS.pro
+    expect(pro.aiMonthlyUsdBudget).toBe(5)
+    // Under budget → allowed; at/over budget → denied.
+    expect(checkAiBudget(pro, 4.99).allowed).toBe(true)
+    expect(checkAiBudget(pro, 5).allowed).toBe(false)
+    expect(checkAiBudget(pro, 6).allowed).toBe(false)
+  })
+
+  test('the free plan enforces its small trial budget', () => {
+    const free = BILLING_PLANS.free
+    expect(free.aiMonthlyUsdBudget).toBe(0.5)
+    expect(checkAiBudget(free, 0).allowed).toBe(true)
+    expect(checkAiBudget(free, 0.5).allowed).toBe(false)
+  })
+
+  test('Enterprise (BYOK / unlimited budget) never blocks', () => {
+    const ent = BILLING_PLANS.enterprise
+    expect(ent.aiMonthlyUsdBudget).toBeNull()
+    expect(checkAiBudget(ent, 10_000).allowed).toBe(true)
+    expect(checkAiBudget(ent, 10_000).unlimited).toBe(true)
   })
 })
 

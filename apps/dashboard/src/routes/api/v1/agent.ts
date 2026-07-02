@@ -63,9 +63,18 @@ import {
 import { bridgeClickHouseEnv } from '@/lib/api/server-env'
 import { authorizeAgentApiRequest } from '@/lib/auth/agent-api-auth'
 import { isClerkAuthProvider } from '@/lib/auth/provider'
-import { getAiUsageToday, incrementAiUsage } from '@/lib/billing/ai-usage-store'
+import {
+  addAiSpend,
+  getAiSpendThisMonth,
+  releaseAiUsage,
+  reserveAiUsage,
+} from '@/lib/billing/ai-usage-store'
 import { resolveBillingOwner } from '@/lib/billing/billing-owner'
-import { checkAiDailyLimit, limitMessage } from '@/lib/billing/entitlements'
+import {
+  checkAiBudget,
+  checkAiDailyLimit,
+  limitMessage,
+} from '@/lib/billing/entitlements'
 import { getPlanForOwner } from '@/lib/billing/user-subscription'
 import { ACTIONS_FEATURE_PERMISSION } from '@/lib/feature-permissions/permissions'
 import { authorizeFeatureRequest } from '@/lib/feature-permissions/server'
@@ -529,32 +538,71 @@ async function handlePost(request: Request): Promise<Response> {
     )
   }
 
-  // AI daily limit enforcement (cloud only).
+  // AI usage enforcement (cloud only): daily message meter + monthly USD budget.
   // resolveBillingOwner() throws when Clerk is not configured (self-hosted),
   // so the entire block is wrapped in try/catch — OSS deployments skip silently.
+  //
+  // billingOwnerId / reservedDailyUsage are hoisted so the stream can (a) charge
+  // the monthly spend accumulator with the actual estimatedCostUsd once the
+  // generation succeeds, and (b) roll back the daily reservation if generation
+  // fails before it produces any output.
+  let billingOwnerId: string | null = null
+  let reservedDailyUsage = false
   try {
     const owner = await resolveBillingOwner()
     const plan = await getPlanForOwner(owner.id)
-    if (plan.aiRequestsPerDay != null) {
-      const used = await getAiUsageToday(owner.id)
-      const check = checkAiDailyLimit(plan, used)
-      if (!check.allowed) {
+    billingOwnerId = owner.id
+
+    // Monthly LLM spend budget — hard cap (null = Enterprise BYOK / unlimited).
+    if (plan.aiMonthlyUsdBudget != null) {
+      const spentUsd = await getAiSpendThisMonth(owner.id)
+      const budget = checkAiBudget(plan, spentUsd)
+      if (!budget.allowed) {
         return new Response(
           JSON.stringify({
-            error: limitMessage(check),
+            error: limitMessage(budget),
             details: {
-              planId: check.planId,
-              limit: check.limit ?? plan.aiRequestsPerDay,
-              reason: check.reason,
+              planId: budget.planId,
+              limit: budget.limit ?? plan.aiMonthlyUsdBudget,
+              reason: budget.reason,
             },
           }),
           { status: 402, headers: { 'content-type': 'application/json' } }
         )
       }
-      await incrementAiUsage(owner.id)
+    }
+
+    // Daily message meter — reserve one slot atomically, then decide. The
+    // reservation (post-increment count) is rolled back below if it exceeds the
+    // hard cap, and again in the stream if generation fails before starting.
+    if (plan.aiRequestsPerDay != null) {
+      const reservedCount = await reserveAiUsage(owner.id)
+      if (reservedCount != null) {
+        reservedDailyUsage = true
+        // reservedCount is the count *after* this reservation; usage before this
+        // request is reservedCount - 1.
+        const check = checkAiDailyLimit(plan, reservedCount - 1)
+        if (!check.allowed) {
+          await releaseAiUsage(owner.id)
+          reservedDailyUsage = false
+          return new Response(
+            JSON.stringify({
+              error: limitMessage(check),
+              details: {
+                planId: check.planId,
+                limit: check.limit ?? plan.aiRequestsPerDay,
+                reason: check.reason,
+              },
+            }),
+            { status: 402, headers: { 'content-type': 'application/json' } }
+          )
+        }
+      }
     }
   } catch {
     // Not cloud / no Clerk owner → skip enforcement; self-hosted stays whole.
+    billingOwnerId = null
+    reservedDailyUsage = false
   }
 
   const requestOrigin = request.headers.get('origin') ?? undefined
@@ -723,6 +771,12 @@ async function handlePost(request: Request): Promise<Response> {
             type: 'data-usage',
             data: [stats],
           })
+
+          // Charge the monthly USD budget with the actual spend now that the
+          // generation succeeded (cloud only; no-op when D1/owner absent).
+          if (billingOwnerId && stats.estimatedCostUsd) {
+            await addAiSpend(billingOwnerId, stats.estimatedCostUsd)
+          }
         }
       } catch (error) {
         const classified = classifyError(error, {
@@ -735,17 +789,25 @@ async function handlePost(request: Request): Promise<Response> {
           data: [classified],
         })
         if (usageSteps.length > 0) {
+          const stats = {
+            ...aggregateUsageWithCost(usageSteps, model),
+            model,
+            provider: requestedProvider,
+            resolvedModel: lastStepModelId || model,
+          }
           writer.write({
             type: 'data-usage',
-            data: [
-              {
-                ...aggregateUsageWithCost(usageSteps, model),
-                model,
-                provider: requestedProvider,
-                resolvedModel: lastStepModelId || model,
-              },
-            ],
+            data: [stats],
           })
+          // Generation started and incurred cost before failing — still charge
+          // the monthly budget for what was actually spent.
+          if (billingOwnerId && stats.estimatedCostUsd) {
+            await addAiSpend(billingOwnerId, stats.estimatedCostUsd)
+          }
+        } else if (billingOwnerId && reservedDailyUsage) {
+          // Generation failed before producing any output — release the daily
+          // reservation so aborted requests don't consume the user's quota.
+          await releaseAiUsage(billingOwnerId)
         }
       }
     },

@@ -67,6 +67,7 @@ export type LimitKey =
   | 'alertRules'
   | 'retentionDays'
   | 'aiRequestsPerDay'
+  | 'aiMonthlyUsdBudget'
 
 /**
  * Enforcement status for each numeric limit. Only the host cap is wired today.
@@ -90,6 +91,10 @@ export const LIMIT_ENFORCEMENT: Record<LimitKey, Enforcement> = {
   },
   aiRequestsPerDay: {
     status: 'enforced',
-    gate: 'routes/api/v1/agent.ts handlePost → checkAiDailyLimit (counter: lib/billing/ai-usage-store.ts / ai_usage_daily)',
+    gate: 'routes/api/v1/agent.ts handlePost → checkAiDailyLimit (atomic reserve/release: lib/billing/ai-usage-store.ts / ai_usage_daily)',
+  },
+  aiMonthlyUsdBudget: {
+    status: 'enforced',
+    gate: 'routes/api/v1/agent.ts handlePost → checkAiBudget (spend accumulator: lib/billing/ai-usage-store.ts / ai_usage_monthly, fed by estimatedCostUsd)',
   },
 }
