@@ -1,9 +1,10 @@
 ---
+title: Configuration
 description: All environment variables for configuring the AI Agent — LLM provider, model picker, access control, and conversation persistence.
 icon: SlidersHorizontal
 ---
 
-# Configure the AI Agent
+Configure the agent entirely through environment variables. Start with the core LLM settings, then add provider keys, access control, and persistence as you need them.
 
 ## Core LLM settings
 
@@ -50,7 +51,7 @@ provider:modelId[|contextLength][|description]
 - `contextLength` — optional integer token count; defaults to `128000`
 - `description` — optional display label; defaults to `modelId`
 
-Comma-separated for multiple models:
+Comma-separate multiple models:
 
 ```bash
 LLM_EXTRA_MODELS="nvidia:meta/llama-3.3-70b|131072|Llama 3.3 70B,openrouter:x-ai/grok-2"
@@ -91,7 +92,7 @@ curl -H "Authorization: Bearer $AGENT_API_TOKEN" \
 | `VITE_FEATURE_CONVERSATION_DB` | Build-time | `false` | Enable server-side conversation storage. Derived from canonical `CHM_FEATURE_CONVERSATION_DB` — set that one before `bun run build`. Requires Clerk. |
 | `CONVERSATION_STORE_BACKEND` | Runtime | (auto) | Backend: `agentstate`, `d1`, `postgres`, or `memory`. Auto-selects when unset. |
 
-See [Conversation History](/guide/ai-agent/conversation-history) and [Store Backends](/guide/ai-agent/conversation-history/backends) for per-backend env vars and setup.
+For per-backend env vars and setup, see [Conversation history](/guide/ai-agent/conversation-history) and [Store backends](/guide/ai-agent/conversation-history/backends).
 
 ## Where to set these
 
@@ -103,3 +104,23 @@ See [Conversation History](/guide/ai-agent/conversation-history) and [Store Back
 <Callout type="warn" title="Keep LLM keys server-side">
 Never put LLM API keys in `VITE_*` variables. Anything prefixed `VITE_` is baked into browser JavaScript at build time and is visible to anyone who opens DevTools. Use plain (non-VITE) variables for all keys — they stay on the server.
 </Callout>
+
+## Related
+
+<Cards>
+  <Card
+    title="AI Agent"
+    href="/guide/ai-agent"
+    description="Overview of the agent, its architecture, and quick start."
+  />
+  <Card
+    title="Capabilities"
+    href="/guide/ai-agent/capabilities"
+    description="Full tool list, skills, plan & verify mode, and worked examples."
+  />
+  <Card
+    title="Conversation history"
+    href="/guide/ai-agent/conversation-history"
+    description="How chat history works and how to enable server-side persistence."
+  />
+</Cards>

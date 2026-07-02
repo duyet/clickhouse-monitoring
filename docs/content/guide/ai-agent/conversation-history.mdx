@@ -1,11 +1,10 @@
 ---
+title: Conversation history
 description: How agent chat history works, how to enable server-side persistence, and which authentication is required.
 icon: MessagesSquare
 ---
 
-# Conversation history
-
-Agent chat history is stored in **browser localStorage** by default. No server setup is needed. Enable server-side persistence when you want history shared across devices, preserved after a browser clear, or visible to multiple users.
+Agent chat history is stored in **browser localStorage** by default — no server setup needed. Enable server-side persistence when you want history shared across devices, preserved after a browser clear, or visible to multiple users.
 
 ## How persistence works
 
@@ -50,10 +49,41 @@ When `CONVERSATION_STORE_BACKEND` is not set, the server auto-selects the first 
 
 When `CONVERSATION_STORE_BACKEND` is not set (or set to an unrecognized value), the server picks the first available backend in this order:
 
-1. **AgentState** — when `AGENTSTATE_API_KEY` is set and `CONVERSATION_STORE_BACKEND` is not `d1`, `postgres`, or `memory`.
-2. **Cloudflare D1** — when the `CHM_CLOUD_D1` binding is present (Cloudflare Workers only).
-3. **Postgres** — when `DATABASE_URL` is set.
-4. **Memory** — fallback in development/CI. Conversations are lost on process restart.
+<Steps>
+
+<Step>
+
+### AgentState
+
+Selected when `AGENTSTATE_API_KEY` is set and `CONVERSATION_STORE_BACKEND` is not `d1`, `postgres`, or `memory`.
+
+</Step>
+
+<Step>
+
+### Cloudflare D1
+
+Selected when the `CHM_CLOUD_D1` binding is present (Cloudflare Workers only).
+
+</Step>
+
+<Step>
+
+### Postgres
+
+Selected when `DATABASE_URL` is set.
+
+</Step>
+
+<Step>
+
+### Memory
+
+Fallback in development/CI. Conversations are lost on process restart.
+
+</Step>
+
+</Steps>
 
 You can force a specific backend by setting `CONVERSATION_STORE_BACKEND` to `agentstate`, `d1`, `postgres`, or `memory`.
 
@@ -61,9 +91,21 @@ You can force a specific backend by setting `CONVERSATION_STORE_BACKEND` to `age
 
 AgentState is a cloud-hosted conversation store. It works on any deployment target (Cloudflare Workers, Docker, Kubernetes, Vercel).
 
-1. Get an API key at [agentstate.app](https://agentstate.app).
+<Steps>
 
-2. Set at build time (the client `VITE_*` values are derived from these):
+<Step>
+
+### Get an API key
+
+Get an API key at [agentstate.app](https://agentstate.app).
+
+</Step>
+
+<Step>
+
+### Set build-time variables
+
+The client `VITE_*` values are derived from these:
 
 ```bash
 CHM_FEATURE_CONVERSATION_DB=true
@@ -71,22 +113,48 @@ CHM_AUTH_PROVIDER=clerk
 CHM_CLERK_PUBLISHABLE_KEY=pk_live_...
 ```
 
-3. Set at runtime:
+</Step>
+
+<Step>
+
+### Set runtime variables
 
 ```bash
 AGENTSTATE_API_KEY=as_live_...
 # CONVERSATION_STORE_BACKEND=agentstate  # optional — auto-selected when key is present
 ```
 
-4. Optional: enable AI enrichment of stored conversation titles:
+</Step>
+
+<Step>
+
+### Optional: enable AI enrichment
+
+Enrich stored conversation titles:
 
 ```bash
 AGENTSTATE_AI_ENRICH=true
 ```
 
-5. Deploy. No migrations needed — AgentState manages the schema.
+</Step>
 
-**Cloudflare Workers** — add via `wrangler secret put`:
+<Step>
+
+### Deploy
+
+No migrations needed — AgentState manages the schema.
+
+</Step>
+
+</Steps>
+
+Per-platform wiring:
+
+<Tabs items={["Cloudflare Workers", "Docker", "Kubernetes"]}>
+
+<Tab value="Cloudflare Workers">
+
+Add the key via `wrangler secret put`:
 
 ```bash
 wrangler secret put AGENTSTATE_API_KEY
@@ -97,7 +165,9 @@ wrangler secret put AGENTSTATE_API_KEY
 CONVERSATION_STORE_BACKEND = "agentstate"
 ```
 
-**Docker:**
+</Tab>
+
+<Tab value="Docker">
 
 ```bash
 docker run -d --name chmonitor -p 3000:3000 \
@@ -106,7 +176,9 @@ docker run -d --name chmonitor -p 3000:3000 \
   ghcr.io/chmonitor/chmonitor:vX.Y.Z
 ```
 
-**Kubernetes:**
+</Tab>
+
+<Tab value="Kubernetes">
 
 ```bash
 kubectl create secret generic chmonitor-agentstate \
@@ -117,6 +189,10 @@ kubectl create secret generic chmonitor-agentstate \
 # in ConfigMap
 CONVERSATION_STORE_BACKEND: "agentstate"
 ```
+
+</Tab>
+
+</Tabs>
 
 ## Request / response flow
 
@@ -143,6 +219,22 @@ Server stores require an authenticated user identity to namespace threads. If th
 
 `NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true` is accepted as an alias for `VITE_FEATURE_CONVERSATION_DB=true` but is deprecated. Do not use it for new deployments.
 
-## Next steps
+## Related
 
-- [Store Backends](/guide/ai-agent/conversation-history/backends) — exact config for each backend with platform recommendations
+<Cards>
+  <Card
+    title="Store backends"
+    href="/guide/ai-agent/conversation-history/backends"
+    description="Exact config for each backend with platform recommendations."
+  />
+  <Card
+    title="Configuration"
+    href="/guide/ai-agent/configuration"
+    description="All environment variables, LLM providers, and access control."
+  />
+  <Card
+    title="AI Agent"
+    href="/guide/ai-agent"
+    description="Overview of the agent, its architecture, and quick start."
+  />
+</Cards>
