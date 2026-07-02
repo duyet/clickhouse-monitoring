@@ -1,11 +1,10 @@
 ---
+title: Deploy
 description: Deploy chmonitor on Docker, Kubernetes, Cloudflare Workers, Vercel, or any Node.js server — each platform page is self-contained.
 icon: Ship
 ---
 
-# Choosing a Platform
-
-Deploy chmonitor wherever your ClickHouse runs. Pick the platform that matches your infrastructure; each platform page is self-contained with install steps, all config categories, and migration notes.
+Deploy chmonitor wherever your ClickHouse runs. Pick the platform that matches your infrastructure — each page below is self-contained, with install steps, every config category, and migration notes.
 
 <Mermaid chart={`flowchart LR
   U[Browser] --> W[chmonitor\\nWorker / Container / Node]
@@ -80,3 +79,14 @@ Every platform shares the same configuration categories. The links below go to t
 | Conversation store | Browser local / agentstate / D1 / postgres / clickhouse | [AI Agent](/guide/ai-agent) |
 | Health alerting | Cron sweep, webhook URL, severity threshold | [Configuration](/reference/configuration) |
 | Branding / analytics | Title, logo, GA / PostHog / Seline | [Configuration](/reference/configuration) |
+
+## Related
+
+<Cards>
+  <Card title="Docker" href="/operate/deploy/docker" description="Run chmonitor as a container or Compose service." />
+  <Card title="Kubernetes" href="/operate/deploy/k8s" description="Deploy with the vendored Helm chart or kustomize." />
+  <Card title="Cloudflare Workers" href="/operate/deploy/cloudflare" description="Serverless edge hosting with D1 and Cron Triggers." />
+  <Card title="Self-host (Node)" href="/operate/deploy/self-host" description="Run on a bare VM with systemd behind nginx." />
+  <Card title="Production checklist" href="/operate/deploy/production-checklist" description="Harden and validate before going live." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure none / clerk / proxy auth providers." />
+</Cards>

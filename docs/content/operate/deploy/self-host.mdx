@@ -1,13 +1,18 @@
 ---
+title: Self-host (Node / standalone)
 description: Run chmonitor on any server using Node.js or Bun — bare VMs, dedicated servers, or any environment where you manage the process directly.
 icon: Server
 ---
 
-# Self-host (Node / standalone)
+Run chmonitor on any server using Node.js or Bun — best for bare VMs, dedicated servers, or any environment where you manage the process directly.
 
-Run chmonitor on any server using Node.js or Bun. Best for bare VMs, dedicated servers, or any environment where you manage the process directly.
+## Prerequisites
 
-## Quick start
+- Bun installed on the server.
+- A reachable ClickHouse endpoint with a monitoring user.
+- A process supervisor (systemd) and, optionally, a reverse proxy (nginx).
+
+## Setup
 
 <Steps>
 <Step>
@@ -42,7 +47,7 @@ Open `http://localhost:3000`.
 </Step>
 </Steps>
 
-## Using .env
+### Using .env
 
 Put env vars in `.env.local` in the project root (Next.js) or `.env` for the TanStack app. Never commit credentials.
 
@@ -57,6 +62,12 @@ CLICKHOUSE_TZ=UTC
 EOF
 
 bun run start
+```
+
+## Verify
+
+```bash
+curl -sf http://localhost:3000/api/healthz && echo OK
 ```
 
 ## Configure
@@ -94,7 +105,8 @@ export CLICKHOUSE_NAME='shard-1,shard-2'
 
 ### Feature permissions
 
-**Via env vars:**
+<Tabs items={["Env vars", "Config file (TOML)"]}>
+<Tab value="Env vars">
 
 ```bash
 export CHM_DISABLED_FEATURES='peerdb,actions'
@@ -103,7 +115,8 @@ export CHM_FEATURE_AGENT_ACCESS='authenticated'
 export CHM_FEATURE_SETTINGS_ENABLED='false'
 ```
 
-**Via a config file (TOML):**
+</Tab>
+<Tab value="Config file (TOML)">
 
 ```bash
 export CHM_CONFIG_FILE='/etc/chmonitor/config.toml'
@@ -121,23 +134,29 @@ enabled = false
 access = "authenticated"
 ```
 
+</Tab>
+</Tabs>
+
 Feature ids: `overview`, `agent`, `insights`, `health`, `queries`, `tables`, `metrics`, `dashboard`, `security`, `logs`, `settings`, `cluster`, `operations`, `actions`, `mcp`, `docs`, `about`.
 
 ### Authentication
 
-**None (default):**
+<Tabs items={["None (default)", "API key layer", "Clerk", "Proxy — CF Access", "Proxy — trusted header"]}>
+<Tab value="None (default)">
 
 ```bash
 export CHM_AUTH_PROVIDER='none'
 ```
 
-**API key layer:**
+</Tab>
+<Tab value="API key layer">
 
 ```bash
 export CHM_API_KEY_SECRET='a-long-random-secret'
 ```
 
-**Clerk:**
+</Tab>
+<Tab value="Clerk">
 
 ```bash
 # Build with the canonical names (the client VITE_* derive from them):
@@ -148,7 +167,10 @@ export CLERK_SECRET_KEY='sk_live_...'
 
 Set `CHM_AUTH_PROVIDER` / `CHM_CLERK_PUBLISHABLE_KEY` before `bun run build` (the client values are inlined at build time), then keep `CHM_AUTH_PROVIDER` and the `CLERK_SECRET_KEY` secret in the runtime env.
 
-**Proxy — Cloudflare Access:**
+</Tab>
+<Tab value="Proxy — CF Access">
+
+Cloudflare Access:
 
 ```bash
 export CHM_AUTH_PROVIDER='proxy'
@@ -156,9 +178,10 @@ export CHM_CF_ACCESS_TEAM_DOMAIN='https://yourteam.cloudflareaccess.com'
 export CHM_CF_ACCESS_AUD='<audience-tag>'
 ```
 
-**Proxy — trusted header (nginx):**
+</Tab>
+<Tab value="Proxy — trusted header">
 
-Put chmonitor behind nginx. Configure nginx to set an auth header and pass the secret.
+nginx. Put chmonitor behind nginx. Configure nginx to set an auth header and pass the secret.
 
 ```bash
 export CHM_AUTH_PROVIDER='proxy'
@@ -191,6 +214,9 @@ server {
 }
 ```
 
+</Tab>
+</Tabs>
+
 ### AI agent
 
 ```bash
@@ -209,19 +235,24 @@ Keep `LLM_API_KEY` server-side — never set it as a `VITE_*` variable.
 
 Server-side persistence requires `CHM_FEATURE_CONVERSATION_DB=true` set at build time (its client `VITE_FEATURE_CONVERSATION_DB` is derived at build). Build with this flag set. At runtime, select the backend:
 
-**Postgres store (recommended for self-host):**
+<Tabs items={["Postgres (recommended)", "AgentState"]}>
+<Tab value="Postgres (recommended)">
 
 ```bash
 export CONVERSATION_STORE_BACKEND='postgres'
 export DATABASE_URL='postgresql://user:pass@host:5432/dbname'
 ```
 
-**AgentState store:**
+</Tab>
+<Tab value="AgentState">
 
 ```bash
 export CONVERSATION_STORE_BACKEND='agentstate'
 export AGENTSTATE_API_KEY='as_live_...'
 ```
+
+</Tab>
+</Tabs>
 
 D1 and Durable Object stores are Cloudflare-only.
 
@@ -298,3 +329,12 @@ systemctl restart chmonitor
 ```
 
 For breaking changes between major versions, see [Migrating to v0.3](/reference/migrating/v0-3).
+
+## Related
+
+<Cards>
+  <Card title="Production checklist" href="/operate/deploy/production-checklist" description="Harden and validate before going live." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure none / clerk / proxy auth providers." />
+  <Card title="Traefik" href="/operate/deploy/traefik" description="Front chmonitor with a Traefik reverse proxy." />
+  <Card title="Docker" href="/operate/deploy/docker" description="Containerize instead of running the process directly." />
+</Cards>

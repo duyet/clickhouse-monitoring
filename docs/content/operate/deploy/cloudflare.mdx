@@ -1,19 +1,12 @@
 ---
+title: Cloudflare Workers
 description: Deploy chmonitor to Cloudflare Workers for globally distributed, serverless hosting with D1 and Cron Trigger support.
 icon: Cloud
 ---
 
-# Cloudflare Workers
-
-Deploy chmonitor to Cloudflare Workers. Best for globally cached, serverless hosting with no servers to manage.
+Deploy chmonitor to Cloudflare Workers — best for globally cached, serverless hosting with no servers to manage.
 
 The dashboard app (`apps/dashboard`) uses the `@cloudflare/vite-plugin` to build a native Cloudflare Workers bundle — no OpenNext adapter required. The deploy script is just `bun run build && wrangler deploy`.
-
-## One-click deploy
-
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/chmonitor/chmonitor/tree/main/apps/dashboard)
-
-This deploys the `apps/dashboard` worker (TanStack Start). You will be prompted to connect your Cloudflare account and configure variables. See the [environment variable reference](#configure) below and the [dashboard README](https://github.com/chmonitor/chmonitor/tree/main/apps/dashboard#deploy-your-own) for the full variable list.
 
 ## Prerequisites
 
@@ -23,7 +16,13 @@ This deploys the `apps/dashboard` worker (TanStack Start). You will be prompted 
 - `CLOUDFLARE_API_TOKEN` with Workers deploy permissions (or run `wrangler login` for OAuth)
 </Callout>
 
-## Quick start
+### One-click deploy
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/chmonitor/chmonitor/tree/main/apps/dashboard)
+
+This deploys the `apps/dashboard` worker (TanStack Start). You will be prompted to connect your Cloudflare account and configure variables. See the [environment variable reference](#configure) below and the [dashboard README](https://github.com/chmonitor/chmonitor/tree/main/apps/dashboard#deploy-your-own) for the full variable list.
+
+## Setup
 
 <Steps>
 <Step>
@@ -59,6 +58,14 @@ bun run cf:deploy   # vite build → wrangler deploy
 Open your Workers URL or set a custom domain in the Cloudflare dashboard.
 </Step>
 </Steps>
+
+## Verify
+
+Open your Workers URL. To confirm from the shell, hit the readiness endpoint:
+
+```bash
+curl -sf https://<your-worker-url>/api/healthz && echo OK
+```
 
 ## How configuration works on Cloudflare
 
@@ -184,20 +191,23 @@ Feature ids: `overview`, `agent`, `insights`, `health`, `queries`, `tables`, `me
 
 ### Authentication
 
-**None (default):**
+<Tabs items={["None (default)", "API key layer", "Clerk", "Proxy — CF Access", "Proxy — trusted header"]}>
+<Tab value="None (default)">
 
 ```toml
 [vars]
 CHM_AUTH_PROVIDER = "none"
 ```
 
-**API key layer:**
+</Tab>
+<Tab value="API key layer">
 
 ```bash
 wrangler secret put CHM_API_KEY_SECRET
 ```
 
-**Clerk:**
+</Tab>
+<Tab value="Clerk">
 
 Set the canonical names at build time in CI (the client `VITE_AUTH_PROVIDER` / `VITE_CLERK_PUBLISHABLE_KEY` derive from them):
 
@@ -218,9 +228,10 @@ wrangler secret put CLERK_SECRET_KEY   # sk_live_...
 CHM_AUTH_PROVIDER = "clerk"
 ```
 
-**Proxy — Cloudflare Access (native option):**
+</Tab>
+<Tab value="Proxy — CF Access">
 
-Put chmonitor behind a Cloudflare Access application. The Worker verifies `Cf-Access-Jwt-Assertion` JWT from the Access JWKS.
+Native option. Put chmonitor behind a Cloudflare Access application. The Worker verifies `Cf-Access-Jwt-Assertion` JWT from the Access JWKS.
 
 ```toml
 [vars]
@@ -229,7 +240,8 @@ CHM_CF_ACCESS_TEAM_DOMAIN = "https://yourteam.cloudflareaccess.com"
 CHM_CF_ACCESS_AUD = "<audience-tag>"
 ```
 
-**Proxy — trusted header:**
+</Tab>
+<Tab value="Proxy — trusted header">
 
 ```toml
 [vars]
@@ -243,6 +255,9 @@ wrangler secret put CHM_PROXY_AUTH_SECRET
 ```
 
 Without `CHM_PROXY_AUTH_SECRET`, trusted-header auth is disabled.
+
+</Tab>
+</Tabs>
 
 ### AI agent
 
@@ -266,9 +281,10 @@ Never put `LLM_API_KEY` in a `VITE_*` var or `[vars]` — use `wrangler secret p
 
 Server-side persistence requires `CHM_FEATURE_CONVERSATION_DB=true` set **at build time** (in CI before `bun run build`; the client `VITE_FEATURE_CONVERSATION_DB` derives from it), plus Clerk auth. The backend is then selected at runtime.
 
-**D1 (Cloudflare-native, recommended):**
+<Tabs items={["D1 (recommended)", "AgentState", "Postgres"]}>
+<Tab value="D1 (recommended)">
 
-Create a D1 database:
+Cloudflare-native. Create a D1 database:
 
 ```bash
 wrangler d1 create chmonitor-conversations
@@ -302,7 +318,10 @@ Run migrations:
 bun run cf:migrate-conversations
 ```
 
-**AgentState (cloud-hosted):**
+</Tab>
+<Tab value="AgentState">
+
+Cloud-hosted:
 
 ```toml
 [vars]
@@ -313,7 +332,13 @@ CONVERSATION_STORE_BACKEND = "agentstate"
 wrangler secret put AGENTSTATE_API_KEY
 ```
 
-**Postgres:** also available on Cloudflare Workers via outbound HTTP (`DATABASE_URL` runtime secret).
+</Tab>
+<Tab value="Postgres">
+
+Also available on Cloudflare Workers via outbound HTTP (`DATABASE_URL` runtime secret).
+
+</Tab>
+</Tabs>
 
 ### Health alerting — Cron Trigger
 
@@ -362,7 +387,7 @@ This runs: `vite build` (produces the Cloudflare Workers bundle) → `wrangler d
 The chmonitor monorepo's own `wrangler.toml` declares **no** `[vars]`. Its non-secret hosted config lives in committed `apps/dashboard/.env.production` (+ `.env.preview` for PR previews), which feeds both the client build and the Worker runtime vars (injected by `scripts/patch-wrangler-env.ts`). If you fork this repo, edit `.env.production` rather than re-adding a `[vars]` block. When deploying your own standalone Worker from scratch, the `[vars]` examples above are the simplest path.
 </Callout>
 
-## Preview locally
+### Preview locally
 
 ```bash
 bun run cf:preview
@@ -413,8 +438,23 @@ For breaking changes between major versions, see [Migrating to v0.3](/reference/
 
 ## Troubleshooting
 
-**`wrangler deploy` ships nothing or stale assets:** run `bun run build` (or `bun run cf:deploy`, which does both) before `wrangler deploy` — the Vite build must produce the Workers bundle first.
+<Accordions>
+<Accordion title="wrangler deploy ships nothing or stale assets">
+Run `bun run build` (or `bun run cf:deploy`, which does both) before `wrangler deploy` — the Vite build must produce the Workers bundle first.
+</Accordion>
+<Accordion title="Runtime errors / blank pages">
+Check Workers logs in the Cloudflare dashboard. Verify secrets are set (`wrangler secret list`) and redeploy after any `wrangler secret put`.
+</Accordion>
+<Accordion title="Build-time client var not taking effect">
+`VITE_*` vars must be set in the environment when `bun run build` runs, not in `wrangler.toml [vars]`.
+</Accordion>
+</Accordions>
 
-**Runtime errors / blank pages:** check Workers logs in the Cloudflare dashboard. Verify secrets are set (`wrangler secret list`) and redeploy after any `wrangler secret put`.
+## Related
 
-**Build-time client var not taking effect:** `VITE_*` vars must be set in the environment when `bun run build` runs, not in `wrangler.toml [vars]`.
+<Cards>
+  <Card title="Production checklist" href="/operate/deploy/production-checklist" description="Harden and validate before going live." />
+  <Card title="Authentication" href="/operate/authentication" description="Configure none / clerk / proxy auth providers." />
+  <Card title="Docker" href="/operate/deploy/docker" description="Single-container self-host on one server." />
+  <Card title="Migrating to v0.3" href="/reference/migrating/v0-3" description="Breaking changes between major versions." />
+</Cards>
