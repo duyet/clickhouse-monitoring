@@ -1,9 +1,10 @@
 ---
+title: Store backends
 description: Per-backend setup for conversation history — AgentState, Cloudflare D1, Postgres, Memory, and Browser defaults.
 icon: Database
 ---
 
-# Conversation store backends
+Pick the conversation store that fits your platform. Each backend uses the same build-time flag and a runtime backend selector.
 
 <Callout type="info" title="Build-time flag required">
 All server-side backends require `CHM_FEATURE_CONVERSATION_DB=true` set **before** `bun run build`. Its client `VITE_FEATURE_CONVERSATION_DB` is derived from it at build time and baked into the bundle, so it cannot be changed without a rebuild. `CONVERSATION_STORE_BACKEND` is a runtime variable and can be set or changed without rebuilding.
@@ -28,7 +29,11 @@ When `CONVERSATION_STORE_BACKEND` is not set, the server picks the first availab
 3. **Postgres** — when `DATABASE_URL` is set.
 4. **Memory** — fallback in development/CI.
 
-## AgentState
+## Backend setup
+
+<Tabs items={["AgentState", "Cloudflare D1", "Postgres", "Memory", "Browser"]}>
+
+<Tab value="AgentState">
 
 Cloud-hosted conversation store. Works on all platforms. Requires an `as_live_` prefixed key.
 
@@ -39,7 +44,9 @@ AGENTSTATE_API_KEY=as_live_xxx
 # CONVERSATION_STORE_BACKEND=agentstate             # optional — auto-selected when key is present
 ```
 
-## Cloudflare D1
+</Tab>
+
+<Tab value="Cloudflare D1">
 
 Cloudflare-only. Requires a provisioned D1 database and a Worker binding.
 
@@ -61,7 +68,9 @@ Also accepts `AGENT_CHM_CLOUD_D1_DATABASE_ID` as an alias for `CHM_CLOUD_D1_DATA
 
 **When to use:** standard Cloudflare deployments that want queryable, exportable conversation history.
 
-## Postgres
+</Tab>
+
+<Tab value="Postgres">
 
 Any PostgreSQL-compatible database.
 
@@ -74,7 +83,9 @@ Also accepts `POSTGRES_URL` or `POSTGRES_PRISMA_URL` instead of `DATABASE_URL`. 
 
 **When to use:** Kubernetes, Docker, or any deployment with an existing Postgres instance.
 
-## Memory
+</Tab>
+
+<Tab value="Memory">
 
 Ephemeral in-process store. Lost on process restart.
 
@@ -84,10 +95,36 @@ CONVERSATION_STORE_BACKEND=memory
 
 Use only in development or tests.
 
-## Browser (default)
+</Tab>
+
+<Tab value="Browser">
 
 Default when `VITE_FEATURE_CONVERSATION_DB` is not `true` or when the user is unauthenticated. No server config needed. History is stored in browser localStorage. Clearing browser data loses history.
+
+</Tab>
+
+</Tabs>
 
 ## Deprecated alias
 
 `NEXT_PUBLIC_FEATURE_CONVERSATION_DB=true` is equivalent to `VITE_FEATURE_CONVERSATION_DB=true` but is deprecated. Do not use it for new deployments.
+
+## Related
+
+<Cards>
+  <Card
+    title="Conversation history"
+    href="/guide/ai-agent/conversation-history"
+    description="How chat history works and how to enable server-side persistence."
+  />
+  <Card
+    title="Configuration"
+    href="/guide/ai-agent/configuration"
+    description="All environment variables, LLM providers, and access control."
+  />
+  <Card
+    title="AI Agent"
+    href="/guide/ai-agent"
+    description="Overview of the agent, its architecture, and quick start."
+  />
+</Cards>
