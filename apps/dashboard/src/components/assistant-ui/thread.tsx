@@ -49,6 +49,7 @@ import {
 import { ThreadComposer, WelcomeComposer } from './-thread/composer'
 import { FollowUpSuggestions } from './-thread/follow-up-suggestions'
 import { MessageStatsFooter } from './-thread/message-stats'
+import { SessionStats } from './-thread/session-stats'
 import {
   ActionBarPrimitive,
   BranchPickerPrimitive,
@@ -143,6 +144,7 @@ export function Thread({
             <div className="mx-auto flex w-full flex-col items-start gap-2 bg-background px-4 pb-3">
               <FollowUpSuggestions />
               <ThreadComposer />
+              <SessionStats />
               <p className="text-muted-foreground text-[11px] leading-4">
                 The agent runs read-only ClickHouse queries. Conversations are
                 saved{' '}
