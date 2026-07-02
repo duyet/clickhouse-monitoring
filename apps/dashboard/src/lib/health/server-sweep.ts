@@ -1,17 +1,27 @@
 import type { ClickHouseConfig } from '@chm/clickhouse-client'
+import type {
+  AlertRuleDef,
+  AlertRuleSeverity,
+} from '@/lib/alerting/rule-registry'
 
-import { getServerAlertConfig } from './server-alert-config'
+import { alertStateStore, evaluateAlert } from './alert-state-store'
+import {
+  getServerAlertConfig,
+  getServerAlertCooldownMs,
+  getServerThresholdOverrides,
+} from './server-alert-config'
 import { fetchData, getClickHouseConfigs } from '@chm/clickhouse-client'
 import { debug, error } from '@chm/logger'
-import { HEALTH_CHECKS } from '@/components/health/health-checks'
 import { registerBuiltinRules } from '@/lib/alerting/builtin-rules'
+import { classifyValue, ruleRegistry } from '@/lib/alerting/rule-registry'
 import { generateInsights } from '@/lib/insights/generate-insights'
 
 // Register pluggable alert rules into the global ruleRegistry once at module
-// load. HEALTH_CHECKS (same rule set) continue to drive the /health page UI.
+// load. The sweep drives itself from `ruleRegistry.getAll()`; the /health page
+// UI is driven independently by the (matching) HEALTH_CHECKS definitions.
 registerBuiltinRules()
 
-type Severity = 'ok' | 'warning' | 'critical'
+type Severity = AlertRuleSeverity
 
 const SEVERITY_ORDER: Record<Severity, number> = {
   ok: 0,
@@ -35,6 +45,8 @@ export interface SweepHostSummary {
   checksRun: number
   findings: number
   errored: number
+  /** Rules skipped because an optional table was absent on this host. */
+  skipped: number
 }
 
 export interface SweepSummary {
@@ -46,6 +58,10 @@ export interface SweepSummary {
   totalChecks: number
   totalFindings: number
   alertsDispatched: number
+  /** Alerts suppressed by the dedup state store (already-firing conditions). */
+  alertsSuppressed: number
+  /** Recovery notifications sent for conditions that returned to ok. */
+  recoveries: number
   /** Total AI insights generated and persisted across all hosts. */
   insightsGenerated: number
   hosts: SweepHostSummary[]
@@ -57,11 +73,11 @@ function hostLabel(config: ClickHouseConfig): string {
 }
 
 /**
- * Run a single health-check SQL on one host in read-only mode and read the
- * numeric value from the configured `valueKey`. Mirrors the client read path
+ * Run a single rule's SQL on one host in read-only mode and read the numeric
+ * value from the configured `valueKey`. Mirrors the client read path
  * (`readOnlyQuery`) so cron results match what the Health dashboard shows.
  */
-async function runHealthCheck(
+async function runRuleQuery(
   sql: string,
   valueKey: string,
   hostId: number
@@ -85,15 +101,43 @@ async function runHealthCheck(
   return Number.isFinite(num) ? num : null
 }
 
-function classify(
-  value: number | null,
-  warning: number,
-  critical: number
-): Severity {
-  if (value === null || !Number.isFinite(value)) return 'ok'
-  if (value >= critical) return 'critical'
-  if (value >= warning) return 'warning'
-  return 'ok'
+/**
+ * Best-effort set of `system.*` tables present on a host, used to honor each
+ * rule's `optional`/`tableCheck`. Returns `null` when the probe itself fails —
+ * callers then fall back to attempting every rule (the per-rule try/catch still
+ * protects against a missing table).
+ */
+async function getExistingSystemTables(
+  hostId: number
+): Promise<Set<string> | null> {
+  try {
+    const result = await fetchData<Array<{ full: string }>>({
+      query: `SELECT concat(database, '.', name) AS full FROM system.tables WHERE database = 'system'`,
+      hostId,
+      format: 'JSONEachRow',
+      clickhouse_settings: { readonly: '1' },
+    })
+    if (result.error) return null
+    const rows = result.data
+    if (!Array.isArray(rows)) return null
+    return new Set(rows.map((r) => String(r.full)))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Whether a rule should run on this host given the table-existence probe.
+ * Non-optional rules always run. Optional rules with a `tableCheck` are skipped
+ * only when we positively know the table is absent.
+ */
+function shouldRunRule(
+  rule: AlertRuleDef,
+  tables: Set<string> | null
+): boolean {
+  if (!rule.sql) return false
+  if (!rule.optional || !rule.tableCheck || tables === null) return true
+  return tables.has(rule.tableCheck)
 }
 
 /**
@@ -128,11 +172,14 @@ async function postWebhook(url: string, text: string): Promise<boolean> {
 }
 
 /**
- * Autonomous health sweep: runs every configured health check over ALL hosts,
- * classifies severity from each check's default thresholds, and dispatches a
- * webhook alert for any finding at or above the configured minimum severity.
+ * Autonomous health sweep: runs every registered alert rule over ALL hosts,
+ * classifies severity from each rule's thresholds (with env overrides), and
+ * dispatches a webhook alert for any finding at or above the configured minimum
+ * severity — but only when the dedup state store says the alert is genuinely
+ * new, escalated, past its cooldown, or a recovery. A persistent condition no
+ * longer webhooks on every run.
  *
- * Disabled (or no webhook URL) → checks still run, alerts are skipped.
+ * Disabled (or no webhook URL) → rules still run, alerts are skipped.
  */
 export async function runHealthSweep(): Promise<SweepSummary> {
   const ranAt = new Date().toISOString()
@@ -140,42 +187,89 @@ export async function runHealthSweep(): Promise<SweepSummary> {
   const webhookConfigured = Boolean(settings.webhookUrl)
   const canDispatch = settings.webhookEnabled && webhookConfigured
   const minRank = SEVERITY_ORDER[settings.minSeverity]
+  const cooldownMs = getServerAlertCooldownMs()
+
+  const rules = ruleRegistry.getAll()
+  const thresholdOverrides = getServerThresholdOverrides(rules.map((r) => r.id))
 
   const configs = getClickHouseConfigs()
 
   const hosts: SweepHostSummary[] = []
   const findings: SweepFinding[] = []
   let insightsGenerated = 0
+  let alertsDispatched = 0
+  let alertsSuppressed = 0
+  let recoveries = 0
 
   for (const config of configs) {
     const name = hostLabel(config)
     let checksRun = 0
     let errored = 0
+    let skipped = 0
 
-    for (const check of HEALTH_CHECKS) {
-      if (!check.sql) continue
+    const tables = await getExistingSystemTables(config.id)
+
+    for (const rule of rules) {
+      if (!rule.sql) continue
+      if (!shouldRunRule(rule, tables)) {
+        skipped++
+        continue
+      }
       checksRun++
       try {
-        const value = await runHealthCheck(check.sql, check.valueKey, config.id)
-        const severity = classify(
-          value,
-          check.defaults.warning,
-          check.defaults.critical
-        )
-        if (severity === 'ok') continue
-        findings.push({
-          hostId: config.id,
-          hostName: name,
-          checkId: check.id,
-          title: check.title,
-          severity,
-          value,
-          label: check.formatLabel ? check.formatLabel(value) : String(value),
-        })
+        const value = await runRuleQuery(rule.sql, rule.valueKey, config.id)
+        const thresholds = {
+          ...rule.defaults,
+          ...(thresholdOverrides[rule.id] ?? {}),
+        }
+        const severity = classifyValue(value, thresholds)
+
+        if (severity !== 'ok') {
+          findings.push({
+            hostId: config.id,
+            hostName: name,
+            checkId: rule.id,
+            title: rule.title,
+            severity,
+            value,
+            label: rule.formatLabel ? rule.formatLabel(value) : String(value),
+          })
+        }
+
+        // Dedup + dispatch. Sub-threshold severities count as 'ok' so the state
+        // store only tracks conditions the operator cares about (and a drop
+        // below the threshold reads as a recovery).
+        if (canDispatch) {
+          const effective: Severity =
+            SEVERITY_ORDER[severity] >= minRank ? severity : 'ok'
+          const decision = evaluateAlert(alertStateStore, {
+            hostId: config.id,
+            ruleId: rule.id,
+            severity: effective,
+            cooldownMs,
+          })
+          if (decision.notify) {
+            const label = rule.formatLabel
+              ? rule.formatLabel(value)
+              : String(value)
+            const text =
+              decision.kind === 'recovery'
+                ? `[RECOVERY] ${rule.title} — resolved (host ${name})`
+                : `[${effective.toUpperCase()}] ${rule.title} — ${label} (host ${name})`
+            const ok = await postWebhook(settings.webhookUrl, text)
+            if (ok) {
+              alertsDispatched++
+              if (decision.kind === 'recovery') recoveries++
+            }
+          } else if (SEVERITY_ORDER[severity] >= minRank) {
+            // A current finding that we chose not to re-send (deduped).
+            alertsSuppressed++
+          }
+        }
       } catch (err) {
         errored++
         debug(
-          `[health-sweep] check "${check.id}" failed on host ${config.id}`,
+          `[health-sweep] check "${rule.id}" failed on host ${config.id}`,
           err instanceof Error ? err.message : String(err)
         )
       }
@@ -187,6 +281,7 @@ export async function runHealthSweep(): Promise<SweepSummary> {
       checksRun,
       findings: findings.filter((f) => f.hostId === config.id).length,
       errored,
+      skipped,
     })
 
     // Generate + persist AI insights for this host (best-effort; never throws).
@@ -201,16 +296,6 @@ export async function runHealthSweep(): Promise<SweepSummary> {
     }
   }
 
-  let alertsDispatched = 0
-  if (canDispatch) {
-    for (const finding of findings) {
-      if (SEVERITY_ORDER[finding.severity] < minRank) continue
-      const text = `[${finding.severity.toUpperCase()}] ${finding.title} — ${finding.label} (host ${finding.hostName})`
-      const ok = await postWebhook(settings.webhookUrl, text)
-      if (ok) alertsDispatched++
-    }
-  }
-
   return {
     ranAt,
     enabled: settings.webhookEnabled,
@@ -220,6 +305,8 @@ export async function runHealthSweep(): Promise<SweepSummary> {
     totalChecks: hosts.reduce((sum, h) => sum + h.checksRun, 0),
     totalFindings: findings.length,
     alertsDispatched,
+    alertsSuppressed,
+    recoveries,
     insightsGenerated,
     hosts,
     findings,
