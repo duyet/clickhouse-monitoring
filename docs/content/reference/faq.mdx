@@ -1,11 +1,12 @@
 ---
 description: Answers to common questions about connection errors, missing system tables, authentication, multi-host setup, and the AI agent.
 icon: HelpCircle
+title: FAQ
 ---
 
-# FAQ
+Quick answers to the questions that come up most often when you run chmonitor: connection failures, empty pages, authentication, multi-host setup, the AI agent, and deployment. Expand any question below.
 
-## Connection issues
+## Common questions
 
 <Accordions type="multiple">
 
@@ -20,12 +21,6 @@ Check that `CLICKHOUSE_HOST` is a full URL including scheme and port, e.g. `http
 Restart or redeploy the app after updating credentials. For Cloudflare Workers, run `bun run cf:config` to push the new secrets, then redeploy (`bun run cf:deploy`). The worker connection pool caches credentials at startup.
 
 </Accordion>
-
-</Accordions>
-
-## System tables and empty pages
-
-<Accordions type="multiple">
 
 <Accordion title='Some pages are empty or show "table not found".'>
 
@@ -44,12 +39,6 @@ The page depends on a ClickHouse system table that is disabled or not present in
 `system.zookeeper` only exists when ClickHouse Keeper or ZooKeeper is configured. If you don't use a replicated setup, these pages will not show data.
 
 </Accordion>
-
-</Accordions>
-
-## Authentication
-
-<Accordions type="multiple">
 
 <Accordion title="How do I require login before anyone can use the dashboard?">
 
@@ -74,12 +63,6 @@ The agent uses the same ClickHouse grants as the configured monitoring user. If 
 
 </Accordion>
 
-</Accordions>
-
-## Multi-host
-
-<Accordions type="multiple">
-
 <Accordion title="How do I monitor multiple ClickHouse clusters?">
 
 Set `CLICKHOUSE_HOST` to a comma-separated list of host URLs. For credentials, you can provide a single value (applied to all hosts) or one value per host position. `CLICKHOUSE_NAME` is optional (hosts default to indexed labels):
@@ -95,12 +78,6 @@ A host selector appears in the UI when more than one host is configured.
 
 </Accordion>
 
-</Accordions>
-
-## AI agent
-
-<Accordions type="multiple">
-
 <Accordion title="The agent returns errors or doesn't respond.">
 
 Check that `LLM_API_KEY` is set and that `LLM_API_BASE` points at a reachable OpenAI-compatible endpoint. The agent uses `https://openrouter.ai/api/v1` by default. Verify the key works by testing the endpoint directly. Also confirm the feature is not disabled (`CHM_FEATURE_AGENT_ENABLED=false` would silence it).
@@ -113,12 +90,6 @@ Check that `LLM_API_KEY` is set and that `LLM_API_BASE` points at a reachable Op
 
 </Accordion>
 
-</Accordions>
-
-## Conversation persistence
-
-<Accordions type="multiple">
-
 <Accordion title="Agent conversation history disappears after I close the browser.">
 
 By default, history lives in browser `localStorage`. To persist it server-side:
@@ -130,23 +101,11 @@ See [Conversation History](/guide/ai-agent/conversation-history) and [Store Back
 
 </Accordion>
 
-</Accordions>
-
-## Data freshness
-
-<Accordions type="multiple">
-
 <Accordion title="The dashboard shows stale data.">
 
 The TanStack app revalidates data on focus and on a polling interval. Reduce `CLICKHOUSE_MAX_EXECUTION_TIME` if queries are taking too long, or adjust the client-side refresh interval per chart.
 
 </Accordion>
-
-</Accordions>
-
-## Deployment
-
-<Accordions type="multiple">
 
 <Accordion title="Which deployment should I use?">
 
@@ -160,3 +119,12 @@ See [Install & Configure](/operate/deploy) for platform-specific guides.
 </Accordion>
 
 </Accordions>
+
+## Related
+
+<Cards>
+  <Card title="Enable system tables" href="/guide/getting-started/clickhouse-enable-system-tables" description="Turn on the ClickHouse logs and system tables the dashboard reads." />
+  <Card title="Authentication" href="/operate/authentication" description="Require login and gate features with Clerk or per-feature access rules." />
+  <Card title="Install & Configure" href="/operate/deploy" description="Platform-specific deployment guides for Docker, Kubernetes, and Cloudflare." />
+  <Card title="Environment variables" href="/reference/environment-variables" description="Every CHM_ and CLICKHOUSE_ setting the dashboard reads." />
+</Cards>
