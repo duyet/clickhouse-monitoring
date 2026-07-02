@@ -82,13 +82,18 @@ export async function handler(
   const interval =
     intervalParam && isValidInterval(intervalParam) ? intervalParam : undefined
 
+  // Cap the requested window so a hand-crafted `lastHours` cannot force an
+  // unbounded scan of `system.query_log` / `part_log`. The maximum mirrors the
+  // widest built-in chart window (the activity heatmap: one year), which is the
+  // largest range any UI control can request.
+  const MAX_LAST_HOURS = 24 * 365
   const lastHoursParam = searchParams.get('lastHours')
   const lastHoursParsed = lastHoursParam ? Number(lastHoursParam) : undefined
   const lastHours =
     lastHoursParsed !== undefined &&
     Number.isFinite(lastHoursParsed) &&
     lastHoursParsed > 0
-      ? lastHoursParsed
+      ? Math.min(lastHoursParsed, MAX_LAST_HOURS)
       : undefined
 
   const paramStr = searchParams.get('params')
