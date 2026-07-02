@@ -69,7 +69,7 @@ function mdToHtml(md: string): string {
       <div class="wrap">
         <div class="sec-head" style="margin-bottom:0">
           <span class="eyebrow">What's new</span>
-          <h2>Changelog</h2>
+          <h1>Changelog</h1>
           <p>Release notes for chmonitor. Full history on <a href="https://github.com/chmonitor/chmonitor/releases" target="_blank" rel="noopener" style="color:var(--orange)">GitHub Releases</a>.</p>
         </div>
 
@@ -107,4 +107,10 @@ function mdToHtml(md: string): string {
     </section>
   </main>
   <Footer />
+
+  <style>
+    /* Promoted page title: match the global .sec-head h2 type scale so the
+       h1 renders identically to the previous heading. */
+    .sec-head h1{font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.025em;font-weight:700;margin-top:14px;text-wrap:balance}
+  </style>
 </Base>
