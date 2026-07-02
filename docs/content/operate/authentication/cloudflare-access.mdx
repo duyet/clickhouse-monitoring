@@ -1,11 +1,16 @@
 ---
+title: "Reverse proxy: Cloudflare Access"
 description: Authenticate chmonitor with Cloudflare Access — Zero Trust JWT verification, no shared secret needed.
 icon: Cloud
 ---
 
-# Reverse proxy: Cloudflare Access
-
 Put chmonitor behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) and let Access handle authentication. Access authenticates the user and forwards a signed JWT; chmonitor verifies it cryptographically. No shared secret needed — the signature is the proof.
+
+- Cloudflare Access sits in front of the chmonitor Worker.
+- On each request, Access adds a `Cf-Access-Jwt-Assertion` header with a signed JWT.
+- chmonitor verifies the JWT against your team's JWKS: checks the `aud`, issuer, `exp`, and `RS256` signature.
+- The authenticated subject is the token's `email` field (falls back to `sub`).
+- When `CHM_CF_ACCESS_*` are unset, this mechanism is skipped.
 
 <Mermaid chart={`sequenceDiagram
   participant B as Browser
@@ -17,30 +22,29 @@ Put chmonitor behind [Cloudflare Access](https://developers.cloudflare.com/cloud
   A->>A: verify JWT against JWKS (aud, issuer, exp, RS256)
   A-->>B: 200 data`} />
 
-## How it works
+## Prerequisites
 
-- Cloudflare Access sits in front of the chmonitor Worker.
-- On each request, Access adds a `Cf-Access-Jwt-Assertion` header with a signed JWT.
-- chmonitor verifies the JWT against your team's JWKS: checks the `aud`, issuer, `exp`, and `RS256` signature.
-- The authenticated subject is the token's `email` field (falls back to `sub`).
-- When `CHM_CF_ACCESS_*` are unset, this mechanism is skipped.
+A Cloudflare Zero Trust account with an Access application protecting your chmonitor Worker route.
 
-## Configuration
+## Setup
 
-```bash
-CHM_AUTH_PROVIDER=proxy
-CHM_CF_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
-CHM_CF_ACCESS_AUD=<access-application-aud-tag>
-```
-
-Set these as Worker secrets in production:
-
-```bash
-wrangler secret put CHM_CF_ACCESS_TEAM_DOMAIN
-wrangler secret put CHM_CF_ACCESS_AUD
-```
-
-## Setup steps
+<TypeTable
+  type={{
+    CHM_AUTH_PROVIDER: {
+      description: "Set to proxy to enable reverse-proxy auth mechanisms.",
+      type: "proxy",
+    },
+    CHM_CF_ACCESS_TEAM_DOMAIN: {
+      description: "Your Cloudflare team domain.",
+      type: "string",
+      default: "https://your-team.cloudflareaccess.com",
+    },
+    CHM_CF_ACCESS_AUD: {
+      description: "The Access application AUD tag (Application Audience).",
+      type: "string",
+    },
+  }}
+/>
 
 <Steps>
 <Step>
@@ -66,6 +70,13 @@ CHM_AUTH_PROVIDER=proxy
 CHM_CF_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
 CHM_CF_ACCESS_AUD=<aud-tag>
 ```
+
+Set these as Worker secrets in production:
+
+```bash
+wrangler secret put CHM_CF_ACCESS_TEAM_DOMAIN
+wrangler secret put CHM_CF_ACCESS_AUD
+```
 </Step>
 <Step>
 ### Redeploy
@@ -74,16 +85,51 @@ Users reaching the Worker URL will be sent through the Access login flow.
 </Step>
 </Steps>
 
-## Notes
+## Verify
 
-- The `VITE_AUTH_PROVIDER` client var does not need to be set for proxy auth; the browser UI does not show a sign-in button (Access handles the login page externally).
-- Combine with `CHM_API_KEY_SECRET` to allow MCP/script access alongside Access-authenticated browser sessions. See [API keys](/operate/authentication/api-keys).
-- If both Cloudflare Access (`CHM_CF_ACCESS_*`) and trusted-header (`CHM_PROXY_AUTH_SECRET`) are configured, Access is checked first.
+Open the Worker URL in a browser. Cloudflare Access should present its login page, and after signing in you land on the dashboard with data loading normally — the forwarded `Cf-Access-Jwt-Assertion` JWT satisfies chmonitor's guard.
+
+## Troubleshooting
+
+<Callout type="info" title="No sign-in button in the header">
+The `VITE_AUTH_PROVIDER` client var does not need to be set for proxy auth; the browser UI does not show a sign-in button (Access handles the login page externally).
+</Callout>
+
+<Accordions>
+<Accordion title="Allow MCP or script access alongside Access">
+Combine with `CHM_API_KEY_SECRET` to allow MCP/script access alongside Access-authenticated browser sessions. See [API keys](/operate/authentication/api-keys).
+</Accordion>
+<Accordion title="Both Cloudflare Access and trusted-header configured">
+If both Cloudflare Access (`CHM_CF_ACCESS_*`) and trusted-header (`CHM_PROXY_AUTH_SECRET`) are configured, Access is checked first.
+</Accordion>
+</Accordions>
 
 ## Related
 
-- [Authentication overview](/operate/authentication)
-- [Trusted header](/operate/authentication/trusted-header)
-- [API keys](/operate/authentication/api-keys)
-- [Environment Variables — Authentication](/reference/environment-variables#authentication)
-- [Feature Permissions](/operate/advanced/feature-permissions)
+<Cards>
+  <Card
+    title="Authentication overview"
+    href="/operate/authentication"
+    description="Compare all auth providers and the two-layer model."
+  />
+  <Card
+    title="Trusted header"
+    href="/operate/authentication/trusted-header"
+    description="Bare identity subject via shared secret for nginx or ingress."
+  />
+  <Card
+    title="API keys"
+    href="/operate/authentication/api-keys"
+    description="Add chm_ Bearer tokens for programmatic access."
+  />
+  <Card
+    title="Environment variables — Authentication"
+    href="/reference/environment-variables#authentication"
+    description="Every CHM_* auth variable and its default."
+  />
+  <Card
+    title="Feature permissions"
+    href="/operate/advanced/feature-permissions"
+    description="Gate individual features to authenticated users."
+  />
+</Cards>

@@ -1,9 +1,8 @@
 ---
+title: "Reverse proxy: trusted forwarded headers"
 description: Authenticate chmonitor via forwarded headers from oauth2-proxy, Authelia, Traefik ForwardAuth, or similar — full user profile with group-based access gating.
 icon: Network
 ---
-
-# Reverse proxy: trusted forwarded headers
 
 Use this when chmonitor sits behind a proxy that has already authenticated the user — oauth2-proxy with Dex, Authelia, Traefik ForwardAuth, nginx + auth-url, or similar. The proxy forwards the user's identity as HTTP headers; chmonitor trusts them and builds a full principal (name, email, avatar, groups) from those headers.
 
@@ -43,6 +42,10 @@ The `trusted` provider differs from the `proxy` provider:
 
 The identity is available at `GET /api/v1/auth/me` and displayed in the sidebar user menu.
 
+## Prerequisites
+
+A proxy that authenticates users and forwards their identity as HTTP headers (oauth2-proxy, Authelia, Traefik ForwardAuth, nginx `auth_request`, or similar), plus a trust gate — see below.
+
 ## Trust gate
 
 **You must configure exactly one of these.** Without a trust gate, the provider fails closed and denies all requests.
@@ -64,7 +67,7 @@ kubectl create secret generic chm-trusted-secret \
   --from-literal=value=<secret>
 ```
 
-## All environment variables
+## Setup
 
 ### Provider activation
 
@@ -109,11 +112,9 @@ CHM_TRUSTED_ALLOWED_GROUPS=sre,ops,admin
 
 A trusted-authenticated user satisfies `authenticated`, so `CHM_FEATURE_*_ACCESS=authenticated` features are unlocked for them automatically.
 
-## Forwarded headers map
+### Forwarded headers map
 
-What each header becomes in the principal:
-
-These are the fields of the JSON returned by `GET /api/v1/auth/me` (`principal`):
+What each header becomes in the principal. These are the fields of the JSON returned by `GET /api/v1/auth/me` (`principal`):
 
 | Header (default name) | Principal field |
 |---|---|
@@ -125,13 +126,16 @@ These are the fields of the JSON returned by `GET /api/v1/auth/me` (`principal`)
 | `X-Forwarded-Role` | merged into `roles[]` |
 | Custom headers (via `CHM_TRUSTED_CUSTOM_HEADERS`) | `custom.<field>` |
 
-## Homelab example: k3s + Traefik + oauth2-proxy + Dex
+### Proxy examples
 
-**Critical detail:** With Traefik ForwardAuth, Traefik copies *oauth2-proxy's* response headers back to the upstream request via the middleware's `authResponseHeaders` list. oauth2-proxy uses `X-Auth-Request-*` headers, not `X-Forwarded-*`. Map accordingly.
+<Tabs items={["k3s + Traefik + oauth2-proxy + Dex", "nginx"]}>
+<Tab value="k3s + Traefik + oauth2-proxy + Dex">
 
-### oauth2-proxy flags
+<Callout type="warn" title="Map oauth2-proxy's X-Auth-Request-* headers">
+With Traefik ForwardAuth, Traefik copies *oauth2-proxy's* response headers back to the upstream request via the middleware's `authResponseHeaders` list. oauth2-proxy uses `X-Auth-Request-*` headers, not `X-Forwarded-*`. Map accordingly.
+</Callout>
 
-oauth2-proxy must emit the auth-request headers and request the `groups` scope from Dex:
+**oauth2-proxy flags.** oauth2-proxy must emit the auth-request headers and request the `groups` scope from Dex:
 
 ```
 --set-xauthrequest=true
@@ -141,7 +145,7 @@ oauth2-proxy must emit the auth-request headers and request the `groups` scope f
 
 Dex must include `groups` in its connector config (e.g. an LDAP connector with `groupSearch`, or GitHub connector with `orgs`).
 
-### Traefik Middleware
+**Traefik Middleware:**
 
 ```yaml
 apiVersion: traefik.io/v1alpha1
@@ -181,7 +185,7 @@ spec:
           port: 3000
 ```
 
-### chmonitor env vars
+**chmonitor env vars:**
 
 ```bash
 CHM_AUTH_PROVIDER=trusted
@@ -202,7 +206,8 @@ CHM_TRUSTED_ALLOWED_GROUPS=sre,admin
 
 The proxy must set `X-Chm-Proxy-Secret: <long-random-secret>` on every forwarded request. In Traefik you can do this with a second middleware or a plugin that adds a static header from a Kubernetes Secret. Alternatively, run chmonitor as a `ClusterIP` only reachable by the oauth2-proxy pod and set `CHM_TRUSTED_ALLOW_INSECURE=true` instead of a shared secret.
 
-## nginx variant
+</Tab>
+<Tab value="nginx">
 
 For nginx-ingress with `auth-url` / `auth-snippet`:
 
@@ -248,19 +253,32 @@ nginx.ingress.kubernetes.io/configuration-snippet: |
 
 Keep the default `CHM_TRUSTED_*_HEADER` names in this case (they match `X-Forwarded-*`).
 
-## Security notes
+</Tab>
+</Tabs>
 
-<Callout type="error" title="Header forgery risk">
+## Verify
+
+Sign in through the proxy, then confirm your identity and profile at `GET /api/v1/auth/me` and in the sidebar user menu. A direct request to the Service — bypassing the proxy, and therefore missing the shared-secret header (unless `CHM_TRUSTED_ALLOW_INSECURE=true`) — must be rejected with `401`.
+
+## Troubleshooting
+
+<Callout type="danger" title="Header forgery risk">
 Without a trust gate, any client that can reach the chmonitor service directly can send arbitrary headers and forge any identity. Always use `CHM_TRUSTED_AUTH_SECRET` with a strong random value, **or** ensure the Service is network-isolated (k8s ClusterIP, not exposed externally) and set `CHM_TRUSTED_ALLOW_INSECURE=true`.
 </Callout>
 
-**Fail closed.** If neither `CHM_TRUSTED_AUTH_SECRET` nor `CHM_TRUSTED_ALLOW_INSECURE=true` is configured, the `trusted` provider rejects all requests with `401`. There is no open fallback.
+<Accordions>
+<Accordion title="All requests return 401 (fail closed)">
+If neither `CHM_TRUSTED_AUTH_SECRET` nor `CHM_TRUSTED_ALLOW_INSECURE=true` is configured, the `trusted` provider rejects all requests with `401`. There is no open fallback.
+</Accordion>
+<Accordion title="Secret hygiene">
+Never put the secret value in YAML manifests, `.env` files, or source control. Use a k8s Secret (or `wrangler secret put`) and inject as an environment variable at runtime.
+</Accordion>
+<Accordion title="When is CHM_TRUSTED_ALLOW_INSECURE safe?">
+Only use `CHM_TRUSTED_ALLOW_INSECURE` when the Worker or container is genuinely unreachable except through the proxy. If the port is exposed on a node or load balancer, use the shared secret instead.
+</Accordion>
+</Accordions>
 
-**Secret hygiene.** Never put the secret value in YAML manifests, `.env` files, or source control. Use a k8s Secret (or `wrangler secret put`) and inject as an environment variable at runtime.
-
-**`CHM_TRUSTED_ALLOW_INSECURE`.** Only use this when the Worker or container is genuinely unreachable except through the proxy. If the port is exposed on a node or load balancer, use the shared secret instead.
-
-## Combining with API keys
+## Combine with API keys
 
 `CHM_API_KEY_SECRET` works alongside `CHM_AUTH_PROVIDER=trusted`. Programmatic clients (MCP, scripts, CI) can authenticate with a `chm_` Bearer token without going through the proxy:
 
@@ -275,9 +293,35 @@ See [API keys](/operate/authentication/api-keys).
 
 ## Related
 
-- [Authentication overview](/operate/authentication)
-- [Cloudflare Access](/operate/authentication/cloudflare-access)
-- [Trusted header (proxy provider)](/operate/authentication/trusted-header)
-- [API keys](/operate/authentication/api-keys)
-- [Feature Permissions](/operate/advanced/feature-permissions)
-- [Environment Variables — Authentication](/reference/environment-variables#authentication)
+<Cards>
+  <Card
+    title="Authentication overview"
+    href="/operate/authentication"
+    description="Compare all auth providers and the two-layer model."
+  />
+  <Card
+    title="Cloudflare Access"
+    href="/operate/authentication/cloudflare-access"
+    description="Zero Trust JWT verification under the proxy provider."
+  />
+  <Card
+    title="Trusted header (proxy provider)"
+    href="/operate/authentication/trusted-header"
+    description="Bare identity subject via shared secret, no full profile."
+  />
+  <Card
+    title="API keys"
+    href="/operate/authentication/api-keys"
+    description="Add chm_ Bearer tokens for programmatic access."
+  />
+  <Card
+    title="Feature permissions"
+    href="/operate/advanced/feature-permissions"
+    description="Gate individual features to authenticated users."
+  />
+  <Card
+    title="Environment variables — Authentication"
+    href="/reference/environment-variables#authentication"
+    description="Every CHM_* auth variable and its default."
+  />
+</Cards>
