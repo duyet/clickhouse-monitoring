@@ -19,6 +19,7 @@ import {
   planHosts,
   planRetention,
   planSeats,
+  yearlyMonthsFree,
 } from '@chm/pricing'
 
 export interface PricingTier {
@@ -28,6 +29,8 @@ export interface PricingTier {
   monthly: number | null // null = custom
   yearlyTotal: number | null
   yearlyPerMo: number | null
+  /** Months free on annual billing vs monthly, from @chm/pricing (null = no paid yearly). */
+  yearlyMonthsFree: number | null
   tagline: string
   rows: string[]
   cta: { label: string; href: string; primary?: boolean }
@@ -67,10 +70,27 @@ export const pricingTiers: PricingTier[] = BILLING_PLAN_LIST.map((plan) => ({
   monthly: plan.priceMonthlyUsd,
   yearlyTotal: plan.priceYearlyUsd,
   yearlyPerMo: yearlyPerMo(plan),
+  yearlyMonthsFree: yearlyMonthsFree(plan),
   tagline: plan.tagline,
   rows: plan.highlights,
   cta: PRESENTATION[plan.id].cta,
 }))
+
+/** Render a "N month(s)" phrase (plural-aware) for annual-savings copy. */
+export function monthsFreeText(months: number): string {
+  const n = Math.round(months * 10) / 10
+  return `${n} month${n === 1 ? '' : 's'}`
+}
+
+/**
+ * Headline "months free" for annual billing, derived from @chm/pricing so it
+ * can never drift from the real yearly discount. Paid plans share the same
+ * 10×-monthly ratio; we surface the largest saving as the toggle figure.
+ */
+export const yearlyMonthsFreeValue: number = Math.max(
+  0,
+  ...pricingTiers.map((t) => t.yearlyMonthsFree ?? 0)
+)
 
 /** A comparison cell: true (✓), false (—), or a literal string. */
 export type CompareCell = boolean | string
